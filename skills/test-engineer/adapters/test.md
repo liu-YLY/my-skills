@@ -6,7 +6,7 @@
 
 ## 使用方式(推荐:程序化转换)
 
-阶段 3 默认走自动化流水线,**Agent 不需要手工套用下文 6 条规则**:
+阶段 3 默认走自动化流水线,**Agent 不需要手工套用下文规则**:
 
 ```bash
 # 1. Agent 把通用格式 YAML 写入中间文件(裸 test_cases 列表即可)
@@ -20,119 +20,32 @@
     --module "用户中心" --feature "登录"
 ```
 
-脚本内置以下能力,失败会打印结构化错误并以非零退出码返回:
-- 优先级降级(P3→P2)、type 映射、req_ref/trace 合并、顶层包装、字段白名单
-- `--validate` 直接调用 jsonschema 检查,无需再单独跑 `validate_yaml.py`
-- `--dry-run` 预览结果不落盘
-- 目录递归(`--recursive`),产物自动落在同名 `.test.yaml`
-- 已是 TEST 格式的 YAML 幂等通过(可放心反复运行)
+脚本能力:优先级降级(P3→P2)、type 映射、req_ref/trace 合并、顶层包装、字段白名单、引号格式;`--validate` 内联 jsonschema;`--dry-run` 预览;`--recursive` 目录递归;已是 TEST 格式幂等通过。
 
-下文 6 条规则保留作为**规则文档与 fallback 手册**:仅在脚本不可用、需要手工调试或扩展新规则时参考。
+## 转换规则摘要（fallback 手册）
 
----
+仅在脚本不可用时手工参考：
 
-## 转换规则
-
-### 规则 1：优先级降级
-
-| 通用格式 | TEST 格式 | 说明 |
-|----------|-----------|------|
-| `P0` | `"P0"` | 不变，加引号 |
-| `P1` | `"P1"` | 不变，加引号 |
-| `P2` | `"P2"` | 不变，加引号 |
-| `P3` | `"P2"` | **P3 不存于 TEST，降为 P2** |
-| 空或无 | `"P2"` | 默认值 |
-
-### 规则 2：type 枚举映射
-
-| 通用 `type` | TEST `type` | 说明 |
-|-------------|-------------|------|
-| `functional` | `"functional"` | 直接映射 |
-| `ui` | `"ui"` | 直接映射 |
-| `security` | `"security"` | 直接映射 |
-| `performance` | `"performance"` | 直接映射 |
-| `accessibility` | `"accessibility"` | 直接映射 |
-| `compatibility` | `"ui"` | 兼容性归入 UI |
-| `usability` | `"ui"` | 可用性归入 UI（若偏无障碍则用 `"accessibility"`） |
-| `observability` | `"functional"` | 可观测性归入功能，在 description 中注明 |
-
-### 规则 3：字段合并
-
-| 通用字段 | TEST 处理 | 示例 |
-|----------|-----------|------|
-| `req_ref` | **删除**，内容写入 `description` 首行 | `"追溯：Story-42"` |
-| `trace` | **删除**，内容写入 `description` 首行 | `"追溯：Story-42 \| TP-03"` |
-| `description` 已存在 | `req_ref`/`trace` **前插**到 `description` 开头 | `"追溯：Story-42\n原有描述"` |
-
-### 规则 4：顶层包装
-
-通用格式是裸列表，TEST 要求 `metadata` + `test_cases` 包装：
-
-```yaml
-# 通用格式
-- id: TC_XXX_001
-  title: ...
-...
-
-# TEST 格式
-metadata:
-  module: "<从文件所在目录推断模块名>"
-  feature: "<从功能描述推断>"
-  owner: <设为 "Tester"，或从上下文获取>
-  last_reviewed: "<当天日期 YYYY-MM-DD>"
-  tags: []
-
-test_cases:
-  - id: "TC_XXX_001"
-    title: "..."
-    ...
-```
-
-**metadata 字段填充规则**：
-- `module`：若已知模块则填入，否则填 `"待确认"`
-- `feature`：从用例功能场景概括
-- `owner`：上下文有则填，否则 `"Tester"`
-- `last_reviewed`：当天日期
-- `tags`：如无全局标签填 `[]`
-
-### 规则 5：字段值引号
-
-| 通用格式 | TEST 格式 |
-|----------|-----------|
-| `priority: P0` | `priority: "P0"` |
-| `type: functional` | `type: "functional"` |
-| `id: TC_XXX_001` | `id: "TC_XXX_001"` |
-| `title: ...` | `title: "..."` |
-| `description: \|` | `description: "..."`（转为单行字符串） |
-| `auto: false` | `auto: false`（boolean 不加引号） |
-
-### 规则 6：字段白名单（删除多余额外字段）
-
-TEST schema 的每个 test_case 对象 `additionalProperties: false`，**输出前必须删除**通用格式中存在但 TEST 不容许的字段：
-
-**必须删除的字段**：`req_ref`、`trace`（内容已合并到 `description`）
-
-**TEST 不支持但可保留在通用格式中的字段**（仅在无适配器时输出）：以上二者。
-
----
+| # | 规则 | 通用→TEST |
+|---|------|-----------|
+| 1 | 优先级降级 | P0/P1/P2 不变加引号；P3→"P2"；空→"P2" |
+| 2 | type 映射 | functional/ui/security/performance/accessibility 直接映射；compatibility→ui；usability→ui(偏无障碍→accessibility)；observability→functional |
+| 3 | 字段合并 | req_ref/trace 删除，内容前插到 description 首行（格式："追溯：Story-42 \| TP-03\n原有描述"） |
+| 4 | 顶层包装 | 裸列表→metadata+test_cases 包装；metadata: module/feature/owner/last_reviewed/tags |
+| 5 | 字段值引号 | id/title/priority/type/description 加引号；auto(boolean)不加；preconditions/steps/expected_results 列表项加引号 |
+| 6 | 字段白名单 | 删除 req_ref/trace（已合并）；additionalProperties:false |
 
 ## 输出后校验
 
-**推荐方式**:转换时直接加 `--validate`,程序内联校验:
-
 ```bash
+# 推荐：转换时内联校验
 .venv-tools/bin/python $SKILL_ROOT/scripts/transform_yaml.py <输入> -o <输出> --validate
-```
 
-**fallback**:对历史已存在的 TEST YAML 单独校验,使用:
-
-```bash
+# fallback：对历史 TEST YAML 单独校验
 .venv-tools/bin/python $SKILL_ROOT/scripts/validate_yaml.py <输出文件路径>
 ```
 
-校验失败 → 对照本适配器规则排查 → 修复 → 重新校验,直到通过。
-
----
+校验失败 → 对照规则摘要排查 → 修复 → 重新校验。
 
 ## 完整转换示例
 

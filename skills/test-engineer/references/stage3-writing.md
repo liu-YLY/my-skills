@@ -9,7 +9,7 @@
 
 在构思和输出 YAML 用例之前，**先检查 `adapters/` 目录**：
 
-- **无适配器** → 用通用格式（`adapters/default.md`）直接输出，不校验
+- **无适配器** → 用本文件 3.3 节通用格式直接输出，不校验
 - **有适配器**（如 `adapters/test.md`）→ 构思用通用格式，转换用适配器规则，输出后校验
 
 ## 3.1 默认输出功能测试用例
@@ -29,7 +29,7 @@
 
 > **适配器映射**：若启用了项目适配器，type 按适配器规则映射（如 TEST 中 `compatibility`/`usability` → `ui`，`observability` → `functional`）。
 
-**按分层调整用例形态**：与 [knowledge/test-levels.md](knowledge/test-levels.md) 中「YAML 用例形态」表一致。
+**按分层调整用例形态**：与 [knowledge/test-levels.md](../knowledge/test-levels.md) 中「YAML 用例形态」表一致。
 
 ## 3.2 输出格式
 
@@ -63,25 +63,51 @@
 **如果启用了适配器**，按适配器规则转换为目标格式后再输出。
 本仓库当前适配器：[adapters/test.md](adapters/test.md)
 
+### 字段列表
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | string | 是 | `TC_{模块}_{功能}_{三位序号}` |
+| `title` | string | 是 | 不超过 40 字符，动宾结构 |
+| `priority` | P0/P1/P2/P3 | 是 | 定义与比例见 [test-standards.md](../knowledge/test-standards.md) |
+| `type` | string | 是 | functional / ui / security / performance / compatibility / usability / accessibility / observability |
+| `req_ref` | string | 否 | 需求追溯（Story ID） |
+| `trace` | string | 否 | 测试点追溯（TP 编号） |
+| `description` | string | 否 | 业务背景补充 |
+| `preconditions` | string[] | 否 | 前置条件 |
+| `steps` | string[] | 是 | 操作步骤 |
+| `expected_results` | string[] | 是 | 预期结果 |
+| `tags` | string[] | 否 | 标签 |
+| `auto` | boolean | 否 | 默认 false |
+
 ## 编写铁律
+
+### 测试点→用例映射规则
+
+| 场景 | 操作 | 示例 |
+|------|------|------|
+| 同一流程，不同测试数据 | **合并为 1 条用例**，数据参数化 | URL 格式校验：有效/无效/空值 → 1 条用例 3 组数据 |
+| 不同前置条件 | **拆分为独立用例** | A 类用户 vs C 类用户 → 2 条用例 |
+| 不同预期结果 | **拆分为独立用例** | 提交成功 vs 重复提交 → 2 条用例 |
+| 不同测试逻辑 | **拆分为独立用例** | 正向提交 vs 边界超限 → 2 条用例 |
+| 同一字段多类校验 | **按类拆分**，每类 1 条 | 必填校验 1 条 + 格式校验 1 条 + 边界校验 1 条 |
+
+**核心原则**：一条用例只验证一个测试逻辑；同一逻辑不同数据可合并；不同逻辑必须拆分。
 
 - **title**：`{被测对象} - {具体行为}`，不超过 40 字符，动宾结构
 - **steps**：祈使句，每步一个操作，含具体输入值，建议 7 步以内
-- **expected_results**：可直接判定 pass/fail，引用实际文案；**禁用模糊词**（完整清单见 [knowledge/test-standards.md](knowledge/test-standards.md)）
+- **expected_results**：可直接判定 pass/fail，引用实际文案；**禁用模糊词**（完整清单见 [knowledge/test-standards.md](../knowledge/test-standards.md)）；**必须覆盖三层**：
+  - **主观察**：用户直接可见的结果（UI 文案、页面状态、跳转）
+  - **副作用**：操作触发的附带效果（通知发送、缓存更新、日志写入）
+  - **状态验证**：后端数据/状态变更（DB 记录、资源状态、对账结果）
 - **preconditions**：明确用户类型、数据状态、页面位置
 - **id**：`TC_{模块}_{功能}_{三位序号}`
 - **一个用例只覆盖单一测试逻辑**
 - **需求追溯**：写入 `req_ref` 和 `trace` 字段（若适配器不支持则合并到 `description`）
 
-## 优先级标准（通用）
+## 优先级与类型
 
-- **P0**（10%~15%）：核心流程、支付/安全，fail 阻塞
-- **P1**（30%~40%）：主要功能正向 + 重要异常
-- **P2**（30%~40%）：次要功能、边界、UI
-- **P3**（10%~15%）：体验、极端边界、非功能
-
-划分遵循 [knowledge/test-standards.md](knowledge/test-standards.md) 三步法。
-> 适配器可能降级（如 TEST 中 P3→P2），不影响构思阶段的划分。
+优先级定义、比例、三步法划分见 [knowledge/test-standards.md](../knowledge/test-standards.md)；type 枚举见上方字段列表。构思阶段用通用 P0-P3 + 完整 type；适配器可能降级（如 TEST 中 P3→P2），不影响构思。
 
 ## 非功能用例追加模板（通用格式）
 
