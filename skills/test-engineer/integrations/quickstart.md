@@ -40,20 +40,9 @@ done
 
 > 降级方案仅支持 `.docx`、`.xlsx`、`.pptx`，不支持 PDF 和 `.xls`。
 
-## 项目知识目录速查
+## 项目知识目录
 
-执行阶段 1 时，优先扫描以下路径：
-
-| 路径 | 说明 |
-|------|------|
-| `docs/README.md` | 文档索引（如有，最先读） |
-| `docs/prd/` | PRD 需求文档 |
-| `docs/api/` | API 文档、Swagger/OpenAPI |
-| `docs/design/` | UI 设计稿说明 |
-| `testing-tm-cases/releases/` | 已有 YAML 测试用例 |
-| `CHANGELOG.md` | 版本变更记录 |
-
-目录不存在则跳过。
+阶段 1 扫描路径详见 [knowledge/project-knowledge.md](knowledge/project-knowledge.md)「项目知识目录约定」表。
 
 ## YAML 适配器转换 + 校验(TEST 启用时,首选)
 

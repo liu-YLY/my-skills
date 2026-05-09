@@ -43,7 +43,7 @@ keywords:
 |------|----------|----------|----------|
 | 1 | [references/stage1-understanding.md](references/stage1-understanding.md) | 必须先输出需求理解再写用例 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) |
 | 2 | [references/stage2-testpoints.md](references/stage2-testpoints.md) | 必须 7 维度扫描 + 缺陷模式对照 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) + [knowledge/test-levels.md](knowledge/test-levels.md) |
-| 3 | [references/stage3-writing.md](references/stage3-writing.md) | 默认仅功能用例;启用适配器时走脚本转换 | [adapters/default.md](adapters/default.md) + 项目适配器 |
+| 3 | [references/stage3-writing.md](references/stage3-writing.md) | 默认仅功能用例;启用适配器时走脚本转换 | 项目适配器(若有) |
 | 4 | [references/stage4-review.md](references/stage4-review.md) | 覆盖度 + 优先级比例 + 质量检查 | [knowledge/test-standards.md](knowledge/test-standards.md) |
 
 ### 模式切换
@@ -56,10 +56,10 @@ keywords:
 
 ## 用例输出关键约束（概要，细则见子文件）
 
-- **构思**:始终用通用格式([adapters/default.md](adapters/default.md)),P0-P3 四级优先级、完整 type 列表
+- **构思**:始终用通用格式(见 [references/stage3-writing.md](references/stage3-writing.md) 3.3 节),P0-P3 四级优先级、完整 type 列表
 - **输出**:有适配器时走 `transform_yaml.py` 转换+校验,禁止手工套规则（命令见 [integrations/quickstart.md](integrations/quickstart.md)）
 - **编写铁律**:title≤40字符动宾结构;steps 祈使句≤7步;expected_results 可直接判定 pass/fail 且禁用模糊词;一条用例一个测试逻辑
-- **优先级比例**:P0 10%~15% / P1 30%~40% / P2 30%~40% / P3 10%~15%，划分见 [knowledge/test-standards.md](knowledge/test-standards.md) 三步法
+- **优先级与类型**:定义、比例、三步法见 [knowledge/test-standards.md](knowledge/test-standards.md)
 - **非功能用例**:需求涉及性能/安全/兼容/可观测时在功能用例后独立成组追加，模板见 [references/stage3-writing.md](references/stage3-writing.md)
 - **本仓库适配器**:[adapters/test.md](adapters/test.md)（TEST test-case-schema）
 
@@ -83,6 +83,8 @@ keywords:
 - **法**：流程缺陷、规范缺失、代码逻辑
 - **环**：环境差异、版本差异、部署时序
 
+**5 Whys 根因分析**：从问题表象逐层追问"为什么"，直到找到可落地的根因。示例：用户下单后库存未扣减 → 扣减接口超时 → 连接池耗尽 → 慢查询占满连接 → 缺少索引 → 新增字段时未评审 SQL 性能（根因）。
+
 > 常见缺陷模式速查:[knowledge/bug-patterns.md](knowledge/bug-patterns.md);Python 定位:[knowledge/python/debugging.md](knowledge/python/debugging.md) [按需]。
 
 ---
@@ -92,14 +94,12 @@ keywords:
 | 文件 | 何时查阅 |
 |------|---------|
 | [knowledge/test-levels.md](knowledge/test-levels.md) | **阶段 2/3 强制读** |
-| [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（含场景模式速查 + 核心术语；CRUD/权限/联动/边界/表单模式见「常见场景测试模式」节） |
-| [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **阶段 2 强制读** + Bug 分析 |
+| [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（优先级/类型/模糊词/场景模式权威源） |
+| [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **阶段 2 强制读** + Bug 分析（含领域特定模式 + 安全专项检查清单） |
 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | **阶段 1 强制读** + Office/PDF 转换 |
 | [knowledge/python/pep8.md](knowledge/python/pep8.md) | [按需] 审查 Python 代码时 |
-| [knowledge/testing-methodology.md](knowledge/testing-methodology.md) | [按需] 选设计方法 + 根因分析 |
 | [knowledge/python/debugging.md](knowledge/python/debugging.md) | [按需] 定位 Python 代码缺陷 |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
-| [adapters/default.md](adapters/default.md) | 阶段 3 构思 YAML 时 |
 | [adapters/test.md](adapters/test.md) | 阶段 3 输出前（本仓库适配器） |
 
 > 每个子文件首部都有「何时阅读 / 覆盖范围 / 可跳过条件」摘要头,先读摘要再决定是否全文加载。
