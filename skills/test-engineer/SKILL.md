@@ -83,7 +83,7 @@ keywords:
 - **法**：流程缺陷、规范缺失、代码逻辑
 - **环**：环境差异、版本差异、部署时序
 
-> 常见缺陷模式速查:[knowledge/bug-patterns.md](knowledge/bug-patterns.md);Python 定位:[python-debugging.md](python-debugging.md) [按需]。
+> 常见缺陷模式速查:[knowledge/bug-patterns.md](knowledge/bug-patterns.md);Python 定位:[knowledge/python/debugging.md](knowledge/python/debugging.md) [按需]。
 
 ---
 
@@ -91,15 +91,13 @@ keywords:
 
 | 文件 | 何时查阅 |
 |------|---------|
-| [knowledge/glossary.md](knowledge/glossary.md) | 术语有歧义时 |
 | [knowledge/test-levels.md](knowledge/test-levels.md) | **阶段 2/3 强制读** |
-| [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（含场景模式速查） |
+| [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（含场景模式速查 + 核心术语；CRUD/权限/联动/边界/表单模式见「常见场景测试模式」节） |
 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **阶段 2 强制读** + Bug 分析 |
 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | **阶段 1 强制读** + Office/PDF 转换 |
-| [knowledge/python-pep8.md](knowledge/python-pep8.md) | [按需] 审查 Python 代码时 |
-| [testing-methodology.md](testing-methodology.md) | [按需] 选设计方法 + 根因分析 |
-| [test-case-writing.md](test-case-writing.md) | [按需] → 指针到 test-standards#常见场景测试模式 |
-| [python-debugging.md](python-debugging.md) | [按需] 定位 Python 代码缺陷 |
+| [knowledge/python/pep8.md](knowledge/python/pep8.md) | [按需] 审查 Python 代码时 |
+| [knowledge/testing-methodology.md](knowledge/testing-methodology.md) | [按需] 选设计方法 + 根因分析 |
+| [knowledge/python/debugging.md](knowledge/python/debugging.md) | [按需] 定位 Python 代码缺陷 |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
 | [adapters/default.md](adapters/default.md) | 阶段 3 构思 YAML 时 |
 | [adapters/test.md](adapters/test.md) | 阶段 3 输出前（本仓库适配器） |
