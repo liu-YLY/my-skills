@@ -58,7 +58,7 @@ keywords:
 
 - **构思**:始终用通用格式(见 [references/stage3-writing.md](references/stage3-writing.md) 3.3 节),P0-P3 四级优先级、完整 type 列表
 - **输出**:有适配器时走 `transform_yaml.py` 转换+校验,禁止手工套规则（命令见 [integrations/quickstart.md](integrations/quickstart.md)）
-- **编写铁律**:title≤40字符动宾结构;steps 祈使句≤7步;expected_results 可直接判定 pass/fail 且禁用模糊词;一条用例一个测试逻辑
+- **编写铁律**:title≤40字符动宾结构;steps 祈使句≤7步且与expected_results一一对应(一步一验);expected_results 可直接判定 pass/fail 且禁用模糊词;一条用例一个测试逻辑
 - **优先级与类型**:定义、比例、三步法见 [knowledge/test-standards.md](knowledge/test-standards.md)
 - **非功能用例**:需求涉及性能/安全/兼容/可观测时在功能用例后独立成组追加，模板见 [references/stage3-writing.md](references/stage3-writing.md)
 - **本仓库适配器**:[adapters/test.md](adapters/test.md)（TEST test-case-schema）
