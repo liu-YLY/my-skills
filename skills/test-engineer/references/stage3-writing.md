@@ -9,7 +9,7 @@
 
 在构思和输出 YAML 用例之前，**先检查 `adapters/` 目录**：
 
-- **无适配器** → 用通用格式（`adapters/default.md`）直接输出，不校验
+- **无适配器** → 用本文件 3.3 节通用格式直接输出，不校验
 - **有适配器**（如 `adapters/test.md`）→ 构思用通用格式，转换用适配器规则，输出后校验
 
 ## 3.1 默认输出功能测试用例
@@ -29,7 +29,7 @@
 
 > **适配器映射**：若启用了项目适配器，type 按适配器规则映射（如 TEST 中 `compatibility`/`usability` → `ui`，`observability` → `functional`）。
 
-**按分层调整用例形态**：与 [knowledge/test-levels.md](knowledge/test-levels.md) 中「YAML 用例形态」表一致。
+**按分层调整用例形态**：与 [knowledge/test-levels.md](../knowledge/test-levels.md) 中「YAML 用例形态」表一致。
 
 ## 3.2 输出格式
 
@@ -48,14 +48,14 @@
   description: |
     补充说明测试场景的业务背景
   preconditions:
-    - 前置条件 1（明确环境、数据、用户状态）
-    - 前置条件 2
+    - 已登录为 A 类用户（预备动作放这里）
+    - 已打开 "Add webhook" 弹窗（预备动作放这里）
   steps:
-    - 操作步骤 1（祈使句，每步一个操作）
-    - 操作步骤 2
+    - 操作步骤 1（祈使句，一步一动作）          # ← 对应 expected_results[0]
+    - 操作步骤 2                                # ← 对应 expected_results[1]
   expected_results:
-    - 预期结果 1（具体、可验证、引用实际文案）
-    - 预期结果 2
+    - 预期结果 1（步骤1完成后立即可观察的结果）  # ← 对应 steps[0]
+    - 预期结果 2（步骤2完成后立即可观察的结果）  # ← 对应 steps[1]
   tags: [场景标签]
   auto: false
 ```
@@ -63,25 +63,71 @@
 **如果启用了适配器**，按适配器规则转换为目标格式后再输出。
 本仓库当前适配器：[adapters/test.md](adapters/test.md)
 
+### 字段列表
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | string | 是 | `TC_{模块}_{功能}_{三位序号}` |
+| `title` | string | 是 | 不超过 40 字符，动宾结构 |
+| `priority` | P0/P1/P2/P3 | 是 | 定义与比例见 [test-standards.md](../knowledge/test-standards.md) |
+| `type` | string | 是 | functional / ui / security / performance / compatibility / usability / accessibility / observability |
+| `req_ref` | string | 否 | 需求追溯（Story ID） |
+| `trace` | string | 否 | 测试点追溯（TP 编号） |
+| `description` | string | 否 | 业务背景补充 |
+| `preconditions` | string[] | 否 | 前置条件 |
+| `steps` | string[] | 是 | 操作步骤 |
+| `expected_results` | string[] | 是 | 预期结果 |
+| `tags` | string[] | 否 | 标签 |
+| `auto` | boolean | 否 | 默认 false |
+
 ## 编写铁律
+
+### 测试点→用例映射规则
+
+| 场景 | 操作 | 示例 |
+|------|------|------|
+| 同一流程，不同测试数据 | **合并为 1 条用例**，数据参数化 | URL 格式校验：有效/无效/空值 → 1 条用例 3 组数据 |
+| 不同前置条件 | **拆分为独立用例** | A 类用户 vs C 类用户 → 2 条用例 |
+| 不同预期结果 | **拆分为独立用例** | 提交成功 vs 重复提交 → 2 条用例 |
+| 不同测试逻辑 | **拆分为独立用例** | 正向提交 vs 边界超限 → 2 条用例 |
+| 同一字段多类校验 | **按类拆分**，每类 1 条 | 必填校验 1 条 + 格式校验 1 条 + 边界校验 1 条 |
+
+**核心原则**：一条用例只验证一个测试逻辑；同一逻辑不同数据可合并；不同逻辑必须拆分。
 
 - **title**：`{被测对象} - {具体行为}`，不超过 40 字符，动宾结构
 - **steps**：祈使句，每步一个操作，含具体输入值，建议 7 步以内
-- **expected_results**：可直接判定 pass/fail，引用实际文案；**禁用模糊词**（完整清单见 [knowledge/test-standards.md](knowledge/test-standards.md)）
+- **expected_results**：可直接判定 pass/fail，引用实际文案；**禁用模糊词**（完整清单见 [knowledge/test-standards.md](../knowledge/test-standards.md)）；**必须覆盖三层**：
+  - **主观察**：用户直接可见的结果（UI 文案、页面状态、跳转）
+  - **副作用**：操作触发的附带效果（通知发送、缓存更新、日志写入）
+  - **状态验证**：后端数据/状态变更（DB 记录、资源状态、对账结果）
 - **preconditions**：明确用户类型、数据状态、页面位置
 - **id**：`TC_{模块}_{功能}_{三位序号}`
 - **一个用例只覆盖单一测试逻辑**
 - **需求追溯**：写入 `req_ref` 和 `trace` 字段（若适配器不支持则合并到 `description`）
 
-## 优先级标准（通用）
+### steps ↔ expected_results 一一对应（强制）
 
-- **P0**（10%~15%）：核心流程、支付/安全，fail 阻塞
-- **P1**（30%~40%）：主要功能正向 + 重要异常
-- **P2**（30%~40%）：次要功能、边界、UI
-- **P3**（10%~15%）：体验、极端边界、非功能
+**`steps[N]` 和 `expected_results[N]` 数量必须一致**，每步操作后立即写出对应的预期结果，实现"一步一验"。
 
-划分遵循 [knowledge/test-standards.md](knowledge/test-standards.md) 三步法。
-> 适配器可能降级（如 TEST 中 P3→P2），不影响构思阶段的划分。
+| 正例（1步→1结果） | 反例（2步→1结果） | 问题诊断 |
+|------|------|------|
+| step1: 在 URL 输入框留空 / step2: 点击提交 → result1: 输入框下方显示红色提示"必填" / result2: 弹窗未关闭，提交失败 | step1: 在 URL 输入框留空 / step2: 点击提交 → result1: 提交失败，提示必填 | **无法区分**是留空触发的校验还是点击提交触发的校验；若步骤1就报错则步骤2不执行，但预期结果只有一个 |
+| step1: 输入正确的手机号和密码 → result1: 登录按钮变为可点击状态 | step1: 打开 App 首页 / step2: 输入已注册手机号 → result1: 跳转至首页 | 打开首页是预备动作不应放在 steps；输完手机号还没点登录就断言跳转 |
+
+**处理方式**：
+1. **预备动作上移**：将"打开页面、登录、进入菜单"等无验证价值的预备动作移到 **preconditions**
+2. **合并相邻**：若预备动作必须留在 steps（操作链不可拆分），与第一个产生结果的动作合并为一步，如 `"打开 Add webhook 弹窗，在 URL 输入框中输入 'https://...'"`
+3. **按步分层分配验证**：三步验证（主观察/副作用/状态验证）可分步承载，不要求每一步都覆盖三层
+
+**因果性约束**：`expected_results[N]` 必须是 **`steps[N]` 单独执行后立即产生的可观察变化**，不能是 `steps[N+1]` 或其他后序步骤的结果。如果某步无可见变化，说明该步骤:
+- 是纯预备动作 → 移入 preconditions
+- 粒度太细 → 与相邻步骤合并
+
+**自检**：写完用例后，逐行读 `steps[N]`，问自己「仅执行这步操作后，我能看到什么？」，写下答案即为 `expected_results[N]`。再检查：`expected_results[N]` 中是否出现了 `steps[N]` 之后的元素名或依赖后续步骤的现象——出现即错位。
+
+## 优先级与类型
+
+优先级定义、比例、三步法划分见 [knowledge/test-standards.md](../knowledge/test-standards.md)；type 枚举见上方字段列表。构思阶段用通用 P0-P3 + 完整 type；适配器可能降级（如 TEST 中 P3→P2），不影响构思。
 
 ## 非功能用例追加模板（通用格式）
 

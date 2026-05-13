@@ -40,14 +40,14 @@
 .venv-tools/bin/markitdown <文件路径> -o <输出路径>.md
 ```
 
-**步骤 4（首次自举）**：按以下顺序准备 Python 环境：
+**步骤 4（首次自举）**：始终使用 Skill 专用虚拟环境 `.venv-tools`：
 1. 若 `.venv-tools` 已存在 → 直接用
-2. 若 `.venv` 存在 → 优先用它安装 markitdown
-3. 若两者都不存在 → 自动创建 `.venv-tools`：
+2. 若不存在 → 自动创建：
 ```bash
 python3 -m venv .venv-tools
 .venv-tools/bin/pip install -r $SKILL_ROOT/scripts/requirements.txt
 ```
+> 禁止使用项目自带的 `.venv`，避免依赖冲突干扰项目环境。
 
 依赖列表：`$SKILL_ROOT/scripts/requirements.txt`（`markitdown[docx,pptx,xlsx,xls]`）
 
