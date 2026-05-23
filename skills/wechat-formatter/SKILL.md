@@ -1,6 +1,6 @@
 ---
 name: wechat-formatter
-version: 1.1.0
+version: 2.0.0
 description: >-
   微信公众号文章排版技能，提供多种适用于互联网/技术领域的排版风格模板。
   自动分析用户文章内容（编程知识、测试理论、技术分享等），按选定风格完成排版，
@@ -57,12 +57,12 @@ keywords:
 
 ## 四大排版风格速览
 
-| 风格 | 代号 | 适用场景 | 核心特征 |
-|------|------|----------|----------|
-| **技术博客** | `tech-blog` | 编程教程、技术分享、工具介绍 | 代码高亮、分节清晰、引用规范 |
-| **教程指南** | `tutorial` | 操作指南、最佳实践、配置说明 | 步骤化、提示框、信息层级分明 |
-| **深度干货** | `deep-dive` | 原理剖析、架构分析、技术复盘 | 结构化强、图表占位、引用严谨 |
-| **轻松聊天** | `casual-chat` | 经验总结、技术随笔、行业思考 | 口语化、Emoji 点缀、段落简短 |
+| 风格 | 代号 | 适用场景 | 核心视觉特征 |
+|------|------|----------|-------------|
+| **技术博客** | `tech-blog` | 编程教程、技术分享、工具介绍 | 导读框 + 中文编号章节 + 核心观点框 + 分割线 + 脚注式参考 |
+| **教程指南** | `tutorial` | 操作指南、最佳实践、配置说明 | 目标框 + Step 五段式 + 4 种提示框(TIP/WARNING/NOTE/CHECK) + FAQ |
+| **深度干货** | `deep-dive` | 原理剖析、架构分析、技术复盘 | 摘要框 + 纯文本目录 + 核心结论框 + 图表编号 + 参考带说明 |
+| **轻松聊天** | `casual-chat` | 经验总结、技术随笔、行业思考 | 自然开场 + 短段落 + `—` 分隔 + Emoji 点缀 + 互动引导 |
 
 > 完整风格描述与选择指南：[templates/template-index.md](templates/template-index.md)
 > 各风格详细排版规则：[templates/tech-blog.md](templates/tech-blog.md) | [templates/tutorial.md](templates/tutorial.md) | [templates/deep-dive.md](templates/deep-dive.md) | [templates/casual-chat.md](templates/casual-chat.md)
@@ -80,6 +80,7 @@ keywords:
 - **图片**：使用 `![描述](url)` 占位，提示用户替换为实际图片
 - **Emoji**：除 `casual-chat` 风格外，谨慎使用，每篇不超过 5 处
 - **字体样式**：粗体 `**重点**`、行内代码 `` `code` ``、引用 `>` 用于提示/注意
+- **渲染工具**：建议用户将 Markdown 通过 [mdnice](https://mdnice.com)、[135 编辑器](https://www.135editor.com) 或 [壹伴](https://yiban.io) 等工具应用 CSS 样式后复制到公众号编辑器，以获得最佳视觉效果。具体 CSS 参数和配色方案见 [references/wechat-markdown.md](references/wechat-markdown.md)「CSS 渲染参数参考」章节
 
 ---
 
