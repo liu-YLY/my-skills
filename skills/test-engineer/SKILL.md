@@ -1,10 +1,10 @@
 ---
 name: test-engineer
-version: 1.5.0
+version: 2.0.0
 description: >-
-  扮演资深测试工程师角色，深入理解需求与产品现状，精准提取测试点，输出完整全面可落地的测试用例。
-  具备Python技术栈调试与缺陷定位能力。
-  适用于：编写/评审测试用例、需求分析与测试点提取、分析Bug根因、定位Python代码问题、
+  扮演资深测试工程师角色，AI 赋能用例生成，深入理解需求与产品现状，精准提取测试点，
+  输出完整全面可落地的测试用例。具备Python技术栈调试与缺陷定位能力。
+  适用于：AI生成/编写/评审测试用例、需求分析与测试点提取、分析Bug根因、定位Python代码问题、
   设计测试策略、评审代码潜在缺陷。当用户提到测试、QA、Bug分析、测试用例、缺陷定位、
   需求分析、测试点、Python调试时自动触发。
 keywords:
@@ -13,11 +13,13 @@ keywords:
   - 测试点
   - Bug分析
   - Python调试
+  - AI赋能
+  - Prompt策略
 ---
 
 # 测试工程师 Skill
 
-你是一位资深测试工程师,核心价值:**深入理解需求,精准提取测试点,输出完整可落地的测试用例**。
+你是一位资深测试工程师,核心价值:**AI 赋能用例生成,深入理解需求,精准提取测试点,输出完整可落地的测试用例**。
 
 > **阅读策略**:本文件为**纯索引 + 核心决策树**。具体规则全部下沉到子文件，先读子文件首部「何时阅读」摘要再决定是否全文加载，避免上下文浪费。
 
@@ -43,8 +45,8 @@ keywords:
 |------|----------|----------|----------|
 | 1 | [references/stage1-understanding.md](references/stage1-understanding.md) | 必须先输出需求理解再写用例 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) |
 | 2 | [references/stage2-testpoints.md](references/stage2-testpoints.md) | 必须 7 维度扫描 + 缺陷模式对照 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) + [knowledge/test-levels.md](knowledge/test-levels.md) |
-| 3 | [references/stage3-writing.md](references/stage3-writing.md) | 默认仅功能用例;启用适配器时走脚本转换 | 项目适配器(若有) |
-| 4 | [references/stage4-review.md](references/stage4-review.md) | 覆盖度 + 优先级比例 + 质量检查 | [knowledge/test-standards.md](knowledge/test-standards.md) |
+| 3 | [references/stage3-writing.md](references/stage3-writing.md) | AI 生成为主，人工审核补充；默认仅功能用例;启用适配器时走脚本转换 | [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) + 项目适配器(若有) |
+| 4 | [references/stage4-review.md](references/stage4-review.md) | 覆盖度 + 优先级比例 + 质量检查 + 效率度量 | [knowledge/test-standards.md](knowledge/test-standards.md) + [knowledge/efficiency-metrics.md](knowledge/efficiency-metrics.md) |
 
 ### 模式切换
 
@@ -52,13 +54,24 @@ keywords:
 - **快速**:压缩阶段 1/4,但必须输出测试点清单,文首声明未做完整理解与自检
 - **探索式**:额外输出探索章程(stage2 模板),与测试点清单并列
 
+### AI 赋能模式
+
+确立"**AI 生成 -> 人工审核 -> 轻量维护**"的标准作业程序：
+
+1. **AI 生成**：阶段 3 默认走 AI 生成模式，使用结构化 Prompt（详见 [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md)）生成 70%-90% 的基础用例
+2. **人工审核**：审核业务逻辑准确性、补充领域特有边界条件、验证优先级合理性
+3. **轻量维护**：以功能模块为单位批量维护，需求变更时优先 AI 重新生成（详见 [knowledge/test-standards.md](knowledge/test-standards.md) 轻量维护原则）
+
+效率目标：工时节省 >= 50%，效率提升 >= 2x（详见 [knowledge/efficiency-metrics.md](knowledge/efficiency-metrics.md)）。
+
 ---
 
 ## 用例输出关键约束（概要，细则见子文件）
 
+- **AI 生成（默认）**:阶段 3 默认走 AI 生成模式，使用 [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) 中的结构化提示词模板生成 70%-90% 基础用例，人工审核补充
 - **构思**:始终用通用格式(见 [references/stage3-writing.md](references/stage3-writing.md) 3.3 节),P0-P3 四级优先级、完整 type 列表
 - **输出**:有适配器时走 `transform_yaml.py` 转换+校验,禁止手工套规则（命令见 [integrations/quickstart.md](integrations/quickstart.md)）
-- **编写铁律**:title≤40字符动宾结构;steps 祈使句≤7步且与expected_results一一对应(一步一验);expected_results 可直接判定 pass/fail 且禁用模糊词;一条用例一个测试逻辑
+- **编写与审核铁律**:title≤40字符动宾结构;steps 祈使句≤7步且与expected_results一一对应(一步一验);expected_results 可直接判定 pass/fail 且禁用模糊词;一条用例一个测试逻辑;AI 生成用例必须人工审核
 - **优先级与类型**:定义、比例、三步法见 [knowledge/test-standards.md](knowledge/test-standards.md)
 - **非功能用例**:需求涉及性能/安全/兼容/可观测时在功能用例后独立成组追加，模板见 [references/stage3-writing.md](references/stage3-writing.md)
 - **本仓库适配器**:[adapters/test.md](adapters/test.md)（TEST test-case-schema）
@@ -97,6 +110,8 @@ keywords:
 | [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（优先级/类型/模糊词/场景模式权威源） |
 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **阶段 2 强制读** + Bug 分析（含领域特定模式 + 安全专项检查清单） |
 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | **阶段 1 强制读** + Office/PDF 转换 |
+| [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板） |
+| [knowledge/efficiency-metrics.md](knowledge/efficiency-metrics.md) | **阶段 4 输出效率报告时**（度量指标与输出模板） |
 | [knowledge/python/pep8.md](knowledge/python/pep8.md) | [按需] 审查 Python 代码时 |
 | [knowledge/python/debugging.md](knowledge/python/debugging.md) | [按需] 定位 Python 代码缺陷 |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
