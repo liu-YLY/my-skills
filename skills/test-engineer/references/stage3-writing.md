@@ -1,9 +1,38 @@
 # 阶段 3:编写测试用例
 
 > **何时阅读**:进入阶段 3 时必读;无适配器场景下可跳过 3.0 与 3.4。
-> **覆盖范围**:3.0 适配器检查 / 3.1 默认输出 functional / 3.2 输出格式选择 / 3.3 通用 YAML 模板 / 编写铁律 / 优先级标准 / 非功能用例追加模板 / 3.4 适配器转换流程(脚本化)。
-> **关键约束**:默认仅输出 `type: functional`,触发条件命中才追加非功能;启用适配器时**必须**走 `transform_yaml.py` 而不是手工套用规则。
-> **快速定位**:写功能用例 → 3.3;追加性能/安全/兼容用例 → 末尾「非功能用例追加模板」;转换 + 校验 → 3.4。
+> **覆盖范围**:3.0 适配器检查 / 3.0a AI 生成模式(默认) / 3.0b 人工编写模式(备选) / 3.1 默认输出 functional / 3.2 输出格式选择 / 3.3 通用 YAML 模板 / 编写与审核铁律 / 优先级标准 / 非功能用例追加模板 / 3.4 适配器转换流程(脚本化)。
+> **关键约束**:默认走 AI 生成模式;仅输出 `type: functional`,触发条件命中才追加非功能;启用适配器时**必须**走 `transform_yaml.py` 而不是手工套用规则。
+> **快速定位**:AI 生成用例 → 3.0a;人工编写 → 3.0b;写功能用例 → 3.3;追加性能/安全/兼容用例 → 末尾「非功能用例追加模板」;转换 + 校验 → 3.4。
+
+## 3.0a AI 生成模式（默认）
+
+**默认走 AI 生成模式**。将阶段 1 的需求理解 + 阶段 2 的测试点清单作为输入，使用结构化 Prompt 让 AI 生成基础用例，人工负责审核、修正和补充。
+
+**流程**：
+1. 读取 [knowledge/prompt-strategy.md](../knowledge/prompt-strategy.md) 中的结构化提示词模板
+2. 将需求理解 + 测试点清单填入 Prompt 模板
+3. AI 生成 70%-90% 的基础用例（正常场景 + 边界值 + 异常场景）
+4. **人工审核**：检查业务逻辑准确性、补充领域特有边界条件、验证优先级合理性
+5. 人工补充 AI 遗漏的复杂业务逻辑用例
+6. 进入 3.0 适配器检查
+
+**AI 生成的用例标记** `source: ai-generated`，人工补充的标记 `source: manual`。
+
+**审核重点**：
+- 业务逻辑是否准确（AI 可能误解需求细节）
+- 领域特有边界条件是否覆盖（AI 通用性强但领域深度不足）
+- 优先级是否合理（AI 倾向均匀分配，可能忽略核心路径）
+- steps 是否可直接执行（AI 可能生成抽象描述而非具体操作）
+
+## 3.0b 人工编写模式（备选）
+
+以下场景使用人工编写模式：
+- 用户明确要求人工编写
+- 功能极简（< 5 条用例）
+- 需求高度领域特化，AI 生成质量不达标
+
+人工编写时跳过 Prompt 调用，直接按 3.3 通用 YAML 模板编写。
 
 ## 3.0 适配器检查(输出前必做)
 
@@ -45,6 +74,7 @@
   type: functional
   req_ref: Story-42
   trace: TP-03
+  source: ai-generated  # ai-generated | manual | ai-reviewed
   description: |
     补充说明测试场景的业务背景
   preconditions:
@@ -73,6 +103,7 @@
 | `type` | string | 是 | functional / ui / security / performance / compatibility / usability / accessibility / observability |
 | `req_ref` | string | 否 | 需求追溯（Story ID） |
 | `trace` | string | 否 | 测试点追溯（TP 编号） |
+| `source` | string | 否 | 用例来源：ai-generated / manual / ai-reviewed |
 | `description` | string | 否 | 业务背景补充 |
 | `preconditions` | string[] | 否 | 前置条件 |
 | `steps` | string[] | 是 | 操作步骤 |
@@ -80,7 +111,21 @@
 | `tags` | string[] | 否 | 标签 |
 | `auto` | boolean | 否 | 默认 false |
 
-## 编写铁律
+## 编写与审核铁律
+
+### 审核规则（AI 生成模式必做）
+
+AI 生成的用例**必须经过人工审核**才能进入 Active 状态：
+
+| 审核项 | 检查内容 | 不通过处理 |
+|--------|----------|-----------|
+| 业务逻辑 | AI 是否正确理解了业务规则 | 修正 steps/expected_results |
+| 领域边界 | 是否遗漏了领域特有的边界条件 | 补充用例，标记 source: manual |
+| 优先级 | P0/P1 是否覆盖了核心路径 | 调整 priority |
+| 可执行性 | steps 是否具体到可直接执行 | 补充具体值、元素名 |
+| 模糊词 | expected_results 是否含模糊词 | 替换为具体描述 |
+
+**审核后**，将 AI 生成用例的 `source` 从 `ai-generated` 更新为 `ai-reviewed`。
 
 ### 测试点→用例映射规则
 
@@ -104,6 +149,7 @@
 - **id**：`TC_{模块}_{功能}_{三位序号}`
 - **一个用例只覆盖单一测试逻辑**
 - **需求追溯**：写入 `req_ref` 和 `trace` 字段（若适配器不支持则合并到 `description`）
+- **用例来源**：写入 `source` 字段标记用例来源（ai-generated / manual / ai-reviewed），便于效率度量
 
 ### steps ↔ expected_results 一一对应（强制）
 
