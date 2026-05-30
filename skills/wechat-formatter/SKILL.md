@@ -33,10 +33,10 @@ keywords:
 
 ---
 
-## 核心工作流（四阶段）
+## 核心工作流（五阶段）
 
 ```
-阶段 1 分析内容 → 阶段 2 匹配风格 → 阶段 3 执行排版 → 阶段 4 输出校验
+阶段 1 分析内容 → 阶段 2 匹配风格 → 阶段 3 执行排版 → 阶段 4 输出校验 → 阶段 5 生成可粘贴 HTML（可选）
 ```
 
 | 阶段 | 详细指令 | 关键约束 | 强制读取 |
@@ -45,17 +45,19 @@ keywords:
 | 2 | [templates/template-index.md](templates/template-index.md) | 必须展示风格简介让用户选择，勿自行决定 | [templates/template-index.md](templates/template-index.md) |
 | 3 | 各风格模板文件 | 严格按模板规则转换，不自创格式 | 所选风格对应的模板文件 |
 | 4 | [references/formatting-rules.md](references/formatting-rules.md) §4 | 覆盖度 + 可读性 + 公众号兼容性三项检查 | [references/wechat-markdown.md](references/wechat-markdown.md) |
+| 5 | [scripts/md2wechat.py](scripts/md2wechat.py) | 用户触发时执行，生成带内联样式和"复制"按钮的 HTML | 无 |
 
 ### 模式切换
 
 | 模式 | 触发条件 | 行为 |
 |------|---------|------|
-| **默认** | 用户未指定风格 | 完整四阶段：分析 → 选风格 → 排版 → 校验 |
-| **快速** | 用户已明确指定风格代号（如"用 tech-blog 排版"） | 跳过阶段 2；阶段 1 仅输出简版分析（要素统计 + 一句话定性），不做详细元信息提取；阶段 4 仅做兼容性检查，跳过覆盖度和风格一致性检查 |
+| **默认** | 用户未指定风格 | 完整五阶段：分析 → 选风格 → 排版 → 校验 → 生成 HTML |
+| **快速** | 用户已明确指定风格代号（如"用 tech-blog 排版"） | 跳过阶段 2；阶段 1 仅输出简版分析（要素统计 + 一句话定性），不做详细元信息提取；阶段 4 仅做兼容性检查，跳过覆盖度和风格一致性检查；阶段 5 同默认 |
+| **仅排版** | 用户明确不需要 HTML 输出 | 完成阶段 1-4 后结束，不执行阶段 5 |
 
 ---
 
-## 四大排版风格速览
+## 六大排版风格速览
 
 | 风格 | 代号 | 适用场景 | 核心视觉特征 |
 |------|------|----------|-------------|
@@ -63,9 +65,11 @@ keywords:
 | **教程指南** | `tutorial` | 操作指南、最佳实践、配置说明 | 目标框 + Step 五段式 + 4 种提示框(TIP/WARNING/NOTE/CHECK) + FAQ |
 | **深度干货** | `deep-dive` | 原理剖析、架构分析、技术复盘 | 摘要框 + 纯文本目录 + 核心结论框 + 图表编号 + 参考带说明 |
 | **轻松聊天** | `casual-chat` | 经验总结、技术随笔、行业思考 | 自然开场 + 短段落 + `—` 分隔 + Emoji 点缀 + 互动引导 |
+| **苹果风** | `apple` | 产品设计、架构哲学、技术选型 | 极简留白 + 圆角卡片引用 + 无编号无 Emoji + Apple 品牌色 |
+| **赛博朋克** | `cyber` | 安全技术、前沿探索、极客文化 | 暗黑背景 + 霓虹色调 + 发光代码块 + 系统弹窗风格引用 |
 
 > 完整风格描述与选择指南：[templates/template-index.md](templates/template-index.md)
-> 各风格详细排版规则：[templates/tech-blog.md](templates/tech-blog.md) | [templates/tutorial.md](templates/tutorial.md) | [templates/deep-dive.md](templates/deep-dive.md) | [templates/casual-chat.md](templates/casual-chat.md)
+> 各风格详细排版规则：[templates/tech-blog.md](templates/tech-blog.md) | [templates/tutorial.md](templates/tutorial.md) | [templates/deep-dive.md](templates/deep-dive.md) | [templates/casual-chat.md](templates/casual-chat.md) | [templates/apple.md](templates/apple.md) | [templates/cyber.md](templates/cyber.md)
 
 ---
 
@@ -78,9 +82,12 @@ keywords:
 - **段落长度**：手机屏幕每段不超过 5 行，多分段、多留白
 - **链接**：公众号不支持 Markdown 链接语法，排版时统一使用**脚注式链接**（文中用 `[N]` 标记，文末集中列出 URL），详见 [references/wechat-markdown.md](references/wechat-markdown.md) §1
 - **图片**：使用 `![描述](url)` 占位，提示用户替换为实际图片
-- **Emoji**：除 `casual-chat` 风格外，谨慎使用，每篇不超过 5 处
+- **Emoji**：`casual-chat` 8-15 个，`cyber` 5-8 个，其他风格不超过 5 处
+- **字号**：默认中等（15px）。用户可指定小号（13px）或大号（17px），在排版结果头部注明字号建议
 - **字体样式**：粗体 `**重点**`、行内代码 `` `code` ``、引用 `>` 用于提示/注意
-- **渲染工具**：建议用户将 Markdown 通过 [mdnice](https://mdnice.com)、[135 编辑器](https://www.135editor.com) 或 [壹伴](https://yiban.io) 等工具应用 CSS 样式后复制到公众号编辑器，以获得最佳视觉效果。具体 CSS 参数和配色方案见 [references/wechat-markdown.md](references/wechat-markdown.md)「CSS 渲染参数参考」章节
+- **一键生成 HTML（推荐）**：阶段 5 使用 `scripts/md2wechat.py` 将 Markdown + CSS 合并为带内联样式的 HTML 文件，用户在浏览器中打开后点击「复制到公众号」按钮即可直接粘贴到微信编辑器。依赖：`pip install markdown beautifulsoup4`
+- **渲染工具（备选）**：用户也可将 Markdown 通过 [mdnice](https://mdnice.com)、[135 编辑器](https://www.135editor.com) 或 [壹伴](https://yiban.io) 等工具应用 CSS 样式后复制到公众号编辑器。具体 CSS 参数和配色方案见 [references/wechat-markdown.md](references/wechat-markdown.md)「CSS 渲染参数参考」章节
+- **现成 CSS 样式**：`styles/` 目录下为每种风格提供了可直接使用的完整 CSS 文件。阶段 5 自动读取对应 CSS；若使用 mdnice 手动方式，用户需将 CSS 粘贴到 mdnice「自定义主题」中
 
 ---
 
@@ -93,8 +100,17 @@ keywords:
 | [templates/tutorial.md](templates/tutorial.md) | 用户选择 `tutorial` 风格时 |
 | [templates/deep-dive.md](templates/deep-dive.md) | 用户选择 `deep-dive` 风格时 |
 | [templates/casual-chat.md](templates/casual-chat.md) | 用户选择 `casual-chat` 风格时 |
+| [templates/apple.md](templates/apple.md) | 用户选择 `apple` 风格时 |
+| [templates/cyber.md](templates/cyber.md) | 用户选择 `cyber` 风格时 |
 | [references/formatting-rules.md](references/formatting-rules.md) | **阶段 1 + 阶段 4** — 分析要素 + 质量校验 |
 | [references/wechat-markdown.md](references/wechat-markdown.md) | **阶段 4** — 公众号兼容性校验 |
+| [scripts/md2wechat.py](scripts/md2wechat.py) | **阶段 5** — Markdown → 可粘贴 HTML 转换脚本 |
+| [styles/tech-blog.md](styles/tech-blog.md) | mdnice 自定义 CSS — 技术博客风格 |
+| [styles/tutorial.md](styles/tutorial.md) | mdnice 自定义 CSS — 教程指南风格 |
+| [styles/deep-dive.md](styles/deep-dive.md) | mdnice 自定义 CSS — 深度干货风格 |
+| [styles/casual-chat.md](styles/casual-chat.md) | mdnice 自定义 CSS — 轻松聊天风格 |
+| [styles/apple.md](styles/apple.md) | mdnice 自定义 CSS — 苹果风风格 |
+| [styles/cyber.md](styles/cyber.md) | mdnice 自定义 CSS — 赛博朋克风格 |
 | [knowledge/wechat-traps.md](knowledge/wechat-traps.md) | [按需] 阶段 3/4 — 公众号排版常见陷阱速查 |
 
 > 每个子文件首部都有「何时阅读 / 覆盖范围 / 可跳过条件」摘要头，先读摘要再决定是否全文加载。
