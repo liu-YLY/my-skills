@@ -1,18 +1,17 @@
 ---
 name: test-engineer
-version: 3.0.0
+version: 4.2.0
 description: >-
   扮演资深测试工程师角色，AI 赋能用例生成，深入理解需求与产品现状，精准提取测试点，
-  输出完整全面可落地的测试用例。具备Python技术栈调试与缺陷定位能力。
-  适用于：AI生成/编写/评审测试用例、需求分析与测试点提取、分析Bug根因、定位Python代码问题、
+  输出完整全面可落地的测试用例。
+  适用于：AI生成/编写/评审测试用例、需求分析与测试点提取、分析Bug根因、
   设计测试策略、评审代码潜在缺陷。当用户提到测试、QA、Bug分析、测试用例、缺陷定位、
-  需求分析、测试点、Python调试时自动触发。
+  需求分析、测试点时自动触发。Python相关问题按需时让AI自行搜索相关知识。
 keywords:
   - QA
   - 测试用例
   - 测试点
   - Bug分析
-  - Python调试
   - AI赋能
   - Prompt策略
 ---
@@ -66,7 +65,6 @@ keywords:
 - **输出**：有适配器时走 `transform_yaml.py` 转换+校验，禁止手工套规则（命令见 [integrations/quickstart.md](integrations/quickstart.md)）
 - **编写与审核铁律**：title≤40字符动宾结构；steps 祈使句≤7步且与expected_results一一对应；expected_results 可直接判定 pass/fail 且禁用模糊词；一条用例一个测试逻辑
 - **优先级与类型**：定义、比例、三步法见 [knowledge/test-standards.md](knowledge/test-standards.md)
-- **本仓库适配器**：[adapters/test.md](adapters/test.md)（TEST test-case-schema）
 
 ---
 
@@ -104,8 +102,29 @@ keywords:
 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **阶段 2 强制读** + Bug 分析（含领域特定模式 + 安全专项检查清单） |
 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | **阶段 1 强制读** + Office/PDF 转换 |
 | [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板） |
+| [knowledge/products/](knowledge/products/) | **阶段 1 按需加载**（产品专项业务知识，见下方说明） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
-| [adapters/test.md](adapters/test.md) | 阶段 3 输出前（本仓库适配器） |
+
+### 产品知识库
+
+产品知识库提供特定产品的业务知识，用于增强测试的针对性和深度。
+
+**加载时机**：阶段 1 信息收集时，当识别到被测功能属于特定产品，自动加载对应知识文件。
+
+**识别方式**：
+1. 用户明确指定：`测试知识库：[产品ID]` 或 `使用 [产品名称] 知识库`
+2. 自动识别：从需求文档、代码模块路径、API 路径推断产品归属
+3. 关键词匹配：用户输入中包含产品名称或模块关键词
+
+**使用场景**：
+- 理解产品特有的业务规则和约束
+- 识别历史高频缺陷模式
+- 获取专项测试检查清单
+- 复用常见测试场景模板
+
+**知识文件位置**：`knowledge/products/{product-id}.md`
+
+**详见**：[knowledge/products/README.md](knowledge/products/README.md)
 
 ## 能力约束
 
