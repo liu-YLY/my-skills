@@ -1,43 +1,44 @@
 # test-engineer Skill 分析报告
 
-> 本文档分析简化后的 test-engineer skill 的结构、能力、优化效果及适用场景。
+> 本文档分析 test-engineer skill 的结构、能力、优化效果及适用场景。
 
 ---
 
 ## 1. 概述
 
-test-engineer 是一个 AI 赋能的测试工程师技能包，专注于测试用例生成与管理。v3.0.0 版本经过精简优化，在保持核心能力的同时显著降低了 token 消耗。
+test-engineer 是一个通用的 AI 赋能测试工程师技能包，专注于测试用例生成与管理。v4.2.0 版本经过多次优化，在保持核心能力的同时显著降低了 token 消耗，并新增了产品知识库功能。
 
 ### 核心价值
 
 - **AI 赋能用例生成**：使用结构化 Prompt 生成 70%-90% 基础用例
 - **系统化测试点提取**：7 维度扫描框架 + 缺陷模式对照
-- **标准化输出**：统一的 YAML 格式 + 适配器转换机制
+- **标准化输出**：统一的 YAML 格式
 - **质量保障**：编写铁律 + 自检清单 + 效率度量
+- **产品专项能力**：产品知识库支持，提供领域特有测试能力
 
 ---
 
 ## 2. 文件结构分析
 
-### 最终结构（9 个核心文件）
+### 最终结构（12 个核心文件）
 
 ```
 test-engineer/
-├── SKILL.md                    # 入口索引（~75行）
+├── SKILL.md                    # 入口索引（~80行）
 ├── test-engineer-core.md       # 核心流程（~280行）
 ├── knowledge/
 │   ├── test-standards.md       # 测试规范（~150行）
 │   ├── bug-patterns.md         # 缺陷模式库（~120行）
 │   ├── test-levels.md          # 测试分层（~50行）
 │   ├── prompt-strategy.md      # Prompt 策略（~100行）
-│   └── project-knowledge.md    # 项目知识（~66行）
-├── adapters/
-│   └── test.md                # TEST 适配器（~103行）
+│   ├── project-knowledge.md    # 项目知识（~66行）
+│   └── products/               # 产品知识库
+│       ├── README.md           # 索引与使用说明
+│       ├── products-template.md # 知识文件模板
+│       └── example.md          # 示例产品知识
 ├── integrations/
 │   └── quickstart.md           # 命令速查（~78行）
 └── scripts/                    # 工具脚本
-    ├── transform_yaml.py
-    ├── validate_yaml.py
     ├── convert_docs.py
     └── requirements.txt
 ```
@@ -53,7 +54,7 @@ test-engineer/
 | knowledge/test-levels.md | 分层说明、混层禁止 | 阶段 2/3 |
 | knowledge/prompt-strategy.md | AI Prompt 模板、调优策略 | 阶段 3 |
 | knowledge/project-knowledge.md | 项目扫描路径、文档转换 | 阶段 1 |
-| adapters/test.md | TEST 转换规则 | 阶段 3 输出前 |
+| knowledge/products/ | 产品业务知识、领域规则 | 阶段 1（按产品加载） |
 | integrations/quickstart.md | Shell 命令速查 | 执行命令前 |
 
 ---
@@ -129,7 +130,25 @@ test-engineer/
 - 输入优化：结构化需求、测试点带编号、Few-shot 参考
 - 输出控制：格式约束、追溯标注、分批生成、优先级标注
 
-### 3.5 缺陷分析与定位
+### 3.5 产品知识库
+
+**知识沉淀机制**：
+- 按产品维度组织业务知识（knowledge/products/ 目录）
+- 标准化模板：产品概述、业务规则、接口清单、测试重点领域
+- 自动识别：根据用户输入、需求文档、代码模块匹配产品归属
+
+**核心价值**：
+- 阶段 1：使用产品概述和业务规则辅助需求理解
+- 阶段 2：使用高频缺陷模式和专项检查清单补充防御性测试点
+- 阶段 3：使用常见测试场景模板加速用例编写
+- 阶段 4：对照专项检查清单验证覆盖度
+
+**维护方式**：
+- 新增产品：复制模板 → 填写内容 → 注册索引 → 提交版本库
+- 渐进式补充：可先填写核心章节，逐步完善
+- 版本管理：变更记录追踪，支持多人协作
+
+### 3.6 缺陷分析与定位
 
 **五步定位法**：复现 → 隔离 → 定位 → 验证 → 报告
 
@@ -265,17 +284,21 @@ test-engineer/
 
 ## 7. 扩展性设计
 
-### 7.1 适配器机制
+### 7.1 产品知识库机制
 
-- 支持多项目适配器（adapters/ 目录下）
-- 程序化转换（transform_yaml.py）
-- 字段映射、优先级降级、type 映射
+- 支持按产品维度沉淀业务知识（knowledge/products/ 目录下）
+- 自动识别产品归属：根据用户输入、需求文档、代码模块匹配产品ID
+- 阶段 1 加载产品概述和业务规则，辅助需求理解
+- 阶段 2 使用高频缺陷模式和专项检查清单，补充防御性测试点
+- 阶段 3 使用常见测试场景模板，加速用例编写
+- 新增产品知识：复制模板 → 填写内容 → 注册索引 → 提交版本库
 
 ### 7.2 知识库扩展
 
 - 项目特定缺陷模式：项目根目录 `docs/bug-patterns.md`
 - JIRA 历史缺陷查询：按模块/标签查询近期 Bug
 - 领域专项模板：可按需添加新领域模板
+- 产品知识文件：knowledge/products/{product-id}.md
 
 ### 7.3 模式切换
 

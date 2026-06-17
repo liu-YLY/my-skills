@@ -12,7 +12,6 @@ test-engineer skill 会在以下关键词出现时自动触发：
 - 测试、QA、测试用例、测试点
 - Bug分析、缺陷定位
 - 需求分析、测试策略
-- Python调试
 
 ### 1.2 基本使用流程
 
@@ -24,8 +23,6 @@ test-engineer skill 会在以下关键词出现时自动触发：
 3. 按四阶段流程执行
    ↓
 4. 输出测试用例（YAML 格式）
-   ↓
-5. 可选：转换为 TEST 格式
 ```
 
 ### 1.3 最简示例
@@ -285,46 +282,14 @@ done
 .venv-tools/bin/python $SKILL_ROOT/scripts/convert_docs.py docs/ --recursive
 ```
 
-### 4.2 YAML 适配器转换命令
-
-**通用格式 → TEST 格式**：
-```bash
-# 一键转换 + 校验
-.venv-tools/bin/python $SKILL_ROOT/scripts/transform_yaml.py \
-    .tmp/draft.yaml \
-    -o testing-tm-cases/releases/<release>/<feature>.yaml \
-    --validate \
-    --module "<模块名>" --feature "<功能名>"
-
-# 预览不落盘
-.venv-tools/bin/python $SKILL_ROOT/scripts/transform_yaml.py .tmp/draft.yaml --dry-run
-
-# 目录递归转换
-.venv-tools/bin/python $SKILL_ROOT/scripts/transform_yaml.py drafts/ --recursive --validate
-```
-
-### 4.3 YAML 校验命令
-
-```bash
-# 校验单个文件
-.venv-tools/bin/python $SKILL_ROOT/scripts/validate_yaml.py testing-tm-cases/releases/v1.0/login.yaml
-
-# 校验整个目录
-.venv-tools/bin/python $SKILL_ROOT/scripts/validate_yaml.py testing-tm-cases/ --recursive
-```
-
-### 4.4 SKILL_ROOT 说明
+### 4.2 SKILL_ROOT 说明
 
 在本仓库中：`SKILL_ROOT` = `skills/test-engineer`
 
 执行命令时，将 `$SKILL_ROOT` 替换为实际路径：
 ```bash
-# 示例
-.venv-tools/bin/python skills/test-engineer/scripts/transform_yaml.py \
-    .tmp/draft.yaml \
-    -o testing-tm-cases/releases/v1.0/login.yaml \
-    --validate \
-    --module "用户中心" --feature "登录"
+# 示例：转换文档
+.venv-tools/bin/markitdown docs/需求文档.docx -o docs/需求文档.md
 ```
 
 ---
@@ -471,13 +436,7 @@ expected_results:
 
 ### 6.4 如何与现有测试管理工具集成？
 
-**TEST 适配器**：
-1. 确保 `adapters/test.md` 存在
-2. 使用 `transform_yaml.py` 转换格式
-3. 使用 `validate_yaml.py` 校验格式
-4. 输出到 `testing-tm-cases/` 目录
-
-**其他工具**：
+**通用集成方式**：
 1. 导出为通用 YAML 格式
 2. 使用脚本转换为目标工具格式
 3. 手动导入到测试管理工具
@@ -527,20 +486,32 @@ expected_results:
 | 模式2 | 描述 | 测试方法 |
 ```
 
-### 7.3 自定义适配器
+### 7.3 产品知识库
 
-在 `adapters/` 目录下创建新的适配器文件：
+在 `knowledge/products/` 目录下管理产品业务知识：
 
-```markdown
-# XXX 输出适配器
+**新增产品知识步骤**：
+1. 复制 `products-template.md` 为 `{product-id}.md`
+2. 填写各章节内容（可渐进式补充，不必一次完成）
+3. 在 `README.md` 的「已注册产品列表」中添加记录
+4. 在「产品-模块映射表」中添加代码路径映射
+5. 提交到版本库
 
-## 转换规则
+**知识文件结构**：
+- 元信息：产品ID、名称、版本、维护人
+- 产品概述：业务定位、用户角色、核心流程
+- 功能模块清单：模块列表与优先级
+- 业务规则与约束：核心规则、校验规则、状态流转
+- 接口与集成：API 列表、第三方依赖
+- 测试重点领域：高频缺陷、专项检查清单、性能基线
+- 测试数据与环境：账号、环境配置、造数工具
+- 常见测试场景模板：可复用的场景模板
+- 参考文档：PRD、API 文档、设计稿链接
 
-| # | 规则 | 通用→XXX |
-|---|------|----------|
-| 1 | 规则1 | 映射关系 |
-| 2 | 规则2 | 映射关系 |
-```
+**自动加载规则**：
+- 阶段 1 时，根据用户输入、需求文档、代码模块自动识别产品归属
+- 若匹配到产品ID，自动加载对应知识文件
+- 用户也可手动指定：`测试知识库：[产品ID]` 或 `使用 [产品名称] 知识库`
 
 ### 7.4 探索式测试
 
