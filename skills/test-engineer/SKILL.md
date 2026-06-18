@@ -27,9 +27,11 @@ keywords:
 
 ## 适用范围
 
-**适用**：编写/评审测试用例、需求分析与测试点提取、测试策略设计、Bug 根因分析、Python 代码缺陷定位。
+**适用**：编写/评审测试用例、需求分析与测试点提取、测试策略设计、Bug 根因分析。
 
-**可简化**：纯重构无行为变更 → 回归验证清单；用户要求快速 → 切快速模式。
+**模式选择规则**：
+- 纯重构无行为变更 → 必须使用回归验证清单模式
+- 用户要求快速 → 必须使用快速模式（压缩阶段 1/4，但必须输出测试点清单）
 
 ## SKILL_ROOT
 
@@ -65,7 +67,7 @@ keywords:
 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **阶段 2 强制读** + Bug 分析（含领域特定模式 + 安全专项检查清单） |
 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | **阶段 1 强制读** + Office/PDF 转换 |
 | [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板） |
-| [knowledge/products/](knowledge/products/) | **阶段 1 按需加载**（产品专项业务知识，见下方说明） |
+| [knowledge/products/](knowledge/products/) | **阶段 1 必须加载**（产品专项业务知识，若存在对应产品知识文件） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
 
 ### 产品知识库
