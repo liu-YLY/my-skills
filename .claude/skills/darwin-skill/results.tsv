@@ -1,0 +1,4 @@
+timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
+2026-06-17T23:40	baseline	test-engineer	-	70	baseline	-	初始评估	full_test
+2026-06-17T23:45	0d6e111	test-engineer	70	74	keep	通用化改造	移除YAML格式绑定，改为通用Markdown格式	full_test
+2026-06-17T23:50	941f602	test-engineer	74	74	keep	清理残留	移除pyyaml依赖，收紧行措辞	full_test
