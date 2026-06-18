@@ -22,7 +22,7 @@ test-engineer skill 会在以下关键词出现时自动触发：
    ↓
 3. 按四阶段流程执行
    ↓
-4. 输出测试用例（YAML 格式）
+4. 输出测试用例（结构化格式）
 ```
 
 ### 1.3 最简示例
@@ -35,7 +35,7 @@ test-engineer skill 会在以下关键词出现时自动触发：
 **Skill 响应**：
 1. 阶段 1：理解需求，输出需求理解文档
 2. 阶段 2：提取测试点，输出测试点清单
-3. 阶段 3：生成测试用例，输出 YAML 格式
+3. 阶段 3：生成测试用例，输出结构化格式
 4. 阶段 4：自检补全，输出效率报告
 
 ---
@@ -75,7 +75,7 @@ test-engineer skill 会在以下关键词出现时自动触发：
 **阶段 3：生成用例**
 - 使用结构化 Prompt 生成 70%-90% 基础用例
 - 人工审核业务逻辑、补充领域边界
-- 输出 YAML 格式用例
+- 输出结构化格式用例
 
 **阶段 4：自检补全**
 - 覆盖度检查、优先级比例检查
@@ -83,27 +83,27 @@ test-engineer skill 会在以下关键词出现时自动触发：
 - 输出效率报告
 
 **输出示例**：
-```yaml
-- id: TC_WEBHOOK_ADD_001
-  title: 添加 webhook - 正常 URL 提交成功
-  priority: P0
-  type: functional
-  req_ref: Story-42
-  trace: TP-01
-  source: ai-generated
-  description: |
-    验证用户使用正确的 URL 格式可以成功添加 webhook
-  preconditions:
-    - 已登录为 A 类用户
-    - 已打开 "Add webhook" 弹窗
-  steps:
-    - 在 "Endpoint URL" 输入框中输入 `https://api.example.com/webhook`
-    - 点击 "Add endpoint" 按钮
-  expected_results:
-    - 输入框无错误提示
-    - 弹窗关闭，webhook 列表中显示新增记录
-  tags: [smoke, webhook]
-  auto: false
+```markdown
+### TC_WEBHOOK_ADD_001: 添加 webhook - 正常 URL 提交成功
+
+- **优先级**: P0
+- **类型**: functional
+- **需求追溯**: Story-42 / TP-01
+- **来源**: ai-generated
+- **业务背景**: 验证用户使用正确的 URL 格式可以成功添加 webhook
+
+**前置条件**:
+- 已登录为 A 类用户
+- 已打开 "Add webhook" 弹窗
+
+**测试步骤与预期结果**:
+
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 在 "Endpoint URL" 输入框中输入 `https://api.example.com/webhook` | 输入框无错误提示 |
+| 2 | 点击 "Add endpoint" 按钮 | 弹窗关闭，webhook 列表中显示新增记录 |
+
+**标签**: smoke, webhook
 ```
 
 ### 2.2 回归测试用例补充
@@ -113,7 +113,7 @@ test-engineer skill 会在以下关键词出现时自动触发：
 **输入示例**：
 ```
 登录功能新增了"记住我"选项，请帮我补充相关测试用例。
-已有用例见 testing-tm-cases/releases/v1.0/login.yaml
+已有用例见 testing-tm-cases/releases/v1.0/login.md
 ```
 
 **Skill 执行流程**：
@@ -129,7 +129,7 @@ test-engineer skill 会在以下关键词出现时自动触发：
 
 **输入示例**：
 ```
-请评审 testing-tm-cases/releases/v1.0/login.yaml 中的测试用例
+请评审 testing-tm-cases/releases/v1.0/login.md 中的测试用例
 ```
 
 **Skill 执行流程**：
@@ -359,21 +359,18 @@ done
 - 坏：`提示信息正确`
 
 **一步一验**：
-```yaml
+```markdown
 # 正确
-steps:
-  - 在 URL 输入框留空
-  - 点击提交按钮
-expected_results:
-  - 输入框下方显示红色提示"必填"
-  - 弹窗未关闭，提交失败
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 在 URL 输入框留空 | 输入框下方显示红色提示"必填" |
+| 2 | 点击提交按钮 | 弹窗未关闭，提交失败 |
 
 # 错误
-steps:
-  - 在 URL 输入框留空
-  - 点击提交按钮
-expected_results:
-  - 提交失败，提示必填
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 在 URL 输入框留空 | 提交失败，提示必填 |
+| 2 | 点击提交按钮 | （无对应预期结果） |
 ```
 
 ### 5.4 效率提升技巧
@@ -437,9 +434,9 @@ expected_results:
 ### 6.4 如何与现有测试管理工具集成？
 
 **通用集成方式**：
-1. 导出为通用 YAML 格式
-2. 使用脚本转换为目标工具格式
-3. 手动导入到测试管理工具
+1. 导出为通用结构化格式（Markdown）
+2. 使用脚本或手动转换为目标工具格式
+3. 导入到测试管理工具
 
 ### 6.5 如何处理需求变更？
 

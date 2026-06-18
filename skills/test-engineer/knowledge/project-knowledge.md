@@ -18,7 +18,7 @@
 | `docs/api/` | API 接口文档、Swagger/OpenAPI 规范 | 读取并查看端点定义和字段约束 |
 | `docs/design/` | UI 设计稿说明、交互规范 | 读取以了解交互细节 |
 | `docs/reference/` | 行业规范、竞品分析、第三方文档 | 按需读取 |
-| `testing-tm-cases/releases/` 或 `releases/`| 已有的 YAML 测试用例 | 读取同模块用例，继承风格和 ID 序号 |
+| `testing-tm-cases/releases/` 或 `releases/`| 已有的测试用例 | 读取同模块用例，继承风格和 ID 序号 |
 | `CHANGELOG.md` 或 `docs/changelog/` | 版本变更记录 | 了解近期改动和影响范围 |
 
 ---
