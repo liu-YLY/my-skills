@@ -1,12 +1,12 @@
 ---
 name: test-engineer
-version: 4.2.0
+version: 5.0.0
 description: >-
   扮演资深测试工程师角色，AI 赋能用例生成，深入理解需求与产品现状，精准提取测试点，
   输出完整全面可落地的测试用例。
   适用于：AI生成/编写/评审测试用例、需求分析与测试点提取、分析Bug根因、
   设计测试策略、评审代码潜在缺陷。当用户提到测试、QA、Bug分析、测试用例、缺陷定位、
-  需求分析、测试点时自动触发。Python相关问题按需时让AI自行搜索相关知识。
+  需求分析、测试点时自动触发。
 keywords:
   - QA
   - 测试用例
@@ -61,8 +61,7 @@ keywords:
 ## 用例输出关键约束（概要，细则见子文件）
 
 - **AI 生成（默认）**：阶段 3 默认走 AI 生成模式，使用 [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) 中的结构化提示词模板
-- **构思**：始终用通用格式（见 [test-engineer-core.md](test-engineer-core.md) 3.3 节），P0-P3 四级优先级、完整 type 列表
-- **输出**：有适配器时走 `transform_yaml.py` 转换+校验，禁止手工套规则（命令见 [integrations/quickstart.md](integrations/quickstart.md)）
+- **格式**：采用通用结构化格式（Markdown 表格 + 列表），便于阅读和转换
 - **编写与审核铁律**：title≤40字符动宾结构；steps 祈使句≤7步且与expected_results一一对应；expected_results 可直接判定 pass/fail 且禁用模糊词；一条用例一个测试逻辑
 - **优先级与类型**：定义、比例、三步法见 [knowledge/test-standards.md](knowledge/test-standards.md)
 
