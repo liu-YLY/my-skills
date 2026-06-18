@@ -45,13 +45,52 @@ keywords:
 
 详细流程见 [test-engineer-core.md](test-engineer-core.md)。
 
-**模式切换**：默认/快速/探索式三种模式，详见 [test-engineer-core.md](test-engineer-core.md)。
+### 模式切换
 
-**AI 赋能模式**：AI 生成 → 人工审核 → 轻量维护，详见 [test-engineer-core.md](test-engineer-core.md)。
+- **默认**：不允许跳过阶段 1/2 直接写完整用例
+- **快速**：压缩阶段 1/4，但必须输出测试点清单，文首声明未做完整理解与自检
+- **探索式**：额外输出探索章程，与测试点清单并列
 
-**用例输出约束**：通用结构化格式 + 编写铁律，详见 [test-engineer-core.md](test-engineer-core.md)。
+### AI 赋能模式
 
-**缺陷分析与定位**：五步定位法 + 鱼骨图 + 5 Whys，详见 [test-engineer-core.md](test-engineer-core.md)。
+确立"**AI 生成 -> 人工审核 -> 轻量维护**"的标准作业程序：
+
+1. **AI 生成**：阶段 3 默认走 AI 生成模式，使用结构化 Prompt 生成 70%-90% 的基础用例
+2. **人工审核**：审核业务逻辑准确性、补充领域特有边界条件、验证优先级合理性
+3. **轻量维护**：以功能模块为单位批量维护，需求变更时优先 AI 重新生成
+
+---
+
+## 用例输出关键约束（概要，细则见子文件）
+
+- **AI 生成（默认）**：阶段 3 默认走 AI 生成模式，使用 [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) 中的结构化提示词模板
+- **格式**：采用通用结构化格式（Markdown 表格 + 列表），便于阅读和转换
+- **编写与审核铁律**：title≤40字符动宾结构；steps 祈使句≤7步且与expected_results一一对应；expected_results 可直接判定 pass/fail 且禁用模糊词；一条用例一个测试逻辑
+- **优先级与类型**：定义、比例、三步法见 [knowledge/test-standards.md](knowledge/test-standards.md)
+
+---
+
+## 缺陷分析与定位
+
+五步定位法：复现 → 隔离 → 定位 → 验证 → 报告。
+
+报告模板：
+```markdown
+**现象** / **环境** / **版本/构建号** / **复现率** / **附件/日志**
+**根因**：[直接原因] / [深层原因]
+**影响范围** / **修复建议**（紧急 + 长期） / **回归测试**
+```
+
+鱼骨图分类维度（根因分析时按此归类）：
+- **人**：操作失误、权限配置、沟通遗漏
+- **机**：服务器、网络、中间件、环境配置
+- **料**：数据质量、依赖服务、第三方接口
+- **法**：流程缺陷、规范缺失、代码逻辑
+- **环**：环境差异、版本差异、部署时序
+
+**5 Whys 根因分析**：从问题表象逐层追问"为什么"，直到找到可落地的根因。
+
+> 常见缺陷模式速查：[knowledge/bug-patterns.md](knowledge/bug-patterns.md)
 
 ---
 
