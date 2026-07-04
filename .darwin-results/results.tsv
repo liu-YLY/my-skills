@@ -4,3 +4,5 @@ timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
 2026-07-04T14:00	6f215c4	test-case-engineer	86.0	86.8	keep	dim7+1	docs矛盾修复（触发词+旧名+适配器）	dry_run
 2026-07-04T14:10	43c4218	bug-analyzer	87.1	86.4	revert_pending	dim5+1,dim3+0	失败模式表具体化+步骤5补表，但总分下降	dry_run
 2026-07-04T14:15	1b0fbf3	bug-analyzer	86.4	86.4	keep	dim3+1	步骤5失败模式表（与上一轮合并评估）	dry_run
+2026-07-04T15:00	d15a41c	testing-bundle	-	73.0	baseline	-	v1.0.0 初始评估，3 短板（dim3/4/9）	dry_run
+2026-07-04T15:30	7c6555d	testing-bundle	73.0	83.9	keep	dim3+1,dim4+1,dim9+1	补6行失败模式表+2处🔴CHECKPOINT+反例三列结构化，独立judge盲评	dry_run
