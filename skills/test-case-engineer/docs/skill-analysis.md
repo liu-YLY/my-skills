@@ -21,27 +21,31 @@ test-case-engineer 是一个专注于测试用例生成与管理的 AI 赋能技
 
 ## 2. 文件结构分析
 
-### 最终结构（12 个核心文件）
+### 最终结构（16 个文件）
 
 ```
-test-engineer/
-├── SKILL.md                    # 入口索引（~80行）
-├── test-case-engineer-core.md       # 核心流程（~280行）
+test-case-engineer/
+├── SKILL.md                    # 入口索引（83行）
+├── test-case-engineer-core.md  # 核心流程（525行）
+├── README.md                   # 用户说明文档
 ├── knowledge/
-│   ├── test-standards.md       # 测试规范（~150行）
-│   ├── bug-patterns.md         # 缺陷模式库（~120行）
-│   ├── test-levels.md          # 测试分层（~50行）
-│   ├── prompt-strategy.md      # Prompt 策略（~100行）
-│   ├── project-knowledge.md    # 项目知识（~66行）
+│   ├── test-standards.md       # 测试规范（127行）
+│   ├── bug-patterns.md         # 缺陷模式库（90行，与 bug-analyzer 共享）
+│   ├── test-levels.md          # 测试分层（32行）
+│   ├── prompt-strategy.md      # Prompt 策略（76行）
+│   ├── project-knowledge.md    # 项目知识（46行）
 │   └── products/               # 产品知识库
 │       ├── README.md           # 索引与使用说明
 │       ├── products-template.md # 知识文件模板
 │       └── example.md          # 示例产品知识
 ├── integrations/
-│   └── quickstart.md           # 命令速查（~78行）
-└── scripts/                    # 工具脚本
-    ├── convert_docs.py
-    └── requirements.txt
+│   └── quickstart.md           # 命令速查（30行）
+├── scripts/                    # 工具脚本
+│   ├── convert_docs.py
+│   └── requirements.txt
+└── docs/                       # 文档目录
+    ├── skill-analysis.md       # 本文件
+    └── user-guide.md           # 使用指南
 ```
 
 ### 文件职责划分
@@ -82,7 +86,6 @@ test-engineer/
 - AI 生成模式（默认）：结构化 Prompt → 人工审核 → 补充
 - 通用结构化格式（Markdown）+ 字段定义
 - 编写铁律（title/steps/expected_results 规范）
-- 适配器转换流程
 
 **阶段 4：自检补全**
 - 覆盖度检查、优先级比例检查、质量检查
