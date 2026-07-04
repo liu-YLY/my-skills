@@ -1,0 +1,3 @@
+timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
+2026-07-04T13:30	b227049	test-case-engineer	-	86.0	baseline	-	双judge盲评基线（README已修复）	dry_run
+2026-07-04T13:30	b227049	bug-analyzer	-	87.1	baseline	-	双judge盲评基线（v1.0.0新建）	dry_run
