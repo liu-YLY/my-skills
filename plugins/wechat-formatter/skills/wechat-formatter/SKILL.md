@@ -36,16 +36,23 @@ keywords:
 ## 核心工作流（五阶段）
 
 ```
-阶段 1 分析内容 → 阶段 2 匹配风格 → 阶段 3 执行排版 → 阶段 4 输出校验 → 阶段 5 生成可粘贴 HTML（可选）
+阶段 1 分析内容 → 🔴 CHECKPOINT 阶段 2 匹配风格 → 阶段 3 执行排版 → 🔴 CHECKPOINT 阶段 4 输出校验 → 阶段 5 生成可粘贴 HTML（可选）
 ```
 
 | 阶段 | 详细指令 | 关键约束 | 强制读取 |
 |------|----------|----------|----------|
 | 1 | [references/formatting-rules.md](references/formatting-rules.md) §1 | 必须识别文章要素（标题层级、代码块、列表、要点） | 无（内联处理） |
-| 2 | [templates/template-index.md](templates/template-index.md) | 必须展示风格简介让用户选择，勿自行决定 | [templates/template-index.md](templates/template-index.md) |
+| 🔴 2 | [templates/template-index.md](templates/template-index.md) | **必须展示风格简介让用户选择，勿自行决定** | [templates/template-index.md](templates/template-index.md) |
 | 3 | 各风格模板文件 | 严格按模板规则转换，不自创格式 | 所选风格对应的模板文件 |
-| 4 | [references/formatting-rules.md](references/formatting-rules.md) §4 | 覆盖度 + 可读性 + 公众号兼容性三项检查 | [references/wechat-markdown.md](references/wechat-markdown.md) |
+| 🔴 4 | [references/formatting-rules.md](references/formatting-rules.md) §4 | 覆盖度 + 可读性 + 公众号兼容性三项检查 | [references/wechat-markdown.md](references/wechat-markdown.md) + [knowledge/wechat-traps.md](knowledge/wechat-traps.md) |
 | 5 | [scripts/md2wechat.py](scripts/md2wechat.py) | 用户触发时执行，生成带内联样式和"复制"按钮的 HTML | 无 |
+
+### 🔴 CHECKPOINT 定义
+
+| 检查点 | 触发时机 | 用户必须确认的内容 | 用户可执行动作 |
+|--------|---------|------------------|-------------|
+| 🔴 CHECKPOINT 1 | 阶段 2 风格推荐后 | 推荐风格是否符合预期 | 选择推荐风格 / 改选其他风格 / 终止流程 |
+| 🔴 CHECKPOINT 2 | 阶段 4 校验完成后 | 校验通过，排版结果是否满足要求 | 接受排版结果进入阶段 5 / 返回阶段 3 修改 / 终止流程 |
 
 ### 模式切换
 
@@ -118,6 +125,40 @@ keywords:
 ## 能力约束
 
 始终可使用文件读取、代码搜索、终端命令等环境能力。若某项不可用，在输出中明确注明局限。
+
+## 失败模式与 Fallback
+
+| 触发条件 | 一线修复 | 仍失败兜底 |
+|---------|----------|-----------|
+| 用户输入文件路径不存在 | 提示用户重新提供正确路径，列出当前工作目录的可读 .md 文件 | 用户确认无文件后，接受用户直接粘贴文章文本作为输入 |
+| 文章内容为空或字数 < 50 | 提示用户内容过短无法识别要素，要求补充 | 降级为通用 tech-blog 风格，仅做标题层级 + 中英文空格修正 |
+| 阶段 1 无法识别主导内容类型 | 输出已识别要素让用户确认类型（🔴 CHECKPOINT） | 默认推荐 tech-blog（通用兜底风格），并在输出首行标注「已默认推荐 tech-blog，如需其他风格请说明」 |
+| 用户在 🔴 CHECKPOINT 1 拒绝所有推荐风格 | 列出全部 6 种风格简介让用户二次选择 | 用户明确不选时终止流程，输出原文不做排版 |
+| 阶段 3 所选风格模板文件读取失败 | 检测路径是否正确（`templates/{style}.md`），提示用户检查 skill 安装完整性 | 降级为 tech-blog 模板（最通用），并标注「模板加载失败，已降级」 |
+| 阶段 4 校验发现公众号不兼容语法（如 Markdown 表格、`~~删除线~~`） | 按 [wechat-markdown.md](references/wechat-markdown.md) 替代方案自动转换 | 无法自动转换的语法加 `<!-- ⚠️ 需手动处理：具体说明 -->` 注释，在校验报告中列出 |
+| 阶段 5 `md2wechat.py` 执行失败（如 pip 依赖缺失） | 提示用户安装依赖：`pip install markdown beautifulsoup4`，给出完整命令 | 跳过 HTML 生成，仅输出 Markdown 文件，提示用户使用 mdnice 等第三方工具手动转换 |
+| CSS 样式文件（`styles/{style}.md`）提取失败 | 检测 styles 目录完整性，提示用户重新安装 skill | 输出无样式的纯 Markdown，标注「CSS 缺失，需手动应用样式」 |
+
+---
+
+## 反例与黑名单
+
+> **设计依据**：基于 SkillLens 论文（arXiv 2605.23899）实证——只写"应该做 X"没有"不要做 Y"会导致 LLM judge 准确率下降。完整陷阱库见 [knowledge/wechat-traps.md](knowledge/wechat-traps.md)（阶段 4 强制校验时必读）。
+
+### 排版反模式速查
+
+| # | 反模式 | 为什么不要做 | 替代做法 |
+|---|--------|------------|---------|
+| 1 | 用 `[文字](url)` Markdown 直链 | 公众号不支持，复制后显示为纯文本 | 统一用脚注式：文中 `[N]`，文末集中列 URL |
+| 2 | 用 `~~删除线~~` 语法 | 公众号渲染为双波浪号纯文本，不显示删除线 | 用「**已废弃**」「~~不推荐~~→直接说明」替代 |
+| 3 | 用 Markdown 表格 | 公众号不支持渲染，复制后变纯文本乱码 | ≤3 列转列表；>3 列建议截图插入 |
+| 4 | 用 `#` 一级标题 | 与公众号文章标题重复，显示双标题 | 正文从 `##` 二级标题起步 |
+| 5 | 代码块超过 30 行 | 公众号约 50 行会截断，长代码阅读体验差 | 拆分为多块 + 说明，或提供 Gist 链接 |
+| 6 | 中英文/数字之间无空格 | 视觉粘连，阅读体验差 | `Python3.11发布了` → `Python 3.11 发布了` |
+| 7 | 非 `casual-chat` 风格 Emoji > 5 个 | 显得不专业，破坏风格一致性 | tech-blog/deep-dive ≤3，tutorial ≤5，仅 casual-chat 8-15 |
+| 8 | 跳过 🔴 CHECKPOINT 1 自行决定风格 | 用户无法修改风格选择，违反用户确认原则 | 必须展示推荐 + 列出 6 种风格让用户确认 |
+
+---
 
 ## 示例
 
