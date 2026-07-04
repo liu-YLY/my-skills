@@ -98,7 +98,7 @@ keywords:
 1. 画出数据流/调用链：前端 → 网关 → 服务 A → 服务 B → DB → 第三方
 2. 在每个边界记录输入输出，定位异常首次出现位置
 3. 二分法隔离：禁用部分模块/绕过部分逻辑，观察 Bug 是否消失
-4. 对照缺陷模式库：参考 [knowledge/bug-patterns-index.md](knowledge/bug-patterns-index.md) 判断属于哪类常见模式
+4. 对照缺陷模式库：参考 [knowledge/bug-patterns-index.md](knowledge/bug-patterns-index.md) 判断属于哪类常见模式。**若错误现象为 NPE / 500 错误 / 超时，必查 `bug-patterns.md` 的「运行时高频错误类型 checklist」章节，按 P1→P5 优先级排查**
 5. 记录隔离证据：每个边界的实际输入输出值
 
 ### 步骤 2 失败模式与 Fallback
