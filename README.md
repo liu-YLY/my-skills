@@ -246,16 +246,67 @@ my-skill/
 
 ### 安装与配置
 
-本项目支持两种安装方式：**plugin marketplace 模式**（推荐，跨平台、标准化）和**本地脚本模式**（兜底，无需 marketplace）。
+本项目支持三种安装方式，**推荐使用 `npx skills add`**（跨平台、跨 runtime、支持按 skill 粒度选择）。
 
-#### 方式 1：plugin marketplace 模式（推荐）
+#### 方式 1：npx skills add（推荐，跨平台跨 runtime）
 
-注册本仓库为 marketplace 后，按 plugin 粒度安装。每个 plugin 包含一组相关 skill。
+使用 [skills CLI](https://skills.sh)（Agent 界的 npm）安装。自动适配 Claude Code / Cursor / Codex / OpenCode 等 70+ runtime，无需手动管理路径。
 
-**Claude Code**：
+**列出仓库所有 skill**：
+```bash
+npx skills add liu-YLY/my-skills --list
 ```
-# 注册 marketplace（替换 <your-github-username> 为实际用户名）
-/plugin marketplace add <your-github-username>/my-skill
+
+**安装测试能力 bundle（3 个 skill）**：
+```bash
+# 全局安装到 Claude Code
+npx skills add liu-YLY/my-skills --skill testing-bundle --skill test-case-engineer --skill bug-analyzer -g -a claude-code -y
+
+# 全局安装到 Cursor
+npx skills add liu-YLY/my-skills --skill testing-bundle --skill test-case-engineer --skill bug-analyzer -g -a cursor -y
+
+# 全局安装到所有检测到的 runtime
+npx skills add liu-YLY/my-skills --skill testing-bundle --skill test-case-engineer --skill bug-analyzer -g -y
+```
+
+**只安装其中一个 skill**：
+```bash
+# 只装 bug-analyzer（注意：缺陷模式库引用会降级，详见下方说明）
+npx skills add liu-YLY/my-skills --skill bug-analyzer -g -y
+
+# 只装 test-case-engineer
+npx skills add liu-YLY/my-skills --skill test-case-engineer -g -y
+
+# 只装 wechat-formatter
+npx skills add liu-YLY/my-skills --skill wechat-formatter -g -y
+```
+
+**安装所有 skill**：
+```bash
+npx skills add liu-YLY/my-skills --skill '*' -g -y
+```
+
+**指定具体 agent**（`-a` 参数）：
+```bash
+npx skills add liu-YLY/my-skills --skill testing-bundle -a claude-code -a cursor -a codex -g -y
+```
+
+> **参数说明**：
+> - `-g, --global`：全局安装（`~/<agent>/skills/`），不加则装到项目级（`./<agent>/skills/`）
+> - `-a, --agent <agents...>`：指定目标 runtime（claude-code / cursor / codex / opencode 等）
+> - `-s, --skill <skills...>`：按 skill 名选择，可多次指定；`'*'` 表示全部
+> - `-y, --yes`：跳过确认提示（CI/CD 友好）
+> - `--copy`：复制文件而非 symlink（默认 symlink，便于更新）
+
+> **bug-analyzer 单独安装的降级说明**：bug-analyzer 的 SKILL.md 引用 `../test-case-engineer/knowledge/bug-patterns.md`（缺陷模式库）。单独安装时该相对路径会失效，根因分析步骤 2/3 的"对照缺陷模式库"能力会降级（仍有通用模式兜底）。建议与 test-case-engineer 一起安装。
+
+#### 方式 2：plugin marketplace 模式（Claude Code 原生）
+
+Claude Code 用户也可用原生 `/plugin` 命令，通过 marketplace 按 plugin 粒度安装：
+
+```
+# 注册 marketplace
+/plugin marketplace add liu-YLY/my-skills
 
 # 安装测试能力 bundle（含 testing-bundle + test-case-engineer + bug-analyzer）
 /plugin install testing-bundle@my-skill-marketplace
@@ -264,65 +315,11 @@ my-skill/
 /plugin install wechat-formatter@my-skill-marketplace
 ```
 
-**Cursor**：
-```
-# 安装测试能力 bundle（指向 plugin source 子目录）
-/add-plugin https://github.com/liu-YLY/my-skills/tree/main/plugins/testing
+> 本项目采用「单 repo + marketplace 多 plugin」结构（参考 [obra/superpowers](https://github.com/obra/superpowers)）。Cursor/Codex 也可指向 plugin source 子目录安装，详见各 runtime 的 plugin 文档。
 
-# 安装微信公众号排版 skill
-/add-plugin https://github.com/liu-YLY/my-skills/tree/main/plugins/wechat-formatter
-```
+#### 方式 3：本地脚本（兜底，Windows）
 
-**Codex App / Codex CLI**：
-```
-# Codex CLI
-/plugins
-# 搜索 testing-bundle 或 wechat-formatter，指向对应 plugin source 目录
-```
-
-**Gemini CLI**（每个 plugin 需要单独安装，Gemini 不支持多 plugin/repo）：
-```bash
-# Gemini 通过 opencode.json 或手动复制 skill 目录安装，详见下方「其他 runtime 手动安装」
-```
-
-**OpenCode**（在 `opencode.json` 的 `plugin` 数组中添加）：
-```json
-{
-  "plugin": [
-    "testing-bundle@git+https://github.com/liu-YLY/my-skills.git"
-  ]
-}
-```
-
-> **多 plugin 说明**：本项目采用「单 repo + marketplace 多 plugin」结构（参考 superpowers）。Claude Code 原生支持 marketplace 模式按需安装；Cursor/Codex 需指向对应 plugin source 子目录；Gemini/OpenCode/Kimi 等请参考下方手动安装。
-
-#### 方式 1b：其他 runtime 手动安装
-
-对于不支持 plugin marketplace 或多 plugin 的 runtime（Gemini CLI / Kimi / OpenCode 等），手动复制 skill 目录到 runtime 的 skills 目录：
-
-```bash
-# 克隆仓库
-git clone https://github.com/liu-YLY/my-skills.git
-cd my-skills
-
-# 复制测试能力 bundle 的 3 个 skill 到目标 runtime 的 skills 目录
-# Claude Code:  ~/.claude/skills/
-# Cursor:       ~/.cursor/skills/
-# Codex:        ~/.codex/skills/
-# TRAE:         ~/.trae-cn/skills/ (路径待确认)
-cp -r plugins/testing/skills/testing-bundle ~/.claude/skills/
-cp -r plugins/testing/skills/test-case-engineer ~/.claude/skills/
-cp -r plugins/testing/skills/bug-analyzer ~/.claude/skills/
-
-# 复制微信公众号排版 skill
-cp -r plugins/wechat-formatter/skills/wechat-formatter ~/.claude/skills/
-```
-
-> Windows 用户可用 `scripts/install-testing-bundle.ps1` 一键安装测试 bundle（见方式 2）。
-
-#### 方式 2：本地脚本模式（兜底）
-
-适用于尚未发布到 GitHub，或 runtime 不支持 plugin marketplace 的场景。
+适用于未安装 Node.js 或需要离线安装的场景：
 
 ```powershell
 # 安装测试能力 bundle（Windows PowerShell）
@@ -335,19 +332,13 @@ cp -r plugins/wechat-formatter/skills/wechat-formatter ~/.claude/skills/
 
 #### 通用步骤
 
-1. **克隆项目**（仅方式 2 需要；方式 1 由 runtime 自动拉取）
-   ```bash
-   git clone <repository-url>
-   cd my-skill
-   ```
-
-2. **安装工具脚本依赖**（可选，用于 skill 内的 Python 脚本）
+1. **安装工具脚本依赖**（可选，用于 skill 内的 Python 脚本）
    ```bash
    cd plugins/testing/skills/test-case-engineer/scripts
    pip install -r requirements.txt
    ```
 
-3. **重启 runtime** 让其重新扫描 skills 目录，技能会自动识别并注册
+2. **重启 runtime** 让其重新扫描 skills 目录，技能会自动识别并注册
 
 ### 使用方式
 
