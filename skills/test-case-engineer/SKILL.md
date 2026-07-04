@@ -23,6 +23,8 @@ keywords:
 
 > **阅读策略**：本文件为**入口索引**。核心流程详见 [test-case-engineer-core.md](test-case-engineer-core.md)，知识库文件按需加载。
 
+> **Bundle 关系**：本 skill 是 `testing-bundle` 的子 skill（正向用例生成）。用户也可通过 testing-bundle 统一入口调用，bundle 会根据意图自动路由到本 skill 或 bug-analyzer。
+
 ## Skill 协同
 
 本 skill 与 bug-analyzer skill 互补，分工如下：
