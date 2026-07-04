@@ -8,3 +8,6 @@ timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
 2026-07-04T16:40	d50af0b	performance-test-engineer	-	84.1	baseline	-	初始评估（dry_run）	dry_run
 2026-07-04T16:50	a689552	performance-test-engineer	84.1	86.1	keep	dim2/4/7	逆向触发说明+转交CHECKPOINT+合并去重	dry_run
 2026-07-04T16:55	a689552	performance-test-engineer	86.1	85.6	dual_judge	-	双judge验证（Δ0.5<2，一致）	dry_run
+2026-07-04T17:15	c97a8a0	test-strategy-engineer	-	85.6	baseline	-	初始评估（dry_run）	dry_run
+2026-07-04T17:25	ea53c04	test-strategy-engineer	85.6	89.1	keep	dim2/4/8	部分范围分支+阈值CHECKPOINT+触发词工时基线	dry_run
+2026-07-04T17:30	ea53c04	test-strategy-engineer	89.1	91.3	dual_judge	-	双judge验证（Δ2.2略超阈值，取低分89.1）	dry_run
