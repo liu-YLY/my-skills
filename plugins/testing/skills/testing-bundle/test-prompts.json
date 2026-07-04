@@ -12,12 +12,12 @@
   {
     "id": 3,
     "prompt": "分析这个登录失败的 Bug 根因，并补充测试用例防止同类问题再次出现",
-    "expected": "混合意图：先路由到 bug-analyzer 输出防御性测试点清单，再转交 test-case-engineer 生成完整用例"
+    "expected": "混合意图（链 1）：先路由到 bug-analyzer 输出防御性测试点清单，🔴 CHECKPOINT 后转交 test-case-engineer 生成完整用例"
   },
   {
     "id": 4,
     "prompt": "我有个测试相关的问题想咨询",
-    "expected": "意图不明确，追问用户选择用例生成/Bug分析/测试策略/性能测试"
+    "expected": "意图不明确，🔴 CHECKPOINT 追问用户选择用例生成/Bug分析/测试策略/性能测试"
   },
   {
     "id": 5,
@@ -32,11 +32,31 @@
   {
     "id": 7,
     "prompt": "制定测试策略并生成分层用例",
-    "expected": "混合意图：strategy 输出分层策略 → 转交 case-engineer 基于策略生成各层用例"
+    "expected": "混合意图（链 2）：strategy 输出分层策略 → 🔴 CHECKPOINT → 转交 case-engineer 基于策略生成各层用例"
   },
   {
     "id": 8,
     "prompt": "性能问题定位到代码缺陷",
-    "expected": "混合意图：performance 资源/架构层瓶颈定位 → 转交 bug-analyzer 代码逻辑层根因分析"
+    "expected": "混合意图（链 4）：performance 资源/架构层瓶颈定位 → 🔴 CHECKPOINT → 转交 bug-analyzer 代码逻辑层根因分析（命中'代码缺陷'关键词）"
+  },
+  {
+    "id": 9,
+    "prompt": "帮我分析这个 Bug，但 bug-analyzer 这个 skill 我没装",
+    "expected": "失败模式#3：检测到子 skill 未安装 → 提示用户安装 bug-analyzer 并给出安装命令 → 降级输出 bundle 层方向性指导模板（按五步定位法：复现→隔离→定位→验证→报告）"
+  },
+  {
+    "id": 10,
+    "prompt": "这个性能 Bug 帮我定位到代码层的死锁问题",
+    "expected": "链 3 vs 链 4 二级判定：同时含'性能 Bug'（资源/架构层信号）和'代码层/死锁'（代码逻辑层信号）→ 默认走链 3，performance 阶段 4 判断后 🔴 CHECKPOINT 决定是否转交 bug-analyzer"
+  },
+  {
+    "id": 11,
+    "prompt": "帮我写个单功能测试策略，针对用户登录功能",
+    "expected": "一词双义消解：含'单功能'关键词 → 路由到 test-case-engineer（功能级用例策略），不路由到 test-strategy-engineer（项目级策略）"
+  },
+  {
+    "id": 12,
+    "prompt": "分析完 Bug 根因后想补充用例，但 case-engineer 没装",
+    "expected": "失败模式#4（协同失败）：bug-analyzer 已输出防御性测试点清单 → 检测到 case-engineer 不可用 → 提示用户手动转交或自行处理 → 中间产物按上下文 schema 作为附录输出"
   }
 ]
