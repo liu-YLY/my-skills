@@ -1,0 +1,19 @@
+{
+  "name": "testing-bundle",
+  "description": "Testing capability bundle: test-case-engineer (forward test case generation) + bug-analyzer (backward root cause analysis) + testing-bundle (router entry). Use when user needs any testing capability.",
+  "version": "1.0.0",
+  "author": {
+    "name": "lyle"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/liu-YLY/my-skills",
+  "repository": "https://github.com/liu-YLY/my-skills",
+  "keywords": [
+    "testing",
+    "test-case",
+    "bug-analysis",
+    "root-cause",
+    "qa"
+  ],
+  "skills": "./skills/"
+}

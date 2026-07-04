@@ -8,10 +8,10 @@
 
 ## SKILL_ROOT
 
-在本仓库中：`SKILL_ROOT` = `.cursor/skills/test-engineer`
+在本仓库中：`SKILL_ROOT` = `skills/test-case-engineer`
 
 > 下文命令中的 `$SKILL_ROOT` 是占位符，**Agent 执行命令时必须替换为上述实际路径**。
-> 人在终端使用时，先执行 `export SKILL_ROOT=.cursor/skills/test-engineer`，或手动将 `$SKILL_ROOT` 替换为实际路径。
+> 人在终端使用时，先执行 `export SKILL_ROOT=skills/test-case-engineer`，或手动将 `$SKILL_ROOT` 替换为实际路径。
 
 ## 文档转换命令
 
