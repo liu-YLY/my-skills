@@ -37,25 +37,26 @@
 
 ```bash
 # 主方案：Microsoft MarkItDown（推荐，支持 PDF/.docx/.pptx/.xlsx/.xls 等）
-.venv-tools/bin/markitdown <文件路径> -o <输出路径>.md
+$PLUGIN_ROOT/.venv-tools/bin/markitdown <文件路径> -o <输出路径>.md
 ```
 
-**步骤 4（首次自举）**：始终使用 Skill 专用虚拟环境 `.venv-tools`：
-1. 若 `.venv-tools` 已存在 → 直接用
+**步骤 4（首次自举）**：使用 plugin 层级共享虚拟环境 `$PLUGIN_ROOT/.venv-tools`：
+1. 若 `$PLUGIN_ROOT/.venv-tools` 已存在 → 直接用
 2. 若不存在 → 自动创建：
 ```bash
-python3 -m venv .venv-tools
-.venv-tools/bin/pip install -r $SKILL_ROOT/scripts/requirements.txt
+python3 -m venv $PLUGIN_ROOT/.venv-tools
+$PLUGIN_ROOT/.venv-tools/bin/pip install -r $PLUGIN_ROOT/scripts/requirements.txt
 ```
+> 共享 venv 位于 `plugins/testing/.venv-tools`，test-case-engineer 与 bug-analyzer 共用，避免重复安装。
 > 禁止使用项目自带的 `.venv`，避免依赖冲突干扰项目环境。
 
-依赖列表：`$SKILL_ROOT/scripts/requirements.txt`（`markitdown[docx,pptx,xlsx,xls]`）
+依赖列表：`$PLUGIN_ROOT/scripts/requirements.txt`（`markitdown[docx,pptx,xlsx,xls]`）
 
 ### 降级策略
 
-**若 MarkItDown 不可用**（Python < 3.10、安装失败、找不到命令），降级为内置 `convert_docs.py`（依赖已在 requirements.txt 中一并安装）：
+**若 MarkItDown 不可用**（Python < 3.10、安装失败、找不到命令），降级为共享 `convert_docs.py`（依赖已在 requirements.txt 中一并安装）：
 ```bash
-.venv-tools/bin/python $SKILL_ROOT/scripts/convert_docs.py <文件或目录路径> --recursive
+$PLUGIN_ROOT/.venv-tools/bin/python $PLUGIN_ROOT/scripts/convert_docs.py <文件或目录路径> --recursive
 ```
 
 降级方案仅支持 `.docx`、`.xlsx`、`.pptx`，不支持 PDF 和 `.xls`，须在输出中说明局限。

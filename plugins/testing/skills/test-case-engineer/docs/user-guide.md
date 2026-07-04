@@ -235,34 +235,38 @@ test-case-engineer skill 会在以下关键词出现时自动触发：
 
 ### 4.1 文档转换命令
 
+> 共享虚拟环境位于 `$PLUGIN_ROOT/.venv-tools`（plugin 层级），test-case-engineer 与 bug-analyzer 共用。
+
 **MarkItDown（推荐）**：
 ```bash
-# 首次使用：创建 venv 并安装
-python3 -m venv .venv-tools
-.venv-tools/bin/pip install -r $SKILL_ROOT/scripts/requirements.txt
+# 首次使用：创建共享 venv 并安装
+python3 -m venv $PLUGIN_ROOT/.venv-tools
+$PLUGIN_ROOT/.venv-tools/bin/pip install -r $PLUGIN_ROOT/scripts/requirements.txt
 
 # 转换单个文件
-.venv-tools/bin/markitdown docs/需求文档.docx -o docs/需求文档.md
+$PLUGIN_ROOT/.venv-tools/bin/markitdown docs/需求文档.docx -o docs/需求文档.md
 
 # 批量转换
 for f in docs/*.docx docs/*.pptx docs/*.xlsx; do
-    [ -f "$f" ] && .venv-tools/bin/markitdown "$f" -o "${f%.*}.md"
+    [ -f "$f" ] && $PLUGIN_ROOT/.venv-tools/bin/markitdown "$f" -o "${f%.*}.md"
 done
 ```
 
 **降级方案（MarkItDown 不可用时）**：
 ```bash
-.venv-tools/bin/python $SKILL_ROOT/scripts/convert_docs.py docs/ --recursive
+$PLUGIN_ROOT/.venv-tools/bin/python $PLUGIN_ROOT/scripts/convert_docs.py docs/ --recursive
 ```
 
-### 4.2 SKILL_ROOT 说明
+### 4.2 SKILL_ROOT / PLUGIN_ROOT 说明
 
-在本仓库中：`SKILL_ROOT` = `skills/test-case-engineer`
+在本仓库中：
+- `SKILL_ROOT` = `plugins/testing/skills/test-case-engineer`
+- `PLUGIN_ROOT` = `plugins/testing`（共享 venv 和 scripts 所在层级）
 
-执行命令时，将 `$SKILL_ROOT` 替换为实际路径：
+执行命令时，将 `$SKILL_ROOT` / `$PLUGIN_ROOT` 替换为实际路径：
 ```bash
 # 示例：转换文档
-.venv-tools/bin/markitdown docs/需求文档.docx -o docs/需求文档.md
+$PLUGIN_ROOT/.venv-tools/bin/markitdown docs/需求文档.docx -o docs/需求文档.md
 ```
 
 ---
