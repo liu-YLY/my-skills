@@ -1,6 +1,6 @@
-# test-engineer Skill 使用指南
+# test-case-engineer Skill 使用指南
 
-> 本文档提供 test-engineer skill 的详细使用说明，包括快速开始、使用场景、工作流程、命令参考和最佳实践。
+> 本文档提供 test-case-engineer skill 的详细使用说明，包括快速开始、使用场景、工作流程、命令参考和最佳实践。
 
 ---
 
@@ -255,7 +255,7 @@ done
 
 ### 4.2 SKILL_ROOT 说明
 
-在本仓库中：`SKILL_ROOT` = `skills/test-engineer`
+在本仓库中：`SKILL_ROOT` = `skills/test-case-engineer`
 
 执行命令时，将 `$SKILL_ROOT` 替换为实际路径：
 ```bash
