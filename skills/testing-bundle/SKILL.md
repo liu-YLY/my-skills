@@ -137,11 +137,16 @@ testing-bundle:
   → 意图判断：混合（分析 + 生成）
   → 路由到 bug-analyzer 执行根因分析
   → bug-analyzer 输出防御性测试点清单
+
+🔴 CHECKPOINT · bug-analyzer 完成：防御性测试点清单必须展示给用户确认，用户可修改清单或终止流程，确认后才转交 test-case-engineer。
+
   → 转交 test-case-engineer 基于清单生成完整用例
   → 输出根因分析报告 + 完整测试用例
 ```
 
 ### 示例 4：意图不明确（追问）
+
+🔴 **CHECKPOINT · 意图不明确时强制追问**：不得"默认路由"，必须列出两个子 skill 的能力让用户选择。
 
 ```
 用户：我有个测试相关的问题
@@ -154,17 +159,35 @@ testing-bundle:
      B. 分析 Bug 根因（bug-analyzer）"
 ```
 
+## 失败模式与 Fallback
+
+| 触发条件 | 一线修复 | 仍失败兜底 |
+|----------|----------|------------|
+| 意图判断不明确（用户请求含"测试"但未指明生成/分析） | 追问用户：列出两个子 skill 的能力让用户选择（🔴 CHECKPOINT） | 默认路由到 test-case-engineer（覆盖面更广），并在输出首行标注「已默认路由到用例生成，如需 Bug 分析请说明」 |
+| 混合意图判定争议（如"防御性用例反推"既属 bug-analyzer 又与 test-case-engineer 边界模糊） | 优先路由到 bug-analyzer（根因分析是前置），完成后转交 test-case-engineer 生成完整用例 | 若用户明确只需用例不需根因分析，直接路由到 test-case-engineer |
+| 子 skill 未安装（路由目标 skill 不存在） | 检测到子 skill 不可用，提示用户安装对应 skill，并给出安装命令 | 标注「子 skill 不可用」，输出 bundle 层能提供的方向性建议（如"建议按五步定位法分析根因"） |
+| 混合意图协同失败（bug-analyzer 完成但 test-case-engineer 不可用） | 输出 bug-analyzer 的防御性测试点清单，提示用户手动转交 test-case-engineer 或自行编写用例 | 标注「协同中断」，仅输出根因分析报告，防御性测试点清单作为附录 |
+| 子 skill 执行失败（路由后子 skill 内部错误） | 捕获子 skill 错误信息，回退到 bundle 层向用户报告失败原因 | 建议用户直接调用子 skill 重试，或降级为 bundle 层方向性指导 |
+| 上下文传递丢失（路由后子 skill 未收到原始请求） | 在路由调用时显式传递：用户原始请求 + 已收集上下文 + 已完成步骤摘要 | 标注「上下文不完整」，要求子 skill 主动向用户确认缺失信息 |
+
 ## 反例与黑名单
 
 ### 路由反模式
-- ❌ 不判断意图直接调用某个子 skill（跳过路由）
-- ❌ 在 bundle 层重复实现子 skill 的能力
-- ❌ 路由后不传递上下文（用户需重新描述需求）
-- ❌ 混合意图时不按"先分析后生成"顺序执行
+
+| 反模式 | 为什么不要做 | 替代做法 |
+|--------|------------|---------|
+| 不判断意图直接调用某个子 skill | 跳过路由会导致用户请求被错误 skill 处理，违反 bundle 职责 | 必须按路由决策表判断意图，意图不明确时追问用户（🔴 CHECKPOINT） |
+| 在 bundle 层重复实现子 skill 的能力 | 破坏职责边界，导致内容冗余和维护成本翻倍 | bundle 只做路由，具体能力由子 skill 承载 |
+| 路由后不传递上下文 | 用户需重新描述需求，体验差且信息丢失 | 路由时显式传递：原始请求 + 已收集上下文 + 已完成步骤摘要 |
+| 混合意图不按"先分析后生成"顺序 | 跳过根因分析直接生成用例，用例缺乏针对性 | 先 bug-analyzer 输出防御性测试点，🔴 CHECKPOINT 确认后转交 test-case-engineer |
+| 混合意图协同无用户确认点 | 用户无法终止流程或修改防御性测试点清单 | bug-analyzer 完成后必须 🔴 CHECKPOINT，用户确认后才转交 test-case-engineer |
 
 ### 安装反模式
-- ❌ 只装 bundle 不装子 skill（bundle 无法独立完成任何任务）
-- ❌ bug-analyzer 单独安装时不告知用户缺陷模式库会降级
+
+| 反模式 | 为什么不要做 | 替代做法 |
+|--------|------------|---------|
+| 只装 bundle 不装子 skill | bundle 无法独立完成任何任务，所有请求都会失败 | 整体安装 testing-bundle + test-case-engineer + bug-analyzer 三个 skill |
+| bug-analyzer 单独安装不告知降级 | 用户不知缺陷模式库引用失效，根因分析能力打折 | 安装时显式提示「缺陷模式库会降级，建议同时安装 test-case-engineer」 |
 
 ## 约束规则
 
