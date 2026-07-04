@@ -9,3 +9,4 @@ timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
 2026-07-04T18:00	3b219b2	testing-bundle	83.9	80.85	baseline_recheck	-	双judge盲评复检：J1=82.7/J2=79.0，均值80.85（低于记录的83.9，judge波动）	dry_run
 2026-07-04T18:30	6c783bb	testing-bundle	80.85	78.95	revert_pending	dim5/dim7/dim8联合	双judge分歧大：J1=87.2(+4.5)/J2=70.7(-8.3)，均值-1.9。J2指出路由决策表矛盾（已修复未commit）。HL-4触顶信号	dry_run
 2026-07-04T19:00	3b219b2	wechat-formatter	-	63.2	baseline	-	首次基线评估：J1=68.1/J2=58.3。3大短板：dim4检查点(2.5)/dim3失败模式(3)/dim9反例(5)。meta-skill三维度严重缺失	dry_run
+2026-07-04T19:30	1e6c475	wechat-formatter	63.2	84.3	keep	dim3+dim4+dim9联合	双judge共识提升：J1=89.7(+21.6)/J2=78.9(+20.6)。dim4从2.5→9.5,dim3从3→9.25,dim9从5→8.5。新短板：dim8测试覆盖不足	dry_run
