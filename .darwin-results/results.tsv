@@ -11,3 +11,4 @@ timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
 2026-07-04T19:00	3b219b2	wechat-formatter	-	63.2	baseline	-	首次基线评估：J1=68.1/J2=58.3。3大短板：dim4检查点(2.5)/dim3失败模式(3)/dim9反例(5)。meta-skill三维度严重缺失	dry_run
 2026-07-04T19:30	1e6c475	wechat-formatter	63.2	84.3	keep	dim3+dim4+dim9联合	双judge共识提升：J1=89.7(+21.6)/J2=78.9(+20.6)。dim4从2.5→9.5,dim3从3→9.25,dim9从5→8.5。新短板：dim8测试覆盖不足	dry_run
 2026-07-04T20:30	f052b18	test-case-engineer	86.8	81.0	keep	dim8评审模式新增	双judge盲评：J1=86.8/J2=75.2，均值81.0（-5.8）。评审模式工作流补齐触发词与流程脱节，但J2指出标注字符串不一致+模式切换章节未纳入评审模式（已修复）	dry_run
+2026-07-04T21:30	bcb7157	test-case-engineer	81.0	83.75	keep	dim5+dim8	v2复评：J1=83.5/J2=84.0，共识形成（分歧0.5分）。dim5补判定规则列+模板示例行，dim8补3个负向测试。J2发现type字段逻辑漏洞（已修复）。ratchet保留	dry_run
