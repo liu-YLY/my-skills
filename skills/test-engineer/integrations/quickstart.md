@@ -1,7 +1,7 @@
 # 本地操作速查
 
-> **何时阅读**:执行任何 shell 命令(文档转换 / YAML 转换 / YAML 校验)前查阅,获取确切命令与路径。
-> **覆盖范围**:SKILL_ROOT 路径解释 / 文档转换 (MarkItDown + 降级 convert_docs.py) / 项目知识目录速查 / YAML 适配器转换 + 校验命令 / 适配器选择说明。
+> **何时阅读**:执行任何 shell 命令(文档转换)前查阅,获取确切命令与路径。
+> **覆盖范围**:SKILL_ROOT 路径解释 / 文档转换 (MarkItDown + 降级 convert_docs.py) / 项目知识目录速查。
 > **可跳过条件**:本次任务不需要执行任何 shell 命令(纯文档分析或纯讨论)。
 
 > 本文档提供本 Skill 在本仓库中的**具体可执行命令和路径**,与 IDE 无关,Agent 按需查阅。
@@ -43,35 +43,3 @@ done
 ## 项目知识目录
 
 阶段 1 扫描路径详见 [knowledge/project-knowledge.md](knowledge/project-knowledge.md)「项目知识目录约定」表。
-
-## YAML 适配器转换 + 校验(TEST 启用时,首选)
-
-```bash
-# 通用格式 → TEST 格式 + 内联校验,产物落到指定路径
-.venv-tools/bin/python $SKILL_ROOT/scripts/transform_yaml.py \
-    .tmp/draft.yaml \
-    -o testing-tm-cases/releases/<release>/<feature>.yaml \
-    --validate \
-    --module "<模块>" --feature "<功能>"
-
-# 预览不落盘
-.venv-tools/bin/python $SKILL_ROOT/scripts/transform_yaml.py .tmp/draft.yaml --dry-run
-
-# 目录递归转换(产物落在同名 .test.yaml)
-.venv-tools/bin/python $SKILL_ROOT/scripts/transform_yaml.py drafts/ --recursive --validate
-```
-
-脚本一次性处理:优先级降级(P3→P2)、type 枚举映射、req_ref/trace 合并到 description、顶层 metadata 包装、字段白名单过滤、jsonschema 校验。详见 [adapters/test.md](../adapters/test.md)。
-
-## YAML Schema 单独校验(对历史 YAML)
-
-仅当只想校验已经是 TEST 格式的 YAML 时使用:
-
-```bash
-.venv-tools/bin/python $SKILL_ROOT/scripts/validate_yaml.py testing-tm-cases/releases/v1.0/login.yaml
-.venv-tools/bin/python $SKILL_ROOT/scripts/validate_yaml.py testing-tm-cases/ --recursive
-```
-
-## 输出适配器
-
-本仓库已启用 **TEST 适配器**（[adapters/test.md](../adapters/test.md)）。test-engineer 构思阶段使用通用格式（P0-P3、完整 type 列表），适配器负责转换为 TEST 兼容格式后输出。新增项目适配器：在 `adapters/` 下新建 `.md` 文件，按 `test.md` 结构编写映射规则即可。

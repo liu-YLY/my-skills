@@ -2,7 +2,7 @@
 
 > **何时阅读**:阶段 1 信息收集时**必读**(SKILL.md 强制要求);遇到 Office/PDF 文件需要转换时必读。
 > **覆盖范围**:项目知识目录约定(docs/prd 等扫描清单) + Office/PDF 文档转换流程(MarkItDown 主方案 + convert_docs.py 降级)。
-> **可跳过条件**:本次任务用户已直接提供需求文本/Markdown,且无项目内文档需扫描。
+> **跳过条件**:本次任务用户已直接提供需求文本/Markdown,且无项目内文档需扫描时必须跳过。
 > **快速定位**:
 > - 阶段 1 第一步扫描什么 → 上方表格
 > - 遇到 .docx/.pdf → 跳「文档格式处理」节
@@ -18,7 +18,7 @@
 | `docs/api/` | API 接口文档、Swagger/OpenAPI 规范 | 读取并查看端点定义和字段约束 |
 | `docs/design/` | UI 设计稿说明、交互规范 | 读取以了解交互细节 |
 | `docs/reference/` | 行业规范、竞品分析、第三方文档 | 按需读取 |
-| `testing-tm-cases/releases/` 或 `releases/`| 已有的 YAML 测试用例 | 读取同模块用例，继承风格和 ID 序号 |
+| `testing-tm-cases/releases/` 或 `releases/`| 已有的测试用例 | 读取同模块用例，继承风格和 ID 序号 |
 | `CHANGELOG.md` 或 `docs/changelog/` | 版本变更记录 | 了解近期改动和影响范围 |
 
 ---

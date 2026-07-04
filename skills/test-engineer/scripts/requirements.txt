@@ -2,5 +2,3 @@ markitdown[docx,pptx,xlsx,xls]
 python-docx
 openpyxl
 python-pptx
-jsonschema
-pyyaml
