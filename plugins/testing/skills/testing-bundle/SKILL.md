@@ -117,12 +117,10 @@ keywords:
 步骤 4: 输出最终报告（瓶颈定位报告 + 代码缺陷根因 + 修复建议）
 ```
 
-## 关键路由规则
-
-1. **性能类问题默认路由到 performance，不路由到 bug-analyzer** — bundle 需区分"功能 Bug"与"性能问题"，性能问题（RT/TPS/资源饱和）由 performance 处理资源/架构层，仅当瓶颈指向代码逻辑层时才转交 bug-analyzer
-2. **strategy 是并列 peer，不是必经入口** — 大多数具体请求直接路由到对应 skill，仅项目级策略请求路由到 strategy
-3. **混合意图遵循"先上游后下游"顺序** — strategy → case-engineer；performance → bug-analyzer（当性能瓶颈定位到代码缺陷时）
-4. **每个转交点设 🔴 CHECKPOINT** — 用户可终止/修改转交内容，禁止无确认点直接转交
+**链 3 vs 链 4 二级判定规则**（区分两条性能链路）：
+- 含关键词"代码层/逻辑层/死锁/N+1 查询/内存泄漏/连接泄漏/空指针/业务规则错误" → 链 4（转交 bug-analyzer）
+- 含关键词"资源/CPU/IO/网络/架构/扩容/连接池不足/缓存未命中" → 链 3（performance 内部完成）
+- 同时含两类关键词 → 默认走链 3，performance 阶段 4 判断后决定是否转交（🔴 CHECKPOINT 让用户确认）
 
 ## 子 skill 协同
 
@@ -162,13 +160,23 @@ keywords:
 |----------|----------|------------|
 | 意图判断不明确（用户请求含"测试"但未指明策略/用例/性能/Bug） | 追问用户：列出 4 个子 skill 的能力让用户选择（🔴 CHECKPOINT） | 默认路由到 test-case-engineer（覆盖面更广），并在输出首行标注「已默认路由到用例生成，如需其他能力请说明」 |
 | 混合意图判定争议（如"防御性用例反推"既属 bug-analyzer 又与 test-case-engineer 边界模糊） | 优先路由到 bug-analyzer（根因分析是前置），完成后 🔴 CHECKPOINT 转交 test-case-engineer 生成完整用例 | 若用户明确只需用例不需根因分析，直接路由到 test-case-engineer |
-| 子 skill 未安装（路由目标 skill 不存在） | 检测到子 skill 不可用，提示用户安装对应 skill，并给出安装命令 | 标注「子 skill 不可用」，输出 bundle 层能提供的方向性指导（如"按五步定位法分析根因"） |
-| 混合意图协同失败（上游 skill 完成但下游 skill 不可用） | 输出上游 skill 的中间产物（如防御性测试点清单 / 分层策略），提示用户手动转交下游 skill 或自行处理 | 标注「协同中断」，仅输出上游 skill 报告，中间产物作为附录 |
-| 子 skill 执行失败（路由后子 skill 内部错误） | 捕获子 skill 错误信息，回退到 bundle 层向用户报告失败原因 | 提示用户直接调用子 skill 重试，或降级为 bundle 层方向性指导 |
-| 上下文传递丢失（路由后子 skill 未收到原始请求） | 在路由调用时显式传递：用户原始请求 + 已收集上下文 + 已完成步骤摘要 | 标注「上下文不完整」，要求子 skill 主动向用户确认缺失信息 |
+| 子 skill 未安装（路由目标 skill 不存在） | 检测到子 skill 不可用，提示用户安装对应 skill，并给出安装命令 | 标注「子 skill 不可用」，输出 bundle 层方向性指导模板（按目标 skill 选一）：bug-analyzer→「按五步定位法：复现→隔离→定位→验证→报告」；case-engineer→「按四阶段：理解需求→提取测试点→编写用例→自检补全」；strategy→「按五阶段：项目特征→风险矩阵→分层→范围准入准出→资源附录」；performance→「按四阶段：需求理解→场景设计→瓶颈定位→转交判断」 |
+| 混合意图协同失败（上游 skill 完成但下游 skill 不可用） | 输出上游 skill 的中间产物（防御性测试点清单 / 分层策略 / 瓶颈定位报告），提示用户手动转交下游 skill 或自行处理 | 标注「协同中断」，仅输出上游 skill 报告，中间产物按上下文 schema 格式作为附录 |
+| 子 skill 执行失败（路由后子 skill 内部错误） | 捕获子 skill 错误信息，回退到 bundle 层向用户报告失败原因 | 提示用户直接调用子 skill 重试，或降级为 bundle 层方向性指导模板（同上） |
+| 上下文传递丢失（路由后子 skill 未收到原始请求） | 在路由调用时按上下文 schema 显式传递（见下方 schema 定义） | 标注「上下文不完整」，要求子 skill 主动向用户确认缺失信息 |
 | "性能 Bug"路由歧义（既属 bug-analyzer 又属 performance） | 默认路由到 performance（资源/架构层优先排查），performance 内部判断是否转交 bug-analyzer | 若用户明确指明为代码逻辑缺陷（如死锁/N+1），直接路由到 bug-analyzer |
 | "测试策略"一词双义（项目级 strategy vs 单功能 case-engineer） | 关键词限定：含"项目级/测试计划/分层/风险矩阵/准入准出"→ strategy；含"单功能/某功能测试策略"→ case-engineer | 追问用户：明确是项目级策略还是单功能用例策略（🔴 CHECKPOINT） |
 | strategy 与 case-engineer 协同失败（strategy 完成但 case-engineer 不可用） | 输出 strategy 的分层策略与优先级，提示用户手动转交 case-engineer 生成对应层用例 | 标注「协同中断」，仅输出测试策略报告，分层策略作为用例生成依据附录 |
+
+**上下文传递 schema**（路由/转交时必须按此 JSON 结构传递）：
+```json
+{
+  "original_request": "用户原始请求全文",
+  "upstream_artifacts": "上游 skill 输出（如防御性测试点清单 / 分层策略 / 瓶颈定位报告）",
+  "completed_steps": ["已完成步骤摘要数组"],
+  "downstream_task": "下游 skill 需执行的任务描述"
+}
+```
 
 ## 反例与黑名单
 
