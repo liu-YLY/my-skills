@@ -17,6 +17,26 @@
   {
     "id": 4,
     "prompt": "我有个测试相关的问题想咨询",
-    "expected": "意图不明确，追问用户选择用例生成还是 Bug 分析"
+    "expected": "意图不明确，追问用户选择用例生成/Bug分析/测试策略/性能测试"
+  },
+  {
+    "id": 5,
+    "prompt": "我们有一个电商项目即将启动测试，包含用户中心、商品、订单、支付等模块，团队 20 人，请帮我制定测试策略",
+    "expected": "路由到 test-strategy-engineer，执行五阶段策略制定流程（项目特征→风险矩阵→分层→CHECKPOINT→范围准入准出）"
+  },
+  {
+    "id": 6,
+    "prompt": "我们有一个电商下单接口，大促峰值预计 3000 QPS，SLA 要求 P99 ≤ 800ms，请帮我设计性能测试方案",
+    "expected": "路由到 performance-test-engineer，执行四阶段流程（需求理解→场景设计→CHECKPOINT→瓶颈定位/转交判断）"
+  },
+  {
+    "id": 7,
+    "prompt": "制定测试策略并生成分层用例",
+    "expected": "混合意图：strategy 输出分层策略 → 转交 case-engineer 基于策略生成各层用例"
+  },
+  {
+    "id": 8,
+    "prompt": "性能问题定位到代码缺陷",
+    "expected": "混合意图：performance 资源/架构层瓶颈定位 → 转交 bug-analyzer 代码逻辑层根因分析"
   }
 ]
