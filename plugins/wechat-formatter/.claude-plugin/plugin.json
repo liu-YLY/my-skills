@@ -1,0 +1,19 @@
+{
+  "name": "wechat-formatter",
+  "description": "WeChat article formatter with 6 professional styles (tech-blog, tutorial, deep-dive, casual-chat, apple, cyber). Auto-analyzes article and formats to WeChat-ready Markdown/HTML.",
+  "version": "2.0.0",
+  "author": {
+    "name": "lyle"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/liu-YLY/my-skills",
+  "repository": "https://github.com/liu-YLY/my-skills",
+  "keywords": [
+    "wechat",
+    "formatting",
+    "article",
+    "markdown",
+    "content"
+  ],
+  "skills": "./skills/"
+}
