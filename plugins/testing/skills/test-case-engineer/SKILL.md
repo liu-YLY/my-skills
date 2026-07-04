@@ -43,6 +43,7 @@ keywords:
 **模式选择规则**：
 - 纯重构无行为变更 → 必须使用回归验证清单模式
 - 用户要求快速 → 必须使用快速模式（压缩阶段 1/4，但必须输出测试点清单）
+- 用户输入为已有用例 或 触发词「评审/review/检查质量」→ 必须使用评审模式（不走四阶段生成流程）
 
 ## SKILL_ROOT
 
@@ -58,7 +59,7 @@ keywords:
 
 详细流程见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
-**模式切换**：默认/快速/探索式三种模式，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
+**模式切换**：默认/快速/探索式/评审 四种模式，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
 **AI 赋能模式**：AI 生成 → 人工审核 → 轻量维护，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
