@@ -1,0 +1,21 @@
+{
+  "name": "my-skill-marketplace",
+  "description": "Personal AI skills marketplace: testing bundle (test case generation + bug root cause analysis) and WeChat article formatter",
+  "owner": {
+    "name": "lyle"
+  },
+  "plugins": [
+    {
+      "name": "testing-bundle",
+      "description": "Testing capability bundle: test-case-engineer (forward test case generation) + bug-analyzer (backward root cause analysis) + testing-bundle (router entry)",
+      "source": "./plugins/testing/",
+      "category": "testing"
+    },
+    {
+      "name": "wechat-formatter",
+      "description": "WeChat article formatter with 6 professional styles (tech-blog, tutorial, deep-dive, casual-chat, apple, cyber)",
+      "source": "./plugins/wechat-formatter/",
+      "category": "content"
+    }
+  ]
+}
