@@ -21,6 +21,8 @@ keywords:
 
 > **阅读策略**：本文件为**入口与核心流程**。根因分析框架详见 [knowledge/root-cause-frameworks.md](knowledge/root-cause-frameworks.md)，缺陷模式库通过 [knowledge/bug-patterns-index.md](knowledge/bug-patterns-index.md) 共享引用。
 
+> **Bundle 关系**：本 skill 是 `testing-bundle` 的子 skill（逆向根因分析）。用户也可通过 testing-bundle 统一入口调用，bundle 会根据意图自动路由到本 skill 或 test-case-engineer。本 skill 依赖 test-case-engineer 的 `knowledge/bug-patterns.md`（缺陷模式库），单独安装时该能力会降级。
+
 ## Skill 协同
 
 本 skill 与 test-case-engineer skill 互补，分工如下：
