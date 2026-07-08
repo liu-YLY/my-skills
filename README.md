@@ -343,110 +343,136 @@ my-skill/
 ### 环境要求
 
 - **操作系统**：Windows / macOS / Linux
-- **运行环境**：支持 AI 技能的 IDE 或命令行工具
+- **运行环境**：支持 AI 技能的 IDE（Claude Code / Cursor / Codex / OpenCode 等）
+- **Node.js**（推荐）：v18+（用于 skills CLI）
 - **Python 环境**（可选）：Python 3.8+（用于工具脚本）
 
 ### 安装与配置
 
-本项目支持三种安装方式，**推荐使用 `npx skills add`**（跨平台、跨 runtime、支持按 skill 粒度选择）。
+本项目支持三种安装方式，按推荐程度排序：
 
-#### 方式 1：npx skills add（推荐，跨平台跨 runtime）
+| 方式 | 适用场景 | 优势 | 操作复杂度 |
+|------|----------|------|------------|
+| **npx skills add** | 跨平台、跨 runtime | 自动适配 70+ runtime，按 skill 粒度选择 | ⭐⭐ |
+| **Plugin Marketplace** | Claude Code 用户 | 原生支持，一键安装整个 plugin | ⭐ |
+| **本地脚本** | 离线安装、无 Node.js | 无需网络，灵活控制安装路径 | ⭐⭐⭐ |
 
-使用 [skills CLI](https://skills.sh)（Agent 界的 npm）安装。自动适配 Claude Code / Cursor / Codex / OpenCode 等 70+ runtime，无需手动管理路径。
+#### ⚠️ 重要提示
 
-**列出仓库所有 skill**：
+**bug-analyzer 依赖说明**：bug-analyzer 的 SKILL.md 引用 `../test-case-engineer/knowledge/bug-patterns.md`（缺陷模式库）。单独安装时该相对路径会失效，根因分析步骤 2/3 的"对照缺陷模式库"能力会降级（仍有通用模式兜底）。**建议与 test-case-engineer 一起安装**。
+
+---
+
+#### 方式 1：npx skills add（推荐）
+
+使用 [skills CLI](https://skills.sh)（Agent 界的 npm）安装，自动适配 Claude Code / Cursor / Codex / OpenCode 等 70+ runtime。
+
+**前置条件**：安装 Node.js v18+
+
+**基础操作**：
+
 ```bash
+# 列出仓库所有可安装的 skill
 npx skills add liu-YLY/my-skills --list
 ```
 
-**安装测试能力 bundle（5 个 skill）**：
+**安装方式**：
+
 ```bash
-# 全局安装到 Claude Code
-npx skills add liu-YLY/my-skills --skill testing-bundle --skill test-strategy-engineer --skill test-case-engineer --skill performance-test-engineer --skill bug-analyzer -g -a claude-code -y
-
-# 全局安装到 Cursor
-npx skills add liu-YLY/my-skills --skill testing-bundle --skill test-strategy-engineer --skill test-case-engineer --skill performance-test-engineer --skill bug-analyzer -g -a cursor -y
-
-# 全局安装到所有检测到的 runtime
-npx skills add liu-YLY/my-skills --skill testing-bundle --skill test-strategy-engineer --skill test-case-engineer --skill performance-test-engineer --skill bug-analyzer -g -y
-```
-
-**只安装其中一个 skill**：
-```bash
-# 只装 test-strategy-engineer（项目级策略）
-npx skills add liu-YLY/my-skills --skill test-strategy-engineer -g -y
-
-# 只装 test-case-engineer（功能用例生成）
-npx skills add liu-YLY/my-skills --skill test-case-engineer -g -y
-
-# 只装 performance-test-engineer（性能测试）
-npx skills add liu-YLY/my-skills --skill performance-test-engineer -g -y
-
-# 只装 bug-analyzer（注意：缺陷模式库引用会降级，详见下方说明）
-npx skills add liu-YLY/my-skills --skill bug-analyzer -g -y
-
-# 只装 wechat-formatter
-npx skills add liu-YLY/my-skills --skill wechat-formatter -g -y
-```
-
-**安装所有 skill**：
-```bash
+# 安装所有 skill（推荐，包含 testing-bundle + 4 个子 skill + wechat-formatter）
 npx skills add liu-YLY/my-skills --skill '*' -g -y
+
+# 仅安装测试能力 bundle（5 个 skill）
+npx skills add liu-YLY/my-skills --skill 'testing-bundle' --skill 'test-*' -g -y
+
+# 仅安装微信公众号排版 skill
+npx skills add liu-YLY/my-skills --skill 'wechat-formatter' -g -y
+
+# 指定安装到特定 runtime
+npx skills add liu-YLY/my-skills --skill 'testing-bundle' -a claude-code -a cursor -g -y
 ```
 
-**指定具体 agent**（`-a` 参数）：
-```bash
-npx skills add liu-YLY/my-skills --skill testing-bundle -a claude-code -a cursor -a codex -g -y
-```
+**参数说明**：
 
-> **参数说明**：
-> - `-g, --global`：全局安装（`~/<agent>/skills/`），不加则装到项目级（`./<agent>/skills/`）
-> - `-a, --agent <agents...>`：指定目标 runtime（claude-code / cursor / codex / opencode 等）
-> - `-s, --skill <skills...>`：按 skill 名选择，可多次指定；`'*'` 表示全部
-> - `-y, --yes`：跳过确认提示（CI/CD 友好）
-> - `--copy`：复制文件而非 symlink（默认 symlink，便于更新）
+| 参数 | 说明 |
+|------|------|
+| `-g, --global` | 全局安装（`~/<agent>/skills/`），不加则装到项目级（`./<agent>/skills/`） |
+| `-a, --agent <agents...>` | 指定目标 runtime（claude-code / cursor / codex / opencode 等） |
+| `-s, --skill <skills...>` | 按 skill 名选择，支持通配符（如 `test-*`），`'*'` 表示全部 |
+| `-y, --yes` | 跳过确认提示（CI/CD 友好） |
+| `--copy` | 复制文件而非 symlink（默认 symlink，便于更新） |
 
-> **bug-analyzer 单独安装的降级说明**：bug-analyzer 的 SKILL.md 引用 `../test-case-engineer/knowledge/bug-patterns.md`（缺陷模式库）。单独安装时该相对路径会失效，根因分析步骤 2/3 的"对照缺陷模式库"能力会降级（仍有通用模式兜底）。建议与 test-case-engineer 一起安装。
+---
 
-#### 方式 2：plugin marketplace 模式（Claude Code 原生）
+#### 方式 2：Plugin Marketplace（Claude Code 原生）
 
-Claude Code 用户也可用原生 `/plugin` 命令，通过 marketplace 按 plugin 粒度安装：
+Claude Code 用户可通过原生 `/plugin` 命令，按 plugin 粒度一键安装。
 
 ```
-# 注册 marketplace
+# 注册 marketplace（只需执行一次）
 /plugin marketplace add liu-YLY/my-skills
 
-# 安装测试能力 bundle（含 testing-bundle + 4 个子 skill：strategy/case/performance/bug-analyzer）
+# 安装测试能力 bundle（含 testing-bundle + 4 个子 skill）
 /plugin install testing-bundle@my-skill-marketplace
 
 # 安装微信公众号排版 skill
 /plugin install wechat-formatter@my-skill-marketplace
 ```
 
-> 本项目采用「单 repo + marketplace 多 plugin」结构（参考 [obra/superpowers](https://github.com/obra/superpowers)）。Cursor/Codex 也可指向 plugin source 子目录安装，详见各 runtime 的 plugin 文档。
+> 本项目采用「单 repo + marketplace 多 plugin」结构（参考 [obra/superpowers](https://github.com/obra/superpowers)）。Cursor/Codex 用户可指向 plugin source 子目录安装，详见各 runtime 的 plugin 文档。
 
-#### 方式 3：本地脚本（兜底，Windows）
+---
 
-适用于未安装 Node.js 或需要离线安装的场景：
+#### 方式 3：本地脚本（兜底方案）
 
+适用于未安装 Node.js 或需要离线安装的场景。
+
+**Windows（PowerShell）**：
 ```powershell
-# 安装测试能力 bundle（Windows PowerShell）
+# 安装测试能力 bundle
 .\scripts\install-testing-bundle.ps1
-# 默认装到 ~\.claude\skills，可用 -TargetDir 指定其他 runtime
+# 默认装到 ~\.claude\skills
+
+# 指定安装目录
+.\scripts\install-testing-bundle.ps1 -TargetDir "C:\Users\<用户名>\.cursor\skills"
 
 # 卸载
 .\scripts\install-testing-bundle.ps1 -Uninstall
 ```
 
-#### 通用步骤
+**macOS / Linux**：
+```bash
+# 手动复制技能目录到目标 runtime 的 skills 目录
+# Claude Code: ~/.claude/skills/
+# Cursor: ~/.cursor/skills/
+# Codex: ~/.codex/skills/
 
-1. **安装工具脚本依赖**（可选，用于 skill 内的 Python 脚本）
+# 示例：复制 testing-bundle 到 Claude Code
+cp -r plugins/testing/skills/testing-bundle ~/.claude/skills/
+cp -r plugins/testing/skills/test-strategy-engineer ~/.claude/skills/
+cp -r plugins/testing/skills/test-case-engineer ~/.claude/skills/
+cp -r plugins/testing/skills/performance-test-engineer ~/.claude/skills/
+cp -r plugins/testing/skills/bug-analyzer ~/.claude/skills/
+
+# 复制 wechat-formatter
+cp -r plugins/wechat-formatter/skills/wechat-formatter ~/.claude/skills/
+```
+
+---
+
+#### 后续步骤
+
+安装完成后，请执行以下操作：
+
+1. **安装工具脚本依赖**（可选，用于 test-case-engineer 内的 Python 脚本）
    ```bash
    cd plugins/testing/skills/test-case-engineer/scripts
    pip install -r requirements.txt
    ```
 
 2. **重启 runtime** 让其重新扫描 skills 目录，技能会自动识别并注册
+
+3. **验证安装**：在 runtime 中输入技能名称（如 "测试用例工程师"），确认技能已激活
 
 ### 使用方式
 
