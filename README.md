@@ -433,8 +433,14 @@ npx skills add liu-YLY/my-skills --skill '*' -g -y
 
 **场景 2：仅安装测试能力 bundle**
 ```bash
-# 安装 5 个 skill：testing-bundle + 4 个子 skill
-npx skills add liu-YLY/my-skills --skill 'testing-bundle' --skill 'test-*' -g -y
+# 安装 5 个 skill：testing-bundle + test-strategy-engineer + test-case-engineer + performance-test-engineer + bug-analyzer
+npx skills add liu-YLY/my-skills \
+  --skill 'testing-bundle' \
+  --skill 'test-strategy-engineer' \
+  --skill 'test-case-engineer' \
+  --skill 'performance-test-engineer' \
+  --skill 'bug-analyzer' \
+  -g -y
 ```
 
 **场景 3：仅安装微信公众号排版**
