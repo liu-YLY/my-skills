@@ -1,18 +1,21 @@
 ---
 name: wechat-formatter
-version: 2.0.0
+version: 3.0.0
 description: >-
-  微信公众号文章排版技能，提供多种适用于互联网/技术领域的排版风格模板。
+  微信公众号文章排版技能，提供多种适用于互联网/技术领域的排版风格模板和高级排版模块。
   自动分析用户文章内容（编程知识、测试理论、技术分享等），按选定风格完成排版，
-  输出为可直接复制到公众号编辑器的格式化 Markdown 文件。
-  适用于：技术博客排版、教程文章美化、干货分享格式化、技术随笔润色。
-  当用户提到公众号排版、微信排版、文章排版、格式化文章、美化文章时自动触发。
+  支持 :::module 语法创建专业视觉卡片组件，输出为可直接复制到公众号编辑器的格式化 Markdown 文件。
+  适用于：技术博客排版、教程文章美化、干货分享格式化、技术随笔润色、品牌化内容创作。
+  当用户提到公众号排版、微信排版、文章排版、格式化文章、美化文章、高级排版、品牌配置时自动触发。
 keywords:
   - 公众号排版
   - 微信排版
   - 文章格式化
   - 技术博客
   - 排版风格
+  - 高级排版模块
+  - 品牌配置
+  - 视觉卡片
 ---
 
 # 微信公众号排版 Skill
@@ -77,6 +80,103 @@ keywords:
 
 > 完整风格描述与选择指南：[templates/template-index.md](templates/template-index.md)
 > 各风格详细排版规则：[templates/tech-blog.md](templates/tech-blog.md) | [templates/tutorial.md](templates/tutorial.md) | [templates/deep-dive.md](templates/deep-dive.md) | [templates/casual-chat.md](templates/casual-chat.md) | [templates/apple.md](templates/apple.md) | [templates/cyber.md](templates/cyber.md)
+
+---
+
+## 高级排版模块
+
+**新功能**：支持 `:::module` 语法，提供 9 大类预定义视觉卡片组件，让文章更具视觉层级和品牌感。
+
+### 4 件事原则
+
+每个模块只服务这 4 件事之一：
+
+| 目的 | 解决什么 | 代表模块 |
+|------|---------|---------|
+| **attention** | 让读者先知道值不值得读 | hero, cards, verdict |
+| **readability** | 让手机窄屏阅读不累 | toc, steps, part |
+| **memorability** | 让读者记住一个判断或品牌 | verdict, manifesto, author-card |
+| **conversion** | 让读者愿意收藏/关注/咨询/转发/购买 | cta, faq, checklist |
+
+**核心原则**：选最少的模块，每件事做好一个。一篇文章 hero 只有一个，verdict 只有一个，cta 只有一个。不要堆模块。
+
+### 9 大类模块速览
+
+| 类别 | 模块 | 用途 |
+|------|------|------|
+| **opening 开场类** | hero, toc, cards, part, label-title | 文章开篇第一屏 |
+| **infographic 信息图类** | metrics, compare, steps, timeline, infographic | 数据可视化展示 |
+| **judgment 判断类** | verdict, audience-fit, myth-fact, manifesto, bridge | 核心立场表达 |
+| **evidence 证据类** | quote, image-annotate, image-compare, image-steps, image-text | 支撑判断的证据 |
+| **conversion 行动类** | cta, faq, checklist, cases | 促进读者行动 |
+| **brand 品牌类** | author-card, brand-banner | 建立品牌识别度 |
+| **sprint4 精选增强类** | callout, highlight | 强调重要信息 |
+| **free-layout 自由布局类** | split, columns | 灵活布局选项 |
+| **interactive 交互类** | question, poll | 增加读者参与度 |
+
+### 模块语法示例
+
+```markdown
+:::hero
+eyebrow: 深度观察
+title: 高级排版服务阅读决策
+subtitle: 主题决定气质，模块决定读者能不能看懂
+:::
+
+:::steps[落地步骤]
+01 | 发现模块 | layout list 列出所有可用模块
+02 | 查看规格 | layout show 确认字段和示例
+03 | 写进文章 | 直接粘贴 :::module 语法
+:::
+
+:::verdict
+eyebrow: 最终判断
+title: 真正的护城河不是模块数量，而是品牌表达系统
+body: 每个模块必须服务一个真实的阅读任务，否则只是换皮。
+:::
+```
+
+> 完整模块规范和示例：[layout/layout-modules.md](layout/layout-modules.md)
+> 模块 CSS 样式：[layout/modules-base.css](layout/modules-base.css)
+
+---
+
+## Brand Profile 品牌配置
+
+**新功能**：支持品牌配置文件，让所有文章保持统一的视觉风格和品牌调性。
+
+### 核心价值
+
+- **一致性**：所有文章保持统一的视觉风格
+- **效率**：无需每次重复说明品牌偏好
+- **个性化**：根据品牌调性自动选择最合适的模块和样式
+
+### 配置文件位置
+
+Brand Profile 文件位于：
+
+- 全局配置：`~/.config/md2wechat/brand.md`
+- 项目配置：`.brand.md`（项目根目录）
+
+### 可配置项
+
+| 配置项 | 说明 | 示例 |
+|--------|------|------|
+| 品牌名称 | 品牌或个人名称 | 极客杰尼 |
+| 品牌口号 | 一句话品牌定位 | 让复杂技术变得简单易懂 |
+| 主色调 | 品牌主色 | #007bff（科技蓝） |
+| 排版风格 | 偏好的排版风格 | tech-blog |
+| 模块偏好 | 常用的模块组合 | hero + verdict + cta |
+| 语言风格 | 内容调性 | 专业但不晦涩 |
+| 禁忌事项 | 避免使用的元素 | 避免过度使用感叹号 |
+
+### 使用方法
+
+1. **自动读取**：AI 在排版时自动读取 Brand Profile 文件
+2. **手动指定**：用户在对话中指定使用品牌配置
+3. **创建配置**：AI 引导用户创建品牌配置文件
+
+> 完整配置指南：[brand/brand-profile.md](brand/brand-profile.md)
 
 ---
 
