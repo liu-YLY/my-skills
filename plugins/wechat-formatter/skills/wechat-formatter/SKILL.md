@@ -44,8 +44,8 @@ keywords:
 
 | 阶段 | 详细指令 | 关键约束 | 强制读取 |
 |------|----------|----------|----------|
-| 1 | [references/formatting-rules.md](references/formatting-rules.md) §1 | 必须识别文章要素（标题层级、代码块、列表、要点） | 无（内联处理） |
-| 🔴 2 | [templates/template-index.md](templates/template-index.md) | **必须展示风格简介让用户选择，勿自行决定** | [templates/template-index.md](templates/template-index.md) |
+| 1 | [references/formatting-rules.md](references/formatting-rules.md) §1 | 必须识别文章要素（标题层级、代码块、列表、要点）并分析内容特征 | 无（内联处理） |
+| 🔴 2 | [templates/template-index.md](templates/template-index.md) | **自动匹配最合适的 2-3 种风格，展示推荐结果让用户选择** | [templates/template-index.md](templates/template-index.md) |
 | 3 | 各风格模板文件 | 严格按模板规则转换，不自创格式 | 所选风格对应的模板文件 |
 | 🔴 4 | [references/formatting-rules.md](references/formatting-rules.md) §4 | 覆盖度 + 可读性 + 公众号兼容性三项检查 | [references/wechat-markdown.md](references/wechat-markdown.md) + [knowledge/wechat-traps.md](knowledge/wechat-traps.md) |
 | 5 | [scripts/md2wechat.py](scripts/md2wechat.py) | 用户触发时执行，生成带内联样式和"复制"按钮的 HTML | 无 |
@@ -61,9 +61,40 @@ keywords:
 
 | 模式 | 触发条件 | 行为 |
 |------|---------|------|
-| **默认** | 用户未指定风格 | 完整五阶段：分析 → 选风格 → 排版 → 校验 → 生成 HTML |
+| **默认** | 用户未指定风格 | 完整五阶段：分析 → 自动匹配风格 → 用户确认 → 排版 → 校验 → 生成 HTML |
 | **快速** | 用户已明确指定风格代号（如"用 tech-blog 排版"） | 跳过阶段 2；阶段 1 仅输出简版分析（要素统计 + 一句话定性），不做详细元信息提取；阶段 4 仅做兼容性检查，跳过覆盖度和风格一致性检查；阶段 5 同默认 |
 | **仅排版** | 用户明确不需要 HTML 输出 | 完成阶段 1-4 后结束，不执行阶段 5 |
+
+### 自动风格匹配规则
+
+阶段 1 分析内容后，根据以下特征自动推荐最合适的 2-3 种风格：
+
+| 文章特征 | 推荐风格（优先级从高到低） |
+|---------|--------------------------|
+| 大量代码 + 技术讲解 | `tech-blog` → `tutorial` |
+| 步骤操作 + 读者需要跟着做 | `tutorial` → `tech-blog` |
+| 深度分析 + 图表 + 引用 | `deep-dive` → `tech-blog` |
+| 经验分享 + 观点 + 轻松氛围 | `casual-chat` → `tech-blog` |
+| 追求极简优雅、高级感 | `apple` → `deep-dive` |
+| 暗黑酷炫、前沿极客风 | `cyber` → `tech-blog` |
+| 代码 + 步骤操作都有 | `tutorial` → `tech-blog` |
+| 观点 + 分析 + 少量代码 | `tech-blog` → `casual-chat` |
+| 3000+ 字 + 多级结构 | `deep-dive` → `tech-blog` |
+
+**输出格式**：
+```
+📊 内容分析结果：
+- 文章类型：[识别出的类型]
+- 核心特征：[关键特征]
+- 字数统计：[字数]
+
+🎨 推荐风格（请选择）：
+1. [风格名称] - [一句话推荐理由]
+2. [风格名称] - [一句话推荐理由]
+3. [风格名称] - [一句话推荐理由]
+
+请输入编号选择，或输入其他风格代号：
+```
 
 ---
 
