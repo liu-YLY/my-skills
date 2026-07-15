@@ -1,52 +1,17 @@
 [
   {
     "id": 1,
-    "prompt": "帮我把这篇技术文章排版成公众号格式：# Python 测试框架对比\n\npytest 和 unittest 是 Python 中最常用的两个测试框架。本文对比它们的优缺点。\n\n## pytest 优点\n\n1. 语法简洁\n2. 插件丰富\n3. 参数化测试\n\n## unittest 优点\n\n1. 标准库自带\n2. 文档完善",
-    "expected": "默认模式：阶段1分析内容（技术教程类）→ 🔴 CHECKPOINT 1 展示6种风格简介让用户选择（不自行决定）→ 待用户选择后执行阶段3排版 → 🔴 CHECKPOINT 2 校验通过后确认"
+    "prompt": "我写了一篇关于 Python 装饰器的技术文章，想排版成公众号文章",
+    "expected": "skill 应自动分析文章内容，识别为技术教程类，推荐 tech-blog 和 tutorial 风格，让用户选择后再格式化"
   },
   {
     "id": 2,
-    "prompt": "用 tech-blog 风格排版这篇文章：# Git 工作流详解\n\nGit 是分布式版本控制系统。本文介绍 Git Flow 和 GitHub Flow 两种工作流。",
-    "expected": "快速模式：用户已指定 tech-blog → 跳过阶段2（无 CHECKPOINT 1），阶段1仅输出简版分析，阶段3按 tech-blog 模板排版 → 🔴 CHECKPOINT 2 校验"
+    "prompt": "这是一篇产品发布会的新闻稿，帮我排版成公众号文章",
+    "expected": "skill 应识别为产品发布类，推荐 apple 和 tech-blog 风格，展示风格对比让用户确认"
   },
   {
     "id": 3,
-    "prompt": "这篇深度技术文章用 deep-dive 风格排版：# 分布式系统一致性算法\n\n本文深入剖析 Raft 共识算法的实现细节，包含领导者选举、日志复制、安全性约束三个核心模块。",
-    "expected": "快速模式：deep-dive 风格 → 摘要框+纯文本目录+核心结论框+图表编号+参考带说明；阶段4需检查覆盖度+可读性+公众号兼容性 → 🔴 CHECKPOINT 2"
-  },
-  {
-    "id": 4,
-    "prompt": "排版这篇经验分享文章，不知道用什么风格：最近在做性能优化，踩了不少坑。比如有一次内存泄漏查了三天，最后发现是个缓存没设过期时间...",
-    "expected": "默认模式：阶段1分析（经验随笔类）→ 🔴 CHECKPOINT 1 推荐 casual-chat 风格（经验总结/技术随笔场景匹配）但需让用户确认，不能自行决定"
-  },
-  {
-    "id": 5,
-    "prompt": "帮我排版 /nonexistent/path/article.md 这个文件",
-    "expected": "失败模式#1：文件路径不存在 → 一线修复：提示用户重新提供路径，列出当前工作目录可读 .md 文件 → 兜底：接受用户直接粘贴文章文本作为输入"
-  },
-  {
-    "id": 6,
-    "prompt": "排版这篇文章：# 测试\n\n这是一篇关于测试的文章。",
-    "expected": "失败模式#2：内容过短（字数<50）→ 一线修复：提示用户内容过短无法识别要素，要求补充 → 兜底：降级为 tech-blog 风格，仅做标题层级+中英文空格修正"
-  },
-  {
-    "id": 7,
-    "prompt": "排版这篇文章，但我不想要你推荐的 tech-blog 风格，其他风格也不要",
-    "expected": "失败模式#4：用户在 🔴 CHECKPOINT 1 拒绝所有推荐风格 → 一线修复：列出全部6种风格简介让用户二次选择 → 兜底：用户明确不选时终止流程，输出原文不做排版"
-  },
-  {
-    "id": 8,
-    "prompt": "用 cyber 风格排版这篇文章，然后生成 HTML：# 未来终端 UI 设计\n\n本文探讨 CLI 工具的视觉设计趋势。",
-    "expected": "快速模式 cyber → 阶段3按 cyber 模板排版 → 🔴 CHECKPOINT 2 → 阶段5触发 md2wechat.py 生成 HTML。若 pip 依赖缺失 → 失败模式#7：提示 pip install markdown beautifulsoup4 → 兜底：仅输出 Markdown，提示用 mdnice 手动转换"
-  },
-  {
-    "id": 9,
-    "prompt": "排版这篇含 Markdown 表格的文章（用 tech-blog）：# 性能对比\n\n| 框架 | QPS |\n|------|-----|\n| A | 1000 |\n| B | 2000 |",
-    "expected": "阶段4校验命中失败模式#6（Markdown 表格公众号不兼容）→ 一线修复：按 wechat-markdown.md 替代方案自动转换（≤3列转列表）→ 校验通过 → 🔴 CHECKPOINT 2"
-  },
-  {
-    "id": 10,
-    "prompt": "仅排版这篇：# 简单公告\n\n明天放假一天。",
-    "expected": "仅排版模式：跳过阶段1/2，直接阶段3按通用规则排版（标题层级+中英文空格），不套用特定风格模板 → 🔴 CHECKPOINT 2 校验"
+    "prompt": "我有一篇关于 AI 前沿技术的深度分析文章，需要专业排版",
+    "expected": "skill 应识别为深度分析类，推荐 deep-dive 和 tech-blog 风格，突出专业性和视觉层级"
   }
 ]
