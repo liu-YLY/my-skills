@@ -1,10 +1,11 @@
 ---
 name: test-case-engineer
-version: 8.0.0
+version: 8.1.0
 description: >-
   Use when generating, reviewing, or designing test cases and test strategies.
   Triggers on: 测试用例、测试点、用例评审、测试策略、需求分析、测试分层、QA.
   For bug root cause analysis or defect localization, use bug-analyzer instead.
+  v8.1: 新增用例拆分与合并平衡策略（原子化/合并/复杂度三目标 + 5步决策法 + 软断言 + 复杂度阈值）。
 keywords:
   - QA
   - 测试用例

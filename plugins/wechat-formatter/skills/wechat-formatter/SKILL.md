@@ -1,18 +1,21 @@
 ---
 name: wechat-formatter
-version: 2.0.0
+version: 3.0.0
 description: >-
-  微信公众号文章排版技能，提供多种适用于互联网/技术领域的排版风格模板。
+  微信公众号文章排版技能，提供多种适用于互联网/技术领域的排版风格模板和高级排版模块。
   自动分析用户文章内容（编程知识、测试理论、技术分享等），按选定风格完成排版，
-  输出为可直接复制到公众号编辑器的格式化 Markdown 文件。
-  适用于：技术博客排版、教程文章美化、干货分享格式化、技术随笔润色。
-  当用户提到公众号排版、微信排版、文章排版、格式化文章、美化文章时自动触发。
+  支持 :::module 语法创建专业视觉卡片组件，输出为可直接复制到公众号编辑器的格式化 Markdown 文件。
+  适用于：技术博客排版、教程文章美化、干货分享格式化、技术随笔润色、品牌化内容创作。
+  当用户提到公众号排版、微信排版、文章排版、格式化文章、美化文章、高级排版、品牌配置时自动触发。
 keywords:
   - 公众号排版
   - 微信排版
   - 文章格式化
   - 技术博客
   - 排版风格
+  - 高级排版模块
+  - 品牌配置
+  - 视觉卡片
 ---
 
 # 微信公众号排版 Skill
@@ -41,8 +44,8 @@ keywords:
 
 | 阶段 | 详细指令 | 关键约束 | 强制读取 |
 |------|----------|----------|----------|
-| 1 | [references/formatting-rules.md](references/formatting-rules.md) §1 | 必须识别文章要素（标题层级、代码块、列表、要点） | 无（内联处理） |
-| 🔴 2 | [templates/template-index.md](templates/template-index.md) | **必须展示风格简介让用户选择，勿自行决定** | [templates/template-index.md](templates/template-index.md) |
+| 1 | [references/formatting-rules.md](references/formatting-rules.md) §1 | 必须识别文章要素（标题层级、代码块、列表、要点）并分析内容特征 | 无（内联处理） |
+| 🔴 2 | [templates/template-index.md](templates/template-index.md) | **自动匹配最合适的 2-3 种风格，展示推荐结果让用户选择** | [templates/template-index.md](templates/template-index.md) |
 | 3 | 各风格模板文件 | 严格按模板规则转换，不自创格式 | 所选风格对应的模板文件 |
 | 🔴 4 | [references/formatting-rules.md](references/formatting-rules.md) §4 | 覆盖度 + 可读性 + 公众号兼容性三项检查 | [references/wechat-markdown.md](references/wechat-markdown.md) + [knowledge/wechat-traps.md](knowledge/wechat-traps.md) |
 | 5 | [scripts/md2wechat.py](scripts/md2wechat.py) | 用户触发时执行，生成带内联样式和"复制"按钮的 HTML | 无 |
@@ -58,9 +61,40 @@ keywords:
 
 | 模式 | 触发条件 | 行为 |
 |------|---------|------|
-| **默认** | 用户未指定风格 | 完整五阶段：分析 → 选风格 → 排版 → 校验 → 生成 HTML |
+| **默认** | 用户未指定风格 | 完整五阶段：分析 → 自动匹配风格 → 用户确认 → 排版 → 校验 → 生成 HTML |
 | **快速** | 用户已明确指定风格代号（如"用 tech-blog 排版"） | 跳过阶段 2；阶段 1 仅输出简版分析（要素统计 + 一句话定性），不做详细元信息提取；阶段 4 仅做兼容性检查，跳过覆盖度和风格一致性检查；阶段 5 同默认 |
 | **仅排版** | 用户明确不需要 HTML 输出 | 完成阶段 1-4 后结束，不执行阶段 5 |
+
+### 自动风格匹配规则
+
+阶段 1 分析内容后，根据以下特征自动推荐最合适的 2-3 种风格：
+
+| 文章特征 | 推荐风格（优先级从高到低） |
+|---------|--------------------------|
+| 大量代码 + 技术讲解 | `tech-blog` → `tutorial` |
+| 步骤操作 + 读者需要跟着做 | `tutorial` → `tech-blog` |
+| 深度分析 + 图表 + 引用 | `deep-dive` → `tech-blog` |
+| 经验分享 + 观点 + 轻松氛围 | `casual-chat` → `tech-blog` |
+| 追求极简优雅、高级感 | `apple` → `deep-dive` |
+| 暗黑酷炫、前沿极客风 | `cyber` → `tech-blog` |
+| 代码 + 步骤操作都有 | `tutorial` → `tech-blog` |
+| 观点 + 分析 + 少量代码 | `tech-blog` → `casual-chat` |
+| 3000+ 字 + 多级结构 | `deep-dive` → `tech-blog` |
+
+**输出格式**：
+```
+📊 内容分析结果：
+- 文章类型：[识别出的类型]
+- 核心特征：[关键特征]
+- 字数统计：[字数]
+
+🎨 推荐风格（请选择）：
+1. [风格名称] - [一句话推荐理由]
+2. [风格名称] - [一句话推荐理由]
+3. [风格名称] - [一句话推荐理由]
+
+请输入编号选择，或输入其他风格代号：
+```
 
 ---
 
@@ -77,6 +111,103 @@ keywords:
 
 > 完整风格描述与选择指南：[templates/template-index.md](templates/template-index.md)
 > 各风格详细排版规则：[templates/tech-blog.md](templates/tech-blog.md) | [templates/tutorial.md](templates/tutorial.md) | [templates/deep-dive.md](templates/deep-dive.md) | [templates/casual-chat.md](templates/casual-chat.md) | [templates/apple.md](templates/apple.md) | [templates/cyber.md](templates/cyber.md)
+
+---
+
+## 高级排版模块
+
+**新功能**：支持 `:::module` 语法，提供 9 大类预定义视觉卡片组件，让文章更具视觉层级和品牌感。
+
+### 4 件事原则
+
+每个模块只服务这 4 件事之一：
+
+| 目的 | 解决什么 | 代表模块 |
+|------|---------|---------|
+| **attention** | 让读者先知道值不值得读 | hero, cards, verdict |
+| **readability** | 让手机窄屏阅读不累 | toc, steps, part |
+| **memorability** | 让读者记住一个判断或品牌 | verdict, manifesto, author-card |
+| **conversion** | 让读者愿意收藏/关注/咨询/转发/购买 | cta, faq, checklist |
+
+**核心原则**：选最少的模块，每件事做好一个。一篇文章 hero 只有一个，verdict 只有一个，cta 只有一个。不要堆模块。
+
+### 9 大类模块速览
+
+| 类别 | 模块 | 用途 |
+|------|------|------|
+| **opening 开场类** | hero, toc, cards, part, label-title | 文章开篇第一屏 |
+| **infographic 信息图类** | metrics, compare, steps, timeline, infographic | 数据可视化展示 |
+| **judgment 判断类** | verdict, audience-fit, myth-fact, manifesto, bridge | 核心立场表达 |
+| **evidence 证据类** | quote, image-annotate, image-compare, image-steps, image-text | 支撑判断的证据 |
+| **conversion 行动类** | cta, faq, checklist, cases | 促进读者行动 |
+| **brand 品牌类** | author-card, brand-banner | 建立品牌识别度 |
+| **sprint4 精选增强类** | callout, highlight | 强调重要信息 |
+| **free-layout 自由布局类** | split, columns | 灵活布局选项 |
+| **interactive 交互类** | question, poll | 增加读者参与度 |
+
+### 模块语法示例
+
+```markdown
+:::hero
+eyebrow: 深度观察
+title: 高级排版服务阅读决策
+subtitle: 主题决定气质，模块决定读者能不能看懂
+:::
+
+:::steps[落地步骤]
+01 | 发现模块 | layout list 列出所有可用模块
+02 | 查看规格 | layout show 确认字段和示例
+03 | 写进文章 | 直接粘贴 :::module 语法
+:::
+
+:::verdict
+eyebrow: 最终判断
+title: 真正的护城河不是模块数量，而是品牌表达系统
+body: 每个模块必须服务一个真实的阅读任务，否则只是换皮。
+:::
+```
+
+> 完整模块规范和示例：[layout/layout-modules.md](layout/layout-modules.md)
+> 模块 CSS 样式：[layout/modules-base.css](layout/modules-base.css)
+
+---
+
+## Brand Profile 品牌配置
+
+**新功能**：支持品牌配置文件，让所有文章保持统一的视觉风格和品牌调性。
+
+### 核心价值
+
+- **一致性**：所有文章保持统一的视觉风格
+- **效率**：无需每次重复说明品牌偏好
+- **个性化**：根据品牌调性自动选择最合适的模块和样式
+
+### 配置文件位置
+
+Brand Profile 文件位于：
+
+- 全局配置：`~/.config/md2wechat/brand.md`
+- 项目配置：`.brand.md`（项目根目录）
+
+### 可配置项
+
+| 配置项 | 说明 | 示例 |
+|--------|------|------|
+| 品牌名称 | 品牌或个人名称 | 极客杰尼 |
+| 品牌口号 | 一句话品牌定位 | 让复杂技术变得简单易懂 |
+| 主色调 | 品牌主色 | #007bff（科技蓝） |
+| 排版风格 | 偏好的排版风格 | tech-blog |
+| 模块偏好 | 常用的模块组合 | hero + verdict + cta |
+| 语言风格 | 内容调性 | 专业但不晦涩 |
+| 禁忌事项 | 避免使用的元素 | 避免过度使用感叹号 |
+
+### 使用方法
+
+1. **自动读取**：AI 在排版时自动读取 Brand Profile 文件
+2. **手动指定**：用户在对话中指定使用品牌配置
+3. **创建配置**：AI 引导用户创建品牌配置文件
+
+> 完整配置指南：[brand/brand-profile.md](brand/brand-profile.md)
 
 ---
 
