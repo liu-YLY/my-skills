@@ -534,10 +534,10 @@ cp -r plugins/wechat-formatter/skills/wechat-formatter ~/.claude/skills/
 
 #### 步骤 1：安装工具脚本依赖（可选）
 
-如果需要使用 test-case-engineer 内的 Python 脚本：
+如果需要使用 testing plugin 内的 Python 脚本（如 convert_docs.py 文档转换降级方案）：
 
 ```bash
-cd plugins/testing/skills/test-case-engineer/scripts
+cd plugins/testing/scripts
 pip install -r requirements.txt
 ```
 
