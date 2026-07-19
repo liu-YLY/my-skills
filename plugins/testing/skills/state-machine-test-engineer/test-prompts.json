@@ -1,0 +1,102 @@
+{
+  "skill": "state-machine-test-engineer",
+  "version": "1.0.0",
+  "description": "darwin-skill 验证用 prompts，覆盖 6 类验证场景（订单退款/审批流/歧义暴露/降级模式/转交协同/误路由）",
+  "prompts": [
+    {
+      "id": "SM-TP-01",
+      "category": "订单退款（文章案例）",
+      "prompt": "订单退款流程要做测试，订单状态包括待支付/已支付/已取消/退款中/退款成功/退款失败",
+      "expected_behavior": "识别 6 状态订单状态机，构建 transitions 与 forbidden（含已取消→已支付禁止、退款成功终态吸收），完整性检查标注'退款失败后恢复路径'为缺口，10 类场景穷举每类至少 1 条，所有 transition 和场景标注 evidence_type",
+      "validation_points": [
+        "6 状态识别完整",
+        "禁止转换包含终态吸收",
+        "10 类场景穷举完整",
+        "依据类型标注无遗漏",
+        "退款失败恢复路径标'待确认'而非脑补"
+      ],
+      "target_score": 85
+    },
+    {
+      "id": "SM-TP-02",
+      "category": "审批流（并发冲突 + 终态吸收）",
+      "prompt": "审批流状态机测试，状态包括待审批/审批中/已通过/已驳回/已撤回，需要测试会签并发冲突和终态吸收",
+      "expected_behavior": "构建 5 状态审批流状态机，识别会签场景的并发冲突，已通过/已驳回/已撤回三终态都加终态吸收 forbidden，concurrency 类场景标'待确认'（PRD 未说明并发优先级）",
+      "validation_points": [
+        "5 状态识别完整",
+        "3 终态都加终态吸收",
+        "会签场景识别为 concurrency",
+        "并发优先级标'待确认'",
+        "审批中能否撤回标'待确认'"
+      ],
+      "target_score": 80
+    },
+    {
+      "id": "SM-TP-03",
+      "category": "歧义暴露（标待确认而非补齐）",
+      "prompt": "会员体系测试，会员状态包括普通/银卡/金卡/钻石/已冻结/已注销，需要测试升级降级和解冻",
+      "expected_behavior": "构建 6 状态会员状态机，降级规则（持续 30 天/即时降级/不降级）标'待确认'，解冻后恢复到哪个等级标'待确认'，禁止 LLM 自行脑补降级规则或解冻恢复等级",
+      "validation_points": [
+        "降级规则标'待确认'而非脑补",
+        "解冻恢复等级标'待确认'",
+        "已注销终态吸收",
+        "已冻结不可直接升级",
+        "不输出用例步骤（只出场景清单）"
+      ],
+      "target_score": 90
+    },
+    {
+      "id": "SM-TP-04",
+      "category": "降级模式（MCP 未启用）",
+      "prompt": "工单系统状态机测试，状态包括新建/处理中/待回复/已解决/已关闭/已重开",
+      "expected_behavior": "MCP 未启用时 skill 仍完整执行五阶段，输出首行标'⚠ 独立模式（未校验）'，完整性检查使用 skill 内置 9 项自检（不调用 MCP validate_state_machine），场景穷举由 skill 自行完成（无 MCP generate_scenarios 交叉复核）",
+      "validation_points": [
+        "输出首行标'⚠ 独立模式（未校验）'",
+        "五阶段流程完整执行",
+        "9 项完整性检查自检",
+        "10 类场景穷举完整",
+        "无 MCP 校验报告但仍输出完整性检查报告"
+      ],
+      "target_score": 75
+    },
+    {
+      "id": "SM-TP-05",
+      "category": "转交 case-engineer（链 5 协同）",
+      "prompt": "为订单退款流程设计状态机测试场景，并生成完整测试用例",
+      "expected_behavior": "识别为'建模 + 用例'混合意图，testing-bundle 路由到 state-machine-test-engineer 执行五阶段输出场景清单，CHECKPOINT 后转交 test-case-engineer 基于场景清单生成完整测试用例（含步骤）",
+      "validation_points": [
+        "识别混合意图（建模 + 用例）",
+        "state-machine 只输出场景清单不出步骤",
+        "CHECKPOINT 在转交前触发",
+        "test-case-engineer 接收场景清单作为输入",
+        "test-case-engineer 输出完整用例步骤"
+      ],
+      "target_score": 80
+    },
+    {
+      "id": "SM-TP-06",
+      "category": "误路由检查（非状态型需求）",
+      "prompt": "测试用户登录功能，需求是手机号+验证码登录",
+      "expected_behavior": "识别为非状态型需求（无状态信号），不应路由到 state-machine-test-engineer，应路由到 test-case-engineer。若误路由到 state-machine，应在阶段 1 识别为'无状态信号'并提示转 test-case-engineer",
+      "validation_points": [
+        "不路由到 state-machine-test-engineer",
+        "正确路由到 test-case-engineer",
+        "若误路由则在阶段 1 识别为非状态型",
+        "提示用户转 test-case-engineer",
+        "不强行建状态机"
+      ],
+      "target_score": 95
+    }
+  ],
+  "scoring_dimensions": {
+    "方法论完整性": {"weight": 0.25, "target": 85},
+    "防幻觉能力": {"weight": 0.20, "target": 90},
+    "与 MCP 协作": {"weight": 0.15, "target": 80},
+    "与 bundle 集成": {"weight": 0.15, "target": 85},
+    "行业覆盖": {"weight": 0.10, "target": 80},
+    "输出一致性": {"weight": 0.10, "target": 85},
+    "文档质量": {"weight": 0.05, "target": 80}
+  },
+  "target_total_score": 83,
+  "min_single_score": 70
+}
