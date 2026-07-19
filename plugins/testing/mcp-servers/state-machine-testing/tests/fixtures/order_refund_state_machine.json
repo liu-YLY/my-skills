@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "object": "Order",
+    "version": "1.0",
+    "source": "订单退款文章案例",
+    "confidence": "high"
+  },
+  "states": [
+    {"name": "待支付", "meaning": "订单已创建未支付", "is_initial": true, "is_terminal": false, "entry_events": ["订单创建"], "invariants": ["订单金额不可修改"]},
+    {"name": "已支付", "meaning": "订单已支付，等待履约", "is_terminal": false, "entry_events": ["支付成功回调"], "invariants": ["支付金额不可修改"]},
+    {"name": "已取消", "meaning": "订单已取消，不可再支付", "is_terminal": true, "entry_events": ["用户取消", "超时取消"], "invariants": ["不可再次支付"]},
+    {"name": "退款中", "meaning": "退款申请已受理，等待渠道处理", "is_terminal": false, "entry_events": ["管理员发起退款"], "invariants": ["退款金额不可修改"]},
+    {"name": "退款成功", "meaning": "退款已完成，资金已退回", "is_terminal": true, "entry_events": ["退款成功回调"], "invariants": ["退款金额不可再修改"]},
+    {"name": "退款失败", "meaning": "退款失败，等待处理", "is_terminal": true, "entry_events": ["退款失败回调"], "invariants": ["退款失败记录已生成"]}
+  ],
+  "transitions": [
+    {"from": "待支付", "to": "已支付", "event": "支付成功回调", "guards": ["订单有效", "金额一致", "回调可信"], "side_effects": ["生成支付记录", "触发履约"], "evidence_type": "需求明确", "source": "PRD §3.2"},
+    {"from": "待支付", "to": "已取消", "event": "用户取消", "side_effects": ["释放库存"], "evidence_type": "需求明确", "source": "PRD §3.3"},
+    {"from": "待支付", "to": "已取消", "event": "超时取消", "guards": ["创建后 30 分钟未支付"], "side_effects": ["释放库存"], "evidence_type": "合理推理", "source": "业务常识"},
+    {"from": "已支付", "to": "退款中", "event": "管理员发起退款", "guards": ["订单已支付"], "side_effects": ["生成退款申请"], "evidence_type": "需求明确", "source": "PRD §3.4"},
+    {"from": "退款中", "to": "退款成功", "event": "退款成功回调", "guards": ["回调可信"], "side_effects": ["更新退款记录"], "evidence_type": "需求明确", "source": "PRD §3.5"},
+    {"from": "退款中", "to": "退款失败", "event": "退款失败回调", "guards": ["回调可信"], "side_effects": ["更新退款记录"], "evidence_type": "需求明确", "source": "PRD §3.5"}
+  ],
+  "forbidden": [
+    {"from": "已取消", "to": "已支付", "reason": "已取消订单不可支付", "evidence_type": "需求明确"},
+    {"from": "退款成功", "to": "*", "reason": "终态吸收", "evidence_type": "需求明确"},
+    {"from": "退款失败", "to": "*", "reason": "终态吸收", "evidence_type": "待确认"}
+  ]
+}
