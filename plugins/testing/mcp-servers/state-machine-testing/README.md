@@ -2,6 +2,8 @@
 
 > 配套 state-machine-test-engineer skill 的 Python MCP Server v0.1.0：提供状态机建模/校验/穷举/导出/覆盖度 5 个工具，作为 skill 的可选增强引擎。
 
+> **实现状态**：v0.1.0 已完成 pydantic Schema + 4 个确定性工具（validate/generate/export/coverage）+ 单元测试（34 通过）+ 集成测试（2 通过）。`build_state_machine` 为占位实现（推荐通过 skill 自身 LLM 推理建模，再传给确定性工具校验）。MCP 协议层注册待 v0.2.0。
+
 ## 简介
 
 本 MCP Server 是 testing-bundle v3.0.0 的配套组件，位于 `plugins/testing/mcp-servers/state-machine-testing/`。
@@ -338,5 +340,5 @@ ruff check src/ tests/
 **相关文档**：
 - [state-machine-test-engineer SKILL.md](../../skills/state-machine-test-engineer/SKILL.md) - 配套 skill
 - [quickstart.md](../../skills/state-machine-test-engineer/integrations/quickstart.md) - 配置指南
-- [设计文档](../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
+- [设计文档](../../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
 - [MCP 协议规范](https://modelcontextprotocol.io/) - 协议官方文档

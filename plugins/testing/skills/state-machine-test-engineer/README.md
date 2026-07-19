@@ -170,7 +170,7 @@ state-machine-test-engineer/
 - [SKILL.md](SKILL.md) - 完整方法论与工作流
 - [state-machine-core.md](state-machine-core.md) - 核心流程详述
 - [integrations/quickstart.md](integrations/quickstart.md) - MCP 配置说明
-- [设计文档](../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
+- [设计文档](../../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
 - [testing-bundle](../testing-bundle/SKILL.md) - bundle 入口（5-way 路由）
 - [test-case-engineer](../test-case-engineer/SKILL.md) - 下游协同（链 5）
 - [state-machine-testing-mcp](../../mcp-servers/state-machine-testing/README.md) - 配套 MCP Server
