@@ -65,6 +65,12 @@ python -m state_machine_testing_mcp.server --help
 
 ### 步骤 4：配置 Trae MCP 客户端
 
+> **配置文件职责区分**：
+> - `~/.trae/mcp_servers.json`（步骤 4，**必须**）：让 Trae 启动并注册 MCP Server。skill 通过此通道调用 MCP 工具。
+> - `~/.trae/state-machine-mcp.json`（步骤 5，**可选**）：控制 skill 自身行为（fallback 策略、日志级别等），不影响 MCP Server 是否启动。
+>
+> 只配置步骤 5 而跳过步骤 4 不会让 MCP 生效——skill 探测不到 Server 会直接进入独立模式。
+
 #### 方式 A：通过 Trae 配置文件（推荐）
 
 编辑 `~/.trae/mcp_servers.json`（若不存在则创建），加入：
@@ -98,6 +104,8 @@ python -m state_machine_testing_mcp.server --help
 
 #### 方式 B：通过环境变量（轻量启用）
 
+> **方式 A / B 优先级**：方式 A（配置文件）与方式 B（环境变量）**可同时启用**，方式 A 注册的 Server 优先级更高。方式 B 仅用于"提示 skill 主动探测 MCP"，若 Trae 未通过方式 A 注册 Server，方式 B 单独无法让 MCP 生效，会自动降级到独立模式。**生产环境推荐方式 A**。
+
 在 shell 配置文件（`~/.bashrc` / `~/.zshrc`）中加入：
 
 ```bash
@@ -115,7 +123,7 @@ skill 会探测此环境变量并尝试调用 MCP。若 Trae 未注册该 Server
   "enabled": true,
   "transport": "stdio",
   "command": "python",
-  "args": ["/absolute/path/to/state-machine-testing-mcp/src/server.py"],
+  "args": ["-m", "state_machine_testing_mcp.server"],
   "fallback_on_error": true,
   "log_level": "warn"
 }
@@ -234,4 +242,4 @@ pip uninstall state-machine-testing-mcp
 **相关文档**：
 - [state-machine-test-engineer SKILL.md](../SKILL.md) - skill 完整方法论
 - [MCP Server README](../../mcp-servers/state-machine-testing/README.md) - Server 安装与开发
-- [设计文档](../../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
+- [设计文档](../../../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec

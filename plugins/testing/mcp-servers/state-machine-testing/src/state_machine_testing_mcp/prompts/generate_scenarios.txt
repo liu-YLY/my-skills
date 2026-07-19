@@ -1,0 +1,41 @@
+你是状态机测试设计专家。基于以下状态机，穷举 10 类测试场景。
+
+状态机：
+{state_machine}
+
+10 类场景类型：
+1. legal_transition: 合法转换（每条 transition 生成 1 个）
+2. illegal_transition: 非法转换（每条 forbidden 生成 1 个）
+3. guard_violation: 条件不满足（每条 transition 移除 1 个 guard）
+4. idempotency: 重复事件与幂等（涉及外部回调的 transition）
+5. concurrency: 并发事件（涉及用户操作 + 系统回调）
+6. message_reorder: 消息乱序（涉及异步消息）
+7. timeout_retry: 超时与重试（涉及等待/重试）
+8. data_consistency: 数据一致性（涉及副作用）
+9. access_control: 权限控制（涉及权限，PRD 未说明标待确认）
+10. failure_recovery: 失败后恢复路径（每条 transition 生成 1 个）
+
+每场景必须标 evidence_type：
+- 需求明确：PRD 直接描述
+- 合理推理：业务常识推理
+- 待确认：PRD 未说明，需澄清
+
+输出 JSON 数组：
+[
+  {
+    "id": "SM-001",
+    "title": "场景标题",
+    "current_state": "当前状态",
+    "trigger_event": "触发事件",
+    "precondition": "前置条件",
+    "expected_target_state": "期望目标状态",
+    "forbidden_states": ["禁止进入的状态"],
+    "risk_type": "legal_transition",
+    "related_objects": ["关联对象"],
+    "evidence_type": "需求明确",
+    "source": "PRD §x.x 或推理依据",
+    "notes": "备注"
+  }
+]
+
+注意：只输出场景级，不出用例步骤。PRD 未说明的权限/异常路径标"待确认"。

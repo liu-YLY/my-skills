@@ -1,7 +1,7 @@
 {
   "name": "testing-bundle",
-  "description": "Testing capability bundle: test-case-engineer (forward test case generation) + bug-analyzer (backward root cause analysis) + testing-bundle (router entry). Use when user needs any testing capability.",
-  "version": "1.0.0",
+  "description": "Testing capability bundle v3.0.0: testing-bundle (router) + test-strategy-engineer (project-level strategy) + test-case-engineer (test case generation) + performance-test-engineer (performance testing) + bug-analyzer (bug root cause) + state-machine-test-engineer (state-machine-driven testing) + state-machine-testing MCP Server (optional enhancement). Use when user needs any testing capability.",
+  "version": "3.0.0",
   "author": {
     "name": "lyle"
   },
@@ -11,8 +11,11 @@
   "keywords": [
     "testing",
     "test-case",
+    "test-strategy",
+    "performance-testing",
     "bug-analysis",
     "root-cause",
+    "state-machine",
     "qa"
   ],
   "skills": "./skills/"

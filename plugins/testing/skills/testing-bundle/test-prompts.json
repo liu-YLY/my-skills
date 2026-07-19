@@ -58,5 +58,35 @@
     "id": 12,
     "prompt": "分析完 Bug 根因后想补充用例，但 case-engineer 没装",
     "expected": "失败模式#4（协同失败）：bug-analyzer 已输出防御性测试点清单 → 检测到 case-engineer 不可用 → 提示用户手动转交或自行处理 → 中间产物按上下文 schema 作为附录输出"
+  },
+  {
+    "id": 13,
+    "prompt": "我有一个订单退款业务，包含待退款/退款中/退款成功/退款失败等状态，需要梳理状态流转并穷举测试场景",
+    "expected": "v3.0.0 单意图路由：命中'状态流转'关键词 → 路由到 state-machine-test-engineer，执行五阶段流程（需求识别→状态机建模→完整性检查→10 类场景穷举→MCP 增强）。不应路由到 test-case-engineer"
+  },
+  {
+    "id": 14,
+    "prompt": "帮我给审批流建模并生成对应的测试用例",
+    "expected": "v3.0.0 混合意图（链 5）：含'建模'+'用例'混合信号 → 默认路由到 state-machine-test-engineer 完成状态机建模 + 10 类场景穷举 → 🔴 CHECKPOINT 转交 test-case-engineer 基于场景清单生成可执行用例。链 5 转交成功率应 100%"
+  },
+  {
+    "id": 15,
+    "prompt": "帮我测试用户登录功能，需求是邮箱+密码登录",
+    "expected": "v3.0.0 误路由检查：含'测试'但不命中状态机关键词（无状态流转/非法跳转/幂等等） → 路由到 test-case-engineer，不应误路由到 state-machine-test-engineer。验证 5-way 路由的精确度（≥90%）"
+  },
+  {
+    "id": 16,
+    "prompt": "我有订单退款状态机需要做完整性检查，但 state-machine-testing MCP Server 没装",
+    "expected": "v3.0.0 MCP 三模式降级：检测到 state-machine-test-engineer 已装但 MCP Server 未装 → 进入独立模式（mode=independent）→ skill 自身完成 9 项完整性检查 + 10 类场景穷举 → 输出报告中标注'未使用 MCP 增强'提示用户可选安装 MCP Server 进入增强模式"
+  },
+  {
+    "id": 17,
+    "prompt": "审批流包含已通过、已驳回两个终态，帮我检查终态吸收规则",
+    "expected": "v3.0.0 终态吸收验证：路由到 state-machine-test-engineer → C4 检查（终态不可变更）应 pass，C9 检查（无死锁）应 pass → 场景穷举中 illegal_transition 类应包含'已通过→驳回'等非法跳转场景 → 输出报告标注两终态均为吸收态，禁止任何出边"
+  },
+  {
+    "id": 18,
+    "prompt": "支付回调可能因网络重试重复到达，需要保证幂等性",
+    "expected": "v3.0.0 幂等场景验证：命中'幂等'关键词 → 路由到 state-machine-test-engineer → 10 类场景穷举中 idempotency 类应触发（条件：存在外部回调类 transition）→ 生成'重复回调不应改变已成功状态'场景 → evidence_type 必填为 requirement 或 code，禁止凭空补齐"
   }
 ]
