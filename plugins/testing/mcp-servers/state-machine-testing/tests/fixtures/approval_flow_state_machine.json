@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "object": "Approval",
+    "version": "1.0",
+    "source": "审批流通用规则",
+    "confidence": "medium"
+  },
+  "states": [
+    {"name": "待审批", "meaning": "审批单已提交，等待审批人处理", "is_initial": true, "is_terminal": false, "entry_events": ["审批单提交"], "invariants": ["审批内容不可修改"]},
+    {"name": "审批中", "meaning": "审批人正在处理", "is_terminal": false, "entry_events": ["审批人开始处理"], "invariants": ["审批人不可变更"]},
+    {"name": "已通过", "meaning": "审批通过，业务流程继续", "is_terminal": true, "entry_events": ["审批人同意"], "invariants": ["审批结果不可修改"]},
+    {"name": "已驳回", "meaning": "审批被驳回", "is_terminal": true, "entry_events": ["审批人驳回"], "invariants": ["驳回原因已记录"]},
+    {"name": "已撤回", "meaning": "发起人主动撤回审批", "is_terminal": true, "entry_events": ["发起人撤回"], "invariants": ["不可恢复"]}
+  ],
+  "transitions": [
+    {"from": "待审批", "to": "审批中", "event": "审批人开始处理", "side_effects": ["记录处理开始时间"], "evidence_type": "需求明确", "source": "PRD §2.1"},
+    {"from": "审批中", "to": "已通过", "event": "审批人同意", "guards": ["所有会签人已同意"], "side_effects": ["触发后续业务流程"], "evidence_type": "需求明确", "source": "PRD §2.2"},
+    {"from": "审批中", "to": "已驳回", "event": "审批人驳回", "guards": ["驳回原因已填写"], "side_effects": ["记录驳回原因"], "evidence_type": "需求明确", "source": "PRD §2.3"},
+    {"from": "待审批", "to": "已撤回", "event": "发起人撤回", "side_effects": ["记录撤回时间"], "evidence_type": "需求明确", "source": "PRD §2.4"}
+  ],
+  "forbidden": [
+    {"from": "已通过", "to": "*", "reason": "终态吸收", "evidence_type": "需求明确"},
+    {"from": "已驳回", "to": "*", "reason": "终态吸收", "evidence_type": "需求明确"},
+    {"from": "已撤回", "to": "*", "reason": "终态吸收", "evidence_type": "需求明确"}
+  ]
+}
