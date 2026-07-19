@@ -195,7 +195,7 @@ state_machine:
     - from: 待支付
       to: 已支付
       event: 支付成功回调
-      guard: [订单有效, 金额一致, 回调可信]
+      guards: [订单有效, 金额一致, 回调可信]
       side_effects: [生成支付记录, 触发履约]
       evidence_type: 需求明确           # 需求明确/合理推理/待确认
       source: PRD §3.2
@@ -225,7 +225,7 @@ scenarios:
     precondition: 订单已取消
     expected_target_state: 已取消（保持不变）
     forbidden_states: [已支付]
-    risk_type: 非法转换
+    risk_type: illegal_transition
     related_objects: [支付记录, 订单日志]
     evidence_type: 需求明确
     source: PRD §3.1 + 状态机 forbidden 规则
