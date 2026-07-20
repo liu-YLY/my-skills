@@ -1,0 +1,56 @@
+[project]
+name = "state-machine-testing-mcp"
+version = "0.1.0"
+description = "MCP Server for state-machine-test-engineer skill: schema validation, scenario generation, coverage check"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "testing-bundle contributors" }
+]
+dependencies = [
+    "mcp>=0.9.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "mypy>=1.0",
+    "ruff>=0.1.0",
+    "black>=23.0",
+]
+
+[project.scripts]
+state-machine-testing-mcp = "state_machine_testing_mcp.server:main"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+
+[tool.coverage.run]
+source = ["src/state_machine_testing_mcp"]
+
+[tool.coverage.report]
+fail_under = 90
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
