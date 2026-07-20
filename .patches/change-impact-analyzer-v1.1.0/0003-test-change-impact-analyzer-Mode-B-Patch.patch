@@ -1,0 +1,43 @@
+From fac7ce62136e1a1fcc2ed6e2eec6dc5335ef18a2 Mon Sep 17 00:00:00 2001
+From: liu-YLY <liu-YLY@users.noreply.github.com>
+Date: Mon, 20 Jul 2026 13:01:36 +0000
+Subject: [PATCH 3/3] =?UTF-8?q?test(change-impact-analyzer):=20=E8=A1=A5?=
+ =?UTF-8?q?=E5=85=85=20Mode=20B=20=E4=B8=8E=E5=A4=96=E9=83=A8=20Patch=20?=
+ =?UTF-8?q?=E6=B5=8B=E8=AF=95=E5=9C=BA=E6=99=AF?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+测试 prompt 从 3 个扩到 5 个，覆盖 v1.1.0 新增能力：
+
+- 新增 Mode B 需求对照场景，验证需求×实现×测试三向对照、
+  覆盖状态判定与需求追踪矩阵输出
+- 新增外部 Patch 场景，验证跳过 git 命令直接解析 patch、
+  跨层影响链路追踪与契约两侧检查
+---
+ .../skills/change-impact-analyzer/test-prompts.json    | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/plugins/testing/skills/change-impact-analyzer/test-prompts.json b/plugins/testing/skills/change-impact-analyzer/test-prompts.json
+index f718dcb..3906597 100644
+--- a/plugins/testing/skills/change-impact-analyzer/test-prompts.json
++++ b/plugins/testing/skills/change-impact-analyzer/test-prompts.json
+@@ -13,5 +13,15 @@
+     "id": 3,
+     "prompt": "看看最近3个commit的变更有没有影响到回归测试，回归用例在 tests/regression.csv",
+     "expected": "正确解析commit范围，CSV格式用例解析，覆盖缺口分析，输出报告"
++  },
++  {
++    "id": 4,
++    "prompt": "对照 docs/requirement.md，分析 main...当前分支的代码改动，输出需求覆盖情况和测试范围",
++    "expected": "Mode B 模式：拆解需求条目→需求×实现×测试三向对照→输出覆盖状态（已覆盖/部分覆盖/未发现实现/冲突/需确认）+ 疑似超范围实现 + 需求追踪矩阵章节"
++  },
++  {
++    "id": 5,
++    "prompt": "分析这个 patch 对现有用例的影响，patch 内容如下：\ndiff --git a/src/api/user.ts b/src/api/user.ts\n...",
++    "expected": "识别为外部 Patch 模式，跳过 git 命令，直接解析 patch→跨层影响链路追踪→前后端契约两侧检查→输出报告"
+   }
+ ]
+-- 
+2.43.0
+
