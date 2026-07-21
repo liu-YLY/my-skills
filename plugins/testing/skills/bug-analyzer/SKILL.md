@@ -264,6 +264,8 @@ keywords:
 |------|---------|
 | [knowledge/root-cause-frameworks.md](knowledge/root-cause-frameworks.md) | **步骤 3 定位时必读**（鱼骨图/5 Whys/因果链/防御性用例反推） |
 | [knowledge/bug-patterns-index.md](knowledge/bug-patterns-index.md) | **步骤 2/3 查阅**（指向 test-case-engineer 的共享缺陷模式库） |
+| [knowledge/report-template.md](knowledge/report-template.md) | **步骤 5 生成报告时查阅**（报告字段定义/填写规范/两类报告示例/转交规则） |
+| [knowledge/defensive-test-points.md](knowledge/defensive-test-points.md) | **步骤 5 反推防御性测试点时查阅**（反推流程/5 类测试点/检查清单/转交规则） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
 
 ---
