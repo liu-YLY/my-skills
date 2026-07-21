@@ -71,12 +71,18 @@ wechat-formatter/
 │   ├── sample-output-tech-blog.md         # 技术博客输出示例
 │   ├── sample-output-tutorial.md          # 教程指南输出示例
 │   ├── sample-output-deep-dive.md         # 深度干货输出示例
-│   └── sample-output-casual-chat.md       # 轻松聊天输出示例
+│   ├── sample-output-casual-chat.md       # 轻松聊天输出示例
+│   ├── sample-output-apple.md             # 苹果风输出示例
+│   └── sample-output-cyber.md             # 赛博朋克输出示例
 ├── references/                 # 参考规范
 │   ├── formatting-rules.md     # 排版规则详解（要素识别 + 通用规则 + 质量校验）
 │   └── wechat-markdown.md      # 公众号 Markdown 兼容性 + CSS 渲染参数
-└── knowledge/                  # 知识库
-    └── wechat-traps.md         # 公众号排版常见陷阱
+├── knowledge/                  # 知识库
+│   ├── wechat-traps.md         # 公众号排版常见陷阱
+│   ├── module-design.md        # 高级排版模块设计原则
+│   └── brand-profile-spec.md  # Brand Profile 配置规范
+└── integrations/              # 集成与上手
+    └── quickstart.md          # 快速开始指南（依赖安装 / 用法 / 故障排查）
 ```
 
 ## 排版规范要点
