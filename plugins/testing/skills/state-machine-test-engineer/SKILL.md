@@ -29,6 +29,8 @@ integrations:
 
 状态机驱动的状态型需求测试 skill v1.0.0：基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
 
+> ⚠️ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 当前为 **v0.1.0**，确定性工具（validate/generate/export/coverage）已实现并通过 34 项单元测试，但 **MCP 协议层注册待 v0.2.0 完成**。当前即使按 [quickstart.md](integrations/quickstart.md) 配置完成，runtime 也无法通过 MCP 协议调用 Server，**增强模式实际不可达，skill 以独立模式运行**（输出首行标 `⚠ 独立模式（未校验）`）。预计 v0.2.0 发布后增强模式可用。
+
 ## 适用范围
 
 **适用**：状态型需求测试
