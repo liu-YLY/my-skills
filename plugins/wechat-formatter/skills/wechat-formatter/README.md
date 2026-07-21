@@ -1,5 +1,7 @@
 # 微信公众号排版技能 (wechat-formatter)
 
+> **版本**：v3.0.0（与 [SKILL.md](SKILL.md) frontmatter / plugin.json 同步）
+
 一套面向技术领域的微信公众号文章排版技能，提供六种风格模板，自动分析文章内容并输出可直接复制到公众号编辑器的格式化 Markdown。
 
 ## 适用场景
