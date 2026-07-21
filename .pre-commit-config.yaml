@@ -1,0 +1,67 @@
+# pre-commit 配置
+#
+# 本配置严格遵循项目硬约束「禁止对原有代码进行任何格式化操作」：
+# - 仅启用只读检查类 hook（不自动修改文件内容）
+# - 仅对 commit message 启用 Conventional Commits 强制校验
+# - 对应 rules/git-commit-message.md 与 .trae/rules/git-commit-message.md
+#
+# 安装：
+#   pip install pre-commit
+#   pre-commit install
+#   pre-commit install --hook-type commit-msg
+#
+# 手动运行：
+#   pre-commit run --all-files
+#   pre-commit run commitizen --hook-stage commit-msg --commit-msg-filename .git/COMMIT_EDITMSG
+
+repos:
+  # ============================================================
+  # 通用安全检查（只读，不修改文件）
+  # 对应 AGENTS.md 提交前检查清单：不包含敏感文件、原子性提交
+  # ============================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-merge-conflict
+        name: 检查合并冲突标记
+      - id: check-added-large-files
+        name: 阻止大文件提交
+        args: ['--maxkb=500']
+      - id: detect-private-key
+        name: 检测私钥泄露
+      - id: check-json
+        name: JSON 语法校验
+        files: \.json$
+      - id: check-yaml
+        name: YAML 语法校验
+        files: \.(yaml|yml)$
+        args: ['--allow-multiple-documents']
+
+  # ============================================================
+  # Conventional Commits 校验
+  # 对应 rules/git-commit-message.md 与 .trae/rules/git-commit-message.md
+  # type 必须为：feat/fix/docs/style/refactor/perf/test/chore/ci/build/revert
+  # subject 默认使用中文，使用祈使句、现在时态，结尾不加句号，不超过 72 字符
+  # ============================================================
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.2.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args:
+          - feat
+          - fix
+          - docs
+          - style
+          - refactor
+          - perf
+          - test
+          - chore
+          - ci
+          - build
+          - revert
+
+# ============================================================
+# 全局配置
+# ============================================================
+minimum_pre_commit_version: '3.0.0'
