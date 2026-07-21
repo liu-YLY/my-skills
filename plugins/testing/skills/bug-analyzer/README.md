@@ -26,7 +26,9 @@ bug-analyzer/
 ├── SKILL.md                          # 入口 + 核心流程（五步定位法）
 ├── knowledge/
 │   ├── root-cause-frameworks.md      # 鱼骨图/5 Whys/因果链/防御性用例反推
-│   └── bug-patterns-index.md         # 指向 test-case-engineer 的共享缺陷模式库
+│   ├── bug-patterns-index.md         # 指向 test-case-engineer 的共享缺陷模式库
+│   ├── report-template.md            # 报告字段定义/填写规范/两类报告示例
+│   └── defensive-test-points.md      # 防御性测试点反推流程/5 类测试点/检查清单
 ├── integrations/
 │   └── quickstart.md                 # 命令速查
 ├── scripts/
