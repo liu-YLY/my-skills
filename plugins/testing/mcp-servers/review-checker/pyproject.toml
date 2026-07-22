@@ -1,6 +1,6 @@
 [project]
 name = "review-checker-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "MCP Server for test-case-engineer review mode: deterministic 9-dimension validation"
 requires-python = ">=3.11"
 license = { text = "MIT" }
