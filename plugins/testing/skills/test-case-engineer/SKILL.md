@@ -78,7 +78,7 @@ keywords:
 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **阶段 2 强制读**（防御性测试点补充，含领域特定模式 + 安全专项检查清单） |
 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | **阶段 1 强制读** + Office/PDF 转换 |
 | [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板） |
-| [knowledge/review-mode.md](knowledge/review-mode.md) | **评审模式触发时必读**（6 维度评审工作流 + 评审度量报告 + 评审修订闭环 + 增量评审子模式 + 多格式输入） |
+| [knowledge/review-mode.md](knowledge/review-mode.md) | **评审模式触发时必读**（9 维度评审工作流 + 评审度量报告 + 评审修订闭环 + 增量评审子模式 + 多格式输入 + 评审报告文件化） |
 | [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **阶段 3/4 自检时对照**（反例黑名单） |
 | [knowledge/products/](knowledge/products/) | **阶段 1 必须加载**（产品专项业务知识，若存在对应产品知识文件） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
