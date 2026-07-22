@@ -31,6 +31,7 @@ def _make_case(
     expected_results: str = "页面跳转至首页，顶部显示用户名",
     preconditions: list[str] | None = None,
     test_point_id: str = "TP_001",
+    notes: str = "",
 ) -> TestCase:
     return TestCase(
         id=id,
@@ -42,6 +43,7 @@ def _make_case(
         expected_results=expected_results,
         preconditions=preconditions or [],
         test_point_id=test_point_id,
+        notes=notes,
     )
 
 
@@ -134,6 +136,60 @@ class TestFieldCompleteness:
         case = _make_case(title="登录-正确操作-等")
         issues = check_field_completeness(case)
         assert any(i.severity.value == "P1" and "模糊词" in i.rule for i in issues)
+
+
+class TestTitleLengthGuideline:
+    """标题长度软指导（对齐 test-standards.md 超长标题例外判定）。"""
+
+    def test_short_title_no_issue(self):
+        # 短标题（≤ 40 字符）不应触发长度规则
+        case = _make_case(title="登录-手机号有效密码-跳转首页")
+        issues = check_field_completeness(case)
+        assert not any("标题长度" in i.rule for i in issues)
+
+    def test_long_title_without_exception_triggers_p2(self):
+        # 超长标题（> 40 字符）且 notes 未记录例外 → P2
+        long_title = "登录-手机号有效密码-跳转首页-夜间模式-弱网环境-v2接口-多端同步-用户身份验证完整流程"
+        case = _make_case(title=long_title)
+        issues = check_field_completeness(case)
+        title_issues = [i for i in issues if "标题长度" in i.rule]
+        assert len(title_issues) == 1
+        assert title_issues[0].severity.value == "P2"
+        assert "未记录例外" in title_issues[0].evidence
+
+    def test_long_title_with_exception_keyword_no_issue(self):
+        # 超长标题 + notes 记录例外关键词 → 不报
+        long_title = "登录-手机号有效密码-跳转首页-夜间模式-弱网环境-v2接口-多端同步-用户身份验证完整流程"
+        case = _make_case(
+            title=long_title,
+            notes="保留：场景可区分性优先，删除夜间模式会与基础登录用例重复",
+        )
+        issues = check_field_completeness(case)
+        assert not any("标题长度" in i.rule for i in issues)
+
+    def test_long_title_with_environment_marker_no_issue(self):
+        # 超长标题 + notes 含「环境标识」关键词 → 不报
+        long_title = "登录-手机号有效密码-跳转首页-夜间模式-弱网环境-v2接口-多端同步-用户身份验证完整流程"
+        case = _make_case(
+            title=long_title,
+            notes="保留：环境标识（夜间模式/弱网/v2 接口）必要",
+        )
+        issues = check_field_completeness(case)
+        assert not any("标题长度" in i.rule for i in issues)
+
+    def test_long_title_with_empty_notes_triggers_p2(self):
+        # 超长标题 + notes 为空 → P2（默认 notes 为空）
+        long_title = "登录-手机号有效密码-跳转首页-夜间模式-弱网环境-v2接口-多端同步-用户身份验证完整流程"
+        case = _make_case(title=long_title)  # notes 默认 ""
+        issues = check_field_completeness(case)
+        assert any(i.severity.value == "P2" and "标题长度" in i.rule for i in issues)
+
+    def test_long_title_with_irrelevant_notes_triggers_p2(self):
+        # 超长标题 + notes 含内容但无例外关键词 → 仍触发 P2
+        long_title = "登录-手机号有效密码-跳转首页-夜间模式-弱网环境-v2接口-多端同步-用户身份验证完整流程"
+        case = _make_case(title=long_title, notes="这条用例很重要")
+        issues = check_field_completeness(case)
+        assert any(i.severity.value == "P2" and "标题长度" in i.rule for i in issues)
 
 
 class TestExecutability:

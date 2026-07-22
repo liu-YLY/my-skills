@@ -244,3 +244,140 @@ class TestMainCli:
         # HTTP 待 v0.3.0，应拒绝并打印提示
         assert rc == 1
         assert "HTTP" in captured.err or "v0.3.0" in captured.err
+
+
+class TestIncrementalReviewScenarios:
+    """增量评审场景下的 generate_report 行为。
+
+    增量评审典型场景：变更用例数少（1-5 条），需要正确计算评级与密度。
+    review-mode.md 增量评审子模式要求「用例总数 = 变更用例数」。
+    """
+
+    def test_single_clean_changed_case_pass_rate_one(self):
+        # 增量评审：1 条变更用例且无字段问题 → pass_rate == 1.0
+        # 注意：单条用例会触发覆盖度 P0（缺其他 3 类场景），但覆盖度问题 case_id="-"
+        # 不计入 issue_cases，故 pass_rate 仍为 1.0；但 issue_density > 0 → 评级非 A
+        case = _make_case(id="TC_001", title="登录-正向", test_point_id="TP_001")
+        case_set = TestCaseSet(cases=[case], test_point_ids=["TP_001"])
+        report = generate_report(case_set)
+        assert report.total_cases == 1
+        assert report.pass_rate == 1.0
+        assert report.issue_cases == 0
+        # 覆盖度 P0 存在但 case_id="-"，不影响 pass_rate
+        assert report.issue_density > 0  # 覆盖度问题使密度 > 0
+        assert report.grade == "B"  # pass_rate 100% 但密度高 → B 非 A
+
+    def test_single_problematic_changed_case_gets_low_grade(self):
+        # 增量评审：1 条变更用例且有问题 → D 级（通过率 0%）
+        case = _make_case(
+            id="TC_001", title="登录-等", steps=["输入 xxx"],
+            expected_results="功能正常", test_point_id="",
+        )
+        case_set = TestCaseSet(cases=[case], test_point_ids=["TP_001"])
+        report = generate_report(case_set)
+        assert report.total_cases == 1
+        assert report.pass_rate == 0.0
+        assert report.grade == "D"
+        assert report.issue_density > 0
+
+    def test_small_batch_mixed_cases_grade(self):
+        # 增量评审：5 条变更用例，3 条干净 2 条有问题 → 通过率 60% → C 级
+        cases = []
+        for i in range(3):
+            cases.append(_make_case(
+                id=f"TC_{i:03d}", title=f"正向用例-{i}",
+                test_point_id=f"TP_{i:03d}",
+            ))
+        # 2 条有问题
+        cases.append(_make_case(
+            id="TC_003", title="登录-等", steps=["输入 xxx"],
+            expected_results="功能正常", test_point_id="TP_003",
+        ))
+        cases.append(_make_case(
+            id="TC_004", title="登录-之类", steps=["输入 某个"],
+            expected_results="结果正确", test_point_id="TP_004",
+        ))
+        tps = [f"TP_{i:03d}" for i in range(5)]
+        case_set = TestCaseSet(cases=cases, test_point_ids=tps)
+        report = generate_report(case_set)
+        assert report.total_cases == 5
+        assert report.issue_cases == 2
+        assert report.pass_rate == 0.6
+        assert report.grade == "C"
+
+    def test_incremental_report_has_full_dimension_stats(self):
+        # 增量评审报告仍应包含全部 9 维度统计（即使多数为 0）
+        case = _make_case(id="TC_001", title="登录-正向", test_point_id="TP_001")
+        case_set = TestCaseSet(cases=[case], test_point_ids=["TP_001"])
+        report = generate_report(case_set)
+        assert len(report.dimension_stats) == 9
+        # 单条干净用例不应有覆盖度问题（因为只有 1 条正向，其他 3 类为 0 → P0）
+        # 实际上单条用例会触发覆盖度 P0，验证 dimension_stats 正确反映
+        coverage_stat = next(s for s in report.dimension_stats if s.dimension == "覆盖度")
+        assert coverage_stat.issue_count > 0
+
+
+class TestMcpIntegration:
+    """MCP 工具端到端集成测试。
+
+    验证 review_test_cases → generate_report 链路一致性，
+    以及预计算 issues 与自动计算结果一致。
+    """
+
+    def test_precomputed_issues_match_auto_computed(self):
+        # 预计算 issues 传入 generate_report，应与自动计算结果一致
+        case_set = _make_clean_set()
+        auto_report = generate_report(case_set)
+        precomputed_issues = review_test_cases(case_set)
+        manual_report = generate_report(case_set, issues=precomputed_issues)
+        assert auto_report.total_issues == manual_report.total_issues
+        assert auto_report.pass_rate == manual_report.pass_rate
+        assert auto_report.issue_density == manual_report.issue_density
+        assert auto_report.grade == manual_report.grade
+
+    def test_dimension_stats_consistent_with_issues(self):
+        # dimension_stats 的 issue_count 应与 issues 列表按维度分组计数一致
+        case = _make_case(
+            id="TC_001", title="登录-等", steps=["输入 xxx", "输入 yyy"],
+            expected_results="功能正常", test_point_id="",
+            preconditions=["需要生产环境数据"],
+        )
+        case_set = TestCaseSet(cases=[case], test_point_ids=["TP_001"])
+        issues = review_test_cases(case_set)
+        report = generate_report(case_set, issues=issues)
+        from collections import Counter
+        dim_counts = Counter(i.dimension for i in issues)
+        for stat in report.dimension_stats:
+            assert stat.issue_count == dim_counts.get(stat.dimension, 0), \
+                f"维度 {stat.dimension} 统计不一致"
+
+    def test_severity_stats_consistent_with_issues(self):
+        # severity_stats 应与 issues 列表按严重等级计数一致
+        case = _make_case(
+            id="TC_001", title="登录-等", steps=["输入 xxx"] * 8,
+            expected_results="功能正常", test_point_id="",
+            preconditions=["需要生产环境数据"],
+        )
+        case_set = TestCaseSet(cases=[case], test_point_ids=["TP_001"])
+        issues = review_test_cases(case_set)
+        report = generate_report(case_set, issues=issues)
+        from collections import Counter
+        sev_counts = Counter(i.severity.value for i in issues)
+        for sev in ("P0", "P1", "P2"):
+            assert report.severity_stats[sev] == sev_counts.get(sev, 0), \
+                f"严重等级 {sev} 统计不一致"
+
+    def test_issue_cases_count_matches_unique_case_ids(self):
+        # issue_cases 应等于有问题的唯一用例 ID 数（排除 case_id="-" 的集合级问题）
+        cases = [
+            _make_case(id="TC_001", title="登录-等", test_point_id="TP_001"),
+            _make_case(id="TC_002", title="登录-之类", test_point_id="TP_002"),
+            _make_case(id="TC_003", title="登录成功-跳转首页", test_point_id="TP_003"),
+        ]
+        case_set = TestCaseSet(cases=cases, test_point_ids=["TP_001", "TP_002", "TP_003"])
+        report = generate_report(case_set)
+        # TC_001 和 TC_002 有字段规范 P1 问题，TC_003 无字段问题
+        # 注意：覆盖度/优先级问题 case_id="-" 不计入 issue_cases
+        assert report.issue_cases == 2
+        assert report.total_cases == 3
+        assert report.pass_rate == round(1 / 3, 4)  # pass_rate round 到 4 位小数
