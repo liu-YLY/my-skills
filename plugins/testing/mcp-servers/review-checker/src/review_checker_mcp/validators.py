@@ -32,6 +32,11 @@ VAGUE_EXPECTED_PATTERN = re.compile(
 # 字段规范维度：模糊词（P1）
 VAGUE_WORD_PATTERN = re.compile(r"(等|之类|正确|正常|类似)")
 
+# 字段规范维度：标题长度软指导阈值（对齐 test-standards.md）
+TITLE_LENGTH_GUIDELINE = 40
+# 超长标题例外判定关键词（notes 含任一即视为已记录例外）
+TITLE_EXCEPTION_KEYWORDS = ("保留", "例外", "超长", "场景可区分", "环境标识", "前置条件", "快速识别")
+
 # 可维护性维度：步骤引用其他用例（P2）
 STEP_CROSS_REF_PATTERN = re.compile(r"执行\s*TC[_-]\w+|参考\s*TC[_-]\w+|延续\s*TC[_-]\w+")
 
@@ -163,6 +168,22 @@ def check_field_completeness(case: TestCase) -> list[Issue]:
                 suggestion="将 title 改为具体描述",
             )
         )
+
+    # 标题长度软指导（对齐 test-standards.md 超长标题例外判定）
+    # 软指导：> 40 字符且未记录例外 → P2；已记录例外（notes 含关键词）→ 不报
+    if len(case.title) > TITLE_LENGTH_GUIDELINE:
+        has_exception = any(kw in case.notes for kw in TITLE_EXCEPTION_KEYWORDS)
+        if not has_exception:
+            issues.append(
+                Issue(
+                    case_id=case.id,
+                    dimension="字段规范",
+                    severity=Severity.P2,
+                    rule=f"标题长度 > {TITLE_LENGTH_GUIDELINE} 字符且未记录例外 → P2",
+                    evidence=f"title 长度 {len(case.title)} 字符，notes 未记录例外",
+                    suggestion="精简标题或在 notes 记录保留原因（如「场景可区分」「环境标识」）",
+                )
+            )
     return issues
 
 

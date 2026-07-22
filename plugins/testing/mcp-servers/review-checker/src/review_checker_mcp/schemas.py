@@ -51,6 +51,7 @@ class TestCase(BaseModel):
     expected_results: str = ""
     preconditions: list[str] = Field(default_factory=list)
     test_point_id: str = ""
+    notes: str = ""  # 用例备注，超长标题等场景记录保留原因
 
 
 class TestCaseSet(BaseModel):
