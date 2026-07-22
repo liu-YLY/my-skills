@@ -19,7 +19,7 @@ keywords:
 
 # Testing Bundle
 
-测试能力 bundle 入口 v3.1.0：统一路由到 5 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer），另可协同外部 skill change-impact-analyzer（链 6）。
+测试能力 bundle 入口 v3.1.1：统一路由到 5 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer），另可协同外部 skill change-impact-analyzer（链 6）。
 
 ## 适用范围
 
@@ -207,10 +207,12 @@ keywords:
 - `bug-patterns.md` 主归属 test-case-engineer，bug-analyzer 通过相对路径 `../test-case-engineer/knowledge/bug-patterns.md` 引用
 - strategy/performance/state-machine 不共享知识库（聚焦点不同，共享会引入路由歧义）
 - state-machine-test-engineer 可选调用 `state-machine-testing-mcp` Server 做 Schema 校验与可视化（未安装时降级为纯 LLM 推理）
+- test-case-engineer 评审模式可选调用 `review-checker-mcp` Server 做 9 维度确定性校验与度量报告（未安装时降级为纯 LLM 推理）
 
 **依赖说明**：
 - bug-analyzer 单独安装时，步骤 2/3 的"对照缺陷模式库"能力会降级（仍有通用模式兜底，但无法查阅完整缺陷模式库）。通过本 bundle 整体安装获得完整能力。
 - state-machine-test-engineer 单独安装时完全可用；安装配套 MCP Server 后进入"增强模式"，获得 Schema 校验、Mermaid 可视化、覆盖度报告等额外能力。
+- test-case-engineer 评审模式单独可用；安装配套 review-checker MCP Server 后进入"增强模式"，获得 9 维度确定性校验与度量报告（通过率/问题密度/评级 A-D）。
 
 ## 安装方式
 
@@ -221,7 +223,7 @@ keywords:
 ### 方式 2：按需安装
 
 - 只需项目级策略 → 安装 `test-strategy-engineer`
-- 只需用例生成 → 安装 `test-case-engineer`
+- 只需用例生成 → 安装 `test-case-engineer`（评审模式可选再装 review-checker MCP Server 进入增强模式）
 - 只需性能测试 → 安装 `performance-test-engineer`
 - 只需 Bug 分析 → 安装 `bug-analyzer`（缺陷模式库引用会降级）
 - 只需状态机测试 → 安装 `state-machine-test-engineer`（可选再装 MCP Server 进入增强模式）
@@ -413,6 +415,7 @@ testing-bundle:
 4. 混合意图按对应链路执行（7 条链），转交点 🔴 CHECKPOINT
 5. 子 skill 执行具体任务并输出结果
 6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（详见 [state-machine-test-engineer/integrations/quickstart.md](../state-machine-test-engineer/integrations/quickstart.md)）
+7. test-case-engineer 评审模式可选安装配套 review-checker MCP Server 进入增强模式（详见 [review-checker README](../../mcp-servers/review-checker/README.md)）
 
 ---
 
@@ -421,3 +424,4 @@ testing-bundle:
 - v2.0.0: 扩展为 4-skill 路由（+ strategy + performance），breaking change
 - v3.0.0: 扩展为 5-skill 路由（+ state-machine-test-engineer），新增链 5（状态机+用例协同），breaking change
 - v3.1.0: 新增链 6（评审→覆盖缺口验证，协同外部 change-impact-analyzer）+ 链 7（评审→风险用例根因反推，协同 bug-analyzer），评审模式成为混合意图链起点
+- v3.1.1: 声明 test-case-engineer 评审模式可选调用 review-checker MCP Server（与 state-machine MCP 增强对称），未安装时降级为纯 LLM 推理
