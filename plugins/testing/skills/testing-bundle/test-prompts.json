@@ -88,5 +88,20 @@
     "id": 18,
     "prompt": "支付回调可能因网络重试重复到达，需要保证幂等性",
     "expected": "v3.0.0 幂等场景验证：命中'幂等'关键词 → 路由到 state-machine-test-engineer → 10 类场景穷举中 idempotency 类应触发（条件：存在外部回调类 transition）→ 生成'重复回调不应改变已成功状态'场景 → evidence_type 必填为 需求明确 / 合理推理 / 待确认，禁止凭空补齐"
+  },
+  {
+    "id": 19,
+    "prompt": "评审这批用例的覆盖度，并对照最近的代码改动确认是否真的存在覆盖缺口：[附用例]",
+    "expected": "v3.1.0 混合意图（链 6）：含'评审'+'覆盖缺口/代码改动'混合信号 → 先路由到 test-case-engineer 评审模式 → R2 覆盖度维度发现 P0/P1 问题 → 🔴 CHECKPOINT 展示覆盖度问题清单 → 转交 change-impact-analyzer 做 git diff × 用例交叉验证 → 输出评审意见+度量报告+代码层覆盖缺口验证"
+  },
+  {
+    "id": 20,
+    "prompt": "评审这批用例，对于发现的高风险用例帮我反推一下根因：[附用例，含 P0 占位符问题]",
+    "expected": "v3.1.0 混合意图（链 7）：含'评审'+'根因反推'混合信号 → 先路由到 test-case-engineer 评审模式 → 发现高风险用例（P0 优先级集中/可执行性 P0 占位符）→ 🔴 CHECKPOINT 展示风险用例清单 → 转交 bug-analyzer 按五步定位法反推根因 → 输出评审意见+度量报告+风险用例清单+根因反推+防御性测试点清单"
+  },
+  {
+    "id": 21,
+    "prompt": "评审用例覆盖度并对照代码改动确认缺口，但 change-impact-analyzer 没装",
+    "expected": "v3.1.0 链 6 降级：混合意图命中链 6 → test-case-engineer 评审完成输出覆盖度问题 → 🔴 CHECKPOINT → 检测到 change-impact-analyzer 不可用 → 提示用户安装 → 降级输出 bundle 层方向性指导（按四阶段：收集输入→Diff 解析→交叉分析→生成报告）"
   }
 ]
