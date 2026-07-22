@@ -712,7 +712,7 @@
 
 ## 评审模式
 
-> 评审模式独立于四阶段生成流程，对他人/已有用例做 6 维度评审。完整工作流详见 [knowledge/review-mode.md](knowledge/review-mode.md)。
+> 评审模式独立于四阶段生成流程，对他人/已有用例做 6 维度评审，并输出评审度量报告与修订闭环。完整工作流详见 [knowledge/review-mode.md](knowledge/review-mode.md)。
 
 ## 反例与黑名单
 
