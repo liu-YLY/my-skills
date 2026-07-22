@@ -1,6 +1,6 @@
 ---
 name: testing-bundle
-version: 3.0.0
+version: 3.1.0
 description: >-
   Use when user needs any testing capability — generating test cases, reviewing test cases,
   designing test strategies, performance test plans, analyzing bug root causes, OR state-machine-driven
@@ -19,7 +19,7 @@ keywords:
 
 # Testing Bundle
 
-测试能力 bundle 入口 v3.0.0：统一路由到 5 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer）。
+测试能力 bundle 入口 v3.1.0：统一路由到 5 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer），另可协同外部 skill change-impact-analyzer（链 6）。
 
 ## 适用范围
 
@@ -75,7 +75,7 @@ keywords:
 
 ### 混合意图链
 
-当用户请求同时涉及多个子 skill 时，按以下 5 条链路执行，每条链的转交点都必须设 🔴 CHECKPOINT：
+当用户请求同时涉及多个子 skill 时，按以下 7 条链路执行，每条链的转交点都必须设 🔴 CHECKPOINT：
 
 **链 1：分析 Bug 并补充用例**
 ```
@@ -151,6 +151,44 @@ keywords:
 - 仅含状态型信号 → 单意图路由到 state-machine-test-engineer（输出场景清单为止）
 - 仅含用例信号 → 单意图路由到 test-case-engineer（按四阶段流程）
 - 含两者 → 链 5 协同
+
+**链 6：评审 → 覆盖缺口验证**
+```
+步骤 1: 路由到 test-case-engineer 评审模式执行用例评审
+        ↓
+步骤 2: 评审 R2 覆盖度维度发现 P0/P1 问题（4 类场景缺失 / 异常类型用例为 0）
+        ↓
+🔴 CHECKPOINT · 评审覆盖度问题确认：覆盖度问题清单（缺失场景类型 + 受影响模块 + 度量报告覆盖度行）必须展示给用户确认，用户可修改范围或终止流程，确认后才转交 change-impact-analyzer。
+        ↓
+步骤 3: 转交 change-impact-analyzer 做 git diff × 用例交叉验证，用代码层证据确认覆盖缺口是否真实存在
+        ↓
+步骤 4: 输出最终报告（评审意见表 + 评审度量报告 + 覆盖度问题清单 + 代码层覆盖缺口验证 + 补充用例建议）
+```
+
+**链 6 触发条件**：用户请求同时含"评审/review/检查用例质量"等评审信号 **且** 含"覆盖缺口/覆盖度验证/代码变更影响/diff 分析/回归风险"等覆盖验证信号。
+- 仅含评审信号 → 单意图路由到 test-case-engineer 评审模式
+- 仅含覆盖验证信号 → 单意图路由到 change-impact-analyzer
+- 含两者 → 链 6 协同
+
+> **注意**：change-impact-analyzer 不是 testing-bundle 的核心 peer（5-skill 架构未含），需单独安装。未安装时链 6 步骤 3 降级为 bundle 层方向性指导（"按四阶段：收集输入→Diff 解析→交叉分析→生成报告"）。
+
+**链 7：评审 → 风险用例根因反推**
+```
+步骤 1: 路由到 test-case-engineer 评审模式执行用例评审
+        ↓
+步骤 2: 评审发现高风险用例（P0 优先级集中 / 可执行性 P0 占位符 / 字段规范 P0 缺失）
+        ↓
+🔴 CHECKPOINT · 风险用例清单确认：风险用例清单（用例 ID + 问题维度 + 严重等级 + 具体问题 + 度量报告严重等级分布）必须展示给用户确认，用户可修改范围或终止流程，确认后才转交 bug-analyzer。
+        ↓
+步骤 3: 转交 bug-analyzer 基于风险用例反推根因（将风险用例视为"潜在缺陷场景"，按五步定位法分析根因）
+        ↓
+步骤 4: 输出最终报告（评审意见表 + 评审度量报告 + 风险用例清单 + 根因反推 + 防御性测试点清单）
+```
+
+**链 7 触发条件**：用户请求同时含"评审/review/检查用例质量"等评审信号 **且** 含"根因/缺陷定位/风险分析/为什么会出问题"等根因反推信号。
+- 仅含评审信号 → 单意图路由到 test-case-engineer 评审模式
+- 仅含根因信号 → 单意图路由到 bug-analyzer
+- 含两者 → 链 7 协同
 
 ## 子 skill 协同
 
@@ -372,7 +410,7 @@ testing-bundle:
 1. 确认已安装 5 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer）
 2. 用户提出测试相关请求时，testing-bundle 自动触发
 3. bundle 按 5-way 路由决策表判断意图并路由到对应子 skill
-4. 混合意图按对应链路执行（5 条链），转交点 🔴 CHECKPOINT
+4. 混合意图按对应链路执行（7 条链），转交点 🔴 CHECKPOINT
 5. 子 skill 执行具体任务并输出结果
 6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（详见 [state-machine-test-engineer/integrations/quickstart.md](../state-machine-test-engineer/integrations/quickstart.md)）
 
@@ -382,3 +420,4 @@ testing-bundle:
 - v1.0.0: 初始版本，2-skill 路由（case-engineer + bug-analyzer）
 - v2.0.0: 扩展为 4-skill 路由（+ strategy + performance），breaking change
 - v3.0.0: 扩展为 5-skill 路由（+ state-machine-test-engineer），新增链 5（状态机+用例协同），breaking change
+- v3.1.0: 新增链 6（评审→覆盖缺口验证，协同外部 change-impact-analyzer）+ 链 7（评审→风险用例根因反推，协同 bug-analyzer），评审模式成为混合意图链起点
