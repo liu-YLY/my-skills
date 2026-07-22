@@ -1,8 +1,8 @@
 # Review Checker MCP Server
 
-> 配套 test-case-engineer 评审模式的 Python MCP Server v0.1.0：提供 9 维度确定性校验，作为 skill 的可选增强引擎。
+> 配套 test-case-engineer 评审模式的 Python MCP Server v0.2.0：提供 9 维度确定性校验与度量报告，作为 skill 的可选增强引擎。
 
-> **实现状态**：v0.1.0 已完成 pydantic Schema + 9 维度确定性校验逻辑 + 单元测试（29 通过，覆盖率 97.3%）。MCP 协议层注册待 v0.2.0。
+> **实现状态**：v0.2.0 已完成 pydantic Schema + 9 维度确定性校验逻辑 + MCP 协议层注册（review_test_cases / generate_report 工具）+ 单元测试（41 通过，覆盖率 93.3%）。
 
 ## 简介
 
@@ -29,27 +29,65 @@
 | 可自动化 | 断言模糊 + 数据依赖 | P2 | 模糊断言正则 + 造数关键词 |
 | 测试数据依赖 | 高成本造数 | P2 | 生产环境关键词 + mock 检测 |
 
+## 工具集（2 个）
+
+| 工具名 | 用途 | 输入 | 输出 | 是否调 LLM |
+|---|---|---|---|---|
+| `review_test_cases` | 对用例集执行 9 维度评审 | TestCaseSet | list[Issue] | 否 |
+| `generate_report` | 基于评审结果生成度量报告 | TestCaseSet（+可选预计算 issues） | ReviewReport | 否 |
+
+### 工具签名
+
+```python
+@mcp.tool()
+def review_test_cases(case_set: TestCaseSet) -> list[Issue]: ...
+
+@mcp.tool()
+def generate_report(case_set: TestCaseSet, issues: list[Issue] | None = None) -> ReviewReport: ...
+```
+
+`generate_report` 输出包含：通过率、问题密度、整体评级（A/B/C/D）、9 维度统计、严重等级分布（P0/P1/P2）。
+
+**评级阈值**：
+- A: 通过率 ≥ 95% 且 问题密度 < 0.5
+- B: 通过率 ≥ 80%
+- C: 通过率 ≥ 60%
+- D: 通过率 < 60%
+
 ## 使用方式
 
-### v0.1.0（直接 Python 调用）
+### 直接 Python 调用（库模式）
 
 ```python
 from review_checker_mcp.schemas import TestCase, TestCaseSet, Priority, ScenarioType
-from review_checker_mcp.validators import validate_all
+from review_checker_mcp.server import review_test_cases, generate_report
 
 case_set = TestCaseSet(cases=[...], test_point_ids=[...])
-issues = validate_all(case_set)
+issues = review_test_cases(case_set)
 for issue in issues:
     print(f"{issue.case_id} {issue.dimension} {issue.severity.value}: {issue.evidence}")
+
+report = generate_report(case_set)
+print(f"评级: {report.grade} 通过率: {report.pass_rate} 问题密度: {report.issue_density}")
 ```
 
-### v0.2.0（MCP 协议，待实现）
+### MCP 协议（stdio）
 
-```python
-# 通过 MCP 协议调用，待 v0.2.0 实现
-@mcp.tool()
-def review_test_cases(case_set: TestCaseSet) -> ReviewReport: ...
+```bash
+# 启动 stdio 传输
+python -m review_checker_mcp.server --transport stdio
+
+# 查看工具帮助
+python -m review_checker_mcp.server --help-tools
 ```
+
+Host 侧配置 MCP 客户端指向本 Server 后，可通过 MCP 协议调用 `review_test_cases` / `generate_report` 工具。
+
+### 安全降级
+
+- 未安装 `mcp` SDK → `_register_mcp_tools` 静默返回，模块仍可作为普通 Python 库使用
+- 已安装 `mcp` SDK 但 Server API 不兼容（无 `.tool()` 装饰器）→ 静默返回，不影响库模式调用
+- HTTP 传输待 v0.3.0 实现，当前仅支持 stdio
 
 ## 技术栈
 
@@ -57,5 +95,16 @@ def review_test_cases(case_set: TestCaseSet) -> ReviewReport: ...
 |---|---|---|
 | 语言 | Python 3.11+ | 与 state-machine-testing MCP Server 一致 |
 | Schema 校验 | pydantic v2 | 类型安全、错误信息详细 |
-| 测试 | pytest + pytest-cov | 覆盖率门槛 90%（实测 97.3%） |
+| 测试 | pytest + pytest-cov | 覆盖率门槛 90%（实测 93.3%） |
 | MCP SDK | mcp>=0.9.0 | v0.2.0 协议层注册使用 |
+
+## 版本历史
+
+- v0.1.0: 首版，9 维度确定性校验逻辑（validators）+ pydantic Schema + 单元测试
+- v0.2.0: 新增 MCP 协议层注册（server.review_test_cases / generate_report 工具）+ 度量报告（通过率/问题密度/评级/维度分布/严重等级分布）+ main CLI 入口（--transport/--help-tools）
+
+## 待后续版本
+
+- v0.3.0: HTTP/SSE 传输支持
+- v0.4.0: 增量评审模式（基于 git diff 仅校验变更用例）
+- v0.5.0: 历史报告对比（趋势分析）
