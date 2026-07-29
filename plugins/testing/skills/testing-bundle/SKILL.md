@@ -1,25 +1,27 @@
 ---
 name: testing-bundle
-version: 3.1.0
+version: 3.1.1
 description: >-
-  Use when user needs any testing capability — generating test cases, reviewing test cases,
-  designing test strategies, performance test plans, analyzing bug root causes, OR state-machine-driven
-  testing for stateful business objects (orders/approvals/tickets/membership etc.).
-  Triggers on: 测试、测试用例、测试点、用例评审、测试策略、测试计划、测试分层、风险矩阵、准入准出、需求分析、Bug分析、根因、缺陷定位、复现、5 Whys、性能测试、负载测试、压力测试、TPS、响应时间、瓶颈、容量评估、状态机、状态流转、状态转换、生命周期、非法跳转、幂等、并发冲突、消息乱序、状态回退、幽灵状态、终态吸收.
-  This is a bundle entry that routes to test-strategy-engineer, test-case-engineer, performance-test-engineer, bug-analyzer, or state-machine-test-engineer.
+  Use when user has mixed, ambiguous, or explicitly routing-required testing requests —
+  e.g. "analyze bug AND generate test cases", "design strategy AND generate layered cases",
+  "performance test AND diagnose bottleneck", "review AND check coverage gaps",
+  or "not sure which testing capability is needed".
+  For single-intent requests (test cases only, strategy only, performance only, bug analysis only,
+  state-machine only), the corresponding sub-skill handles directly without bundle routing.
+  Triggers on: 混合测试意图、模糊测试请求、测试bundle、测试路由、不确定需要哪种测试能力.
+  This is a bundle entry that routes to test-strategy-engineer, test-case-engineer,
+  performance-test-engineer, bug-analyzer, or state-machine-test-engineer.
 keywords:
-  - 测试
-  - 测试用例
-  - 测试策略
-  - 性能测试
-  - Bug分析
-  - 状态机测试
   - 测试bundle
+  - 测试路由
+  - 混合测试意图
+  - 模糊测试请求
+  - 测试能力选择
 ---
 
 # Testing Bundle
 
-测试能力 bundle 入口 v3.1.1：统一路由到 5 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer），另可协同外部 skill change-impact-analyzer（链 6）。
+测试能力 bundle 入口 v3.1.1：统一路由到 5 个核心子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer），另含第 6 个协同 skill change-impact-analyzer（链 6，随 testing plugin 整体安装获得）。
 
 ## 适用范围
 
@@ -42,7 +44,7 @@ keywords:
                          │
                          ▼
               ┌─────────────────────────┐
-              │   testing-bundle v3.0.0 │  路由层（只路由，不实现能力）
+              │   testing-bundle v3.1.1 │  路由层（只路由，不实现能力）
               └───────────┬─────────────┘
                           │ 5-way 意图判断
         ┌─────────┬───────┼───────┬───────────┬──────────────┐
@@ -50,7 +52,7 @@ keywords:
   ┌──────────┐┌─────────┐┌──────┐┌───────────┐┌──────────────┐
   │strategy- ││case-    ││bug-  ││performance││state-machine │
   │engineer  ││engineer ││anlyz ││-engineer  ││-test-engineer│
-  │ v1.0.0   ││ v8.1.0  ││v1.0.0││ v1.0.0    ││ v1.0.0(新增) │
+  │ v1.0.0   ││ v8.1.0  ││v1.0.0││ v1.0.0    ││ v1.0.0       │
   ├──────────┤├─────────┤├──────┤├───────────┤├──────────────┤
   │项目级     ││功能用例  ││功能缺陷││性能测试    ││状态机建模     │
   │策略/分层  ││设计      ││根因   ││场景+瓶颈   ││+场景穷举      │
@@ -75,124 +77,25 @@ keywords:
 
 ### 混合意图链
 
-当用户请求同时涉及多个子 skill 时，按以下 7 条链路执行，每条链的转交点都必须设 🔴 CHECKPOINT：
+当用户请求同时涉及多个子 skill 时，按以下 7 条链路执行，每条链的转交点都必须设 🔴 CHECKPOINT。
 
-**链 1：分析 Bug 并补充用例**
-```
-步骤 1: 路由到 bug-analyzer 执行根因分析
-        ↓
-步骤 2: bug-analyzer 输出防御性测试点清单
-        ↓
-🔴 CHECKPOINT · bug-analyzer 完成：防御性测试点清单必须展示给用户确认，用户可修改清单或终止流程，确认后才转交 case-engineer。
-        ↓
-步骤 3: 转交 test-case-engineer 基于防御性测试点清单生成完整用例
-        ↓
-步骤 4: 输出最终报告（根因分析 + 完整测试用例）
-```
+**链路索引**（命中后读取对应链的完整步骤流）：
 
-**链 2：制定测试策略并生成分层用例**
-```
-步骤 1: 路由到 test-strategy-engineer 执行项目级策略设计
-        ↓
-步骤 2: strategy 输出分层策略 + 优先级 + 准入准出
-        ↓
-🔴 CHECKPOINT · strategy 完成：分层策略与优先级必须展示给用户确认，用户可修改或终止流程，确认后才转交 case-engineer。
-        ↓
-步骤 3: 转交 test-case-engineer 按分层策略生成对应层用例
-        ↓
-步骤 4: 输出最终报告（测试策略 + 分层测试用例）
-```
+| 链 | 名称 | 涉及 skill | 触发信号 |
+|---|---|---|---|
+| 1 | 分析 Bug 并补充用例 | bug-analyzer → test-case-engineer | Bug 分析 + 用例生成 |
+| 2 | 制定测试策略并生成分层用例 | test-strategy-engineer → test-case-engineer | 测试策略 + 用例生成 |
+| 3 | 做性能测试并分析瓶颈 | performance-test-engineer（内部完成） | 性能测试 + 瓶颈定位 |
+| 4 | 性能问题定位到代码缺陷 | performance-test-engineer → bug-analyzer | 性能瓶颈 + 代码缺陷信号 |
+| 5 | 状态机建模 + 用例生成 | state-machine-test-engineer → test-case-engineer | 状态机 + 用例生成 |
+| 6 | 评审 → 覆盖缺口验证 | test-case-engineer → change-impact-analyzer | 用例评审 + 覆盖缺口/diff 分析 |
+| 7 | 评审 → 风险用例根因反推 | test-case-engineer → bug-analyzer | 用例评审 + 根因反推 |
 
-**链 3：做性能测试并分析瓶颈**
-```
-步骤 1: 路由到 performance-test-engineer
-        ↓
-步骤 2: performance 内部完成正向方案（阶段 1-2）+ 逆向瓶颈定位（阶段 3）
-        ↓
-🔴 CHECKPOINT · performance 阶段 2 后：性能测试方案必须展示给用户确认，用户可修改负载模型/场景/阈值，确认后才进入阶段 3 瓶颈定位。
-        ↓
-步骤 3: performance 阶段 3 输出瓶颈定位报告（无需转交其他 skill，本链内部完成）
-        ↓
-步骤 4: 输出最终报告（性能测试方案 + 瓶颈定位报告）
-```
-
-**链 4：性能问题定位到代码缺陷**
-```
-步骤 1: 路由到 performance-test-engineer 执行瓶颈定位（资源/架构层）
-        ↓
-步骤 2: performance 阶段 3 输出瓶颈定位报告，阶段 4 判断瓶颈指向代码逻辑层
-        ↓
-🔴 CHECKPOINT · performance 瓶颈定位后：瓶颈归属判断与转交依据必须展示给用户确认，用户可修改归属判断或终止转交，确认后才转交 bug-analyzer。
-        ↓
-步骤 3: 转交 bug-analyzer 分析代码逻辑层缺陷（死锁/内存泄漏/N+1 查询/锁竞争等）
-        ↓
-步骤 4: 输出最终报告（瓶颈定位报告 + 代码缺陷根因 + 修复建议）
-```
-
-**链 3 vs 链 4 二级判定规则**（区分两条性能链路）：
-- 含关键词"代码层/逻辑层/代码缺陷/死锁/N+1 查询/内存泄漏/连接泄漏/空指针/业务规则错误 **等代码逻辑层信号**" → 链 4（转交 bug-analyzer）
-- 含关键词"资源/CPU/IO/网络/架构/扩容/连接池不足/缓存未命中 **等资源/架构层信号**" → 链 3（performance 内部完成）
-- 同时含两类关键词 → 默认走链 3，performance 阶段 4 判断后决定是否转交（🔴 CHECKPOINT 让用户确认）
-
-**链 5：状态机建模 + 用例生成**
-```
-步骤 1: 路由到 state-machine-test-engineer 执行状态机建模
-        ↓
-步骤 2: state-machine 输出状态机模型 + 场景清单（含依据类型标注：需求明确/合理推理/待确认）
-        ↓
-🔴 CHECKPOINT · state-machine 完成：状态机模型与场景清单必须展示给用户确认，用户可修改模型/补充场景/终止流程，确认后才转交 case-engineer。
-        ↓
-步骤 3: 转交 test-case-engineer 基于场景清单生成完整用例（每场景落实为可执行步骤）
-        ↓
-步骤 4: 输出最终报告（状态机模型 + 场景清单 + 完整测试用例）
-```
-
-**链 5 触发条件**：用户请求同时含"状态机/状态流转/生命周期/状态转换"等状态型信号 **且** 含"测试用例/测试场景/测试点"等用例生成信号。
-- 仅含状态型信号 → 单意图路由到 state-machine-test-engineer（输出场景清单为止）
-- 仅含用例信号 → 单意图路由到 test-case-engineer（按四阶段流程）
-- 含两者 → 链 5 协同
-
-**链 6：评审 → 覆盖缺口验证**
-```
-步骤 1: 路由到 test-case-engineer 评审模式执行用例评审
-        ↓
-步骤 2: 评审 R2 覆盖度维度发现 P0/P1 问题（4 类场景缺失 / 异常类型用例为 0）
-        ↓
-🔴 CHECKPOINT · 评审覆盖度问题确认：覆盖度问题清单（缺失场景类型 + 受影响模块 + 度量报告覆盖度行）必须展示给用户确认，用户可修改范围或终止流程，确认后才转交 change-impact-analyzer。
-        ↓
-步骤 3: 转交 change-impact-analyzer 做 git diff × 用例交叉验证，用代码层证据确认覆盖缺口是否真实存在
-        ↓
-步骤 4: 输出最终报告（评审意见表 + 评审度量报告 + 覆盖度问题清单 + 代码层覆盖缺口验证 + 补充用例建议）
-```
-
-**链 6 触发条件**：用户请求同时含"评审/review/检查用例质量"等评审信号 **且** 含"覆盖缺口/覆盖度验证/代码变更影响/diff 分析/回归风险"等覆盖验证信号。
-- 仅含评审信号 → 单意图路由到 test-case-engineer 评审模式
-- 仅含覆盖验证信号 → 单意图路由到 change-impact-analyzer
-- 含两者 → 链 6 协同
-
-> **注意**：change-impact-analyzer 不是 testing-bundle 的核心 peer（5-skill 架构未含），需单独安装。未安装时链 6 步骤 3 降级为 bundle 层方向性指导（"按四阶段：收集输入→Diff 解析→交叉分析→生成报告"）。
-
-**链 7：评审 → 风险用例根因反推**
-```
-步骤 1: 路由到 test-case-engineer 评审模式执行用例评审
-        ↓
-步骤 2: 评审发现高风险用例（P0 优先级集中 / 可执行性 P0 占位符 / 字段规范 P0 缺失）
-        ↓
-🔴 CHECKPOINT · 风险用例清单确认：风险用例清单（用例 ID + 问题维度 + 严重等级 + 具体问题 + 度量报告严重等级分布）必须展示给用户确认，用户可修改范围或终止流程，确认后才转交 bug-analyzer。
-        ↓
-步骤 3: 转交 bug-analyzer 基于风险用例反推根因（将风险用例视为"潜在缺陷场景"，按五步定位法分析根因）
-        ↓
-步骤 4: 输出最终报告（评审意见表 + 评审度量报告 + 风险用例清单 + 根因反推 + 防御性测试点清单）
-```
-
-**链 7 触发条件**：用户请求同时含"评审/review/检查用例质量"等评审信号 **且** 含"根因/缺陷定位/风险分析/为什么会出问题"等根因反推信号。
-- 仅含评审信号 → 单意图路由到 test-case-engineer 评审模式
-- 仅含根因信号 → 单意图路由到 bug-analyzer
-- 含两者 → 链 7 协同
+> **按需加载**：每条链的完整步骤流、CHECKPOINT 定义、触发条件与二级判定规则见 [knowledge/mixed-intent-chains.md](knowledge/mixed-intent-chains.md)。仅当判定顺序第一步命中某条链时，才读取该链的详细步骤流。
 
 ## 子 skill 协同
 
-本 bundle 包含 5 个子 skill，各自独立可用，也可通过 bundle 统一调用：
+本 bundle 包含 5 个核心子 skill + 1 个协同 skill（change-impact-analyzer，链 6 使用），各自独立可用，也可通过 bundle 统一调用：
 
 | 子 skill | 职责 | 核心工作流 | 独立可用 |
 |---------|------|----------|---------|
@@ -201,6 +104,7 @@ keywords:
 | [performance-test-engineer](../performance-test-engineer/SKILL.md) | 性能测试方案+瓶颈定位（资源/架构层） | 四阶段：需求理解→场景设计→CHECKPOINT→瓶颈定位→转交判断 | ✅ 是 |
 | [bug-analyzer](../bug-analyzer/SKILL.md) | 功能缺陷根因（代码逻辑层） | 五步定位法：复现→隔离→定位→验证→报告 | ⚠️ 依赖 test-case-engineer 的 bug-patterns.md |
 | [state-machine-test-engineer](../state-machine-test-engineer/SKILL.md) | 状态机建模+场景穷举（状态型需求） | 五阶段：状态型需求识别→状态机建模→CHECKPOINT→完整性检查→10类场景穷举→（可选）MCP增强 | ✅ 是（MCP 可选增强） |
+| [change-impact-analyzer](../change-impact-analyzer/SKILL.md) | 代码变更影响分析（git diff × 用例交叉验证） | 四阶段：收集输入→Diff 解析→交叉分析→生成报告 | ✅ 是 |
 
 ### 知识库共享
 
@@ -218,7 +122,7 @@ keywords:
 
 ### 方式 1：整体安装（推荐）
 
-安装 `testing-bundle` + `test-strategy-engineer` + `test-case-engineer` + `performance-test-engineer` + `bug-analyzer` + `state-machine-test-engineer` 六个 skill，获得完整测试能力。
+安装 testing plugin，获得 `testing-bundle` + `test-strategy-engineer` + `test-case-engineer` + `performance-test-engineer` + `bug-analyzer` + `state-machine-test-engineer` + `change-impact-analyzer` 共 7 个 skill，获得完整测试能力（含链 6 覆盖缺口验证）。
 
 ### 方式 2：按需安装
 
@@ -227,13 +131,14 @@ keywords:
 - 只需性能测试 → 安装 `performance-test-engineer`
 - 只需 Bug 分析 → 安装 `bug-analyzer`（缺陷模式库引用会降级）
 - 只需状态机测试 → 安装 `state-machine-test-engineer`（可选再装 MCP Server 进入增强模式）
+- 只需变更影响分析 → 安装 `change-impact-analyzer`
 - 多项需求 → 安装 `testing-bundle` + 对应子 skill
 
 ## 失败模式与 Fallback
 
 | 触发条件 | 一线修复 | 仍失败兜底 |
 |----------|----------|------------|
-| 意图判断不明确（用户请求含"测试"但未指明策略/用例/性能/Bug/状态机） | 追问用户：列出 5 个子 skill 的能力让用户选择（🔴 CHECKPOINT） | 默认路由到 test-case-engineer（覆盖面更广），并在输出首行标注「已默认路由到用例生成，如需其他能力请说明」 |
+| 意图判断不明确（用户请求含"测试"但未指明策略/用例/性能/Bug/状态机） | 追问用户：列出 5 个子 skill 的能力让用户选择（🔴 CHECKPOINT） | 持续追问，不默认路由。仅当用户明确授权"你来决定"时，可路由到 test-case-engineer，并在输出首行标注「已默认路由到用例生成，如需其他能力请说明」 |
 | 混合意图判定争议（如"防御性用例反推"既属 bug-analyzer 又与 test-case-engineer 边界模糊） | 优先路由到 bug-analyzer（根因分析是前置），完成后 🔴 CHECKPOINT 转交 test-case-engineer 生成完整用例 | 若用户明确只需用例不需根因分析，直接路由到 test-case-engineer |
 | 子 skill 未安装（路由目标 skill 不存在） | 检测到子 skill 不可用，提示用户安装对应 skill，并给出安装命令 | 标注「子 skill 不可用」，输出 bundle 层方向性指导模板（按目标 skill 选一）：bug-analyzer→「按五步定位法：复现→隔离→定位→验证→报告」；case-engineer→「按四阶段：理解需求→提取测试点→编写用例→自检补全」；strategy→「按五阶段：项目特征→风险矩阵→分层→范围准入准出→资源附录」；performance→「按四阶段：需求理解→场景设计→瓶颈定位→转交判断」；state-machine→「按五阶段：状态型需求识别→状态机建模→完整性检查→10类场景穷举→MCP增强」 |
 | 混合意图协同失败（上游 skill 完成但下游 skill 不可用） | 输出上游 skill 的中间产物（防御性测试点清单 / 分层策略 / 瓶颈定位报告），提示用户手动转交下游 skill 或自行处理 | 标注「协同中断」，仅输出上游 skill 报告，中间产物按上下文 schema 格式作为附录 |
@@ -275,7 +180,7 @@ keywords:
 
 | # | 反模式 | 为什么不要做 | 替代做法 |
 |---|--------|------------|---------|
-| 1 | 只装 bundle 不装子 skill | bundle 无法独立完成任何任务，所有请求都会失败 | 整体安装 testing-bundle + 5 个子 skill |
+| 1 | 只装 bundle 不装子 skill | bundle 无法独立完成任何任务，所有请求都会失败 | 整体安装 testing plugin（含 bundle + 6 个子 skill） |
 | 2 | bug-analyzer 单独安装不告知降级 | 用户不知缺陷模式库引用失效，根因分析能力打折 | 安装时显式提示「缺陷模式库会降级，同时安装 test-case-engineer 获得完整能力」 |
 
 ## 约束规则
@@ -409,7 +314,7 @@ testing-bundle:
 
 ## 快速上手
 
-1. 确认已安装 5 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer）
+1. 确认已安装 6 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer）
 2. 用户提出测试相关请求时，testing-bundle 自动触发
 3. bundle 按 5-way 路由决策表判断意图并路由到对应子 skill
 4. 混合意图按对应链路执行（7 条链），转交点 🔴 CHECKPOINT
