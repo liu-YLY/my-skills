@@ -10,13 +10,17 @@ description: >-
   state-machine only), the corresponding sub-skill handles directly without bundle routing.
   Triggers on: 混合测试意图、模糊测试请求、测试bundle、测试路由、不确定需要哪种测试能力.
   This is a bundle entry that routes to test-strategy-engineer, test-case-engineer,
-  performance-test-engineer, bug-analyzer, or state-machine-test-engineer.
+  performance-test-engineer, bug-analyzer, state-machine-test-engineer, or
+  change-impact-analyzer (cooperative skill for chain 6).
 keywords:
   - 测试bundle
   - 测试路由
   - 混合测试意图
   - 模糊测试请求
   - 测试能力选择
+  - 变更影响分析
+  - diff 分析
+  - 覆盖缺口
 ---
 
 # Testing Bundle
@@ -71,7 +75,8 @@ keywords:
 | Bug分析、根因、缺陷定位、复现、5 Whys、鱼骨图、防御性用例反推 **等功能缺陷信号** | **bug-analyzer** | 功能缺陷根因 |
 | 性能测试、负载测试、压力测试、并发测试、TPS、响应时间、瓶颈、性能瓶颈、容量评估 **等性能/资源层信号** | **performance-test-engineer** | 性能场景+瓶颈分析 |
 | 状态机、状态流转、状态转换、生命周期、非法跳转、幂等、并发冲突、消息乱序、状态回退、幽灵状态、终态吸收 **等状态型需求信号** | **state-machine-test-engineer** | 状态机建模+场景穷举 |
-| 意图不明确 | **追问用户**（🔴 CHECKPOINT） | 列出 5 个子 skill 的能力让用户选择 |
+| 变更影响分析、diff 分析、代码改动检查、覆盖缺口、回归风险 **等变更影响信号** | **change-impact-analyzer** | 代码变更影响分析（链 6 协同，亦可单意图路由） |
+| 意图不明确 | **追问用户**（🔴 CHECKPOINT） | 列出 6 个子 skill 的能力让用户选择 |
 
 > "等X信号"判定边界：含上述任一关键词，或语义等价表达（如"测试计划"等价"测试策略"、"QPS"等价"吞吐量/TPS"）。边界模糊时按"判定顺序第三步"追问用户。
 
@@ -138,7 +143,7 @@ keywords:
 
 | 触发条件 | 一线修复 | 仍失败兜底 |
 |----------|----------|------------|
-| 意图判断不明确（用户请求含"测试"但未指明策略/用例/性能/Bug/状态机） | 追问用户：列出 5 个子 skill 的能力让用户选择（🔴 CHECKPOINT） | 持续追问，不默认路由。仅当用户明确授权"你来决定"时，可路由到 test-case-engineer，并在输出首行标注「已默认路由到用例生成，如需其他能力请说明」 |
+| 意图判断不明确（用户请求含"测试"但未指明策略/用例/性能/Bug/状态机/变更影响） | 追问用户：列出 6 个子 skill 的能力让用户选择（🔴 CHECKPOINT） | 持续追问，不默认路由。仅当用户明确授权"你来决定"时，可路由到 test-case-engineer，并在输出首行标注「已默认路由到用例生成，如需其他能力请说明」 |
 | 混合意图判定争议（如"防御性用例反推"既属 bug-analyzer 又与 test-case-engineer 边界模糊） | 优先路由到 bug-analyzer（根因分析是前置），完成后 🔴 CHECKPOINT 转交 test-case-engineer 生成完整用例 | 若用户明确只需用例不需根因分析，直接路由到 test-case-engineer |
 | 子 skill 未安装（路由目标 skill 不存在） | 检测到子 skill 不可用，提示用户安装对应 skill，并给出安装命令 | 标注「子 skill 不可用」，输出 bundle 层方向性指导模板（按目标 skill 选一）：bug-analyzer→「按五步定位法：复现→隔离→定位→验证→报告」；case-engineer→「按四阶段：理解需求→提取测试点→编写用例→自检补全」；strategy→「按五阶段：项目特征→风险矩阵→分层→范围准入准出→资源附录」；performance→「按四阶段：需求理解→场景设计→瓶颈定位→转交判断」；state-machine→「按五阶段：状态型需求识别→状态机建模→完整性检查→10类场景穷举→MCP增强」 |
 | 混合意图协同失败（上游 skill 完成但下游 skill 不可用） | 输出上游 skill 的中间产物（防御性测试点清单 / 分层策略 / 瓶颈定位报告），提示用户手动转交下游 skill 或自行处理 | 标注「协同中断」，仅输出上游 skill 报告，中间产物按上下文 schema 格式作为附录 |
@@ -225,7 +230,7 @@ testing-bundle:
 
 ### 示例 3：意图不明确（追问）
 
-🔴 **CHECKPOINT · 意图不明确时强制追问**：不得"默认路由"，必须列出 5 个子 skill 的能力让用户选择。
+🔴 **CHECKPOINT · 意图不明确时强制追问**：不得"默认路由"，必须列出 6 个子 skill 的能力让用户选择。
 
 ```
 用户：我有个测试相关的问题
@@ -238,7 +243,8 @@ testing-bundle:
      B. 生成测试用例（test-case-engineer）
      C. 性能测试方案/瓶颈定位（performance-test-engineer）
      D. 分析 Bug 根因（bug-analyzer）
-     E. 状态机驱动的状态型需求测试（state-machine-test-engineer）"
+     E. 状态机驱动的状态型需求测试（state-machine-test-engineer）
+     F. 变更影响分析（change-impact-analyzer）"
 ```
 
 ### 示例 4：测试策略（自动路由到 strategy）
