@@ -28,7 +28,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | performance-test-engineer | v1.0.0 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
 | bug-analyzer | v1.0.0 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
 | state-machine-test-engineer | v1.0.0 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.1.0（可选） |
-| change-impact-analyzer | v1.0.0 | 变更影响分析（独立 skill，不集成到 bundle） | - |
+| change-impact-analyzer | v1.1.0 | 变更影响分析（独立 skill，不集成到 bundle） | - |
 
 **7 条混合意图链**：
 - 链 1：Bug 分析 + 补充用例 → bug-analyzer → case-engineer
@@ -43,7 +43,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 
 | Skill | 版本 | 功能 |
 |---|---|---|
-| **wechat-formatter** | v2.0.0 | 6 种排版风格（tech-blog/tutorial/deep-dive/casual-chat/apple/cyber）+ HTML 生成 |
+| **wechat-formatter** | v3.0.0 | 6 种排版风格 + 高级排版模块（:::module）+ 品牌配置 + HTML 生成 |
 
 > 各 skill 的详细能力、工作流程、使用示例见 [docs/skills-overview.md](docs/skills-overview.md)。
 
