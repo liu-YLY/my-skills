@@ -38,5 +38,15 @@
     "id": 8,
     "prompt": "分析 v1.2.0 到 v1.3.0 之间所有版本的变更对现有测试用例的影响，用例在 docs/test-suite.md",
     "expected": "识别为 Revision Range 模式，执行 git diff v1.2.0..v1.3.0 获取版本间改动，解析用例文件，交叉分析后输出报告"
+  },
+  {
+    "id": 9,
+    "prompt": "帮我为退款功能生成一批测试用例",
+    "expected": "不应触发 change-impact-analyzer（负例）：无 diff/变更/覆盖缺口信号，属用例生成请求 → 按适用边界转交 test-case-engineer；禁止强行执行 git diff 四阶段分析"
+  },
+  {
+    "id": 10,
+    "prompt": "评审这批登录模块的测试用例质量：[附用例]",
+    "expected": "不应触发 change-impact-analyzer（负例）：纯用例质量评审，未提供也未要求对照代码改动 → 应由 test-case-engineer 评审模式处理；仅当评审中需要结合 diff 验证覆盖缺口（链 6）时才进入本 skill"
   }
 ]
