@@ -12,7 +12,7 @@
 #
 # 手动运行：
 #   pre-commit run --all-files
-#   pre-commit run conventional-pre-commit --hook-stage commit-msg --commit-msg-filename .git/COMMIT_EDITMSG
+#   pre-commit run commitizen --hook-stage commit-msg --commit-msg-filename .git/COMMIT_EDITMSG
 
 repos:
   # ============================================================
