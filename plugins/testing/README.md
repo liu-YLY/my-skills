@@ -6,19 +6,19 @@
 
 ## 版本
 
-**当前版本**：v3.0.0（详见 [skills/testing-bundle/CHANGELOG.md](skills/testing-bundle/CHANGELOG.md)）
+**当前版本**：v3.1.1（详见 [skills/testing-bundle/CHANGELOG.md](skills/testing-bundle/CHANGELOG.md)）
 
 ## 能力矩阵
 
 | Skill | 版本 | 类型 | 职责 |
 |---|---|---|---|
-| [testing-bundle](skills/testing-bundle/) | v3.0.0 | 元 skill / 路由入口 | 5-way 意图路由 + 5 条混合意图链 |
+| [testing-bundle](skills/testing-bundle/) | v3.1.1 | 元 skill / 路由入口 | 5-way 意图路由 + 7 条混合意图链 |
 | [test-strategy-engineer](skills/test-strategy-engineer/) | v1.0.0 | 子 skill | 项目级测试策略：风险矩阵 / 分层 / 范围优先级 / 准入准出 |
-| [test-case-engineer](skills/test-case-engineer/) | v8.0.0 | 子 skill | 功能用例生成：需求分析 / 测试点提取 / 用例编写 / 自检补全 |
+| [test-case-engineer](skills/test-case-engineer/) | v8.1.0 | 子 skill | 功能用例生成：需求分析 / 测试点提取 / 用例编写 / 自检补全 |
 | [performance-test-engineer](skills/performance-test-engineer/) | v1.0.0 | 子 skill | 性能测试方案 + 瓶颈定位（资源/架构层）|
 | [bug-analyzer](skills/bug-analyzer/) | v1.0.0 | 子 skill | Bug 根因分析（代码逻辑层）：五步定位法 / 鱼骨图 / 5 Whys |
 | [state-machine-test-engineer](skills/state-machine-test-engineer/) | v1.0.0 | 子 skill | 状态机驱动的状态型需求测试：10 类场景穷举 |
-| [change-impact-analyzer](skills/change-impact-analyzer/) | v1.0.0 | 独立 skill | git 代码变更与测试用例交叉分析，不集成到 bundle |
+| [change-impact-analyzer](skills/change-impact-analyzer/) | v1.1.0 | 协同 skill | git 代码变更与测试用例交叉分析（链 6 协同，随 plugin 整体安装） |
 
 **可选配套**：[state-machine-testing MCP Server](mcp-servers/state-machine-testing/) v0.1.0 — 为 state-machine-test-engineer 提供 5 个工具（build / validate / generate / export / coverage），未安装时降级为纯 LLM 推理。
 
@@ -29,7 +29,7 @@
                          │
                          ▼
               ┌─────────────────────────┐
-              │   testing-bundle v3.0.0 │  路由层（只路由，不实现能力）
+              │   testing-bundle v3.1.1 │  路由层（只路由，不实现能力）
               └───────────┬─────────────┘
                           │ 5-way 意图判断
         ┌─────────┬───────┼───────┬───────────┬──────────────┐
@@ -40,7 +40,7 @@
   └──────────┘└─────────┘└──────┘└───────────┘└──────────────┘
 ```
 
-详细的 5-way 路由表与 5 条混合意图链见 [skills/testing-bundle/SKILL.md](skills/testing-bundle/SKILL.md)。
+详细的 5-way 路由表与 7 条混合意图链见 [skills/testing-bundle/SKILL.md](skills/testing-bundle/SKILL.md)。
 
 ## 多 runtime 适配
 
@@ -74,7 +74,7 @@ testing/
     ├── performance-test-engineer/    # 性能测试
     ├── bug-analyzer/                 # Bug 根因（bug-patterns-index 指向 test-case-engineer）
     ├── state-machine-test-engineer/  # 状态机测试
-    └── change-impact-analyzer/       # 独立 skill，不集成到 bundle
+    └── change-impact-analyzer/       # 协同 skill（链 6，随 plugin 整体安装）
 ```
 
 ## 关键依赖说明

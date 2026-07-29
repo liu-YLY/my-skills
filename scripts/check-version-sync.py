@@ -105,6 +105,60 @@ def check_test_prompts_version_drift(skill_dir: Path) -> list[str]:
     return errors
 
 
+def check_plugin_readme_version(plugin_root: Path, expected_version: str) -> str | None:
+    """Check that plugin root README.md does not carry a stale version string.
+
+    Looks for "当前版本：vX.Y.Z" patterns (Chinese, allows markdown bold/italic
+    markers between the label and colon) and verifies the version matches
+    `expected_version`. Returns error message on mismatch.
+    """
+    readme = plugin_root / 'README.md'
+    if not readme.exists():
+        return None
+    content = readme.read_text(encoding='utf-8')
+    pattern = r'当前版本[*_]*[：:]\s*v?(\d+\.\d+\.\d+)'
+    m = re.search(pattern, content)
+    if m and m.group(1) != expected_version:
+        return (
+            f"{readme}: '当前版本' references v{m.group(1)} but "
+            f"plugin manifest version is {expected_version}"
+        )
+    return None
+
+
+def check_plugin_readme_skill_versions(plugin_root: Path, skills_dir: Path) -> list[str]:
+    """Check that plugin root README.md architecture diagram and capability
+    matrix versions match each skill's SKILL.md frontmatter version.
+
+    Scans for "{skill_name} v{X.Y.Z}" patterns in README.md and compares
+    against the frontmatter version of the corresponding skill.
+    """
+    errors = []
+    readme = plugin_root / 'README.md'
+    if not readme.exists():
+        return errors
+    content = readme.read_text(encoding='utf-8')
+
+    for skill_dir in skills_dir.iterdir():
+        if not skill_dir.is_dir():
+            continue
+        skill_name = skill_dir.name
+        skill_md = skill_dir / 'SKILL.md'
+        expected = extract_skill_version(skill_md)
+        if not expected:
+            continue
+        # Match "skill-name vX.Y.Z" in README (architecture diagram, capability matrix)
+        pattern = rf'{re.escape(skill_name)}\s+v(\d+\.\d+\.\d+)'
+        for m in re.finditer(pattern, content):
+            found = m.group(1)
+            if found != expected:
+                errors.append(
+                    f"{readme}: references '{skill_name} v{found}' but "
+                    f"SKILL.md frontmatter version is {expected}"
+                )
+    return errors
+
+
 def check_plugin(plugin_root: Path) -> list[str]:
     """Check version sync for a single plugin.
 
@@ -131,6 +185,11 @@ def check_plugin(plugin_root: Path) -> list[str]:
 
         if not plugin_version:
             continue
+
+        # Plugin root README.md "当前版本" must match manifest version
+        err = check_plugin_readme_version(plugin_root, plugin_version)
+        if err:
+            errors.append(err)
 
         if len(skill_dirs) == 1:
             # Single-skill plugin: plugin.json version must match SKILL.md version
@@ -170,6 +229,9 @@ def check_plugin(plugin_root: Path) -> list[str]:
                 errors.append(err)
             # test-prompts must not have historical version prefixes
             errors.extend(check_test_prompts_version_drift(bundle_dir))
+
+    # Plugin root README.md skill version references (architecture diagram, capability matrix)
+    errors.extend(check_plugin_readme_skill_versions(plugin_root, skills_dir))
 
     return errors
 
