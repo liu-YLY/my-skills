@@ -27,11 +27,11 @@
 - 链 3：性能测试 + 瓶颈定位 → performance（内部完成）
 - 链 4：性能瓶颈 + 代码缺陷 → performance → bug-analyzer
 - 链 5：状态机建模 + 用例生成 → state-machine → case-engineer（v3.0.0 新增）
-- 链 6：评审→覆盖缺口验证 → case-engineer 评审模式 → 外部 change-impact-analyzer
+- 链 6：评审→覆盖缺口验证 → case-engineer 评审模式 → change-impact-analyzer
 - 链 7：评审→风险用例根因反推 → case-engineer 评审模式 → bug-analyzer
 
 **安装方式**：
-- **整体安装（推荐）**：安装 testing-bundle + 5 个子 skill 共 6 个 skill
+- **整体安装（推荐）**：安装 testing-bundle + 6 个子 skill 共 7 个 skill
 - **按需安装**：仅安装需要的子 skill（bug-analyzer 单独安装时缺陷模式库引用会降级；state-machine-test-engineer 可选再装配套 MCP Server 进入增强模式）
 
 **使用场景**：
@@ -74,7 +74,9 @@ AI（testing-bundle）：
    A. 项目级测试策略（test-strategy-engineer）
    B. 生成测试用例（test-case-engineer）
    C. 性能测试方案/瓶颈定位（performance-test-engineer）
-   D. 分析 Bug 根因（bug-analyzer）"
+   D. 分析 Bug 根因（bug-analyzer）
+   E. 状态机驱动的状态型需求测试（state-machine-test-engineer）
+   F. 变更影响分析（change-impact-analyzer）"
 ```
 
 ### 1a. 测试策略工程师 (test-strategy-engineer)
@@ -375,12 +377,73 @@ AI（bug-analyzer）：
 - 修复建议：改为批量 IN 查询，预计 TPS 提升 5-10 倍
 ```
 
-### 1e. 变更影响分析师 (change-impact-analyzer)
+### 1e. 状态机测试工程师 (state-machine-test-engineer)
+
+**版本**：v1.0.0  
+**功能**：扮演资深测试工程师角色，基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
+
+> testing-bundle v3.0.0 新增子 skill，专注状态型需求测试。与 test-case-engineer 的粒度边界：本 skill 输出场景级清单（含依据类型标注），test-case-engineer 基于清单落地用例步骤级（链 5 协同）。
+
+**核心能力**：
+- **状态机建模**：识别状态/事件/转换/守卫/不变量/禁止转换，输出 YAML/JSON 结构
+- **MAE 流程建模**：主流程/替代流程/异常流程三层建模
+- **10 类场景穷举**：合法/非法转换、条件不满足、幂等、并发、消息乱序、超时重试、数据一致性、权限控制、失败恢复
+- **完整性检查**：9 项检查（含死锁/悬挂/终态吸收/依据类型标注）
+- **防幻觉机制**：依据类型强制标注（需求明确/合理推理/待确认），歧义暴露而非补齐
+- **MCP 可选增强**：调用配套 state-machine-testing-mcp Server 做 Schema 校验与 Mermaid 可视化（v0.1.0 协议层待注册，当前以独立模式运行）
+
+**适用场景**：
+- ✅ 状态型需求测试（订单生命周期、审批流、工单状态、会员等级）
+- ✅ 涉及状态转换、终态吸收、非法跳转、幂等、并发冲突、消息乱序的场景
+- ✅ PRD 描述了"对象处于什么状态、允许什么变化、哪些操作必须被拒绝"
+
+**工作流程**：
+```
+阶段 1: 状态型需求识别 → 阶段 2: 状态机建模 → 🔴 CHECKPOINT → 阶段 3: 完整性检查 → 阶段 4: 10 类场景穷举 → 阶段 5（可选）: MCP 增强
+```
+
+**使用场景**：
+- ✅ 订单退款/审批流/工单/会员等状态型业务对象测试
+- ✅ 含并发冲突、消息乱序、终态吸收等复杂场景的穷举
+- ✅ 与 test-case-engineer 协同：本 skill 输出场景清单，转交生成完整用例（链 5）
+
+**使用示例**：
+
+示例 1：订单退款状态机测试
+```
+用户：订单退款流程要做测试，订单状态包括待支付/已支付/已取消/退款中/退款成功/退款失败
+
+AI（state-machine-test-engineer）：
+## 阶段 1: 状态型需求识别
+→ 识别 6 个状态 + 转换 + 禁止（已取消→已支付、退款成功→任意）
+
+## 阶段 2: 状态机建模
+[🔴 CHECKPOINT 展示模型给用户确认]
+
+## 阶段 3-4: 完整性检查 + 10 类场景穷举
+→ 标注"退款失败后恢复路径"为缺口
+→ 每场景标注依据类型（需求明确/合理推理/待确认）
+→ 输出：状态机模型 + 场景清单
+```
+
+示例 2：状态机 + 用例协同（链 5）
+```
+用户：为订单退款流程设计状态机测试场景，并生成完整测试用例
+
+AI（testing-bundle）：
+→ 意图判断：混合（状态机 + 用例）
+→ 路由到 state-machine-test-engineer 输出场景清单
+🔴 CHECKPOINT：场景清单展示给用户确认
+→ 转交 test-case-engineer 基于清单生成完整用例
+→ 输出：状态机模型 + 场景清单 + 完整测试用例
+```
+
+### 1f. 变更影响分析师 (change-impact-analyzer)
 
 **版本**：v1.1.0  
 **功能**：扮演资深测试工程师角色，将 git 代码变更与测试用例交叉分析，发现行为变更影响和覆盖缺口，输出可落地的影响报告。
 
-> 独立 skill，不集成到 testing-bundle，可单独使用。
+> testing plugin 内第 6 个协同 skill（链 6 使用），随 plugin 整体安装，也可单独使用。
 
 **核心能力**：
 - **四阶段工作流**：收集输入 → Diff 解析 → 交叉分析 → 生成报告
@@ -404,7 +467,7 @@ AI（bug-analyzer）：
 - ✅ 回归风险评估：检查 commit 范围的变更是否破坏用例
 - ✅ 覆盖缺口分析：找出改动功能中未被用例覆盖的部分
 - ✅ 版本发布前验证：对比 release 分支的变更影响
-- ✅ 三种 diff 模式：本地改动 / 分支对比 / commit 范围，自动推断
+- ✅ 七种 diff 模式：工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Diff 或外部 Patch，自动推断
 
 **使用示例**：
 
