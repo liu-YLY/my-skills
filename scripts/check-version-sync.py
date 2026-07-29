@@ -7,6 +7,10 @@ Rules:
   bundle/meta skill's version. The bundle skill is identified by having a
   name ending with "-bundle" or by being the only skill that references
   other skills (routing). If no bundle found, plugin version check is skipped.
+- Bundle skill content consistency: CHANGELOG.md must have a [X.Y.Z] entry
+  matching the current frontmatter version; architecture diagram version
+  labels in SKILL.md must match frontmatter; test-prompts.json expected
+  fields must not carry historical "vX.Y.Z " version prefixes.
 
 Usage: python scripts/check-version-sync.py
 Exit code: 0 if all versions in sync, 1 if any mismatch found.
@@ -35,6 +39,70 @@ def find_bundle_skill(skills_dir: Path) -> Path | None:
         if skill_dir.is_dir() and skill_dir.name.endswith('-bundle'):
             return skill_dir
     return None
+
+
+def check_changelog_has_version(skill_dir: Path, version: str) -> str | None:
+    """Check that CHANGELOG.md has an entry for the current version.
+
+    Returns error message if CHANGELOG exists but lacks a [X.Y.Z] header
+    matching the current frontmatter version.
+    """
+    changelog = skill_dir / 'CHANGELOG.md'
+    if not changelog.exists():
+        return None  # No CHANGELOG is acceptable (not all skills have one)
+    content = changelog.read_text(encoding='utf-8')
+    pattern = rf'^##\s*\[{re.escape(version)}\]'
+    if not re.search(pattern, content, re.MULTILINE):
+        return (
+            f"{changelog}: missing '## [{version}]' entry for current version"
+        )
+    return None
+
+
+def check_skill_diagram_version(skill_md: Path, version: str, skill_name: str) -> str | None:
+    """Check that architecture diagram version labels match frontmatter.
+
+    Looks for "{skill_name} vX.Y.Z" patterns (e.g. in ASCII architecture
+    diagrams) and verifies they match the frontmatter version.
+    """
+    content = skill_md.read_text(encoding='utf-8')
+    diagram_pattern = rf'{re.escape(skill_name)}\s+v(\d+\.\d+\.\d+)'
+    mismatches = []
+    for m in re.finditer(diagram_pattern, content):
+        found_version = m.group(1)
+        if found_version != version:
+            mismatches.append(found_version)
+    if mismatches:
+        unique = sorted(set(mismatches))
+        return (
+            f"{skill_md}: architecture diagram references v{unique[0]} "
+            f"but frontmatter version is {version}"
+        )
+    return None
+
+
+def check_test_prompts_version_drift(skill_dir: Path) -> list[str]:
+    """Check that test-prompts.json expected fields lack version-prefix drift.
+
+    Flags expected fields starting with "vX.Y.Z " — historical version markers
+    that create drift when the current version changes.
+    """
+    errors = []
+    test_prompts = skill_dir / 'test-prompts.json'
+    if not test_prompts.exists():
+        return errors
+    try:
+        prompts = json.loads(test_prompts.read_text(encoding='utf-8'))
+    except json.JSONDecodeError:
+        return errors  # JSON validity is checked by other tooling
+    for prompt in prompts:
+        expected = prompt.get('expected', '')
+        if re.match(r'^v\d+\.\d+\.\d+\s', expected):
+            errors.append(
+                f"{test_prompts}: prompt id {prompt.get('id', '?')} expected "
+                f"field has version prefix — remove historical version markers"
+            )
+    return errors
 
 
 def check_plugin(plugin_root: Path) -> list[str]:
@@ -85,6 +153,23 @@ def check_plugin(plugin_root: Path) -> list[str]:
                         f"bundle {bundle_md.name} {bundle_version} (multi-skill plugin)"
                     )
             # If no bundle found, skip plugin version check (cannot determine expected version)
+
+    # Content consistency checks for bundle skill (CHANGELOG, diagram, test-prompts)
+    bundle_dir = find_bundle_skill(skills_dir)
+    if bundle_dir:
+        bundle_md = bundle_dir / 'SKILL.md'
+        bundle_version = extract_skill_version(bundle_md)
+        if bundle_version:
+            # CHANGELOG must have current version entry
+            err = check_changelog_has_version(bundle_dir, bundle_version)
+            if err:
+                errors.append(err)
+            # Architecture diagram version must match frontmatter
+            err = check_skill_diagram_version(bundle_md, bundle_version, bundle_dir.name)
+            if err:
+                errors.append(err)
+            # test-prompts must not have historical version prefixes
+            errors.extend(check_test_prompts_version_drift(bundle_dir))
 
     return errors
 
