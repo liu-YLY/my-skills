@@ -6,7 +6,7 @@
 
 ## 版本
 
-**当前版本**：v3.0.0（详见 [skills/testing-bundle/CHANGELOG.md](skills/testing-bundle/CHANGELOG.md)）
+**当前版本**：v3.1.1（详见 [skills/testing-bundle/CHANGELOG.md](skills/testing-bundle/CHANGELOG.md)）
 
 ## 能力矩阵
 

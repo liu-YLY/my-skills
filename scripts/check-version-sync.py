@@ -105,6 +105,27 @@ def check_test_prompts_version_drift(skill_dir: Path) -> list[str]:
     return errors
 
 
+def check_plugin_readme_version(plugin_root: Path, expected_version: str) -> str | None:
+    """Check that plugin root README.md does not carry a stale version string.
+
+    Looks for "当前版本：vX.Y.Z" patterns (Chinese, allows markdown bold/italic
+    markers between the label and colon) and verifies the version matches
+    `expected_version`. Returns error message on mismatch.
+    """
+    readme = plugin_root / 'README.md'
+    if not readme.exists():
+        return None
+    content = readme.read_text(encoding='utf-8')
+    pattern = r'当前版本[*_]*[：:]\s*v?(\d+\.\d+\.\d+)'
+    m = re.search(pattern, content)
+    if m and m.group(1) != expected_version:
+        return (
+            f"{readme}: '当前版本' references v{m.group(1)} but "
+            f"plugin manifest version is {expected_version}"
+        )
+    return None
+
+
 def check_plugin(plugin_root: Path) -> list[str]:
     """Check version sync for a single plugin.
 
@@ -153,6 +174,11 @@ def check_plugin(plugin_root: Path) -> list[str]:
                         f"bundle {bundle_md.name} {bundle_version} (multi-skill plugin)"
                     )
             # If no bundle found, skip plugin version check (cannot determine expected version)
+
+        # Plugin root README.md must not carry stale version string
+        err = check_plugin_readme_version(plugin_root, plugin_version)
+        if err:
+            errors.append(err)
 
     # Content consistency checks for bundle skill (CHANGELOG, diagram, test-prompts)
     bundle_dir = find_bundle_skill(skills_dir)

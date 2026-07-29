@@ -13,5 +13,15 @@
     "id": 3,
     "prompt": "我有一篇关于 AI 前沿技术的深度分析文章，需要专业排版",
     "expected": "skill 应识别为深度分析类，推荐 deep-dive 和 tech-blog 风格，突出专业性和视觉层级"
+  },
+  {
+    "id": 4,
+    "prompt": "用 tech-blog 风格排版这篇文章，输出 Markdown 即可",
+    "expected": "skill 应跳过风格推荐，按 tech-blog 排版输出格式化 Markdown 文件；不应执行阶段 5 生成 HTML，也不应提示用户安装 markdown/beautifulsoup4 依赖"
+  },
+  {
+    "id": 5,
+    "prompt": "用 tutorial 风格排版这篇文章，并生成可直接粘贴的 HTML",
+    "expected": "skill 应识别 HTML 明确触发词（HTML/可直接粘贴/一键复制），完成阶段 1-4 后执行阶段 5 调用 md2wechat.py 生成带「复制到公众号」按钮的 HTML 文件"
   }
 ]
