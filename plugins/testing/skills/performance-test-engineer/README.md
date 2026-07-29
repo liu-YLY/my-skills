@@ -17,7 +17,7 @@
 ```
 
 - **阶段 1 性能需求理解**：提炼性能目标（TPS / RT / 并发数 / 错误率），估算关键指标初值。
-- **阶段 2 测试场景设计**：选择负载模型（基准/负载/压力/稳定性/容量），设计场景，确定指标阈值。
+- **阶段 2 测试场景设计**：选择负载模型（阶梯递增/峰值/疲劳/容量），设计场景，确定指标阈值。
 - **🔴 CHECKPOINT**：阶段 2 完成后展示完整方案给用户确认，未确认前禁止进入阶段 3。
 - **阶段 3 瓶颈定位**：按"应用层→资源层→架构层"顺序排查，应用 USE 方法，对照瓶颈模式库，输出瓶颈定位报告。
 - **阶段 4 转交判断**：判断瓶颈归属层，资源/架构层由本 skill 给优化建议，代码逻辑缺陷转交 bug-analyzer。
@@ -43,7 +43,7 @@
 
 | 文件 | 说明 |
 |------|------|
-| [knowledge/load-models.md](knowledge/load-models.md) | 负载模型决策表（基准/负载/压力/稳定性/容量） |
+| [knowledge/load-models.md](knowledge/load-models.md) | 负载模型决策表（阶梯递增/峰值/疲劳/容量） |
 | [knowledge/metrics-framework.md](knowledge/metrics-framework.md) | 指标体系 + 阈值参考 |
 | [knowledge/bottleneck-patterns.md](knowledge/bottleneck-patterns.md) | 6 类瓶颈模式库（含层边界声明） |
 | [knowledge/use-method.md](knowledge/use-method.md) | USE 方法 + 资源三角 |

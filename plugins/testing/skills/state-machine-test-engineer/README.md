@@ -57,11 +57,13 @@ State Machine Test Engineer 是 testing-bundle v3.0.0 新增的子 skill，专�
 
 ## 三种运行模式
 
-| 模式 | 触发条件 | 行为 |
-|---|---|---|
-| 增强模式 | MCP 可用 | skill 自身推理 + MCP 做校验/穷举/可视化复核 |
-| 独立模式 | MCP 未安装 | skill 纯 LLM 推理执行全流程 |
-| 降级模式 | MCP 调用失败 | 自动回退到独立模式 |
+> ⚠️ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 当前为 **v0.1.0**，确定性工具（validate/generate/export/coverage）已实现并通过 34 项单元测试，但 **MCP 协议层注册待 v0.2.0 完成**。当前即使按 [quickstart.md](integrations/quickstart.md) 配置完成，runtime 也无法通过 MCP 协议调用 Server，**增强模式实际不可达，skill 以独立模式运行**（输出首行标 `⚠ 独立模式（未校验）`）。预计 v0.2.0 发布后增强模式可用。
+
+| 模式 | 触发条件 | 行为 | 输出标记 |
+|---|---|---|---|
+| 增强模式 | MCP 可用（v0.2.0+，当前不可达） | skill 自身推理 + MCP 做校验/穷举/可视化复核 | `✓ MCP 增强模式` |
+| 独立模式 | MCP 未安装（**当前默认**） | skill 纯 LLM 推理执行全流程 | `⚠ 独立模式（未校验）` |
+| 降级模式 | MCP 调用失败 | 自动回退到独立模式 | `⚠ 降级模式` |
 
 skill 始终是主，MCP 是复核器。零配置可用，安装 MCP 后获得额外能力。
 

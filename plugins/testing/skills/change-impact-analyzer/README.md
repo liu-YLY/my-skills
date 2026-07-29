@@ -6,7 +6,7 @@
 ## 核心能力
 
 - **四阶段工作流**：收集输入 → Diff 解析 → 交叉分析 → 生成报告
-- **七种 diff 模式**：工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Diff / 外部 Patch
+- **七种 diff 模式**：工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Diff 或外部 Patch
 - **只读采集脚本**：通过结构化字段（status_short / name_status / numstat / untracked_files / unified_diff / diff_truncated）采集变更，不读未跟踪文件内容、不转二进制、超阈值截断
 - **跨层影响链路追踪**：沿「页面 → 组件 → API → Controller → Service → Model/DB → 缓存/MQ/外部系统」串联上下游，找出间接影响
 - **前后端契约两侧检查**：接口契约变更同时检查两侧，不只看变更的一端
@@ -58,7 +58,7 @@
 
 **目标**：获取 git diff 内容和测试用例。
 
-- 确认 diff 范围（七种模式：工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Patch）
+- 确认 diff 范围（七种模式：工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Diff 或外部 Patch）
 - 推荐使用只读采集脚本采集变更上下文（保持只读、不读未跟踪内容、不转二进制、超阈值截断）
 - 加载测试用例文件（Markdown/CSV/JSON）
 - Mode B 下额外加载需求文档/验收标准/任务说明
@@ -149,7 +149,7 @@ change-impact-analyzer/
 | # | 反模式 | 替代做法 |
 |---|--------|---------|
 | 1 | 跳过 CHECKPOINT 直接分析 | 必须让用户确认 diff 范围和用例文件 |
-| 2 | 将测试文件变更计入影响分析 | 阶段 2 过滤 `*.test.*`/`*.spec.*` |
+| 2 | 将测试基础设施变更误计入影响分析 | 阶段 2.2 按两条通道分类：基础设施跳过，测试用例本身标记为「覆盖证据」 |
 | 3 | 所有变更都标记"高风险" | 严格按风险参考清单打标，低风险也要标注 |
 | 4 | 降低风险没有证据就下调等级 | 必须给出「调用方数量/契约一致性/自动化覆盖」等具体证据 |
 | 5 | Mode A 把推断当事实陈述 | 必须区分代码事实/影响推断/待确认问题，推断需标注置信度 |

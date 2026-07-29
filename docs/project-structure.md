@@ -29,9 +29,10 @@ my-skill/
 │   │   ├── .codex-plugin/
 │   │   │   └── plugin.json        # Codex plugin manifest
 │   │   ├── skills/                # runtime 扫描此目录加载 skill
-│   │   │   ├── testing-bundle/    # 测试能力 Bundle v3.1.1（4-way 路由入口）
+│   │   │   ├── testing-bundle/    # 测试能力 Bundle v3.1.1（5-way 路由入口 + 链 6 协同）
 │   │   │   │   ├── SKILL.md       # 入口（路由规则 + 7 条混合意图链）
 │   │   │   │   ├── README.md      # Bundle 说明文档
+│   │   │   │   ├── CHANGELOG.md   # bundle 版本变更记录
 │   │   │   │   └── test-prompts.json
 │   │   │   ├── test-strategy-engineer/  # 测试策略工程师 v1.0.0（项目级策略）
 │   │   │   │   ├── SKILL.md       # 入口（五阶段流程 + 风险矩阵 + 分层）
@@ -43,7 +44,7 @@ my-skill/
 │   │   │   │   ├── SKILL.md
 │   │   │   │   ├── test-case-engineer-core.md
 │   │   │   │   ├── README.md
-│   │   │   │   ├── knowledge/     # 知识库（bug-patterns.md + review-mode.md：9 维度评审 + 修订闭环 + 增量评审 + 报告文件化，bug-analyzer 共享引用）
+│   │   │   │   ├── knowledge/     # 知识库（bug-patterns.md + review-mode.md：10 维度评审 + 修订闭环 + 增量评审 + 报告文件化，bug-analyzer 共享引用）
 │   │   │   │   ├── integrations/
 │   │   │   │   ├── scripts/
 │   │   │   │   └── docs/
@@ -59,16 +60,24 @@ my-skill/
 │   │   │   │   ├── knowledge/     # 含 bug-patterns-index.md 指向 ../test-case-engineer/knowledge/bug-patterns.md
 │   │   │   │   ├── integrations/
 │   │   │   │   └── scripts/
-│   │   │   └── change-impact-analyzer/  # 变更影响分析师 v1.0.0（独立 skill）
-│   │   │       ├── SKILL.md       # 入口 + 四阶段流程
+│   │   │   ├── state-machine-test-engineer/  # 状态机测试工程师 v1.0.0（状态型需求）
+│   │   │   │   ├── SKILL.md       # 入口（五阶段流程 + 10 类场景穷举）
+│   │   │   │   ├── state-machine-core.md
+│   │   │   │   ├── README.md
+│   │   │   │   ├── knowledge/     # state-modeling / scenario-types / completeness-check / anti-patterns + 4 行业模板
+│   │   │   │   ├── integrations/  # quickstart.md（含 state-machine-testing MCP Server 安装）
+│   │   │   │   └── test-prompts.json
+│   │   │   └── change-impact-analyzer/  # 变更影响分析师 v1.1.0（testing plugin 第 6 个协同 skill，链 6）
+│   │   │       ├── SKILL.md       # 入口 + 四阶段流程（含阶段 3 CHECKPOINT）
 │   │   │       ├── README.md
+│   │   │       ├── knowledge/     # diff-modes / cross-impact-analysis / report-template / anti-patterns
 │   │   │       └── test-prompts.json
 │   │   └── mcp-servers/               # 配套 MCP Server（可选增强）
-│   │       ├── review-checker/         # review-checker MCP Server v0.2.0（评审 9 维度校验）
+│   │       ├── review-checker/         # review-checker MCP Server v0.2.0（评审 10 维度校验）
 │   │       │   ├── src/review_checker_mcp/
 │   │       │   │   ├── server.py       # MCP 工具注册（review_test_cases / generate_report）
 │   │       │   │   ├── schemas.py      # pydantic 模型
-│   │       │   │   └── validators.py   # 9 维度校验逻辑
+│   │       │   │   └── validators.py   # 10 维度校验逻辑
 │   │       │   ├── tests/
 │   │       │   ├── README.md
 │   │       │   └── pyproject.toml
@@ -84,15 +93,19 @@ my-skill/
 │       ├── .codex-plugin/
 │       │   └── plugin.json        # Codex plugin manifest
 │       └── skills/
-│           └── wechat-formatter/  # 微信公众号排版技能 v2.0.0
+│           └── wechat-formatter/  # 微信公众号排版技能 v3.0.0（6 种风格 + :::module 高级排版 + Brand Profile）
 │               ├── SKILL.md
 │               ├── README.md
-│               ├── templates/     # 6 种风格模板
-│               ├── styles/        # CSS 样式
-│               ├── references/    # 排版规则
-│               ├── examples/      # 示例文件
-│               ├── scripts/       # md2wechat.py
-│               └── knowledge/     # wechat-traps.md
+│               ├── test-prompts.json
+│               ├── templates/     # 6 种风格模板 + template-index.md
+│               ├── styles/        # 6 种风格 CSS（apple/casual-chat/cyber/deep-dive/tech-blog/tutorial）
+│               ├── references/    # formatting-rules.md + wechat-markdown.md
+│               ├── examples/      # sample-input + 6 sample-output + layout-modules-example
+│               ├── scripts/       # md2wechat.py + tests/
+│               ├── knowledge/     # wechat-traps.md + module-design.md + brand-profile-spec.md
+│               ├── brand/         # brand-profile.md（v3.0.0 新增 Brand Profile 配置）
+│               ├── layout/        # layout-modules.md + modules-base.css（v3.0.0 新增高级排版模块）
+│               └── integrations/  # quickstart.md（本地操作速查）
 │
 ├── docs/                         # 项目文档（从 README 拆分）
 │   ├── skills-overview.md        # 技能详细介绍

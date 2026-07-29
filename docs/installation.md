@@ -29,6 +29,8 @@
 
 > **review-checker MCP Server 依赖说明**：review-checker 是 test-case-engineer 评审模式的可选增强组件（位于 plugins/testing/mcp-servers/review-checker/），未安装时评审模式降级为纯 LLM 推理。安装方式见 [review-checker README](../plugins/testing/mcp-servers/review-checker/README.md)。
 
+> **state-machine-testing MCP Server 依赖说明**：state-machine-testing 是 state-machine-test-engineer 的可选增强组件（位于 plugins/testing/mcp-servers/state-machine-testing/，v0.1.0 协议层仍在建设中），未安装时降级为纯 LLM 推理。安装方式见 [state-machine-test-engineer quickstart](../plugins/testing/skills/state-machine-test-engineer/integrations/quickstart.md)。
+
 ---
 
 ### 方式 1：npx skills add（推荐）
@@ -50,19 +52,21 @@ npx skills add liu-YLY/my-skills --list
 
 **场景 1：安装所有 skill（推荐）**
 ```bash
-# 包含 testing-bundle + 4 个子 skill + wechat-formatter
+# 包含 testing-bundle + 6 个子 skill + wechat-formatter
 npx skills add liu-YLY/my-skills --skill '*' -g -y
 ```
 
 **场景 2：仅安装测试能力 bundle**
 ```bash
-# 安装 6 个 skill：testing-bundle + test-strategy-engineer + test-case-engineer + performance-test-engineer + bug-analyzer + state-machine-test-engineer
+# 安装 7 个 skill：testing-bundle + test-strategy-engineer + test-case-engineer + performance-test-engineer + bug-analyzer + state-machine-test-engineer + change-impact-analyzer
 npx skills add liu-YLY/my-skills \
   --skill 'testing-bundle' \
   --skill 'test-strategy-engineer' \
   --skill 'test-case-engineer' \
   --skill 'performance-test-engineer' \
   --skill 'bug-analyzer' \
+  --skill 'state-machine-test-engineer' \
+  --skill 'change-impact-analyzer' \
   -g -y
 ```
 
@@ -100,7 +104,7 @@ Claude Code 用户可通过原生 `/plugin` 命令，按 plugin 粒度一键安�
 /plugin marketplace add liu-YLY/my-skills
 
 # 步骤 2：安装测试能力 bundle
-# 含 testing-bundle + 4 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer）
+# 含 testing-bundle + 6 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer）
 /plugin install testing-bundle@my-skill-marketplace
 
 # 步骤 3：安装微信公众号排版 skill（可选）
@@ -142,6 +146,8 @@ cp -r plugins/testing/skills/test-strategy-engineer ~/.claude/skills/
 cp -r plugins/testing/skills/test-case-engineer ~/.claude/skills/
 cp -r plugins/testing/skills/performance-test-engineer ~/.claude/skills/
 cp -r plugins/testing/skills/bug-analyzer ~/.claude/skills/
+cp -r plugins/testing/skills/state-machine-test-engineer ~/.claude/skills/
+cp -r plugins/testing/skills/change-impact-analyzer ~/.claude/skills/
 
 # 示例：复制 wechat-formatter
 cp -r plugins/wechat-formatter/skills/wechat-formatter ~/.claude/skills/

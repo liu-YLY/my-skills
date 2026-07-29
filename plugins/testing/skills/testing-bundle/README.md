@@ -19,7 +19,7 @@ Testing Bundle 是一个元 skill（meta skill），本身不实现具体测试�
 用户提出"测试相关"请求时，可能需要其中任何一个，也可能多个协同。Bundle 解决三个问题：
 1. **统一入口**：用户无需预先判断该用哪个 skill
 2. **混合意图协同**：自动编排多 skill 协同流程（7 条混合意图链）
-3. **依赖关系管理**：显式声明 bug-analyzer 对 test-case-engineer 知识库的依赖、state-machine-test-engineer 对可选 MCP Server 的依赖
+3. **依赖关系管理**：显式声明 bug-analyzer 对 test-case-engineer 知识库的依赖、state-machine-test-engineer 对可选 state-machine MCP Server 的依赖、test-case-engineer 评审模式对可选 review-checker MCP Server 的依赖
 
 ## 子 skill 说明
 
@@ -87,6 +87,7 @@ skills/
 - `bug-analyzer` 依赖 `test-case-engineer/knowledge/bug-patterns.md`（缺陷模式库），通过相对路径 `../test-case-engineer/knowledge/bug-patterns.md` 引用
 - `test-strategy-engineer` 与 `performance-test-engineer` 的知识库独立，不与其他子 skill 共享
 - `state-machine-test-engineer` 知识库独立（含 4 个行业状态机模板：订单退款/审批流/会员/工单）；可选调用 `state-machine-testing-mcp` Server 做 Schema 校验与可视化，未安装时降级为纯 LLM 推理
+- `test-case-engineer` 评审模式可选调用 `review-checker-mcp` Server 做 10 维度确定性校验（9 维度用例级校验 + 1 维度语义一致性冲突检测），未安装时降级为纯 LLM 推理
 
 ## 使用示例
 
@@ -146,10 +147,12 @@ skills/
 
 ```
 testing-bundle/
-├── SKILL.md           # 入口（路由规则 + 协同流程）
-├── README.md          # 本说明文档
-├── CHANGELOG.md       # 版本变更记录
-└── test-prompts.json  # 路由验证 prompt
+├── SKILL.md                       # 入口（路由规则 + 协同流程）
+├── README.md                      # 本说明文档
+├── CHANGELOG.md                   # 版本变更记录
+├── knowledge/
+│   └── mixed-intent-chains.md     # 7 条混合意图链详细步骤流
+└── test-prompts.json              # 路由验证 prompt
 ```
 
 ## 反例与黑名单
@@ -167,6 +170,8 @@ testing-bundle/
 - v1.0.0: 初始版本，2-skill 路由
 - v2.0.0: 扩展为 4-skill 路由（+ test-strategy-engineer + performance-test-engineer），breaking change
 - v3.0.0: 扩展为 5-skill 路由（+ state-machine-test-engineer），新增链 5（状态机+用例协同），breaking change
+- v3.1.0: 新增链 6（评审→覆盖缺口验证，协同 change-impact-analyzer）+ 链 7（评审→风险用例根因反推，协同 bug-analyzer），评审模式成为混合意图链起点
+- v3.1.1: 声明 test-case-engineer 评审模式可选调用 review-checker MCP Server（与 state-machine MCP 增强对称），未安装时降级为纯 LLM 推理
 
 详细变更见 [CHANGELOG.md](CHANGELOG.md)。
 
@@ -180,3 +185,4 @@ testing-bundle/
 - [performance-test-engineer](../performance-test-engineer/) - 性能测试子 skill
 - [bug-analyzer](../bug-analyzer/) - 功能缺陷根因分析子 skill
 - [state-machine-test-engineer](../state-machine-test-engineer/) - 状态机测试子 skill（v3.0.0 新增）
+- [change-impact-analyzer](../change-impact-analyzer/) - 变更影响分析子 skill（v3.1.0 新增协同，链 6 使用）

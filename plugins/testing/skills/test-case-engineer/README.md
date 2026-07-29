@@ -1,6 +1,6 @@
 # Test Case Engineer Skill
 
-> AI 赋能的测试用例工程师技能，自动生成高质量测试用例。当前版本 v8.1.0。v8.0.0 起由原 test-engineer 拆分而来，专注正向用例生成。
+> AI 赋能的测试用例工程师技能，自动生成高质量测试用例。当前版本 v8.2.0。v8.0.0 起由原 test-engineer 拆分而来，专注正向用例生成。
 
 ## 简介
 
@@ -187,6 +187,8 @@ test-case-engineer/
 | knowledge/bug-patterns.md | 阶段 2 强制读（防御性测试点补充） |
 | knowledge/project-knowledge.md | 阶段 1 强制读 |
 | knowledge/prompt-strategy.md | 阶段 3 必读（AI 生成模式） |
+| knowledge/anti-patterns.md | 阶段 3/4 自检（反模式黑名单） |
+| knowledge/review-mode.md | 评审模式必读（10 维度评审，含 v8.2.0 新增第 10 维度「语义一致性冲突检测」） |
 
 ## 编写铁律
 
@@ -213,6 +215,7 @@ test-case-engineer/
 | 默认 | 完整四阶段流程 | 正式测试用例编写 |
 | 快速 | 压缩阶段 1/4 | 时间紧迫、快速出测试点 |
 | 探索式 | 额外输出探索章程 | 新功能探索、风险评估 |
+| 评审 | 10 维度评审（覆盖度/优先级/字段规范/可执行性/冗余/溯源/可维护性/可自动化/测试数据依赖/语义一致性），可选调用 review-checker MCP Server 进入增强模式 | 评审已有测试用例的质量与覆盖度 |
 
 ## 反例与黑名单
 
@@ -245,6 +248,7 @@ A: 请使用 bug-analyzer skill，它提供五步定位法 + 鱼骨图 + 5 Whys 
 
 ## 版本历史
 
+- v8.2.0: 评审模式新增第 10 维度「语义一致性冲突检测」（检测用例间预期/前置/数据依赖的矛盾），评审维度从 9 扩展到 10；review-mode.md 同步更新；可选调用 review-checker MCP Server 做 10 维度确定性校验
 - v8.1.0: 新增用例拆分与合并平衡策略（原子化/合并/复杂度三目标 + 5 步决策法 + 软断言 + 复杂度阈值 >15 行拆分 / >5 检查点拆分）；anti-patterns.md 新增「拆分与合并反模式」6 项
 - v8.0.0: 由原 test-engineer v7.0.0 拆分而来，移除 Bug 分析能力（迁移至 bug-analyzer），专注正向用例生成
 - v7.0.0: 支持分层测试策略、业务系统识别、需求结构化分析

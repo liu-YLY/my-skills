@@ -11,8 +11,8 @@ my-skill 是一个 AI 技能集合仓库，采用「单 repo + marketplace 多 p
 - 顶层 marketplace 注册：[.claude-plugin/marketplace.json](.claude-plugin/marketplace.json)
 - Plugin 集合索引：[plugins/README.md](plugins/README.md)
 - 两个独立 plugin：
-  - [plugins/testing/](plugins/testing/) — 测试能力 bundle（v3.0.0，5-way 路由 + 5 子 skill + 1 独立 skill + 1 可选 MCP Server）
-  - [plugins/wechat-formatter/](plugins/wechat-formatter/) — 微信公众号排版（v2.0.0，6 种风格）
+  - [plugins/testing/](plugins/testing/) — 测试能力 bundle（v3.1.1，5-way 路由 + 5 子 skill + 1 协同 skill + 2 可选 MCP Server）
+  - [plugins/wechat-formatter/](plugins/wechat-formatter/) — 微信公众号排版（v3.0.0，6 种风格）
 
 ## Claude Code 工作约定
 
