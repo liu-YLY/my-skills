@@ -367,3 +367,536 @@ class TestValidateAll:
         assert "P0" in severities  # 字段缺失/占位符/溯源
         assert "P1" in severities  # 模糊词/模糊预期
         assert "P2" in severities  # 测试数据依赖
+
+
+class TestSemanticFactsSchema:
+    """SemanticFacts schema 实例化与字段校验。"""
+
+    def test_precondition_fact_with_valid_polarity(self):
+        from review_checker_mcp.schemas import PreconditionFact
+
+        fact = PreconditionFact(
+            subject="用户登录状态", state="已登录", polarity="affirmative"
+        )
+        assert fact.subject == "用户登录状态"
+        assert fact.polarity == "affirmative"
+
+    def test_precondition_fact_rejects_invalid_polarity(self):
+        import pytest
+        from pydantic import ValidationError
+
+        from review_checker_mcp.schemas import PreconditionFact
+
+        with pytest.raises(ValidationError):
+            PreconditionFact(
+                subject="用户登录状态", state="已登录", polarity="maybe"
+            )
+
+    def test_input_fact_fields(self):
+        from review_checker_mcp.schemas import InputFact
+
+        fact = InputFact(
+            input_signature="登录(account=testuser,pwd=错误密码)",
+            expected_outcome="返回密码错误提示",
+        )
+        assert "pwd=错误密码" in fact.input_signature
+
+    def test_semantic_facts_with_null_test_point_id(self):
+        from review_checker_mcp.schemas import SemanticFacts
+
+        facts = SemanticFacts(case_id="TC_001", test_point_id=None)
+        assert facts.case_id == "TC_001"
+        assert facts.test_point_id is None
+        assert facts.preconditions == []
+        assert facts.inputs == []
+        assert facts.dependencies == []
+
+    def test_semantic_facts_with_full_fields(self):
+        from review_checker_mcp.schemas import (
+            InputFact,
+            PreconditionFact,
+            SemanticFacts,
+        )
+
+        facts = SemanticFacts(
+            case_id="TC_WEBHOOK_ADD_001",
+            test_point_id="TP_WEBHOOK_001",
+            preconditions=[
+                PreconditionFact(
+                    subject="用户登录状态", state="已登录", polarity="affirmative"
+                ),
+            ],
+            inputs=[
+                InputFact(
+                    input_signature="创建Webhook(url=https://a.com)",
+                    expected_outcome="返回201+webhook_id",
+                ),
+            ],
+            dependencies=["TC_WEBHOOK_ADD_002"],
+        )
+        assert facts.preconditions[0].subject == "用户登录状态"
+        assert facts.dependencies == ["TC_WEBHOOK_ADD_002"]
+
+
+def _make_facts(
+    case_id: str = "TC_001",
+    test_point_id: str | None = "TP_001",
+    preconditions: list | None = None,
+    inputs: list | None = None,
+    dependencies: list[str] | None = None,
+) -> "SemanticFacts":
+    from review_checker_mcp.schemas import SemanticFacts
+
+    return SemanticFacts(
+        case_id=case_id,
+        test_point_id=test_point_id,
+        preconditions=preconditions or [],
+        inputs=inputs or [],
+        dependencies=dependencies or [],
+    )
+
+
+class TestCheckPreconditionStateConflicts:
+    """冲突类型 ①：前置条件状态矛盾。"""
+
+    def test_same_subject_opposite_polarity_triggers_p0(self):
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                test_point_id="TP_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                test_point_id="TP_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="未登录", polarity="negation"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 1
+        assert issues[0].severity.value == "P0"
+        assert "TC_001" in issues[0].case_id
+        assert "TC_002" in issues[0].case_id
+        assert "用户登录状态" in issues[0].evidence
+
+    def test_same_subject_same_polarity_no_issue(self):
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 0
+
+    def test_different_subject_no_issue(self):
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                preconditions=[
+                    PreconditionFact(
+                        subject="订单状态", state="待支付", polarity="affirmative"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 0
+
+    def test_different_test_point_id_no_issue(self):
+        """不同 test_point_id 的同 subject 前置条件不算冲突。"""
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                test_point_id="TP_LOGIN",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="未登录", polarity="negation"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                test_point_id="TP_PROFILE",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 0
+
+    def test_no_test_point_id_falls_back_to_module_function_segment(self):
+        """无 test_point_id 时按 case_id 模块+功能段分组。"""
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_WEBHOOK_ADD_001",
+                test_point_id=None,
+                preconditions=[
+                    PreconditionFact(
+                        subject="Webhook数量", state="数量<10", polarity="affirmative"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_WEBHOOK_ADD_002",
+                test_point_id=None,
+                preconditions=[
+                    PreconditionFact(
+                        subject="Webhook数量", state="数量>=10", polarity="negation"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 1  # 同 WEBHOOK_ADD 组内冲突
+
+    def test_no_test_point_id_different_function_no_issue(self):
+        """无 test_point_id 且不同功能段不视为冲突。"""
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_WEBHOOK_ADD_001",
+                test_point_id=None,
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="未登录", polarity="negation"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_WEBHOOK_EDIT_001",
+                test_point_id=None,
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 0  # 不同功能段，不冲突
+
+
+class TestCheckInputOutcomeConflicts:
+    """冲突类型 ②：同输入不同预期。"""
+
+    def test_same_signature_different_outcome_triggers_p0(self):
+        from review_checker_mcp.schemas import InputFact
+        from review_checker_mcp.validators import check_input_outcome_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="返回密码错误提示",
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="登录成功跳转首页",
+                    ),
+                ],
+            ),
+        ]
+        issues = check_input_outcome_conflicts(facts)
+        assert len(issues) == 1
+        assert issues[0].severity.value == "P0"
+        assert "TC_001" in issues[0].case_id
+        assert "TC_002" in issues[0].case_id
+
+    def test_same_signature_same_outcome_no_issue(self):
+        from review_checker_mcp.schemas import InputFact
+        from review_checker_mcp.validators import check_input_outcome_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=正确密码)",
+                        expected_outcome="登录成功跳转首页",
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=正确密码)",
+                        expected_outcome="登录成功跳转首页",
+                    ),
+                ],
+            ),
+        ]
+        issues = check_input_outcome_conflicts(facts)
+        assert len(issues) == 0  # 相同输入相同预期 → 归冗余维度，不是本维度
+
+    def test_different_signature_no_issue(self):
+        from review_checker_mcp.schemas import InputFact
+        from review_checker_mcp.validators import check_input_outcome_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=正确密码)",
+                        expected_outcome="跳转首页",
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="返回错误提示",
+                    ),
+                ],
+            ),
+        ]
+        issues = check_input_outcome_conflicts(facts)
+        assert len(issues) == 0  # 不同输入，不冲突
+
+    def test_multiple_inputs_cross_comparison(self):
+        """参数化用例的多 InputFact 笛卡尔比对。"""
+        from review_checker_mcp.schemas import InputFact
+        from review_checker_mcp.validators import check_input_outcome_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=正确密码)",
+                        expected_outcome="跳转首页",
+                    ),
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="返回错误",
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="跳转首页",
+                    ),
+                ],
+            ),
+        ]
+        issues = check_input_outcome_conflicts(facts)
+        assert len(issues) == 1  # TC_001 的第二个 InputFact 与 TC_002 冲突
+
+    def test_empty_inputs_no_issue(self):
+        from review_checker_mcp.validators import check_input_outcome_conflicts
+
+        facts = [
+            _make_facts(case_id="TC_001", inputs=[]),
+            _make_facts(case_id="TC_002", inputs=[]),
+        ]
+        issues = check_input_outcome_conflicts(facts)
+        assert len(issues) == 0
+
+
+class TestCheckDependencyCycles:
+    """冲突类型 ③：数据依赖闭环（DFS 检测）。"""
+
+    def test_simple_two_node_cycle_triggers_p1(self):
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_001", dependencies=["TC_002"]),
+            _make_facts(case_id="TC_002", dependencies=["TC_001"]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 1
+        assert issues[0].severity.value == "P1"
+        assert "TC_001" in issues[0].case_id
+        assert "TC_002" in issues[0].case_id
+
+    def test_three_node_cycle_triggers_p1(self):
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_001", dependencies=["TC_002"]),
+            _make_facts(case_id="TC_002", dependencies=["TC_003"]),
+            _make_facts(case_id="TC_003", dependencies=["TC_001"]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 1
+        assert issues[0].severity.value == "P1"
+        # case_id 应包含闭环全部节点
+        for cid in ("TC_001", "TC_002", "TC_003"):
+            assert cid in issues[0].case_id
+
+    def test_self_loop_triggers_p1(self):
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_001", dependencies=["TC_001"]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 1
+        assert issues[0].severity.value == "P1"
+        assert issues[0].case_id == "TC_001"
+
+    def test_no_cycle_no_issue(self):
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_001", dependencies=["TC_002"]),
+            _make_facts(case_id="TC_002", dependencies=["TC_003"]),
+            _make_facts(case_id="TC_003", dependencies=[]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 0
+
+    def test_empty_dependencies_no_issue(self):
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_001", dependencies=[]),
+            _make_facts(case_id="TC_002", dependencies=[]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 0
+
+    def test_diamond_shape_no_cycle(self):
+        """菱形依赖（A→B, A→C, B→D, C→D）不是环。"""
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_A", dependencies=["TC_B", "TC_C"]),
+            _make_facts(case_id="TC_B", dependencies=["TC_D"]),
+            _make_facts(case_id="TC_C", dependencies=["TC_D"]),
+            _make_facts(case_id="TC_D", dependencies=[]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 0
+
+
+class TestCheckSemanticConflicts:
+    """check_semantic_conflicts 聚合函数。"""
+
+    def test_aggregates_all_three_conflict_types(self):
+        from review_checker_mcp.schemas import (
+            InputFact,
+            PreconditionFact,
+            SemanticFacts,
+        )
+        from review_checker_mcp.validators import check_semantic_conflicts
+
+        facts = [
+            SemanticFacts(
+                case_id="TC_001",
+                test_point_id="TP_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="返回密码错误",
+                    ),
+                ],
+                dependencies=["TC_002"],
+            ),
+            SemanticFacts(
+                case_id="TC_002",
+                test_point_id="TP_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="未登录", polarity="negation"
+                    ),
+                ],
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="登录成功",
+                    ),
+                ],
+                dependencies=["TC_001"],
+            ),
+        ]
+        issues = check_semantic_conflicts(facts)
+        # 应同时检出：①前置条件矛盾(P0) + ②同输入异预期(P0) + ③依赖闭环(P1)
+        dims = [i.dimension for i in issues]
+        assert dims.count("语义一致性") == 3
+        severities = [i.severity.value for i in issues]
+        assert severities.count("P0") == 2
+        assert severities.count("P1") == 1
+
+    def test_empty_facts_returns_empty(self):
+        from review_checker_mcp.validators import check_semantic_conflicts
+
+        issues = check_semantic_conflicts([])
+        assert issues == []
+
+    def test_no_conflicts_returns_empty(self):
+        from review_checker_mcp.validators import check_semantic_conflicts
+
+        facts = [
+            _make_facts(case_id="TC_001"),
+            _make_facts(case_id="TC_002"),
+        ]
+        issues = check_semantic_conflicts(facts)
+        assert issues == []
