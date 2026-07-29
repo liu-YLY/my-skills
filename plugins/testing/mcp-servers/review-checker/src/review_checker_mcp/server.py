@@ -143,33 +143,82 @@ def _register_mcp_tools(mcp_server) -> None:
     """向 MCP Server 注册评审校验工具。
 
     本函数在 mcp SDK 可用时调用，将上述函数注册为 MCP 工具。
-    若 mcp SDK 不可用或 Server API 不兼容，本函数安全返回，
-    模块仍可以作为普通 Python 库使用。
+    若 mcp SDK 不可用，本函数安全返回，模块仍可以作为普通 Python 库使用。
     """
-    try:
-        from mcp.server import Server  # type: ignore  # noqa: F401
-    except ImportError:
-        return
-
-    # 防御性检查：不同 mcp SDK 版本的 Server API 可能不同
-    # 真实 SDK 使用 list_tools/call_tool 装饰器，这里仅声明工具签名供 Host 发现
-    if not hasattr(mcp_server, "tool"):
-        return
-
     @mcp_server.tool()
-    def review_test_cases_tool(case_set: TestCaseSet) -> list[Issue]:
+    def review_test_cases(case_set: TestCaseSet) -> list[Issue]:
         """对用例集执行 9 维度评审，返回全部 Issue。"""
-        return review_test_cases(case_set)
+        return _validate_all(case_set)
 
     @mcp_server.tool()
-    def generate_report_tool(case_set: TestCaseSet) -> ReviewReport:
-        """基于评审结果生成度量报告（通过率/问题密度/评级/维度分布/严重等级分布）。"""
-        return generate_report(case_set)
+    def generate_report(case_set: TestCaseSet, issues: list[Issue] | None = None) -> ReviewReport:
+        """基于评审结果生成度量报告（通过率/问题密度/评级/维度分布/严重等级分布）。
+
+        issues 参数可传入预计算的 Issue 列表（如合并了 9+10 维度的结果）；
+        若不传则自动执行 9 维度评审。
+        """
+        if issues is None:
+            issues = review_test_cases(case_set)
+
+        total_cases = len(case_set.cases)
+        issue_case_ids: set[str] = set()
+        for i in issues:
+            if i.case_id == "-":
+                continue
+            for cid in i.case_id.split(","):
+                cid = cid.strip()
+                if cid:
+                    issue_case_ids.add(cid)
+        issue_cases = len(issue_case_ids)
+        pass_rate = (total_cases - issue_cases) / total_cases if total_cases > 0 else 0.0
+        total_issues = len(issues)
+        issue_density = total_issues / total_cases if total_cases > 0 else 0.0
+
+        if pass_rate >= 0.95 and issue_density < 0.5:
+            grade: Literal["A", "B", "C", "D"] = "A"
+        elif pass_rate >= 0.80:
+            grade = "B"
+        elif pass_rate >= 0.60:
+            grade = "C"
+        else:
+            grade = "D"
+
+        dim_counts: Counter[str] = Counter(i.dimension for i in issues)
+        dim_severity: dict[str, list[str]] = {}
+        for issue in issues:
+            dim_severity.setdefault(issue.dimension, []).append(issue.severity.value)
+
+        dimension_stats: list[DimensionStat] = []
+        for dim in DIMENSIONS:
+            count = dim_counts.get(dim, 0)
+            if count > 0:
+                sev_counts = Counter(dim_severity[dim])
+                main_sev = sev_counts.most_common(1)[0][0] if sev_counts else "-"
+            else:
+                main_sev = "-"
+            dimension_stats.append(
+                DimensionStat(dimension=dim, issue_count=count, main_severity=main_sev)
+            )
+
+        severity_counts: Counter[str] = Counter(i.severity.value for i in issues)
+        severity_stats = {sev: severity_counts.get(sev, 0) for sev in ("P0", "P1", "P2")}
+
+        return ReviewReport(
+            total_cases=total_cases,
+            issue_cases=issue_cases,
+            pass_rate=round(pass_rate, 4),
+            total_issues=total_issues,
+            issue_density=round(issue_density, 4),
+            grade=grade,
+            issues=issues,
+            dimension_stats=dimension_stats,
+            severity_stats=severity_stats,
+        )
 
     @mcp_server.tool()
-    def check_semantic_conflicts_tool(facts: list[SemanticFacts]) -> list[Issue]:
+    def check_semantic_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
         """第 10 维度：语义一致性冲突检测（前置条件矛盾/同输入异预期/依赖闭环）。"""
-        return check_semantic_conflicts(facts)
+        return _check_semantic_conflicts(facts)
 
 
 def main() -> int:
@@ -197,16 +246,19 @@ def main() -> int:
         print("1. review_test_cases(case_set)")
         print("   - 对用例集执行 9 维度评审，返回全部 Issue")
         print()
-        print("2. generate_report(case_set)")
+        print("2. generate_report(case_set, issues=None)")
         print("   - 基于评审结果生成度量报告（通过率/问题密度/评级/维度分布/严重等级分布）")
         print()
         print("3. check_semantic_conflicts(facts)")
         print("   - 第 10 维度：语义一致性冲突检测（前置条件矛盾/同输入异预期/依赖闭环）")
         return 0
 
+    if args.transport == "http":
+        print("HTTP 传输待 v0.3.0 实现，当前仅支持 stdio", file=sys.stderr)
+        return 1
+
     try:
-        from mcp.server import Server  # type: ignore
-        from mcp.server.stdio import stdio_server  # type: ignore
+        from mcp.server.fastmcp import FastMCP
     except ImportError:
         print(
             "mcp SDK 未安装。请运行: pip install mcp>=0.9.0",
@@ -214,20 +266,9 @@ def main() -> int:
         )
         return 1
 
-    mcp_server = Server("review-checker")
+    mcp_server = FastMCP("review-checker")
     _register_mcp_tools(mcp_server)
-
-    if args.transport == "stdio":
-        import asyncio
-
-        async def run() -> None:
-            async with stdio_server() as (read_stream, write_stream):
-                await mcp_server.run(read_stream, write_stream)
-
-        asyncio.run(run())
-    else:
-        print("HTTP 传输待 v0.3.0 实现，当前仅支持 stdio", file=sys.stderr)
-        return 1
+    mcp_server.run(transport="stdio")
 
     return 0
 

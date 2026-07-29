@@ -71,7 +71,7 @@ def check_coverage(case_set: TestCaseSet) -> list[Issue]:
             # 无 scenario 字段，按 title 关键词推断
             title = case.title
             if any(k in title for k in ("异常", "错误", "失败", "超时")):
-                counts[ScenarioType.NEGATIVE] += 1
+                counts[ScenarioType.EXCEPTION] += 1
             elif any(k in title for k in ("边界", "极限", "空")):
                 counts[ScenarioType.BOUNDARY] += 1
             else:
@@ -445,7 +445,6 @@ def check_precondition_state_conflicts(facts: list[SemanticFacts]) -> list[Issue
                     continue
                 if (
                     pc_a.subject == pc_b.subject
-                    and pc_a.state != pc_b.state
                     and pc_a.polarity != pc_b.polarity
                 ):
                     issues.append(
@@ -535,8 +534,16 @@ def check_dependency_cycles(facts: list[SemanticFacts]) -> list[Issue]:
                     continue  # 依赖的 case_id 不在用例集中，跳过
                 if color.get(nbr, WHITE) == GRAY:
                     # 找到环：从 path 中 nbr 的位置到当前节点
+                    # 仅当 nbr 在当前 path 中才构成环；
+                    # 若 nbr 是前次 DFS 残留的 GRAY（不在 path 中）则跳过
+                    if nbr not in path:
+                        continue
                     cycle_start_idx = path.index(nbr)
-                    return path[cycle_start_idx:] + [nbr]
+                    cycle = path[cycle_start_idx:] + [nbr]
+                    # 将环上节点标记为 BLACK，避免后续 DFS 误判残留 GRAY
+                    for n in path[cycle_start_idx:]:
+                        color[n] = BLACK
+                    return cycle
                 if color.get(nbr, WHITE) == WHITE:
                     color[nbr] = GRAY
                     stack.append((nbr, path + [nbr]))

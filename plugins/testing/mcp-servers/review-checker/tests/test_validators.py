@@ -831,6 +831,22 @@ class TestCheckDependencyCycles:
         issues = check_dependency_cycles(facts)
         assert len(issues) == 0
 
+    def test_external_node_pointing_to_cycle_no_crash(self):
+        """环外节点指向环内节点不应崩溃（回归测试：DFS 状态泄漏 bug）。"""
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_001", dependencies=["TC_002"]),
+            _make_facts(case_id="TC_002", dependencies=["TC_001"]),
+            _make_facts(case_id="TC_003", dependencies=["TC_002"]),
+        ]
+        issues = check_dependency_cycles(facts)
+        # 应检测到 TC_001↔TC_002 的环，且不因 TC_003→TC_002 崩溃
+        assert len(issues) == 1
+        assert issues[0].severity.value == "P1"
+        assert "TC_001" in issues[0].case_id
+        assert "TC_002" in issues[0].case_id
+
 
 class TestCheckSemanticConflicts:
     """check_semantic_conflicts 聚合函数。"""
