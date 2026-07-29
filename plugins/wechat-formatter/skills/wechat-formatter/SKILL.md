@@ -223,7 +223,7 @@ Brand Profile 文件位于：
 - **Emoji**：`casual-chat` 8-15 个，`cyber` 5-8 个，其他风格不超过 5 处
 - **字号**：默认中等（15px）。用户可指定小号（13px）或大号（17px），在排版结果头部注明字号建议
 - **字体样式**：粗体 `**重点**`、行内代码 `` `code` ``、引用 `>` 用于提示/注意
-- **一键生成 HTML（推荐）**：阶段 5 使用 `scripts/md2wechat.py` 将 Markdown + CSS 合并为带内联样式的 HTML 文件，用户在浏览器中打开后点击「复制到公众号」按钮即可直接粘贴到微信编辑器。依赖：`pip install markdown beautifulsoup4`
+- **一键生成 HTML（可选）**：阶段 5 使用 `scripts/md2wechat.py` 将 Markdown + CSS 合并为带内联样式的 HTML 文件，用户在浏览器中打开后点击「复制到公众号」按钮即可直接粘贴到微信编辑器。仅当用户明确要求「HTML」「可直接粘贴」「一键复制」时执行。依赖：`pip install markdown beautifulsoup4`
 - **渲染工具（备选）**：用户也可将 Markdown 通过 [mdnice](https://mdnice.com)、[135 编辑器](https://www.135editor.com) 或 [壹伴](https://yiban.io) 等工具应用 CSS 样式后复制到公众号编辑器。具体 CSS 参数和配色方案见 [references/wechat-markdown.md](references/wechat-markdown.md)「CSS 渲染参数参考」章节
 - **现成 CSS 样式**：`styles/` 目录下为每种风格提供了可直接使用的完整 CSS 文件。阶段 5 自动读取对应 CSS；若使用 mdnice 手动方式，用户需将 CSS 粘贴到 mdnice「自定义主题」中
 
