@@ -75,58 +75,51 @@ def _register_mcp_tools(mcp_server) -> None:
     """向 MCP Server 注册 5 个工具。
 
     本函数在 mcp SDK 可用时调用，将上述函数注册为 MCP 工具。
-    若 mcp SDK 不可用，本函数不会被调用，模块仍可作为普通 Python 库使用。
+    若 mcp SDK 不可用，本函数不会被调用，模块仍可以作为普通 Python 库使用。
     """
-    try:
-        from mcp.server import Server  # type: ignore
-    except ImportError:
-        return
-
-    # MCP 工具注册逻辑
-    # 实际实现需根据 mcp SDK 版本调整，这里提供标准签名
     @mcp_server.tool()
-    def build_state_machine_tool(
+    def build_state_machine(
         requirement: str,
         object_hint: str | None = None,
         industry_template: str | None = None,
     ) -> StateMachineBuildResult:
         """从需求文本构建状态机模型。"""
-        return build_state_machine(requirement, object_hint, industry_template)
+        return _build_state_machine(requirement, object_hint, industry_template)
 
     @mcp_server.tool()
-    def validate_state_machine_tool(
+    def validate_state_machine(
         state_machine: StateMachine,
         strict: bool = True,
     ) -> ValidationReport:
         """校验状态机完整性与一致性。"""
-        return validate_state_machine(state_machine, strict)
+        return _validate_state_machine(state_machine, strict)
 
     @mcp_server.tool()
-    def generate_scenarios_tool(
+    def generate_scenarios(
         state_machine: StateMachine,
         scenario_types: list[str] | None = None,
         evidence_filter: str | None = None,
     ) -> ScenarioList:
         """基于状态机穷举 10 类场景。"""
-        return generate_scenarios(state_machine, scenario_types, evidence_filter)
+        return _generate_scenarios(state_machine, scenario_types, evidence_filter)
 
     @mcp_server.tool()
-    def export_artifacts_tool(
+    def export_artifacts(
         state_machine: StateMachine,
         scenarios: ScenarioList | None = None,
         formats: list[Literal["markdown", "json", "mermaid"]] | None = None,
         output_dir: str = "./state-machine-outputs",
     ) -> ExportResult:
         """导出为 Markdown / JSON / Mermaid。"""
-        return export_artifacts(state_machine, scenarios, formats, output_dir)
+        return _export_artifacts(state_machine, scenarios, formats, output_dir)
 
     @mcp_server.tool()
-    def check_coverage_tool(
+    def check_coverage(
         state_machine: StateMachine,
         scenarios: ScenarioList,
     ) -> CoverageReport:
         """覆盖度检查。"""
-        return check_coverage(state_machine, scenarios)
+        return _check_coverage(state_machine, scenarios)
 
 
 def main() -> int:
@@ -167,9 +160,13 @@ def main() -> int:
         print("   - 覆盖度检查")
         return 0
 
+    if args.transport == "http":
+        # HTTP 传输待 v0.2.0 实现
+        print("HTTP 传输待 v0.2.0 实现，当前仅支持 stdio", file=sys.stderr)
+        return 1
+
     try:
-        from mcp.server import Server  # type: ignore
-        from mcp.server.stdio import stdio_server  # type: ignore
+        from mcp.server.fastmcp import FastMCP
     except ImportError:
         print(
             "mcp SDK 未安装。请运行: pip install mcp>=0.9.0",
@@ -177,21 +174,9 @@ def main() -> int:
         )
         return 1
 
-    mcp_server = Server("state-machine-testing")
+    mcp_server = FastMCP("state-machine-testing")
     _register_mcp_tools(mcp_server)
-
-    if args.transport == "stdio":
-        import asyncio
-
-        async def run() -> None:
-            async with stdio_server() as (read_stream, write_stream):
-                await mcp_server.run(read_stream, write_stream)
-
-        asyncio.run(run)
-    else:
-        # HTTP 传输待 v0.2.0 实现
-        print("HTTP 传输待 v0.2.0 实现，当前仅支持 stdio", file=sys.stderr)
-        return 1
+    mcp_server.run(transport="stdio")
 
     return 0
 
