@@ -20,17 +20,14 @@ Brand Profile 是一个自由格式的 Markdown 文件，用于存储长期风�
 
 ## 配置文件位置
 
-Brand Profile 文件位于：
+Brand Profile 支持两个位置，按优先级从低到高：
 
-```
-~/.config/md2wechat/brand.md
-```
+| 优先级 | 位置 | 作用范围 | 适用场景 |
+|--------|------|---------|----------|
+| 1（全局） | `~/.config/md2wechat/brand.md` | 当前用户的所有排版任务 | 个人创作者统一品牌 |
+| 2（项目） | 项目根目录 `.brand.md` | 当前项目下的所有文章 | 团队/项目级品牌 |
 
-或在项目根目录：
-
-```
-.brand.md
-```
+**加载规则**：项目配置 `.brand.md` 覆盖全局配置中相同的字段；两个位置都不存在时，使用 SKILL.md 默认设置（tech-blog 风格、15px 字号、无品牌覆盖）。
 
 ---
 
@@ -266,4 +263,4 @@ A: 创建配置后，用一篇测试文章进行排版，查看效果是否符�
 
 ---
 
-> **参考**：完整配置项与字段语义见本文件上方「可配置项」与「配置文件位置」章节。
+> **参考**：完整字段规范与加载机制见 [knowledge/brand-profile-spec.md](../knowledge/brand-profile-spec.md)，模块组合规则见 [knowledge/module-design.md](../knowledge/module-design.md)。

@@ -2,7 +2,7 @@
 
 > **版本**：v3.0.0（与 [SKILL.md](SKILL.md) frontmatter / plugin.json 同步）
 
-一套面向技术领域的微信公众号文章排版技能，提供六种风格模板，自动分析文章内容并输出可直接复制到公众号编辑器的格式化 Markdown。
+一套面向技术领域的微信公众号文章排版技能，提供六种风格模板、9 大类高级排版模块和 Brand Profile 品牌配置，自动分析文章内容并输出可直接复制到公众号编辑器的格式化 Markdown。
 
 ## 适用场景
 
@@ -13,7 +13,7 @@
 ## 六种排版风格
 
 | 风格 | 代号 | 适用内容 | 视觉特征 |
-|------|------|---------|---------|
+|------|------|---------|----------|
 | 技术博客 | `tech-blog` | 编程教程、技术分享、工具介绍 | 导读框 + 中文编号章节 + 核心观点框 |
 | 教程指南 | `tutorial` | 操作指南、最佳实践、配置说明 | 目标框 + Step 五段式 + 四种提示框 |
 | 深度干货 | `deep-dive` | 原理剖析、架构分析、技术复盘 | 摘要框 + 目录 + 核心结论框 + 图表编号 |
@@ -49,8 +49,16 @@
 wechat-formatter/
 ├── SKILL.md                    # 技能主文件（索引 + 决策树）
 ├── README.md                   # 本文件
+├── test-prompts.json           # 测试用例
+├── brand/                      # [v3.0.0 新增] Brand Profile 使用指南
+│   └── brand-profile.md        # 品牌配置使用说明与示例
+├── layout/                     # [v3.0.0 新增] 高级排版模块
+│   ├── layout-modules.md       # 9 大类模块规范 + :::module 语法
+│   └── modules-base.css        # 模块基础 CSS 样式
 ├── scripts/                    # 工具脚本
-│   └── md2wechat.py            # Markdown → 可粘贴 HTML 转换脚本
+│   ├── md2wechat.py            # Markdown → 可粘贴 HTML 转换脚本
+│   └── tests/                  # 转换脚本单测
+│       └── test_md2wechat.py
 ├── templates/                  # 风格模板
 │   ├── template-index.md       # 模板索引与选择指南
 │   ├── tech-blog.md            # 技术博客风格规则
@@ -68,6 +76,7 @@ wechat-formatter/
 │   └── cyber.md                # 赛博朋克 CSS
 ├── examples/                   # 示例文件
 │   ├── sample-input-testing-guide.md      # 输入示例
+│   ├── layout-modules-example.md          # [v3.0.0 新增] 高级模块用例示例
 │   ├── sample-output-tech-blog.md         # 技术博客输出示例
 │   ├── sample-output-tutorial.md          # 教程指南输出示例
 │   ├── sample-output-deep-dive.md         # 深度干货输出示例
@@ -79,11 +88,94 @@ wechat-formatter/
 │   └── wechat-markdown.md      # 公众号 Markdown 兼容性 + CSS 渲染参数
 ├── knowledge/                  # 知识库
 │   ├── wechat-traps.md         # 公众号排版常见陷阱
-│   ├── module-design.md        # 高级排版模块设计原则
-│   └── brand-profile-spec.md  # Brand Profile 配置规范
+│   ├── module-design.md        # [v3.0.0 新增] 高级排版模块设计原则
+│   └── brand-profile-spec.md   # [v3.0.0 新增] Brand Profile 配置规范
 └── integrations/              # 集成与上手
     └── quickstart.md          # 快速开始指南（依赖安装 / 用法 / 故障排查）
 ```
+
+## 高级排版模块（v3.0.0 新增）
+
+支持 `:::module` 语法，提供 9 大类预定义视觉卡片组件，让文章更具视觉层级和品牌感。
+
+### 4 件事原则
+
+每个模块只服务这 4 件事之一：
+
+| 目的 | 解决什么 | 代表模块 |
+|------|---------|----------|
+| **attention** | 让读者先知道值不值得读 | hero, cards, verdict |
+| **readability** | 让手机窄屏阅读不累 | toc, steps, part |
+| **memorability** | 让读者记住一个判断或品牌 | verdict, manifesto, author-card |
+| **conversion** | 让读者愿意收藏/关注/咨询/转发/购买 | cta, faq, checklist |
+
+**核心原则**：选最少的模块，每件事做好一个。一篇文章 hero 只有一个，verdict 只有一个，cta 只有一个。单篇模块总数不超过 7 个。
+
+### 9 大类模块速览
+
+| 类别 | 模块 | 用途 |
+|------|------|------|
+| **opening 开场类** | hero, toc, cards, part, label-title | 文章开篇第一屏 |
+| **infographic 信息图类** | metrics, compare, steps, timeline, infographic | 数据可视化展示 |
+| **judgment 判断类** | verdict, audience-fit, myth-fact, manifesto, bridge | 核心立场表达 |
+| **evidence 证据类** | quote, image-annotate, image-compare, image-steps, image-text | 支撑判断的证据 |
+| **conversion 行动类** | cta, faq, checklist, cases | 促进读者行动 |
+| **brand 品牌类** | author-card, brand-banner | 建立品牌识别度 |
+| **callout 提示类** | callout, highlight | 强调重要信息 |
+| **free-layout 自由布局类** | split, columns | 灵活布局选项 |
+| **interactive 交互类** | question, poll | 增加读者参与度 |
+
+### 语法示例
+
+```markdown
+:::hero
+variant: editorial
+eyebrow: 深度观察
+title: 高级排版服务阅读决策
+subtitle: 主题决定气质，模块决定读者能不能看懂
+:::
+
+:::steps[落地步骤]
+01 | 发现模块 | layout list 列出所有可用模块
+02 | 写进文章 | 直接粘贴 :::module 语法
+:::
+
+:::columns{columns=2 gap=16}
+第一列内容
+---
+第二列内容
+:::
+```
+
+> 完整模块规范：[layout/layout-modules.md](layout/layout-modules.md) | 设计原则：[knowledge/module-design.md](knowledge/module-design.md) | 模块 CSS：[layout/modules-base.css](layout/modules-base.css)
+
+---
+
+## Brand Profile 品牌配置（v3.0.0 新增）
+
+支持品牌配置文件，让所有文章保持统一的视觉风格和品牌调性。
+
+### 配置文件位置
+
+| 优先级 | 位置 | 作用范围 |
+|--------|------|----------|
+| 1（全局） | `~/.config/md2wechat/brand.md` | 当前用户的所有排版任务 |
+| 2（项目） | 项目根目录 `.brand.md` | 当前项目下的所有文章 |
+
+**加载规则**：项目配置覆盖全局配置中相同的字段；两个位置都不存在时，使用 SKILL.md 默认设置。
+
+### 核心可配置项
+
+| 分类 | 核心字段 | 示例 |
+|------|---------|------|
+| 基本信息 | 品牌名称、品牌口号、目标受众 | 极客杰尼 |
+| 视觉风格 | 主色调、字号、排版风格 | #007bff、medium、tech-blog |
+| 模块偏好 | 常用模块、避免使用 | hero + verdict + cta |
+| 内容调性 | 语言风格、禁忌事项 | 专业但不晦涩 |
+
+> 完整 7 大类字段：[knowledge/brand-profile-spec.md](knowledge/brand-profile-spec.md) | 使用指南：[brand/brand-profile.md](brand/brand-profile.md)
+
+---
 
 ## 排版规范要点
 
@@ -125,7 +217,7 @@ python scripts/md2wechat.py <markdown_file> <style_file> [--size small|medium|la
 3. 点击「复制」按钮，粘贴到公众号编辑器
 
 | 风格 | CSS 文件 | 主色调 | 视觉特征 |
-|------|---------|--------|---------|
+|------|---------|--------|----------|
 | 技术博客 | [styles/tech-blog.md](styles/tech-blog.md) | 深蓝 #2b5797 | 干净代码块 + 左侧边引用 |
 | 教程指南 | [styles/tutorial.md](styles/tutorial.md) | 薄荷绿 #26a69a | 渐变标题背景 + 复选框支持 |
 | 深度干货 | [styles/deep-dive.md](styles/deep-dive.md) | 深蓝 #2b5797 + 绿 #42b983 | 暗色代码块 + 装饰分割线 |
@@ -140,3 +232,9 @@ python scripts/md2wechat.py <markdown_file> <style_file> [--size small|medium|la
 - 文件名：`{原文件名}_formatted_{风格代号}.md`
 - 文件头：HTML 注释包含排版风格、时间、原始文件、图片/代码块数量
 - 文末：参考资料（脚注式）+ 互动引导
+
+## 版本历史
+
+- **v3.0.0**：新增高级排版模块（`:::module` 语法、9 大类视觉卡片、4 件事原则）、Brand Profile 品牌配置、`layout/` 与 `brand/` 目录；新增 apple 与 cyber 两种风格
+- **v2.x**：六种风格模板 + CSS 渲染体系（mdnice 适配 + `md2wechat.py` 一键 HTML）
+- **v1.x**：基础 Markdown 排版能力（标题层级 + 中英文空格 + 脚注式链接）
