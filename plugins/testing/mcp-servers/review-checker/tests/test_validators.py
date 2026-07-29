@@ -367,3 +367,72 @@ class TestValidateAll:
         assert "P0" in severities  # 字段缺失/占位符/溯源
         assert "P1" in severities  # 模糊词/模糊预期
         assert "P2" in severities  # 测试数据依赖
+
+
+class TestSemanticFactsSchema:
+    """SemanticFacts schema 实例化与字段校验。"""
+
+    def test_precondition_fact_with_valid_polarity(self):
+        from review_checker_mcp.schemas import PreconditionFact
+
+        fact = PreconditionFact(
+            subject="用户登录状态", state="已登录", polarity="affirmative"
+        )
+        assert fact.subject == "用户登录状态"
+        assert fact.polarity == "affirmative"
+
+    def test_precondition_fact_rejects_invalid_polarity(self):
+        import pytest
+        from pydantic import ValidationError
+
+        from review_checker_mcp.schemas import PreconditionFact
+
+        with pytest.raises(ValidationError):
+            PreconditionFact(
+                subject="用户登录状态", state="已登录", polarity="maybe"
+            )
+
+    def test_input_fact_fields(self):
+        from review_checker_mcp.schemas import InputFact
+
+        fact = InputFact(
+            input_signature="登录(account=testuser,pwd=错误密码)",
+            expected_outcome="返回密码错误提示",
+        )
+        assert "pwd=错误密码" in fact.input_signature
+
+    def test_semantic_facts_with_null_test_point_id(self):
+        from review_checker_mcp.schemas import SemanticFacts
+
+        facts = SemanticFacts(case_id="TC_001", test_point_id=None)
+        assert facts.case_id == "TC_001"
+        assert facts.test_point_id is None
+        assert facts.preconditions == []
+        assert facts.inputs == []
+        assert facts.dependencies == []
+
+    def test_semantic_facts_with_full_fields(self):
+        from review_checker_mcp.schemas import (
+            InputFact,
+            PreconditionFact,
+            SemanticFacts,
+        )
+
+        facts = SemanticFacts(
+            case_id="TC_WEBHOOK_ADD_001",
+            test_point_id="TP_WEBHOOK_001",
+            preconditions=[
+                PreconditionFact(
+                    subject="用户登录状态", state="已登录", polarity="affirmative"
+                ),
+            ],
+            inputs=[
+                InputFact(
+                    input_signature="创建Webhook(url=https://a.com)",
+                    expected_outcome="返回201+webhook_id",
+                ),
+            ],
+            dependencies=["TC_WEBHOOK_ADD_002"],
+        )
+        assert facts.preconditions[0].subject == "用户登录状态"
+        assert facts.dependencies == ["TC_WEBHOOK_ADD_002"]
