@@ -2,7 +2,8 @@
 
 启动方式：python -m review_checker_mcp.server
 
-v0.2.0 新增 MCP 协议层注册，将 9 维度校验逻辑暴露为 MCP 工具，
+v0.2.0 新增 MCP 协议层注册，将 10 维度校验逻辑暴露为 MCP 工具
+（review_test_cases 9 维度用例级 + check_semantic_conflicts 第 10 维度语义一致性），
 让 test-case-engineer 评审模式可通过 MCP 协议调用确定性校验。
 """
 
@@ -32,7 +33,7 @@ __all__ = [
     "main",
 ]
 
-# 9 维度顺序（用于维度统计的稳定输出）
+# 10 维度顺序（用于维度统计的稳定输出；前 9 项由 review_test_cases 产出，第 10 项由 check_semantic_conflicts 产出）
 DIMENSIONS = [
     "覆盖度",
     "优先级合理性",

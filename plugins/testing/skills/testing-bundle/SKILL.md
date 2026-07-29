@@ -208,12 +208,12 @@ keywords:
 - `bug-patterns.md` 主归属 test-case-engineer，bug-analyzer 通过相对路径 `../test-case-engineer/knowledge/bug-patterns.md` 引用
 - strategy/performance/state-machine 不共享知识库（聚焦点不同，共享会引入路由歧义）
 - state-machine-test-engineer 可选调用 `state-machine-testing-mcp` Server 做 Schema 校验与可视化（未安装时降级为纯 LLM 推理）
-- test-case-engineer 评审模式可选调用 `review-checker-mcp` Server 做 9 维度确定性校验与度量报告（未安装时降级为纯 LLM 推理）
+- test-case-engineer 评审模式可选调用 `review-checker-mcp` Server 做 10 维度确定性校验与度量报告（9 维度用例级校验 + 1 维度语义一致性冲突检测，未安装时降级为纯 LLM 推理）
 
 **依赖说明**：
 - bug-analyzer 单独安装时，步骤 2/3 的"对照缺陷模式库"能力会降级（仍有通用模式兜底，但无法查阅完整缺陷模式库）。通过本 bundle 整体安装获得完整能力。
 - state-machine-test-engineer 单独安装时完全可用；安装配套 MCP Server 后进入"增强模式"，获得 Schema 校验、Mermaid 可视化、覆盖度报告等额外能力。
-- test-case-engineer 评审模式单独可用；安装配套 review-checker MCP Server 后进入"增强模式"，获得 9 维度确定性校验与度量报告（通过率/问题密度/评级 A-D）。
+- test-case-engineer 评审模式单独可用；安装配套 review-checker MCP Server 后进入"增强模式"，获得 10 维度确定性校验与度量报告（通过率/问题密度/评级 A-D）。
 
 ## 安装方式
 
