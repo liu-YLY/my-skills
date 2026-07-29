@@ -4,6 +4,40 @@
 
 ---
 
+## [3.1.1] - 2026-07-22
+
+### Added
+
+- **声明 review-checker MCP Server 可选增强**：test-case-engineer 评审模式可选调用 `review-checker-mcp` Server 做 10 维度确定性校验与度量报告（与 state-machine MCP 增强对称），未安装时降级为纯 LLM 推理
+
+### Changed
+
+- **bundle 版本**：v3.1.0 → v3.1.1
+- **路由契约修复**：删除"意图不明确时默认路由到 test-case-engineer"的兜底规则，改为"持续追问，仅当用户明确授权'你来决定'时才默认路由"，消除与路由决策表"追问用户"的冲突
+- **change-impact-analyzer 归属修正**：从"外部 skill，需单独安装"修正为"testing plugin 内第 6 个协同 skill（`skills: "./skills/"` 已包含）"，同步安装说明、协同表、快速上手
+- **版本单一来源**：同步 frontmatter / 正文标题 / 架构图 / 3 个 plugin manifest / CHANGELOG / test-prompts 版本号至 v3.1.1
+
+## [3.1.0] - 2026-07-21
+
+### Added
+
+- **新增混合意图链 6**：评审 → 覆盖缺口验证（test-case-engineer 评审模式 → change-impact-analyzer 做 git diff × 用例交叉验证）
+- **新增混合意图链 7**：评审 → 风险用例根因反推（test-case-engineer 评审模式 → bug-analyzer 按五步定位法反推根因）
+- 评审模式成为混合意图链起点（链 6/7 均以评审为上游）
+
+### Changed
+
+- **bundle 版本**：v3.0.0 → v3.1.0
+- **混合意图链数**：5 条 → 7 条
+- **子 skill 数**：5 核心 + 1 协同（change-impact-analyzer 随 plugin 整体安装）
+- **失败模式表**：新增"链 6 降级"方向性指导模板
+
+### Breaking Changes
+
+- 新增链 6/7 依赖 change-impact-analyzer 与 bug-analyzer，按需安装时需注意覆盖
+
+---
+
 ## [3.0.0] - 2026-07-18
 
 ### Added

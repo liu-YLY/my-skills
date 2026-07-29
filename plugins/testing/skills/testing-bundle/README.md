@@ -1,6 +1,6 @@
 # Testing Bundle Skill
 
-> 测试能力 bundle 入口 v3.0.0：统一路由到 5 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer）。
+> 测试能力 bundle 入口 v3.1.1：统一路由到 5 个核心子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer）+ 1 个协同 skill（change-impact-analyzer）。
 
 ## 简介
 
@@ -8,16 +8,17 @@ Testing Bundle 是一个元 skill（meta skill），本身不实现具体测试�
 
 ### 为什么需要 Bundle
 
-拆分后存在 5 个独立 skill：
+拆分后存在 6 个独立 skill：
 - `test-strategy-engineer`：专注项目级测试策略
 - `test-case-engineer`：专注功能用例生成
 - `performance-test-engineer`：专注性能测试方案与瓶颈定位
 - `bug-analyzer`：专注功能缺陷根因
 - `state-machine-test-engineer`：专注状态机驱动的状态型需求测试（订单/审批/工单/会员等生命周期）
+- `change-impact-analyzer`：专注代码变更影响分析（git diff × 用例交叉验证）
 
 用户提出"测试相关"请求时，可能需要其中任何一个，也可能多个协同。Bundle 解决三个问题：
 1. **统一入口**：用户无需预先判断该用哪个 skill
-2. **混合意图协同**：自动编排多 skill 协同流程（5 条混合意图链）
+2. **混合意图协同**：自动编排多 skill 协同流程（7 条混合意图链）
 3. **依赖关系管理**：显式声明 bug-analyzer 对 test-case-engineer 知识库的依赖、state-machine-test-engineer 对可选 MCP Server 的依赖
 
 ## 子 skill 说明
@@ -29,6 +30,7 @@ Testing Bundle 是一个元 skill（meta skill），本身不实现具体测试�
 | [performance-test-engineer](../performance-test-engineer/) | 性能测试方案+瓶颈定位 | 四阶段：需求理解 → 场景设计 → 瓶颈定位 → 转交判断 |
 | [bug-analyzer](../bug-analyzer/) | 功能缺陷根因 | 五步定位法：复现 → 隔离 → 定位 → 验证 → 报告 |
 | [state-machine-test-engineer](../state-machine-test-engineer/) | 状态机建模+场景穷举 | 五阶段：状态型需求识别 → 状态机建模 → 完整性检查 → 10类场景穷举 →（可选）MCP 增强 |
+| [change-impact-analyzer](../change-impact-analyzer/) | 代码变更影响分析 | 四阶段：收集输入 → Diff 解析 → 交叉分析 → 生成报告 |
 
 ## 路由规则
 
@@ -41,15 +43,17 @@ Bundle 根据用户意图自动路由：
 | 性能测试、负载测试、TPS、响应时间、瓶颈 | performance-test-engineer |
 | Bug 根因分析、缺陷定位、5 Whys、防御性用例反推 | bug-analyzer |
 | 状态机、状态流转、状态转换、生命周期、非法跳转、幂等、并发冲突、消息乱序、终态吸收 | state-machine-test-engineer |
-| 混合意图（5 条链） | 见 SKILL.md 混合意图链 |
+| 混合意图（7 条链） | 见 SKILL.md 混合意图链 |
 | 意图不明确 | 追问用户 |
 
-**5 条混合意图链**：
+**7 条混合意图链**：
 1. Bug 分析 + 用例生成（bug-analyzer → case-engineer）
 2. 测试策略 + 分层用例（strategy → case-engineer）
 3. 性能测试 + 瓶颈定位（performance 内部完成）
 4. 性能瓶颈 + 代码缺陷（performance → bug-analyzer）
-5. **状态机建模 + 用例生成**（state-machine → case-engineer）← v3.0.0 新增
+5. 状态机建模 + 用例生成（state-machine → case-engineer）
+6. 评审 → 覆盖缺口验证（case-engineer 评审 → change-impact-analyzer）
+7. 评审 → 风险用例根因反推（case-engineer 评审 → bug-analyzer）
 
 ## 安装方式
 
@@ -62,7 +66,8 @@ skills/
 ├── test-case-engineer/          ← 子 skill（用例生成）
 ├── performance-test-engineer/   ← 子 skill（性能测试）
 ├── bug-analyzer/                ← 子 skill（Bug 分析）
-└── state-machine-test-engineer/ ← 子 skill（状态机测试，v3.0.0 新增）
+├── state-machine-test-engineer/ ← 子 skill（状态机测试）
+└── change-impact-analyzer/      ← 子 skill（变更影响分析，链 6 协同）
 ```
 
 获得完整测试能力，bundle 自动路由，无需用户判断该用哪个子 skill。
@@ -74,6 +79,7 @@ skills/
 - 只需性能测试 → 仅安装 `performance-test-engineer`
 - 只需 Bug 分析 → 仅安装 `bug-analyzer`（缺陷模式库引用会降级）
 - 只需状态机测试 → 仅安装 `state-machine-test-engineer`（可选再装配套 MCP Server 进入增强模式）
+- 只需变更影响分析 → 仅安装 `change-impact-analyzer`
 - 不安装 `testing-bundle` 时，用户需自行判断该用哪个子 skill
 
 ## 知识库依赖
@@ -120,14 +126,14 @@ skills/
  输出性能测试方案 + 场景设计 + 瓶颈定位流程
 ```
 
-### 示例 6：自动路由到状态机测试（v3.0.0 新增）
+### 示例 6：自动路由到状态机测试
 ```
 用户：订单退款流程要做测试，订单状态包括待支付/已支付/已取消/退款中/退款成功/退款失败
 → bundle 路由到 state-machine-test-engineer
  输出状态机模型 + 场景清单（含依据类型标注，未说明的退款失败恢复路径标"待确认"）
 ```
 
-### 示例 7：状态机 + 用例协同（链 5，v3.0.0 新增）
+### 示例 7：状态机 + 用例协同（链 5）
 ```
 用户：为订单退款流程设计状态机测试场景，并生成完整测试用例
 → bundle 路由到 state-machine-test-engineer（输出状态机模型 + 场景清单）
