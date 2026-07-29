@@ -141,14 +141,17 @@ keywords:
 | **evidence 证据类** | quote, image-annotate, image-compare, image-steps, image-text | 支撑判断的证据 |
 | **conversion 行动类** | cta, faq, checklist, cases | 促进读者行动 |
 | **brand 品牌类** | author-card, brand-banner | 建立品牌识别度 |
-| **sprint4 精选增强类** | callout, highlight | 强调重要信息 |
+| **callout 提示类** | callout, highlight | 强调重要信息 |
 | **free-layout 自由布局类** | split, columns | 灵活布局选项 |
 | **interactive 交互类** | question, poll | 增加读者参与度 |
 
 ### 模块语法示例
 
+三种正文格式：fields / rows / params，详见 [layout/layout-modules.md](layout/layout-modules.md) §二。
+
 ```markdown
 :::hero
+variant: editorial
 eyebrow: 深度观察
 title: 高级排版服务阅读决策
 subtitle: 主题决定气质，模块决定读者能不能看懂
@@ -160,10 +163,17 @@ subtitle: 主题决定气质，模块决定读者能不能看懂
 03 | 写进文章 | 直接粘贴 :::module 语法
 :::
 
+:::columns{columns=2 gap=16}
+第一列内容
+---
+第二列内容
+:::
+
 :::verdict
 eyebrow: 最终判断
 title: 真正的护城河不是模块数量，而是品牌表达系统
 body: 每个模块必须服务一个真实的阅读任务，否则只是换皮。
+note: 适合观点文、复盘、方案结论
 :::
 ```
 
@@ -189,17 +199,26 @@ Brand Profile 文件位于：
 - 全局配置：`~/.config/md2wechat/brand.md`
 - 项目配置：`.brand.md`（项目根目录）
 
+**优先级**：项目配置 `.brand.md` 优先级高于全局配置，相同字段以项目配置为准。
+
 ### 可配置项
 
-| 配置项 | 说明 | 示例 |
-|--------|------|------|
-| 品牌名称 | 品牌或个人名称 | 极客杰尼 |
-| 品牌口号 | 一句话品牌定位 | 让复杂技术变得简单易懂 |
-| 主色调 | 品牌主色 | #007bff（科技蓝） |
-| 排版风格 | 偏好的排版风格 | tech-blog |
-| 模块偏好 | 常用的模块组合 | hero + verdict + cta |
-| 语言风格 | 内容调性 | 专业但不晦涩 |
-| 禁忌事项 | 避免使用的元素 | 避免过度使用感叹号 |
+字段语义以 [knowledge/brand-profile-spec.md](knowledge/brand-profile-spec.md) 为权威，下表为精简索引：
+
+| 分类 | 核心字段 | 说明 | 示例 |
+|------|---------|------|------|
+| 基本信息 | 品牌名称 | 品牌或个人名称 | 极客杰尼 |
+| 基本信息 | 品牌口号 | 一句话品牌定位 | 让复杂技术变得简单易懂 |
+| 基本信息 | 目标受众 | 文章面向的读者群体 | 技术开发者、产品经理 |
+| 视觉风格 | 主色调 | 品牌主色（覆盖风格 CSS 主色） | #007bff（科技蓝） |
+| 视觉风格 | 字号 | 全文字号（small/medium/large） | medium |
+| 视觉风格 | 排版风格 | 偏好的默认排版风格 | tech-blog |
+| 模块偏好 | 常用模块 | 默认使用的模块组合 | hero + verdict + cta |
+| 模块偏好 | 避免使用 | 不建议使用的模块或风格 | casual-chat 风格 |
+| 内容调性 | 语言风格 | 内容调性，影响 AI 写作风格 | 专业但不晦涩 |
+| 内容调性 | 禁忌事项 | 避免使用的元素或表达 | 避免过度使用感叹号 |
+
+> 完整 7 大类字段（含辅助色/强调色/字体偏好/代码块样式/品牌标识等）见 [knowledge/brand-profile-spec.md](knowledge/brand-profile-spec.md) §三
 
 ### 使用方法
 
@@ -207,7 +226,7 @@ Brand Profile 文件位于：
 2. **手动指定**：用户在对话中指定使用品牌配置
 3. **创建配置**：AI 引导用户创建品牌配置文件
 
-> 完整配置指南：[brand/brand-profile.md](brand/brand-profile.md)
+> 完整配置指南：[brand/brand-profile.md](brand/brand-profile.md)（使用指南）| [knowledge/brand-profile-spec.md](knowledge/brand-profile-spec.md)（字段规范）
 
 ---
 
@@ -232,7 +251,7 @@ Brand Profile 文件位于：
 ## 参考索引
 
 | 文件 | 何时查阅 |
-|------|---------|
+|------|----------|
 | [templates/template-index.md](templates/template-index.md) | **阶段 2 强制读** — 风格选择 |
 | [templates/tech-blog.md](templates/tech-blog.md) | 用户选择 `tech-blog` 风格时 |
 | [templates/tutorial.md](templates/tutorial.md) | 用户选择 `tutorial` 风格时 |
@@ -260,7 +279,7 @@ Brand Profile 文件位于：
 ## 失败模式与 Fallback
 
 | 触发条件 | 一线修复 | 仍失败兜底 |
-|---------|----------|-----------|
+|---------|-----------|----------|
 | 用户输入文件路径不存在 | 提示用户重新提供正确路径，列出当前工作目录的可读 .md 文件 | 用户确认无文件后，接受用户直接粘贴文章文本作为输入 |
 | 文章内容为空或字数 < 50 | 提示用户内容过短无法识别要素，要求补充 | 降级为通用 tech-blog 风格，仅做标题层级 + 中英文空格修正 |
 | 阶段 1 无法识别主导内容类型 | 输出已识别要素让用户确认类型（🔴 CHECKPOINT） | 默认推荐 tech-blog（通用兜底风格），并在输出首行标注「已默认推荐 tech-blog，如需其他风格请说明」 |
@@ -279,7 +298,7 @@ Brand Profile 文件位于：
 ### 排版反模式速查
 
 | # | 反模式 | 为什么不要做 | 替代做法 |
-|---|--------|------------|---------|
+|---|--------|------------|----------|
 | 1 | 用 `[文字](url)` Markdown 直链 | 公众号不支持，复制后显示为纯文本 | 统一用脚注式：文中 `[N]`，文末集中列 URL |
 | 2 | 用 `~~删除线~~` 语法 | 公众号渲染为双波浪号纯文本，不显示删除线 | 用「**已废弃**」「~~不推荐~~→直接说明」替代 |
 | 3 | 用 Markdown 表格 | 公众号不支持渲染，复制后变纯文本乱码 | ≤3 列转列表；>3 列建议截图插入 |

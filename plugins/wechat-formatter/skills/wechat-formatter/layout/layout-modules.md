@@ -27,7 +27,7 @@ subtitle: 不是好不好看，是读者读不读得完
 每个模块只服务这 4 件事之一：
 
 | 目的 | 解决什么 | 代表模块 |
-|------|---------|---------|
+|------|---------|----------|
 | **attention** | 让读者先知道值不值得读 | hero, cards, verdict |
 | **readability** | 让手机窄屏阅读不累 | toc, steps, part |
 | **memorability** | 让读者记住一个判断或品牌 | verdict, manifesto, author-card |
@@ -565,7 +565,7 @@ slogan: 让复杂技术变得简单易懂
 
 ---
 
-### 7. sprint4 精选增强类
+### 7. callout 提示类
 
 **目的**：提供更丰富的视觉效果和交互体验。
 
@@ -684,7 +684,7 @@ options: 技术博客风 | 教程指南风 | 深度干货风 | 轻松聊天风
 ### 按目的选择
 
 | 目的 | 推荐模块 |
-|------|---------|
+|------|----------|
 | 吸引注意力 | hero, cards, label-title |
 | 提高可读性 | toc, steps, part |
 | 建立记忆点 | verdict, manifesto, highlight |
