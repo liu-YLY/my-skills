@@ -830,3 +830,73 @@ class TestCheckDependencyCycles:
         ]
         issues = check_dependency_cycles(facts)
         assert len(issues) == 0
+
+
+class TestCheckSemanticConflicts:
+    """check_semantic_conflicts 聚合函数。"""
+
+    def test_aggregates_all_three_conflict_types(self):
+        from review_checker_mcp.schemas import (
+            InputFact,
+            PreconditionFact,
+            SemanticFacts,
+        )
+        from review_checker_mcp.validators import check_semantic_conflicts
+
+        facts = [
+            SemanticFacts(
+                case_id="TC_001",
+                test_point_id="TP_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="返回密码错误",
+                    ),
+                ],
+                dependencies=["TC_002"],
+            ),
+            SemanticFacts(
+                case_id="TC_002",
+                test_point_id="TP_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="未登录", polarity="negation"
+                    ),
+                ],
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="登录成功",
+                    ),
+                ],
+                dependencies=["TC_001"],
+            ),
+        ]
+        issues = check_semantic_conflicts(facts)
+        # 应同时检出：①前置条件矛盾(P0) + ②同输入异预期(P0) + ③依赖闭环(P1)
+        dims = [i.dimension for i in issues]
+        assert dims.count("语义一致性") == 3
+        severities = [i.severity.value for i in issues]
+        assert severities.count("P0") == 2
+        assert severities.count("P1") == 1
+
+    def test_empty_facts_returns_empty(self):
+        from review_checker_mcp.validators import check_semantic_conflicts
+
+        issues = check_semantic_conflicts([])
+        assert issues == []
+
+    def test_no_conflicts_returns_empty(self):
+        from review_checker_mcp.validators import check_semantic_conflicts
+
+        facts = [
+            _make_facts(case_id="TC_001"),
+            _make_facts(case_id="TC_002"),
+        ]
+        issues = check_semantic_conflicts(facts)
+        assert issues == []

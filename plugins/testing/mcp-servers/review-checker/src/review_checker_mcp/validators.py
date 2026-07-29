@@ -572,6 +572,25 @@ def check_dependency_cycles(facts: list[SemanticFacts]) -> list[Issue]:
     return issues
 
 
+def check_semantic_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
+    """第 10 维度：语义一致性。
+
+    输入：skill 侧 LLM 抽取的 SemanticFacts 列表。
+    输出：Issue 列表，case_id 形如 "TC_A,TC_B"（冲突对）或
+          "TC_A,TC_B,TC_C"（闭环）。
+
+    内部执行 3 类确定性检测：
+      - check_precondition_state_conflicts  # 类型 ①
+      - check_input_outcome_conflicts       # 类型 ②
+      - check_dependency_cycles             # 类型 ③
+    """
+    issues: list[Issue] = []
+    issues.extend(check_precondition_state_conflicts(facts))
+    issues.extend(check_input_outcome_conflicts(facts))
+    issues.extend(check_dependency_cycles(facts))
+    return issues
+
+
 def validate_all(case_set: TestCaseSet) -> list[Issue]:
     """执行全部 9 维度校验，返回所有 Issue。"""
     issues: list[Issue] = []
