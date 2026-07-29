@@ -2,20 +2,19 @@
 name: test-case-engineer
 version: 8.2.0
 description: >-
-  Use when generating, reviewing, or designing test cases and test strategies.
-  Triggers on: 测试用例、测试点、用例评审、测试策略、需求分析、测试分层、QA.
+  Use when generating, reviewing, or designing test cases and single-feature
+  test strategies.
+  Triggers on: 测试用例、测试点、用例评审、单功能测试策略、需求分析、QA.
   For bug root cause analysis or defect localization, use bug-analyzer instead.
-  v8.1: 新增用例拆分与合并平衡策略（原子化/合并/复杂度三目标 + 5步决策法 + 软断言 + 复杂度阈值）。
-  v8.2: 新增第 10 维度「语义一致性」检测（跨用例前后语义冲突：前置条件矛盾/同输入异预期/依赖闭环）。
+  For project-level test strategy or test layering, use test-strategy-engineer instead.
 keywords:
   - QA
   - 测试用例
   - 测试点
   - 用例评审
-  - 测试策略
+  - 单功能测试策略
   - AI赋能
   - Prompt策略
-  - 分层测试
   - 需求结构化
 ---
 
