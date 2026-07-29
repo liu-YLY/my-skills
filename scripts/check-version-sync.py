@@ -131,7 +131,9 @@ def check_plugin_readme_skill_versions(plugin_root: Path, skills_dir: Path) -> l
     matrix versions match each skill's SKILL.md frontmatter version.
 
     Scans for "{skill_name} v{X.Y.Z}" patterns in README.md and compares
-    against the frontmatter version of the corresponding skill.
+    against the frontmatter version of the corresponding skill. Supports
+    both plain "skill-name vX.Y.Z" and markdown link form
+    "[skill-name](path) ... vX.Y.Z".
     """
     errors = []
     readme = plugin_root / 'README.md'
@@ -147,8 +149,11 @@ def check_plugin_readme_skill_versions(plugin_root: Path, skills_dir: Path) -> l
         expected = extract_skill_version(skill_md)
         if not expected:
             continue
-        # Match "skill-name vX.Y.Z" in README (architecture diagram, capability matrix)
-        pattern = rf'{re.escape(skill_name)}\s+v(\d+\.\d+\.\d+)'
+        # Match "skill-name vX.Y.Z" or "[skill-name](path) ... vX.Y.Z"
+        # in README (architecture diagram, capability matrix).
+        # Allows optional markdown link syntax and separator chars between
+        # the skill name and the version number.
+        pattern = rf'{re.escape(skill_name)}(?:\]\([^)]*\))?[^\d]*v(\d+\.\d+\.\d+)'
         for m in re.finditer(pattern, content):
             found = m.group(1)
             if found != expected:
@@ -156,6 +161,99 @@ def check_plugin_readme_skill_versions(plugin_root: Path, skills_dir: Path) -> l
                     f"{readme}: references '{skill_name} v{found}' but "
                     f"SKILL.md frontmatter version is {expected}"
                 )
+    return errors
+
+
+def check_skills_overview_version(root: Path) -> list[str]:
+    """Check that docs/skills-overview.md skill section versions match each
+    skill's SKILL.md frontmatter version.
+
+    Scans each "### ... (skill-name)" section for the nearest
+    "**版本**：vX.Y.Z" marker and compares against the frontmatter version.
+    """
+    errors = []
+    overview = root / 'docs' / 'skills-overview.md'
+    if not overview.exists():
+        return errors
+    content = overview.read_text(encoding='utf-8')
+
+    plugins_dir = root / 'plugins'
+    if not plugins_dir.exists():
+        return errors
+
+    for plugin_root in plugins_dir.iterdir():
+        if not plugin_root.is_dir():
+            continue
+        skills_dir = plugin_root / 'skills'
+        if not skills_dir.exists():
+            continue
+        for skill_dir in skills_dir.iterdir():
+            if not skill_dir.is_dir():
+                continue
+            skill_name = skill_dir.name
+            skill_md = skill_dir / 'SKILL.md'
+            expected = extract_skill_version(skill_md)
+            if not expected:
+                continue
+            # Match "(skill-name) ... **版本**：vX.Y.Z" within the same section.
+            # Non-greedy [\s\S]*? keeps the match inside the skill's own section.
+            pattern = (
+                rf'\({re.escape(skill_name)}\)[\s\S]*?'
+                rf'\*\*版本\*\*[：:]\s*v?(\d+\.\d+\.\d+)'
+            )
+            m = re.search(pattern, content)
+            if m:
+                found = m.group(1)
+                if found != expected:
+                    errors.append(
+                        f"{overview}: '{skill_name}' section references v{found} "
+                        f"but SKILL.md frontmatter version is {expected}"
+                    )
+    return errors
+
+
+def check_marketplace_version(root: Path) -> list[str]:
+    """Check that .claude-plugin/marketplace.json plugin descriptions reference
+    the version declared in the corresponding plugin manifest.
+
+    Extracts the first "vX.Y.Z" token from each plugin description and compares
+    it against the version field of that plugin's .claude-plugin/plugin.json.
+    """
+    errors = []
+    marketplace = root / '.claude-plugin' / 'marketplace.json'
+    if not marketplace.exists():
+        return errors
+    try:
+        data = json.loads(marketplace.read_text(encoding='utf-8'))
+    except json.JSONDecodeError as e:
+        errors.append(f"{marketplace}: invalid JSON - {e}")
+        return errors
+
+    for plugin in data.get('plugins', []):
+        name = plugin.get('name', '')
+        desc = plugin.get('description', '')
+        source = plugin.get('source', '')
+        if not name or not desc or not source:
+            continue
+        m = re.search(r'v(\d+\.\d+\.\d+)', desc)
+        if not m:
+            continue
+        desc_version = m.group(1)
+        plugin_root = (root / source).resolve()
+        manifest = plugin_root / '.claude-plugin' / 'plugin.json'
+        if not manifest.exists():
+            continue
+        try:
+            manifest_data = json.loads(manifest.read_text(encoding='utf-8'))
+        except json.JSONDecodeError as e:
+            errors.append(f"{manifest}: invalid JSON - {e}")
+            continue
+        manifest_version = manifest_data.get('version', '')
+        if manifest_version and manifest_version != desc_version:
+            errors.append(
+                f"{marketplace}: plugin '{name}' description references "
+                f"v{desc_version} but manifest version is {manifest_version}"
+            )
     return errors
 
 
@@ -245,6 +343,10 @@ def main() -> int:
         if not plugin_root.is_dir():
             continue
         errors.extend(check_plugin(plugin_root))
+
+    # Cross-plugin checks: docs/skills-overview.md and marketplace.json
+    errors.extend(check_skills_overview_version(root))
+    errors.extend(check_marketplace_version(root))
 
     if errors:
         print("Version sync issues found:")

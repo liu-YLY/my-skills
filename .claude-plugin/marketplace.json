@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "testing-bundle",
-      "description": "Testing capability bundle v2.0.0: testing-bundle (4-way router) + test-strategy-engineer (project-level strategy) + test-case-engineer (test case generation) + performance-test-engineer (performance testing) + bug-analyzer (root cause analysis)",
+      "description": "Testing capability bundle v3.1.1: testing-bundle (5-way router) + test-strategy-engineer (project-level strategy) + test-case-engineer (test case generation) + performance-test-engineer (performance testing) + bug-analyzer (root cause analysis) + state-machine-test-engineer (state-machine-driven testing) + change-impact-analyzer (change impact analysis)",
       "source": "./plugins/testing/",
       "category": "testing"
     },
