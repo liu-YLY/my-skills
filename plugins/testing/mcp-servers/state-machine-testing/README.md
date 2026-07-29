@@ -211,13 +211,7 @@ plugins/testing/mcp-servers/state-machine-testing/
     │   └── test_skill_integration.py
     └── fixtures/
         ├── order_refund_state_machine.json
-        ├── approval_flow_state_machine.json
-        ├── membership_state_machine.json
-        ├── ticket_state_machine.json
-        └── buggy_state_machines/
-            ├── deadlock.json
-            ├── unreachable.json
-            └── missing_evidence.json
+        └── approval_flow_state_machine.json
 ```
 
 ## 错误处理
