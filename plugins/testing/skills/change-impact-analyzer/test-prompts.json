@@ -23,5 +23,20 @@
     "id": 5,
     "prompt": "分析这个 patch 对现有用例的影响，patch 内容如下：\ndiff --git a/src/api/user.ts b/src/api/user.ts\n...",
     "expected": "识别为外部 Patch 模式，跳过 git 命令，直接解析 patch→跨层影响链路追踪→前后端契约两侧检查→输出报告"
+  },
+  {
+    "id": 6,
+    "prompt": "我已经 git add 了改动但还没 commit，帮我分析暂存区的改动对用例的影响，用例在 tests/api-cases.yaml",
+    "expected": "识别为暂存区模式（staged），执行 git diff --cached 获取已暂存改动，解析 YAML 格式用例，交叉分析后输出报告"
+  },
+  {
+    "id": 7,
+    "prompt": "检查 commit abc1234 这个提交的改动是否影响了回归用例，回归用例在 tests/regression.md",
+    "expected": "识别为单 Commit 模式，执行 git diff abc1234~1..abc1234 获取该 commit 改动，加载 Markdown 用例，交叉分析后输出报告"
+  },
+  {
+    "id": 8,
+    "prompt": "分析 v1.2.0 到 v1.3.0 之间所有版本的变更对现有测试用例的影响，用例在 docs/test-suite.md",
+    "expected": "识别为 Revision Range 模式，执行 git diff v1.2.0..v1.3.0 获取版本间改动，解析用例文件，交叉分析后输出报告"
   }
 ]
