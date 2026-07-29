@@ -753,3 +753,80 @@ class TestCheckInputOutcomeConflicts:
         ]
         issues = check_input_outcome_conflicts(facts)
         assert len(issues) == 0
+
+
+class TestCheckDependencyCycles:
+    """冲突类型 ③：数据依赖闭环（DFS 检测）。"""
+
+    def test_simple_two_node_cycle_triggers_p1(self):
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_001", dependencies=["TC_002"]),
+            _make_facts(case_id="TC_002", dependencies=["TC_001"]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 1
+        assert issues[0].severity.value == "P1"
+        assert "TC_001" in issues[0].case_id
+        assert "TC_002" in issues[0].case_id
+
+    def test_three_node_cycle_triggers_p1(self):
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_001", dependencies=["TC_002"]),
+            _make_facts(case_id="TC_002", dependencies=["TC_003"]),
+            _make_facts(case_id="TC_003", dependencies=["TC_001"]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 1
+        assert issues[0].severity.value == "P1"
+        # case_id 应包含闭环全部节点
+        for cid in ("TC_001", "TC_002", "TC_003"):
+            assert cid in issues[0].case_id
+
+    def test_self_loop_triggers_p1(self):
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_001", dependencies=["TC_001"]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 1
+        assert issues[0].severity.value == "P1"
+        assert issues[0].case_id == "TC_001"
+
+    def test_no_cycle_no_issue(self):
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_001", dependencies=["TC_002"]),
+            _make_facts(case_id="TC_002", dependencies=["TC_003"]),
+            _make_facts(case_id="TC_003", dependencies=[]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 0
+
+    def test_empty_dependencies_no_issue(self):
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_001", dependencies=[]),
+            _make_facts(case_id="TC_002", dependencies=[]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 0
+
+    def test_diamond_shape_no_cycle(self):
+        """菱形依赖（A→B, A→C, B→D, C→D）不是环。"""
+        from review_checker_mcp.validators import check_dependency_cycles
+
+        facts = [
+            _make_facts(case_id="TC_A", dependencies=["TC_B", "TC_C"]),
+            _make_facts(case_id="TC_B", dependencies=["TC_D"]),
+            _make_facts(case_id="TC_C", dependencies=["TC_D"]),
+            _make_facts(case_id="TC_D", dependencies=[]),
+        ]
+        issues = check_dependency_cycles(facts)
+        assert len(issues) == 0

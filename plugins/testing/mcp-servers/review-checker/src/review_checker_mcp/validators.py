@@ -504,6 +504,74 @@ def check_input_outcome_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
     return issues
 
 
+def check_dependency_cycles(facts: list[SemanticFacts]) -> list[Issue]:
+    """冲突类型 ③：数据依赖闭环。
+
+    构建 case_id → dependencies 有向图，DFS 检测环 → P1。
+    case_id 形如 "TC_A,TC_B,TC_C"（闭环路径）。
+    """
+    issues: list[Issue] = []
+
+    # 构建邻接表
+    graph: dict[str, list[str]] = {f.case_id: list(f.dependencies) for f in facts}
+
+    # DFS 检测环（迭代实现，避免深递归栈溢出）
+    WHITE, GRAY, BLACK = 0, 1, 2  # 未访问 / 访问中 / 已完成
+    color: dict[str, int] = {node: WHITE for node in graph}
+
+    detected_cycles: list[list[str]] = []
+
+    def _find_cycle_from(start: str) -> list[str] | None:
+        """从 start 出发找环，返回环路径或 None。"""
+        stack: list[tuple[str, list[str]]] = [(start, [start])]
+        # 标记 start 为 GRAY（在栈中）
+        color[start] = GRAY
+        while stack:
+            node, path = stack[-1]
+            neighbors = graph.get(node, [])
+            found_next = False
+            for nbr in neighbors:
+                if nbr not in graph:
+                    continue  # 依赖的 case_id 不在用例集中，跳过
+                if color.get(nbr, WHITE) == GRAY:
+                    # 找到环：从 path 中 nbr 的位置到当前节点
+                    cycle_start_idx = path.index(nbr)
+                    return path[cycle_start_idx:] + [nbr]
+                if color.get(nbr, WHITE) == WHITE:
+                    color[nbr] = GRAY
+                    stack.append((nbr, path + [nbr]))
+                    found_next = True
+                    break
+            if not found_next:
+                color[node] = BLACK
+                stack.pop()
+        return None
+
+    for node in graph:
+        if color[node] == WHITE:
+            cycle = _find_cycle_from(node)
+            if cycle:
+                detected_cycles.append(cycle)
+
+    for cycle in detected_cycles:
+        # 去掉末尾重复的起点（path + [nbr] 导致末尾重复）
+        if len(cycle) > 1 and cycle[0] == cycle[-1]:
+            cycle = cycle[:-1]
+        cycle_str = ",".join(cycle)
+        arrow_path = "→".join(cycle)
+        issues.append(
+            Issue(
+                case_id=cycle_str,
+                dimension="语义一致性",
+                severity=Severity.P1,
+                rule="dependencies 有向图存在环 → P1",
+                evidence=f"依赖闭环：{arrow_path}→{cycle[0]}",
+                suggestion="拆解闭环：将其中一条依赖改为自包含步骤，或重新排序执行顺序",
+            )
+        )
+    return issues
+
+
 def validate_all(case_set: TestCaseSet) -> list[Issue]:
     """执行全部 9 维度校验，返回所有 Issue。"""
     issues: list[Issue] = []
