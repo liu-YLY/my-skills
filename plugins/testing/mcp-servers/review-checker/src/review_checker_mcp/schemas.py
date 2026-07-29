@@ -65,12 +65,43 @@ class TestCaseSet(BaseModel):
 class Issue(BaseModel):
     """单条评审问题。"""
 
+    # case_id 支持三种形式：单用例 ID（"TC_001"）、集合级（"-"）、
+    # 冲突对/闭环（"TC_A,TC_B" 或 "TC_A,TC_B,TC_C"）
     case_id: str
     dimension: str
     severity: Severity
     rule: str
     evidence: str
     suggestion: str = ""
+
+
+class PreconditionFact(BaseModel):
+    """前置条件语义事实（喂给冲突类型 ①）。"""
+
+    subject: str  # 规范化主体，如 "用户登录状态"
+    state: str  # 规范化状态值，如 "已登录"
+    polarity: Literal["affirmative", "negation"]  # 肯定/否定断言
+
+
+class InputFact(BaseModel):
+    """输入语义事实（喂给冲突类型 ②）。"""
+
+    input_signature: str  # 含数据值的输入签名，如 "登录(account=testuser,pwd=错误密码)"
+    expected_outcome: str  # 规范化预期，如 "返回密码错误提示"
+
+
+class SemanticFacts(BaseModel):
+    """一条用例的语义事实（LLM 抽取，MCP 纯检测）。
+
+    LLM 只负责把自然语言翻译为此结构，不做任何冲突判断。
+    冲突检测由 validators.check_semantic_conflicts 执行。
+    """
+
+    case_id: str
+    test_point_id: str | None = None  # 溯源分组键，无则 None
+    preconditions: list[PreconditionFact] = Field(default_factory=list)
+    inputs: list[InputFact] = Field(default_factory=list)
+    dependencies: list[str] = Field(default_factory=list)  # 依赖的其他 case_id
 
 
 class DimensionStat(BaseModel):

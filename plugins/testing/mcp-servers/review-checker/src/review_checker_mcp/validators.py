@@ -9,9 +9,12 @@ from __future__ import annotations
 import re
 
 from .schemas import (
+    InputFact,
     Issue,
+    PreconditionFact,
     Priority,
     ScenarioType,
+    SemanticFacts,
     Severity,
     TestCase,
     TestCaseSet,
@@ -392,6 +395,199 @@ def check_test_data_dependency(case: TestCase) -> list[Issue]:
                         suggestion="提供 mock/stub 替代方案",
                     )
                 )
+    return issues
+
+
+def _extract_module_function_segment(case_id: str) -> str:
+    """从 case_id 提取模块+功能段。
+
+    如 TC_WEBHOOK_ADD_001 → WEBHOOK_ADD
+    若无法提取（格式不符 TC_{模块}_{功能}_{序号}），返回 "unknown"。
+    """
+    parts = case_id.split("_")
+    if len(parts) >= 4 and parts[0] == "TC":
+        # TC_{模块}_{功能}_{序号} → 模块+功能段（去掉 TC 前缀和序号）
+        return "_".join(parts[1:-1])
+    return "unknown"
+
+
+def check_precondition_state_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
+    """冲突类型 ①：前置条件状态矛盾。
+
+    同 test_point_id 分组内（无 test_point_id 时按 case_id 模块+功能段分组），
+    存在两条用例的 PreconditionFact.subject 相同，但 state 不同且 polarity
+    互为肯定/否定 → P0。
+    """
+    issues: list[Issue] = []
+
+    # 分组：优先用 test_point_id，无则用模块+功能段
+    groups: dict[str, list[SemanticFacts]] = {}
+    for fact in facts:
+        if fact.test_point_id:
+            group_key = fact.test_point_id
+        else:
+            group_key = _extract_module_function_segment(fact.case_id)
+        groups.setdefault(group_key, []).append(fact)
+
+    for group_key, group_facts in groups.items():
+        if len(group_facts) < 2:
+            continue
+        # 收集组内所有 (case_id, PreconditionFact)
+        entries: list[tuple[str, PreconditionFact]] = []
+        for f in group_facts:
+            for pc in f.preconditions:
+                entries.append((f.case_id, pc))
+
+        # 两两比对
+        for i, (case_a, pc_a) in enumerate(entries):
+            for case_b, pc_b in entries[i + 1 :]:
+                if case_a == case_b:
+                    continue
+                if (
+                    pc_a.subject == pc_b.subject
+                    and pc_a.state != pc_b.state
+                    and pc_a.polarity != pc_b.polarity
+                ):
+                    issues.append(
+                        Issue(
+                            case_id=f"{case_a},{case_b}",
+                            dimension="语义一致性",
+                            severity=Severity.P0,
+                            rule="同分组内 subject 相同且 polarity 互斥 → P0",
+                            evidence=(
+                                f"{case_a}.preconditions[{pc_a.subject}={pc_a.state}] "
+                                f"vs {case_b}.preconditions[{pc_b.subject}={pc_b.state}]"
+                            ),
+                            suggestion="核对场景归属：若属不同测试场景则拆分 test_point_id；若属同场景则修正其中一条的前置条件",
+                        )
+                    )
+    return issues
+
+
+def check_input_outcome_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
+    """冲突类型 ②：同输入不同预期。
+
+    全用例集范围内，用例 A 的任一 InputFact 与用例 B 的任一 InputFact 的
+    input_signature 完全相同，但 expected_outcome 不同 → P0。
+    支持参数化用例的多 InputFact 笛卡尔比对。
+    """
+    issues: list[Issue] = []
+
+    # 收集所有 (case_id, InputFact)
+    entries: list[tuple[str, InputFact]] = []
+    for fact in facts:
+        for inp in fact.inputs:
+            entries.append((fact.case_id, inp))
+
+    # 两两比对（不同 case_id 之间）
+    for i, (case_a, inp_a) in enumerate(entries):
+        for case_b, inp_b in entries[i + 1 :]:
+            if case_a == case_b:
+                continue
+            if (
+                inp_a.input_signature == inp_b.input_signature
+                and inp_a.expected_outcome != inp_b.expected_outcome
+            ):
+                issues.append(
+                    Issue(
+                        case_id=f"{case_a},{case_b}",
+                        dimension="语义一致性",
+                        severity=Severity.P0,
+                        rule="input_signature 相同且 expected_outcome 不同 → P0",
+                        evidence=(
+                            f"{case_a}[{inp_a.input_signature}]→{inp_a.expected_outcome} "
+                            f"vs {case_b}[{inp_b.input_signature}]→{inp_b.expected_outcome}"
+                        ),
+                        suggestion="核对预期：同一输入应有唯一预期，修正其中一条的 expected_outcome",
+                    )
+                )
+    return issues
+
+
+def check_dependency_cycles(facts: list[SemanticFacts]) -> list[Issue]:
+    """冲突类型 ③：数据依赖闭环。
+
+    构建 case_id → dependencies 有向图，DFS 检测环 → P1。
+    case_id 形如 "TC_A,TC_B,TC_C"（闭环路径）。
+    """
+    issues: list[Issue] = []
+
+    # 构建邻接表
+    graph: dict[str, list[str]] = {f.case_id: list(f.dependencies) for f in facts}
+
+    # DFS 检测环（迭代实现，避免深递归栈溢出）
+    WHITE, GRAY, BLACK = 0, 1, 2  # 未访问 / 访问中 / 已完成
+    color: dict[str, int] = {node: WHITE for node in graph}
+
+    detected_cycles: list[list[str]] = []
+
+    def _find_cycle_from(start: str) -> list[str] | None:
+        """从 start 出发找环，返回环路径或 None。"""
+        stack: list[tuple[str, list[str]]] = [(start, [start])]
+        # 标记 start 为 GRAY（在栈中）
+        color[start] = GRAY
+        while stack:
+            node, path = stack[-1]
+            neighbors = graph.get(node, [])
+            found_next = False
+            for nbr in neighbors:
+                if nbr not in graph:
+                    continue  # 依赖的 case_id 不在用例集中，跳过
+                if color.get(nbr, WHITE) == GRAY:
+                    # 找到环：从 path 中 nbr 的位置到当前节点
+                    cycle_start_idx = path.index(nbr)
+                    return path[cycle_start_idx:] + [nbr]
+                if color.get(nbr, WHITE) == WHITE:
+                    color[nbr] = GRAY
+                    stack.append((nbr, path + [nbr]))
+                    found_next = True
+                    break
+            if not found_next:
+                color[node] = BLACK
+                stack.pop()
+        return None
+
+    for node in graph:
+        if color[node] == WHITE:
+            cycle = _find_cycle_from(node)
+            if cycle:
+                detected_cycles.append(cycle)
+
+    for cycle in detected_cycles:
+        # 去掉末尾重复的起点（path + [nbr] 导致末尾重复）
+        if len(cycle) > 1 and cycle[0] == cycle[-1]:
+            cycle = cycle[:-1]
+        cycle_str = ",".join(cycle)
+        arrow_path = "→".join(cycle)
+        issues.append(
+            Issue(
+                case_id=cycle_str,
+                dimension="语义一致性",
+                severity=Severity.P1,
+                rule="dependencies 有向图存在环 → P1",
+                evidence=f"依赖闭环：{arrow_path}→{cycle[0]}",
+                suggestion="拆解闭环：将其中一条依赖改为自包含步骤，或重新排序执行顺序",
+            )
+        )
+    return issues
+
+
+def check_semantic_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
+    """第 10 维度：语义一致性。
+
+    输入：skill 侧 LLM 抽取的 SemanticFacts 列表。
+    输出：Issue 列表，case_id 形如 "TC_A,TC_B"（冲突对）或
+          "TC_A,TC_B,TC_C"（闭环）。
+
+    内部执行 3 类确定性检测：
+      - check_precondition_state_conflicts  # 类型 ①
+      - check_input_outcome_conflicts       # 类型 ②
+      - check_dependency_cycles             # 类型 ③
+    """
+    issues: list[Issue] = []
+    issues.extend(check_precondition_state_conflicts(facts))
+    issues.extend(check_input_outcome_conflicts(facts))
+    issues.extend(check_dependency_cycles(facts))
     return issues
 
 
