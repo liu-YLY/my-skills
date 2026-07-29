@@ -76,5 +76,8 @@ jobs:
       - name: Check SKILL.md / plugin.json version sync
         run: python scripts/check-version-sync.py
 
-      - name: Check knowledge file count (≥4 for non-meta skills)
+      - name: Check knowledge reference integrity
         run: python scripts/check-knowledge-count.py
+
+      - name: Check markdown link integrity
+        run: python scripts/check-md-links.py
