@@ -112,9 +112,11 @@ PRD 通常只描述"用户做什么"，没有显性表达"对象处于什么状�
 
 | 模式 | 触发条件 | 行为 | 输出标记 |
 |---|---|---|---|
-| **增强模式** | MCP 可用 | skill 自身推理 + 调用 MCP 做校验/穷举/可视化复核 | `✓ MCP 增强模式` |
-| **独立模式** | MCP 未安装 | skill 纯 LLM 推理执行全流程 | `⚠ 独立模式（未校验）` |
+| **增强模式** | MCP 可用（v0.2.0+，当前不可达） | skill 自身推理 + 调用 MCP 做校验/穷举/可视化复核 | `✓ MCP 增强模式` |
+| **独立模式** | MCP 未安装（**当前默认**） | skill 纯 LLM 推理执行全流程 | `⚠ 独立模式（未校验）` |
 | **降级模式** | MCP 调用失败 | 自动回退到独立模式，记录失败原因 | `⚠ 降级模式（MCP 失败：原因）` |
+
+> **当前状态（v0.1.0）**：MCP 协议层未发布，skill 始终以独立模式运行。增强模式为设计目标，待 MCP Server v0.2.0 协议层完成后可用。
 
 **关键原则**：
 - skill 始终是主，MCP 是复核器（MCP 校验失败不影响 skill 输出，只追加警告）
@@ -177,21 +179,30 @@ scenarios:
 
 ## 知识库
 
-```
-knowledge/
-├── state-modeling.md             # 状态机建模方法论（6 要素 + MAE + 不变量 + 终态）
-├── scenario-types.md             # 10 类场景穷举规则与示例
-├── completeness-check.md         # 完整性检查清单（9 项，与 MCP 对齐）
-├── anti-patterns.md              # 反模式黑名单
-├── industry-templates/           # 行业状态机模板
-│   ├── order-refund.md           # 订单退款（文章案例）
-│   ├── approval-flow.md          # 审批流
-│   ├── membership.md             # 会员状态
-│   └── ticket.md                 # 工单状态
-└── products/                     # 产品专项知识
-    ├── README.md
-    └── products-template.md
-```
+| 文件 | 何时查阅 |
+|------|---------|
+| [state-machine-core.md](state-machine-core.md) | **始终必读**（五阶段核心流程） |
+| [knowledge/state-modeling.md](knowledge/state-modeling.md) | **阶段 2 建模时读**（6 要素 + MAE + 不变量 + 终态方法论） |
+| [knowledge/completeness-check.md](knowledge/completeness-check.md) | **阶段 3 完整性检查时读**（9 项检查清单，与 MCP validate 对齐）。不在阶段 2 预读 |
+| [knowledge/scenario-types.md](knowledge/scenario-types.md) | **阶段 4 场景穷举时读**（10 类场景细则与示例）。不在阶段 2/3 预读 |
+| [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **输出前自检时读**（反模式黑名单） |
+| [knowledge/industry-templates/](knowledge/industry-templates/) | **仅用户指定行业对象时读**（订单退款/审批流/会员/工单，按需加载对应模板） |
+| [knowledge/products/](knowledge/products/) | **仅产品可识别且知识文件存在时读**（产品专项知识） |
+| [integrations/quickstart.md](integrations/quickstart.md) | **仅用户要求安装/配置 MCP 时读**（MCP 配置说明，v0.2.0 发布后增强模式可用） |
+
+### 阶段读取矩阵
+
+| 阶段 | 首轮可读取 | 延迟读取（进入对应阶段后） |
+|------|-----------|--------------------------|
+| 阶段 1 需求识别 | 入口（本文件）+ core.md 阶段 1 | — |
+| 阶段 2 状态机建模 | state-modeling.md（建模方法论 + 最小 Schema + 命名规则 + 依据类型规则） | — |
+| 🔴 CHECKPOINT 模型确认后 | — | completeness-check.md（完整性检查规则） |
+| 阶段 4 场景穷举 | — | scenario-types.md（10 类场景细则） |
+| 输出前自检 | — | anti-patterns.md（反模式黑名单） |
+| 用户指定行业 | — | industry-templates/{对应行业}.md |
+| 用户要求 MCP | — | integrations/quickstart.md |
+
+> **阶段隔离原则**：建模阶段（阶段 2）不预读完整性检查规则和场景穷举细则。CHECKPOINT 前的知识资料不得在 CHECKPOINT 前加载。MCP 配置资料仅在用户明确要求时读取。
 
 ## 反模式黑名单
 
@@ -286,8 +297,8 @@ testing-bundle → state-machine-test-engineer:
 
 ## 快速上手
 
-1. 确认已安装本 skill（独立可用）
-2. （可选）安装配套 MCP Server 进入增强模式，配置见 [integrations/quickstart.md](integrations/quickstart.md)
+1. 确认已安装本 skill（独立可用，无需 MCP）
+2. （v0.2.0 准备）配套 MCP Server 协议层待 v0.2.0 完成，当前以独立模式运行。配置步骤见 [integrations/quickstart.md](integrations/quickstart.md)（供 v0.2.0 发布后参考）
 3. 通过 testing-bundle 路由，或直接调用本 skill
 4. 提供状态型需求（含业务对象、状态名、状态转换描述）
 5. 五阶段流程自动执行，CHECKPOINT 处确认状态机模型

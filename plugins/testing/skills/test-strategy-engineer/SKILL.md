@@ -138,6 +138,7 @@ keywords:
 2. 由风险矩阵导出优先级排序，标注每个模块的测试深度（三层/两层/一层）
 3. 制定准入标准，参考 [knowledge/entry-exit-criteria.md](knowledge/entry-exit-criteria.md)：需求评审通过、单元测试覆盖率达标、构建产物可部署、测试环境就绪
 4. 制定准出标准，参考 [knowledge/entry-exit-criteria.md](knowledge/entry-exit-criteria.md)：P0 用例 100% 通过、P1 用例 ≥ 95% 通过、无 P0/P1 缺陷遗留、性能达标、回归通过
+   > **默认阈值适用条件**：上述阈值适用于 Web/移动端业务系统。嵌入式/游戏/IoT 等领域需团队确认调整（如 P1 通过率门槛可能不同）。策略文档中默认阈值标注「适用条件：Web/移动端，待团队确认」
 5. 准入准出标准全部给具体阈值，禁止"达标""合格"等模糊措辞
 6. 输出范围与准入准出
 

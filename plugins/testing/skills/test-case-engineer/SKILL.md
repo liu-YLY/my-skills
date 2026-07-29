@@ -73,16 +73,27 @@ keywords:
 
 | 文件 | 何时查阅 |
 |------|---------|
-| [test-case-engineer-core.md](test-case-engineer-core.md) | **始终必读**（四阶段核心流程） |
-| [knowledge/test-levels.md](knowledge/test-levels.md) | **阶段 2/3 强制读** |
-| [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（优先级/类型/模糊词权威源） |
+| [test-case-engineer-core.md](test-case-engineer-core.md) | **默认/快速/探索式模式必读**（四阶段核心流程 + 7 维度扫描 + 模式切换）。**评审模式不读**——评审流程独立于四阶段生成，详见 review-mode.md |
+| [knowledge/test-levels.md](knowledge/test-levels.md) | **阶段 2/3 强制读**（默认/快速/探索式模式） |
+| [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（优先级/类型/模糊词权威源）；评审模式 R2 必要时查阅优先级区间 |
 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **阶段 2 强制读**（防御性测试点补充，含领域特定模式 + 安全专项检查清单） |
 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | **阶段 1 强制读** + Office/PDF 转换 |
-| [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板） |
+| [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板）；评审模式 R2 第 10 维度 SemanticFacts 抽取提示词 |
 | [knowledge/review-mode.md](knowledge/review-mode.md) | **评审模式触发时必读**（10 维度评审工作流 + 评审度量报告 + 评审修订闭环 + 增量评审子模式 + 多格式输入 + 评审报告文件化 + 语义一致性维度） |
 | [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **阶段 3/4 自检时对照**（反例黑名单） |
 | [knowledge/products/](knowledge/products/) | **阶段 1 必须加载**（产品专项业务知识，若存在对应产品知识文件） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
+
+### 模式读取矩阵
+
+| 模式 | 首轮可读取 | 延迟读取（进入对应阶段/步骤后） |
+|------|-----------|-------------------------------|
+| 默认生成 | 入口（本文件）+ core.md 阶段 1 需求理解规则 | test-levels.md（阶段 2）、bug-patterns.md（阶段 2）、test-standards.md（阶段 3）、prompt-strategy.md（阶段 3）、anti-patterns.md（阶段 4 自检） |
+| 快速生成 | 入口 + core.md 最小测试点框架 | test-standards.md（完整标准）、anti-patterns.md（自检） |
+| 探索式 | 入口 + core.md 探索章程模板 | 领域检查表（bug-patterns.md 对应章节） |
+| 评审 | 入口 + review-mode.md + test-standards.md（优先级区间） | prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅用户确认进入修订后读 core.md 生成流程） |
+
+> **评审模式隔离原则**：评审模式首轮只读 review-mode.md，不读 core.md 四阶段生成流程。仅当用户确认进入修订闭环（V2 步骤）后，才读取 core.md 中的生成模式流程。
 
 ### 产品知识库
 
@@ -108,14 +119,13 @@ keywords:
 ## 快速上手
 
 **3 步开始使用**：
-1. 确定模式：默认模式（完整四阶段）/ 快速模式（压缩阶段 1/4）/ 探索式模式
-2. 阅读 [test-case-engineer-core.md](test-case-engineer-core.md) 中对应模式的流程
-3. 执行阶段 1，输出需求理解文档
+1. 确定模式：默认模式（完整四阶段）/ 快速模式（压缩阶段 1/4）/ 探索式模式 / 评审模式（不走四阶段，详见 review-mode.md）
+2. 按上方"模式读取矩阵"读取对应模式的资料
+3. 默认/快速/探索式：执行阶段 1，输出需求理解文档；评审：执行 R1，解析用例结构
 
-**首次使用提示**：
-- 必须按顺序执行阶段 1→2→3→4，禁止跳过阶段
-- 每个阶段完成后必须等待用户确认再进入下一阶段
-- 遇到问题查阅对应知识库文件（见上方索引表）
+**工作方式**：
+- **协作模式**（默认）：每个阶段完成后 🔴 CHECKPOINT 等待用户确认再进入下一阶段
+- **直接交付模式**：用户明确要求"一次完成/直接给结果"时，连续执行各阶段并在文末列出假设和待确认项，不逐阶段暂停。快速模式天然适用此方式
 
 ---
 

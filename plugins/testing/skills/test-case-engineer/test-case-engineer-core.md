@@ -694,7 +694,7 @@
 - **默认**：不允许跳过阶段 1/2 直接写完整用例
 - **快速**：压缩阶段 1/4，但必须输出测试点清单，文首声明未做完整理解与自检
 - **探索式**：额外输出探索章程，与测试点清单并列
-- **评审**：独立于四阶段生成流程，对他人/已有用例做 6 维度评审（详见 [knowledge/review-mode.md](knowledge/review-mode.md)）
+- **评审**：独立于四阶段生成流程，对他人/已有用例做 10 维度评审（详见 [knowledge/review-mode.md](knowledge/review-mode.md)）
 
 ### 探索章程模板
 
@@ -712,7 +712,7 @@
 
 ## 评审模式
 
-> 评审模式独立于四阶段生成流程，对他人/已有用例做 6 维度评审，并输出评审度量报告与修订闭环。完整工作流详见 [knowledge/review-mode.md](knowledge/review-mode.md)。
+> 评审模式独立于四阶段生成流程，对他人/已有用例做 10 维度评审，并输出评审度量报告与修订闭环。完整工作流详见 [knowledge/review-mode.md](knowledge/review-mode.md)。
 
 ## 反例与黑名单
 
