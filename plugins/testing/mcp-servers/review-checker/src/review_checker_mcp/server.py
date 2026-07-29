@@ -17,13 +17,18 @@ from .schemas import (
     DimensionStat,
     Issue,
     ReviewReport,
+    SemanticFacts,
     TestCaseSet,
 )
-from .validators import validate_all as _validate_all
+from .validators import (
+    check_semantic_conflicts as _check_semantic_conflicts,
+    validate_all as _validate_all,
+)
 
 __all__ = [
     "review_test_cases",
     "generate_report",
+    "check_semantic_conflicts",
     "main",
 ]
 
@@ -38,6 +43,7 @@ DIMENSIONS = [
     "可维护性",
     "可自动化",
     "测试数据依赖",
+    "语义一致性",
 ]
 
 
@@ -59,7 +65,15 @@ def generate_report(case_set: TestCaseSet, issues: list[Issue] | None = None) ->
         issues = review_test_cases(case_set)
 
     total_cases = len(case_set.cases)
-    issue_case_ids = {i.case_id for i in issues if i.case_id != "-"}
+    # 拆分逗号分隔的 case_id（语义冲突对/闭环），分别计入
+    issue_case_ids: set[str] = set()
+    for i in issues:
+        if i.case_id == "-":
+            continue
+        for cid in i.case_id.split(","):
+            cid = cid.strip()
+            if cid:
+                issue_case_ids.add(cid)
     issue_cases = len(issue_case_ids)
     pass_rate = (total_cases - issue_cases) / total_cases if total_cases > 0 else 0.0
     total_issues = len(issues)
@@ -110,6 +124,20 @@ def generate_report(case_set: TestCaseSet, issues: list[Issue] | None = None) ->
     )
 
 
+def check_semantic_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
+    """第 10 维度：语义一致性冲突检测。
+
+    接收 skill 侧 LLM 抽取的 SemanticFacts 列表，执行 3 类确定性冲突检测：
+      ① 前置条件状态矛盾（P0）
+      ② 同输入不同预期（P0）
+      ③ 数据依赖闭环（P1）
+
+    与 review_test_cases（9 维度）独立，skill 侧应分别调用后合并 issues
+    传入 generate_report。
+    """
+    return _check_semantic_conflicts(facts)
+
+
 def _register_mcp_tools(mcp_server) -> None:
     """向 MCP Server 注册评审校验工具。
 
@@ -137,6 +165,11 @@ def _register_mcp_tools(mcp_server) -> None:
         """基于评审结果生成度量报告（通过率/问题密度/评级/维度分布/严重等级分布）。"""
         return generate_report(case_set)
 
+    @mcp_server.tool()
+    def check_semantic_conflicts_tool(facts: list[SemanticFacts]) -> list[Issue]:
+        """第 10 维度：语义一致性冲突检测（前置条件矛盾/同输入异预期/依赖闭环）。"""
+        return check_semantic_conflicts(facts)
+
 
 def main() -> int:
     """命令行入口。"""
@@ -158,13 +191,16 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.help_tools:
-        print("Review Checker MCP Server v0.2.0 - 2 工具")
+        print("Review Checker MCP Server v0.2.0 - 3 工具")
         print()
         print("1. review_test_cases(case_set)")
         print("   - 对用例集执行 9 维度评审，返回全部 Issue")
         print()
         print("2. generate_report(case_set)")
         print("   - 基于评审结果生成度量报告（通过率/问题密度/评级/维度分布/严重等级分布）")
+        print()
+        print("3. check_semantic_conflicts(facts)")
+        print("   - 第 10 维度：语义一致性冲突检测（前置条件矛盾/同输入异预期/依赖闭环）")
         return 0
 
     try:

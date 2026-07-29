@@ -122,10 +122,10 @@ class TestGenerateReport:
         assert report.total_issues > 0
         assert report.issue_density > 0
 
-    def test_dimension_stats_cover_all_nine(self):
+    def test_dimension_stats_cover_all_ten(self):
         case_set = _make_clean_set()
         report = generate_report(case_set)
-        assert len(report.dimension_stats) == 9
+        assert len(report.dimension_stats) == 10
         dims = [s.dimension for s in report.dimension_stats]
         assert dims == DIMENSIONS
 
@@ -228,7 +228,7 @@ class TestMainCli:
             rc = e.code
         captured = capsys.readouterr()
         assert rc == 0
-        assert "2 工具" in captured.out
+        assert "3 工具" in captured.out
         assert "review_test_cases" in captured.out
         assert "generate_report" in captured.out
 
@@ -306,11 +306,11 @@ class TestIncrementalReviewScenarios:
         assert report.grade == "C"
 
     def test_incremental_report_has_full_dimension_stats(self):
-        # 增量评审报告仍应包含全部 9 维度统计（即使多数为 0）
+        # 增量评审报告仍应包含全部 10 维度统计（即使多数为 0）
         case = _make_case(id="TC_001", title="登录-正向", test_point_id="TP_001")
         case_set = TestCaseSet(cases=[case], test_point_ids=["TP_001"])
         report = generate_report(case_set)
-        assert len(report.dimension_stats) == 9
+        assert len(report.dimension_stats) == 10
         # 单条干净用例不应有覆盖度问题（因为只有 1 条正向，其他 3 类为 0 → P0）
         # 实际上单条用例会触发覆盖度 P0，验证 dimension_stats 正确反映
         coverage_stat = next(s for s in report.dimension_stats if s.dimension == "覆盖度")
@@ -381,3 +381,126 @@ class TestMcpIntegration:
         assert report.issue_cases == 2
         assert report.total_cases == 3
         assert report.pass_rate == round(1 / 3, 4)  # pass_rate round 到 4 位小数
+
+
+class TestCheckSemanticConflictsTool:
+    """check_semantic_conflicts 工具。"""
+
+    def test_returns_issues_for_conflicting_facts(self):
+        from review_checker_mcp.schemas import (
+            PreconditionFact,
+            SemanticFacts,
+        )
+        from review_checker_mcp.server import check_semantic_conflicts
+
+        facts = [
+            SemanticFacts(
+                case_id="TC_001",
+                test_point_id="TP_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+                inputs=[],
+                dependencies=[],
+            ),
+            SemanticFacts(
+                case_id="TC_002",
+                test_point_id="TP_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="未登录", polarity="negation"
+                    ),
+                ],
+                inputs=[],
+                dependencies=[],
+            ),
+        ]
+        issues = check_semantic_conflicts(facts)
+        assert len(issues) > 0
+        assert all(i.dimension == "语义一致性" for i in issues)
+
+    def test_returns_empty_for_consistent_facts(self):
+        from review_checker_mcp.schemas import SemanticFacts
+        from review_checker_mcp.server import check_semantic_conflicts
+
+        facts = [
+            SemanticFacts(case_id="TC_001"),
+            SemanticFacts(case_id="TC_002"),
+        ]
+        issues = check_semantic_conflicts(facts)
+        assert issues == []
+
+
+class TestDimensionsIncludesSemantic:
+    """DIMENSIONS 应包含「语义一致性」。"""
+
+    def test_dimensions_has_10_entries(self):
+        from review_checker_mcp.server import DIMENSIONS
+
+        assert len(DIMENSIONS) == 10
+        assert "语义一致性" in DIMENSIONS
+
+
+class TestGenerateReportWithCommaCaseId:
+    """generate_report 应正确处理逗号分隔的 case_id（冲突对/闭环）。"""
+
+    def test_comma_case_id_split_for_issue_cases_count(self):
+        from review_checker_mcp.schemas import Issue, Severity
+        from review_checker_mcp.server import generate_report
+
+        # 构造一个干净用例集
+        case_set = _make_clean_set()
+        # 注入一个语义冲突 issue，case_id 为 "TC_000,TC_001"
+        semantic_issue = Issue(
+            case_id="TC_000,TC_001",
+            dimension="语义一致性",
+            severity=Severity.P0,
+            rule="测试规则",
+            evidence="测试证据",
+            suggestion="测试建议",
+        )
+        # 取 9 维度 issues 并合并
+        base_issues = review_test_cases(case_set)
+        merged_issues = base_issues + [semantic_issue]
+        report = generate_report(case_set, issues=merged_issues)
+        # TC_000 和 TC_001 都应计入 issue_cases
+        assert report.issue_cases >= 2
+
+    def test_dimension_stats_includes_semantic(self):
+        from review_checker_mcp.schemas import Issue, Severity
+        from review_checker_mcp.server import generate_report
+
+        case_set = _make_clean_set()
+        semantic_issue = Issue(
+            case_id="TC_000,TC_001",
+            dimension="语义一致性",
+            severity=Severity.P0,
+            rule="测试规则",
+            evidence="测试证据",
+        )
+        base_issues = review_test_cases(case_set)
+        merged = base_issues + [semantic_issue]
+        report = generate_report(case_set, issues=merged)
+        dims = [s.dimension for s in report.dimension_stats]
+        assert "语义一致性" in dims
+        semantic_stat = next(s for s in report.dimension_stats if s.dimension == "语义一致性")
+        assert semantic_stat.issue_count == 1
+
+
+class TestHelpToolsPrintsThreeTools:
+    """--help-tools 应打印 3 工具。"""
+
+    def test_help_tools_prints_three_tools(self, capsys):
+        from review_checker_mcp.server import main
+
+        sys.argv = ["review-checker-mcp", "--help-tools"]
+        try:
+            rc = main()
+        except SystemExit as e:
+            rc = e.code
+        captured = capsys.readouterr()
+        assert rc == 0
+        assert "3 工具" in captured.out
+        assert "check_semantic_conflicts" in captured.out
