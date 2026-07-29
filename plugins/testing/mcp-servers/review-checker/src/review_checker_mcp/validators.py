@@ -9,9 +9,12 @@ from __future__ import annotations
 import re
 
 from .schemas import (
+    InputFact,
     Issue,
+    PreconditionFact,
     Priority,
     ScenarioType,
+    SemanticFacts,
     Severity,
     TestCase,
     TestCaseSet,
@@ -392,6 +395,72 @@ def check_test_data_dependency(case: TestCase) -> list[Issue]:
                         suggestion="提供 mock/stub 替代方案",
                     )
                 )
+    return issues
+
+
+def _extract_module_function_segment(case_id: str) -> str:
+    """从 case_id 提取模块+功能段。
+
+    如 TC_WEBHOOK_ADD_001 → WEBHOOK_ADD
+    若无法提取（格式不符 TC_{模块}_{功能}_{序号}），返回 "unknown"。
+    """
+    parts = case_id.split("_")
+    if len(parts) >= 4 and parts[0] == "TC":
+        # TC_{模块}_{功能}_{序号} → 模块+功能段（去掉 TC 前缀和序号）
+        return "_".join(parts[1:-1])
+    return "unknown"
+
+
+def check_precondition_state_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
+    """冲突类型 ①：前置条件状态矛盾。
+
+    同 test_point_id 分组内（无 test_point_id 时按 case_id 模块+功能段分组），
+    存在两条用例的 PreconditionFact.subject 相同，但 state 不同且 polarity
+    互为肯定/否定 → P0。
+    """
+    issues: list[Issue] = []
+
+    # 分组：优先用 test_point_id，无则用模块+功能段
+    groups: dict[str, list[SemanticFacts]] = {}
+    for fact in facts:
+        if fact.test_point_id:
+            group_key = fact.test_point_id
+        else:
+            group_key = _extract_module_function_segment(fact.case_id)
+        groups.setdefault(group_key, []).append(fact)
+
+    for group_key, group_facts in groups.items():
+        if len(group_facts) < 2:
+            continue
+        # 收集组内所有 (case_id, PreconditionFact)
+        entries: list[tuple[str, PreconditionFact]] = []
+        for f in group_facts:
+            for pc in f.preconditions:
+                entries.append((f.case_id, pc))
+
+        # 两两比对
+        for i, (case_a, pc_a) in enumerate(entries):
+            for case_b, pc_b in entries[i + 1 :]:
+                if case_a == case_b:
+                    continue
+                if (
+                    pc_a.subject == pc_b.subject
+                    and pc_a.state != pc_b.state
+                    and pc_a.polarity != pc_b.polarity
+                ):
+                    issues.append(
+                        Issue(
+                            case_id=f"{case_a},{case_b}",
+                            dimension="语义一致性",
+                            severity=Severity.P0,
+                            rule="同分组内 subject 相同且 polarity 互斥 → P0",
+                            evidence=(
+                                f"{case_a}.preconditions[{pc_a.subject}={pc_a.state}] "
+                                f"vs {case_b}.preconditions[{pc_b.subject}={pc_b.state}]"
+                            ),
+                            suggestion="核对场景归属：若属不同测试场景则拆分 test_point_id；若属同场景则修正其中一条的前置条件",
+                        )
+                    )
     return issues
 
 

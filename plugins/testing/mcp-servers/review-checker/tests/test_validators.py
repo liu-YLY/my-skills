@@ -436,3 +436,190 @@ class TestSemanticFactsSchema:
         )
         assert facts.preconditions[0].subject == "用户登录状态"
         assert facts.dependencies == ["TC_WEBHOOK_ADD_002"]
+
+
+def _make_facts(
+    case_id: str = "TC_001",
+    test_point_id: str | None = "TP_001",
+    preconditions: list | None = None,
+    inputs: list | None = None,
+    dependencies: list[str] | None = None,
+) -> "SemanticFacts":
+    from review_checker_mcp.schemas import SemanticFacts
+
+    return SemanticFacts(
+        case_id=case_id,
+        test_point_id=test_point_id,
+        preconditions=preconditions or [],
+        inputs=inputs or [],
+        dependencies=dependencies or [],
+    )
+
+
+class TestCheckPreconditionStateConflicts:
+    """冲突类型 ①：前置条件状态矛盾。"""
+
+    def test_same_subject_opposite_polarity_triggers_p0(self):
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                test_point_id="TP_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                test_point_id="TP_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="未登录", polarity="negation"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 1
+        assert issues[0].severity.value == "P0"
+        assert "TC_001" in issues[0].case_id
+        assert "TC_002" in issues[0].case_id
+        assert "用户登录状态" in issues[0].evidence
+
+    def test_same_subject_same_polarity_no_issue(self):
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 0
+
+    def test_different_subject_no_issue(self):
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                preconditions=[
+                    PreconditionFact(
+                        subject="订单状态", state="待支付", polarity="affirmative"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 0
+
+    def test_different_test_point_id_no_issue(self):
+        """不同 test_point_id 的同 subject 前置条件不算冲突。"""
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                test_point_id="TP_LOGIN",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="未登录", polarity="negation"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                test_point_id="TP_PROFILE",
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 0
+
+    def test_no_test_point_id_falls_back_to_module_function_segment(self):
+        """无 test_point_id 时按 case_id 模块+功能段分组。"""
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_WEBHOOK_ADD_001",
+                test_point_id=None,
+                preconditions=[
+                    PreconditionFact(
+                        subject="Webhook数量", state="数量<10", polarity="affirmative"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_WEBHOOK_ADD_002",
+                test_point_id=None,
+                preconditions=[
+                    PreconditionFact(
+                        subject="Webhook数量", state="数量>=10", polarity="negation"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 1  # 同 WEBHOOK_ADD 组内冲突
+
+    def test_no_test_point_id_different_function_no_issue(self):
+        """无 test_point_id 且不同功能段不视为冲突。"""
+        from review_checker_mcp.schemas import PreconditionFact
+        from review_checker_mcp.validators import check_precondition_state_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_WEBHOOK_ADD_001",
+                test_point_id=None,
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="未登录", polarity="negation"
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_WEBHOOK_EDIT_001",
+                test_point_id=None,
+                preconditions=[
+                    PreconditionFact(
+                        subject="用户登录状态", state="已登录", polarity="affirmative"
+                    ),
+                ],
+            ),
+        ]
+        issues = check_precondition_state_conflicts(facts)
+        assert len(issues) == 0  # 不同功能段，不冲突
