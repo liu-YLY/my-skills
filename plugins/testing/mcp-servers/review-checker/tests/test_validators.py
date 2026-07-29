@@ -623,3 +623,133 @@ class TestCheckPreconditionStateConflicts:
         ]
         issues = check_precondition_state_conflicts(facts)
         assert len(issues) == 0  # 不同功能段，不冲突
+
+
+class TestCheckInputOutcomeConflicts:
+    """冲突类型 ②：同输入不同预期。"""
+
+    def test_same_signature_different_outcome_triggers_p0(self):
+        from review_checker_mcp.schemas import InputFact
+        from review_checker_mcp.validators import check_input_outcome_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="返回密码错误提示",
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="登录成功跳转首页",
+                    ),
+                ],
+            ),
+        ]
+        issues = check_input_outcome_conflicts(facts)
+        assert len(issues) == 1
+        assert issues[0].severity.value == "P0"
+        assert "TC_001" in issues[0].case_id
+        assert "TC_002" in issues[0].case_id
+
+    def test_same_signature_same_outcome_no_issue(self):
+        from review_checker_mcp.schemas import InputFact
+        from review_checker_mcp.validators import check_input_outcome_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=正确密码)",
+                        expected_outcome="登录成功跳转首页",
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=正确密码)",
+                        expected_outcome="登录成功跳转首页",
+                    ),
+                ],
+            ),
+        ]
+        issues = check_input_outcome_conflicts(facts)
+        assert len(issues) == 0  # 相同输入相同预期 → 归冗余维度，不是本维度
+
+    def test_different_signature_no_issue(self):
+        from review_checker_mcp.schemas import InputFact
+        from review_checker_mcp.validators import check_input_outcome_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=正确密码)",
+                        expected_outcome="跳转首页",
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="返回错误提示",
+                    ),
+                ],
+            ),
+        ]
+        issues = check_input_outcome_conflicts(facts)
+        assert len(issues) == 0  # 不同输入，不冲突
+
+    def test_multiple_inputs_cross_comparison(self):
+        """参数化用例的多 InputFact 笛卡尔比对。"""
+        from review_checker_mcp.schemas import InputFact
+        from review_checker_mcp.validators import check_input_outcome_conflicts
+
+        facts = [
+            _make_facts(
+                case_id="TC_001",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=正确密码)",
+                        expected_outcome="跳转首页",
+                    ),
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="返回错误",
+                    ),
+                ],
+            ),
+            _make_facts(
+                case_id="TC_002",
+                inputs=[
+                    InputFact(
+                        input_signature="登录(pwd=错误密码)",
+                        expected_outcome="跳转首页",
+                    ),
+                ],
+            ),
+        ]
+        issues = check_input_outcome_conflicts(facts)
+        assert len(issues) == 1  # TC_001 的第二个 InputFact 与 TC_002 冲突
+
+    def test_empty_inputs_no_issue(self):
+        from review_checker_mcp.validators import check_input_outcome_conflicts
+
+        facts = [
+            _make_facts(case_id="TC_001", inputs=[]),
+            _make_facts(case_id="TC_002", inputs=[]),
+        ]
+        issues = check_input_outcome_conflicts(facts)
+        assert len(issues) == 0

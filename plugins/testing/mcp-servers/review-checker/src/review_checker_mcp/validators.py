@@ -464,6 +464,46 @@ def check_precondition_state_conflicts(facts: list[SemanticFacts]) -> list[Issue
     return issues
 
 
+def check_input_outcome_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
+    """冲突类型 ②：同输入不同预期。
+
+    全用例集范围内，用例 A 的任一 InputFact 与用例 B 的任一 InputFact 的
+    input_signature 完全相同，但 expected_outcome 不同 → P0。
+    支持参数化用例的多 InputFact 笛卡尔比对。
+    """
+    issues: list[Issue] = []
+
+    # 收集所有 (case_id, InputFact)
+    entries: list[tuple[str, InputFact]] = []
+    for fact in facts:
+        for inp in fact.inputs:
+            entries.append((fact.case_id, inp))
+
+    # 两两比对（不同 case_id 之间）
+    for i, (case_a, inp_a) in enumerate(entries):
+        for case_b, inp_b in entries[i + 1 :]:
+            if case_a == case_b:
+                continue
+            if (
+                inp_a.input_signature == inp_b.input_signature
+                and inp_a.expected_outcome != inp_b.expected_outcome
+            ):
+                issues.append(
+                    Issue(
+                        case_id=f"{case_a},{case_b}",
+                        dimension="语义一致性",
+                        severity=Severity.P0,
+                        rule="input_signature 相同且 expected_outcome 不同 → P0",
+                        evidence=(
+                            f"{case_a}[{inp_a.input_signature}]→{inp_a.expected_outcome} "
+                            f"vs {case_b}[{inp_b.input_signature}]→{inp_b.expected_outcome}"
+                        ),
+                        suggestion="核对预期：同一输入应有唯一预期，修正其中一条的 expected_outcome",
+                    )
+                )
+    return issues
+
+
 def validate_all(case_set: TestCaseSet) -> list[Issue]:
     """执行全部 9 维度校验，返回所有 Issue。"""
     issues: list[Issue] = []
