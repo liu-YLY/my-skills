@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-validate:
+    name: Lint & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Validate JSON files
+        run: |
+          echo "Validating all .json files..."
+          find . -name "*.json" -not -path "./.git/*" -not -path "./node_modules/*" | while read f; do
+            python -c "import json,sys; json.load(open('$f', encoding='utf-8'))" || { echo "Invalid JSON: $f"; exit 1; }
+          done
+          echo "All JSON files valid."
+
+      - name: Validate YAML files
+        run: |
+          yamllint -d "{extends: default, rules: {line-length: disable, document-start: disable}}" \
+            .pre-commit-config.yaml \
+            .github/workflows/ci.yml
+
+      - name: Lint Markdown files
+        run: |
+          markdownlint \
+            --disable MD013 MD024 MD033 MD041 \
+            --ignore .git \
+            --ignore node_modules \
+            '*.md' \
+            'plugins/**/*.md' \
+            'docs/**/*.md' \
+            '.github/**/*.md' || true
+          echo "Markdown lint completed (warnings allowed)."
+
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+        continue-on-error: false
+
+      - name: Check SKILL.md / plugin.json version sync
+        run: python scripts/check-version-sync.py
+
+      - name: Check knowledge file count (≥4 for non-meta skills)
+        run: python scripts/check-knowledge-count.py

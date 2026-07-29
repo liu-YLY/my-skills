@@ -103,3 +103,68 @@ AI 负责生成 70%-90% 的基础用例，测试人员负责审核、修正和�
 1. 检查输入的结构化程度（需求描述是否清晰、测试点是否完整）
 2. 调整 Prompt（增加约束条件、补充 Few-shot 示例）
 3. 分批生成（缩小单次范围，提高精准度）
+
+---
+
+## 评审模式 · 语义事实抽取提示词
+
+> **何时使用**：评审模式 R2 步骤执行第 10 维度「语义一致性」检测前，必须先用本提示词抽取 SemanticFacts。
+> **覆盖范围**：将用例自然语言字段抽取为结构化语义事实，供 MCP `check_semantic_conflicts` 做确定性冲突检测。
+
+### 任务
+
+将每条用例的自然语言字段抽取为 SemanticFacts 结构。**只做理解+归一化，禁止做任何冲突判断**。
+
+### 输入
+
+- 用例列表（每条含 case_id / test_point_id / preconditions / steps / expected_results）
+
+### 输出格式（严格 JSON）
+
+```json
+{
+  "facts": [
+    {
+      "case_id": "TC_WEBHOOK_ADD_001",
+      "test_point_id": "TP_WEBHOOK_001",
+      "preconditions": [
+        {"subject": "用户登录状态", "state": "已登录", "polarity": "affirmative"},
+        {"subject": "Webhook数量", "state": "数量<10", "polarity": "affirmative"}
+      ],
+      "inputs": [
+        {"input_signature": "创建Webhook(url=https://a.com,event=push)", "expected_outcome": "返回201+webhook_id"}
+      ],
+      "dependencies": []
+    }
+  ]
+}
+```
+
+### 归一化规则（必须遵守）
+
+1. **subject 归一化**：同一概念必须用相同字符串。
+   - 两条用例都用「用户登录状态」，不要一个用「登录状态」一个用「用户是否登录」
+   - 提示：主体 = 名词短语，状态 = 该主体的具体取值
+
+2. **polarity 二值化**：
+   - `affirmative`：断言某状态成立（"已登录"/"存在"/"数量>0"）
+   - `negation`：断言某状态不成立（"未登录"/"不存在"/"数量=0"）
+   - 不要写"可能"/"大概"——若原文模糊，按 affirmative 处理并在 state 中保留原文
+
+3. **input_signature 含数据值**：
+   - `登录(account=testuser,pwd=错误密码)` 正确
+   - `登录` 错误（缺数据，会误判参数化用例为同输入）
+   - 同一动作的不同数据必须体现在 signature 中
+
+4. **dependencies 归一化**：
+   - 从 steps 中的「执行 TC_xxx 后」「参考 TC_xxx」「延续 TC_xxx」提取被引用的 case_id
+   - 从 preconditions 中的「TC_xxx 已执行」「依赖 TC_xxx 结果」提取
+   - 输出为 case_id 字符串列表，如 `["TC_WEBHOOK_ADD_001", "TC_WEBHOOK_EDIT_002"]`
+   - 自包含用例输出 `[]`
+
+### 硬约束
+
+- 必须为每条输入用例产出一个 SemanticFacts，不得遗漏
+- test_point_id 为空时输出 null
+- preconditions 为空时输出 `[]`
+- **禁止**在输出中包含任何"冲突""矛盾""不一致"等判断词——判定是下游 MCP 的事

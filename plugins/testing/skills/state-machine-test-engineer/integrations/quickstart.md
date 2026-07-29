@@ -2,6 +2,8 @@
 
 > 本文档说明如何配置 `state-machine-testing-mcp` Server，让 state-machine-test-engineer skill 进入增强模式。
 
+> ⚠️ **当前 MCP Server 状态（v0.1.0）**：确定性工具（validate/generate/export/coverage）已实现并通过 34 项单元测试，但 **MCP 协议层注册待 v0.2.0 完成**。当前即使按本文档完成配置，runtime 也无法通过 MCP 协议调用 Server，**增强模式实际不可达，skill 以独立模式运行**。以下配置步骤可供提前准备，预计 v0.2.0 发布后增强模式可用。
+
 ## 三种运行模式回顾
 
 | 模式 | 触发条件 | 行为 |

@@ -1,11 +1,12 @@
 ---
 name: test-case-engineer
-version: 8.1.0
+version: 8.2.0
 description: >-
   Use when generating, reviewing, or designing test cases and test strategies.
   Triggers on: 测试用例、测试点、用例评审、测试策略、需求分析、测试分层、QA.
   For bug root cause analysis or defect localization, use bug-analyzer instead.
   v8.1: 新增用例拆分与合并平衡策略（原子化/合并/复杂度三目标 + 5步决策法 + 软断言 + 复杂度阈值）。
+  v8.2: 新增第 10 维度「语义一致性」检测（跨用例前后语义冲突：前置条件矛盾/同输入异预期/依赖闭环）。
 keywords:
   - QA
   - 测试用例
@@ -78,7 +79,7 @@ keywords:
 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **阶段 2 强制读**（防御性测试点补充，含领域特定模式 + 安全专项检查清单） |
 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | **阶段 1 强制读** + Office/PDF 转换 |
 | [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板） |
-| [knowledge/review-mode.md](knowledge/review-mode.md) | **评审模式触发时必读**（6 维度评审工作流） |
+| [knowledge/review-mode.md](knowledge/review-mode.md) | **评审模式触发时必读**（10 维度评审工作流 + 评审度量报告 + 评审修订闭环 + 增量评审子模式 + 多格式输入 + 评审报告文件化 + 语义一致性维度） |
 | [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **阶段 3/4 自检时对照**（反例黑名单） |
 | [knowledge/products/](knowledge/products/) | **阶段 1 必须加载**（产品专项业务知识，若存在对应产品知识文件） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
