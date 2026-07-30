@@ -103,5 +103,10 @@
     "id": 21,
     "prompt": "评审用例覆盖度并对照代码改动确认缺口，但 change-impact-analyzer 没装",
     "expected": "链 6 降级：混合意图命中链 6 → test-case-engineer 评审完成输出覆盖度问题 → 🔴 CHECKPOINT → 检测到 change-impact-analyzer 不可用 → 提示用户安装 → 降级输出 bundle 层方向性指导（按四阶段：收集输入→Diff 解析→交叉分析→生成报告）"
+  },
+  {
+    "id": 22,
+    "prompt": "帮我对下单接口做一轮压测，压完顺便分析一下瓶颈出在哪一层",
+    "expected": "混合意图（链 3）：性能测试 + 瓶颈定位 → 路由到 performance-test-engineer 内部完成（方案设计 → 瓶颈定位按 应用层→资源层→架构层 排查），不跨 skill 转交；无'代码缺陷'信号不触发链 4，仅当阶段 4 判定瓶颈位于代码逻辑层时 🔴 CHECKPOINT 征询是否转交 bug-analyzer"
   }
 ]

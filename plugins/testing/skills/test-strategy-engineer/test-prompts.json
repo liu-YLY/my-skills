@@ -38,5 +38,15 @@
     "id": 8,
     "prompt": "策略制定好了，直接帮我写测试用例吧，不用管什么策略文档了",
     "expected": "识别为越界请求（反模式 6：与 test-case-engineer 边界混淆），拒绝直接写用例，提示用户：本 skill 只输出策略与分层用例清单，具体用例转交 test-case-engineer 生成；可引导用户先确认策略文档再转交"
+  },
+  {
+    "id": 9,
+    "prompt": "帮我为登录功能编写测试用例，支持手机号和邮箱两种方式",
+    "expected": "不应触发 test-strategy-engineer（负例）：单功能用例生成请求，无项目级策略/分层/风险矩阵信号 → 应由 test-case-engineer 处理；若被调起则提示转交，禁止强行产出项目级策略文档"
+  },
+  {
+    "id": 10,
+    "prompt": "大促峰值预计 5000 QPS，帮我设计一套压测方案",
+    "expected": "不应触发 test-strategy-engineer（负例）：性能压测信号（QPS/压测方案）→ 应由 performance-test-engineer 处理；项目级测试策略中的性能专项章节也只做范围界定，不产出具体压测方案"
   }
 ]
