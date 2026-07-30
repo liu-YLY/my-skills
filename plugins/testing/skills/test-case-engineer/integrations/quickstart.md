@@ -51,4 +51,4 @@ $PLUGIN_ROOT/.venv-tools/bin/python $PLUGIN_ROOT/scripts/convert_docs.py docs/ -
 
 ## 项目知识目录
 
-阶段 1 扫描路径详见 [knowledge/project-knowledge.md](knowledge/project-knowledge.md)「项目知识目录约定」表。
+阶段 1 扫描路径详见 [knowledge/project-knowledge.md](../knowledge/project-knowledge.md)「项目知识目录约定」表。

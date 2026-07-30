@@ -54,4 +54,4 @@ $PLUGIN_ROOT/.venv-tools/bin/python $PLUGIN_ROOT/scripts/convert_docs.py logs/ -
 ../test-case-engineer/knowledge/bug-patterns.md
 ```
 
-详见 [knowledge/bug-patterns-index.md](knowledge/bug-patterns-index.md)。
+详见 [knowledge/bug-patterns-index.md](../knowledge/bug-patterns-index.md)。

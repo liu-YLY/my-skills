@@ -53,7 +53,7 @@
   - Python 3.11+ / mcp 官方 SDK / pydantic v2
   - skill 可选增强，未安装时降级为纯 LLM 推理
 - **新增混合意图链 5**：状态机建模 + 用例生成（state-machine → case-engineer）
-- **新增设计文档**：[2026-07-18-state-machine-testing-design.md](../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md)
+- **新增设计文档**：[2026-07-18-state-machine-testing-design.md](https://github.com/liu-YLY/my-skills/blob/main/docs/superpowers/specs/2026-07-18-state-machine-testing-design.md)
 
 ### Changed
 
