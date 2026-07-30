@@ -122,7 +122,7 @@ skills/
 → 输出（✓ MCP 增强模式）：状态机模型 + 场景清单 + Mermaid 图 + 覆盖度报告
 ```
 
-详细示例见 [SKILL.md](SKILL.md#使用示例)。
+详细示例见 [knowledge/usage-examples.md](knowledge/usage-examples.md)。
 
 ## 文件结构
 
