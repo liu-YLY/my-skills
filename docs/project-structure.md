@@ -11,11 +11,7 @@ my-skill/
 ├── .claude-plugin/                # Claude Code plugin marketplace 注册
 │   └── marketplace.json           # 列出 testing-bundle + wechat-formatter 两个 plugin
 │
-├── .darwin-results/               # darwin-skill 评估结果（基线/对比/总结）
-│   ├── results.tsv                # 优化日志（9 列含 eval_mode）
-│   ├── 2026-07-04-baseline.md     # 优化前基线报告
-│   ├── 2026-07-04-comparison.md   # 优化前后对比报告
-│   └── 2026-07-04-split-summary.md # 拆分总结文章
+├── .darwin-results/               # darwin-skill 评估结果（本地产物，已移出版本跟踪）
 │
 ├── scripts/                       # 项目级工具脚本
 │   └── install-testing-bundle.ps1 # 测试 bundle 本地安装脚本（plugin 模式兜底）

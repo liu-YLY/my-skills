@@ -54,7 +54,7 @@ docs/superpowers/
 
 修改 skill 后如需运行 darwin-skill 质量评估：
 - 工作区：[.claude/skills/darwin-skill/](.claude/skills/darwin-skill/)
-- 历史结果：[.darwin-results/](.darwin-results/)
+- 历史结果：`.darwin-results/`（本地产物，已移出版本跟踪）
 - 评分波动 ±5 分属正常，需多轮评估取均值
 
 ## 强约束入口
