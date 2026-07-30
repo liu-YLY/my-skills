@@ -8,7 +8,7 @@
 
 ## 一、设计目标
 
-高级排版模块是 wechat-formatter v3.0.0 引入的核心能力，目标是把「视觉卡片」从 Markdown 流式文本里独立出来，让作者用 `:::module` 语法声明结构化组件，由 `scripts/md2wechat.py` 转换为带内联样式的微信公众号 HTML。
+高级排版模块是 wechat-formatter v3.0.0 引入的核心能力，目标是把「视觉卡片」从 Markdown 流式文本里独立出来，让作者用 `:::module` 语法声明结构化组件，由 AI 在阶段 3 按本文档与 [layout/layout-modules.md](../layout/layout-modules.md) 的规则渲染为带样式的排版结果（阶段 5 如需导出可粘贴 HTML，再用 `scripts/md2wechat.py` 做样式内联）。
 
 模块设计的三大目标：
 
@@ -110,7 +110,7 @@ tip | 这是嵌套的提示
 
 ### 3.4 字段约定
 
-- 必填字段缺失时，转换脚本输出警告但保留原文，由阶段 4 校验拦截
+- 必填字段缺失时，AI 在阶段 3 渲染时保留原文并标注，由阶段 4 校验拦截
 - 字段值不强制引号，包含特殊字符（如 `:` `|`）时建议用反引号或单独成段
 - 重复字段（如 `point: 01 | ...`、`step: ...`）按出现顺序渲染
 
@@ -256,7 +256,7 @@ tip | 这是嵌套的提示
 
 ### 6.4 Brand Profile 覆盖
 
-当 Brand Profile 中声明了 `主色调` / `辅助色` / `字号` 时，`md2wechat.py` 在生成 HTML 时会用 Brand Profile 的值覆盖风格 CSS 中对应的颜色和字号。详见 [brand-profile-spec.md](brand-profile-spec.md)。
+当 Brand Profile 中声明了 `主色调` / `辅助色` / `字号` 时，AI 在阶段 2/3 排版时会用 Brand Profile 的值覆盖风格 CSS 中对应的颜色和字号。详见 [brand-profile-spec.md](brand-profile-spec.md)。
 
 ---
 
@@ -268,7 +268,7 @@ tip | 这是嵌套的提示
 2. **定义字段**：列出必填字段和可选字段，给出字段说明
 3. **写示例**：在 [layout/layout-modules.md](../layout/layout-modules.md) 中新增章节，提供至少一个完整示例
 4. **加 CSS**：在 [layout/modules-base.css](../layout/modules-base.css) 中新增对应类名和默认样式
-5. **加校验**：在 `md2wechat.py` 中新增模块名白名单、必填字段校验
+5. **加校验**：在阶段 4 校验规则（本文档 §四 组合规则）中登记模块名白名单与必填字段校验
 6. **更新本文档**：在第二节模块清单中登记，在第四节组合规则中说明互斥关系
 7. **加示例输出**：在 [examples/](../examples/) 中提供至少一篇使用该模块的示例文章
 

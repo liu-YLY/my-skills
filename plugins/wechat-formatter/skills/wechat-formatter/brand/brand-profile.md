@@ -197,7 +197,7 @@ AI 在排版时会自动读取 Brand Profile 文件：
 - 强调产品价值
 
 ## 模块偏好
-- hero + features + cases + cta
+- hero + cards + cases + cta
 ```
 
 ### 示例 3：教程指南品牌

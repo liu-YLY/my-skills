@@ -223,7 +223,7 @@ wechat: techblog_zhang
 | 观点文 | hero + verdict + cta |
 | 数据报告 | hero + metrics + compare + cta |
 | 教程 | hero + steps + callout + faq |
-| 产品发布 | hero + features + cases + cta |
+| 产品发布 | hero + cards + cases + cta |
 | 经验分享 | hero + timeline + quote + cta |
 
 ### 按目的选择
