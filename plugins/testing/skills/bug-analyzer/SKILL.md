@@ -98,7 +98,7 @@ keywords:
 1. 画出数据流/调用链：前端 → 网关 → 服务 A → 服务 B → DB → 第三方
 2. 在每个边界记录输入输出，定位异常首次出现位置
 3. 二分法隔离：禁用部分模块/绕过部分逻辑，观察 Bug 是否消失
-4. 对照缺陷模式库：参考 [knowledge/bug-patterns-index.md](knowledge/bug-patterns-index.md) 判断属于哪类常见模式。**若错误现象为 NPE / 500 错误 / 超时，必查 `../test-case-engineer/knowledge/bug-patterns.md` 的「运行时高频错误类型 checklist」章节，按 P1→P5 优先级排查**
+4. 对照缺陷模式库：参考 [knowledge/bug-patterns-index.md](knowledge/bug-patterns-index.md) 判断属于哪类常见模式。**若错误现象为 NPE / 500 错误 / 超时，必查 `../test-case-engineer/knowledge/bug-patterns.md` 的「运行时高频错误类型 checklist」章节，按 P1→P5 优先级排查**。若该文件不存在（单独安装场景），按 bug-patterns-index.md 的降级策略继续，不中断流程
 5. 记录隔离证据：每个边界的实际输入输出值
 
 ### 步骤 2 失败模式与 Fallback
@@ -263,7 +263,7 @@ keywords:
 | 文件 | 何时查阅 |
 |------|---------|
 | [knowledge/root-cause-frameworks.md](knowledge/root-cause-frameworks.md) | **步骤 3 定位时必读**（鱼骨图/5 Whys/因果链/防御性用例反推） |
-| [knowledge/bug-patterns-index.md](knowledge/bug-patterns-index.md) | **步骤 2/3 查阅**（指向 test-case-engineer 的共享缺陷模式库） |
+| [knowledge/bug-patterns-index.md](knowledge/bug-patterns-index.md) | **步骤 2/3 查阅**（指向 test-case-engineer 的共享缺陷模式库；共享库不存在时按其降级策略继续，不中断流程） |
 | [knowledge/report-template.md](knowledge/report-template.md) | **步骤 5 生成报告时查阅**（报告字段定义/填写规范/两类报告示例/转交规则） |
 | [knowledge/defensive-test-points.md](knowledge/defensive-test-points.md) | **步骤 5 反推防御性测试点时查阅**（反推流程/5 类测试点/检查清单/转交规则） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |

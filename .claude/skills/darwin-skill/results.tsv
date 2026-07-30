@@ -1,3 +1,4 @@
+# DEPRECATED（2026-07-29）：本文件已废弃，仅作历史留档；唯一权威评分记录见 .darwin-results/results.tsv
 timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
 2026-06-18T23:50	baseline	test-engineer	-	64.6	baseline	-	初始评估	full_test
 2026-06-18T23:55	3cafa14	test-engineer	64.6	70	keep	可执行具体性	消除软化措辞	full_test
