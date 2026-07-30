@@ -5,6 +5,7 @@ description: >-
   Analyzes git changes against test cases to find behavioral impacts and coverage gaps.
   Invoke when user asks to check code changes impact on tests, analyze diff coverage,
   or generate change impact reports.
+  Triggers on: 变更影响分析、diff 分析、代码改动检查、覆盖缺口、回归风险.
 keywords:
   - 变更影响分析
   - 代码改动检查

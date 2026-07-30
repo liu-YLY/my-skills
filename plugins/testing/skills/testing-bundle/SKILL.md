@@ -18,9 +18,6 @@ keywords:
   - 混合测试意图
   - 模糊测试请求
   - 测试能力选择
-  - 变更影响分析
-  - diff 分析
-  - 覆盖缺口
 ---
 
 # Testing Bundle
@@ -115,12 +112,12 @@ keywords:
 
 - `bug-patterns.md` 主归属 test-case-engineer，bug-analyzer 通过相对路径 `../test-case-engineer/knowledge/bug-patterns.md` 引用
 - strategy/performance/state-machine 不共享知识库（聚焦点不同，共享会引入路由歧义）
-- state-machine-test-engineer 可选调用 `state-machine-testing-mcp` Server 做 Schema 校验与可视化（未安装时降级为纯 LLM 推理）
+- state-machine-test-engineer 可选调用 `state-machine-testing-mcp` Server 做 Schema 校验与可视化（未安装时降级为纯 LLM 推理）。⚠️ 该 MCP 当前为 v0.1.0，协议层注册待 v0.2.0 完成，**增强模式实际不可达**，skill 以独立模式运行（详见 state-machine-test-engineer/SKILL.md 状态说明）
 - test-case-engineer 评审模式可选调用 `review-checker-mcp` Server 做 10 维度确定性校验与度量报告（9 维度用例级校验 + 1 维度语义一致性冲突检测，未安装时降级为纯 LLM 推理）
 
 **依赖说明**：
 - bug-analyzer 单独安装时，步骤 2/3 的"对照缺陷模式库"能力会降级（仍有通用模式兜底，但无法查阅完整缺陷模式库）。通过本 bundle 整体安装获得完整能力。
-- state-machine-test-engineer 单独安装时完全可用；安装配套 MCP Server 后进入"增强模式"，获得 Schema 校验、Mermaid 可视化、覆盖度报告等额外能力。
+- state-machine-test-engineer 单独安装时完全可用；安装配套 MCP Server 后进入"增强模式"，获得 Schema 校验、Mermaid 可视化、覆盖度报告等额外能力。⚠️ 增强模式需等 MCP v0.2.0 协议层注册完成后才可用，当前配置后也无法调用。
 - test-case-engineer 评审模式单独可用；安装配套 review-checker MCP Server 后进入"增强模式"，获得 10 维度确定性校验与度量报告（通过率/问题密度/评级 A-D）。
 
 ## 安装方式
@@ -325,7 +322,7 @@ testing-bundle:
 3. bundle 按 5-way 路由决策表判断意图并路由到对应子 skill
 4. 混合意图按对应链路执行（7 条链），转交点 🔴 CHECKPOINT
 5. 子 skill 执行具体任务并输出结果
-6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（详见 [state-machine-test-engineer/integrations/quickstart.md](../state-machine-test-engineer/integrations/quickstart.md)）
+6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（⚠️ v0.1.0 协议层未注册，增强模式暂不可达，待 v0.2.0；详见 [state-machine-test-engineer/integrations/quickstart.md](../state-machine-test-engineer/integrations/quickstart.md)）
 7. test-case-engineer 评审模式可选安装配套 review-checker MCP Server 进入增强模式（详见 [review-checker README](../../mcp-servers/review-checker/README.md)）
 
 ---
