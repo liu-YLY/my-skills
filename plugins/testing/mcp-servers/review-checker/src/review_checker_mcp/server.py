@@ -142,83 +142,12 @@ def check_semantic_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
 def _register_mcp_tools(mcp_server) -> None:
     """向 MCP Server 注册评审校验工具。
 
-    本函数在 mcp SDK 可用时调用，将上述函数注册为 MCP 工具。
-    若 mcp SDK 不可用，本函数安全返回，模块仍可以作为普通 Python 库使用。
+    本函数在 mcp SDK 可用时调用，直接将模块级函数注册为 MCP 工具，避免与库模式重复实现。
+    若 mcp SDK 不可用，本函数不会被调用，模块仍可以作为普通 Python 库使用。
     """
-    @mcp_server.tool()
-    def review_test_cases(case_set: TestCaseSet) -> list[Issue]:
-        """对用例集执行 9 维度评审，返回全部 Issue。"""
-        return _validate_all(case_set)
-
-    @mcp_server.tool()
-    def generate_report(case_set: TestCaseSet, issues: list[Issue] | None = None) -> ReviewReport:
-        """基于评审结果生成度量报告（通过率/问题密度/评级/维度分布/严重等级分布）。
-
-        issues 参数可传入预计算的 Issue 列表（如合并了 9+10 维度的结果）；
-        若不传则自动执行 9 维度评审。
-        """
-        if issues is None:
-            issues = review_test_cases(case_set)
-
-        total_cases = len(case_set.cases)
-        issue_case_ids: set[str] = set()
-        for i in issues:
-            if i.case_id == "-":
-                continue
-            for cid in i.case_id.split(","):
-                cid = cid.strip()
-                if cid:
-                    issue_case_ids.add(cid)
-        issue_cases = len(issue_case_ids)
-        pass_rate = (total_cases - issue_cases) / total_cases if total_cases > 0 else 0.0
-        total_issues = len(issues)
-        issue_density = total_issues / total_cases if total_cases > 0 else 0.0
-
-        if pass_rate >= 0.95 and issue_density < 0.5:
-            grade: Literal["A", "B", "C", "D"] = "A"
-        elif pass_rate >= 0.80:
-            grade = "B"
-        elif pass_rate >= 0.60:
-            grade = "C"
-        else:
-            grade = "D"
-
-        dim_counts: Counter[str] = Counter(i.dimension for i in issues)
-        dim_severity: dict[str, list[str]] = {}
-        for issue in issues:
-            dim_severity.setdefault(issue.dimension, []).append(issue.severity.value)
-
-        dimension_stats: list[DimensionStat] = []
-        for dim in DIMENSIONS:
-            count = dim_counts.get(dim, 0)
-            if count > 0:
-                sev_counts = Counter(dim_severity[dim])
-                main_sev = sev_counts.most_common(1)[0][0] if sev_counts else "-"
-            else:
-                main_sev = "-"
-            dimension_stats.append(
-                DimensionStat(dimension=dim, issue_count=count, main_severity=main_sev)
-            )
-
-        severity_counts: Counter[str] = Counter(i.severity.value for i in issues)
-        severity_stats = {sev: severity_counts.get(sev, 0) for sev in ("P0", "P1", "P2")}
-
-        return ReviewReport(
-            total_cases=total_cases,
-            issue_cases=issue_cases,
-            pass_rate=round(pass_rate, 4),
-            total_issues=total_issues,
-            issue_density=round(issue_density, 4),
-            grade=grade,
-            issues=issues,
-            dimension_stats=dimension_stats,
-            severity_stats=severity_stats,
-        )
-
-    @mcp_server.tool()
-    def check_semantic_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
-        """第 10 维度：语义一致性冲突检测（前置条件矛盾/同输入异预期/依赖闭环）。"""
-        return _check_semantic_conflicts(facts)
+    mcp_server.tool()(review_test_cases)
+    mcp_server.tool()(generate_report)
+    mcp_server.tool()(check_semantic_conflicts)
 
 
 def main() -> int:

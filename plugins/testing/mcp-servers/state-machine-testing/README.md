@@ -2,7 +2,7 @@
 
 > 配套 state-machine-test-engineer skill 的 Python MCP Server v0.1.0：提供状态机建模/校验/穷举/导出/覆盖度 5 个工具，作为 skill 的可选增强引擎。
 
-> **实现状态**：v0.1.0 已完成 pydantic Schema + 4 个确定性工具（validate/generate/export/coverage）+ 单元测试（34 通过）+ 集成测试（2 通过）。`build_state_machine` 为占位实现（推荐通过 skill 自身 LLM 推理建模，再传给确定性工具校验）。MCP 协议层注册待 v0.2.0。
+> **实现状态**：v0.1.0 已完成 pydantic Schema + 4 个确定性工具（validate/generate/export/coverage）+ 单元测试（34 通过）+ 集成测试（2 通过）。`build_state_machine` 为占位实现（推荐通过 skill 自身 LLM 推理建模，再传给确定性工具校验）。MCP 协议层注册代码已在 `server.py` 实现（FastMCP 注册 5 个工具），但尚未经端到端联调验证；在验证通过前，skill 默认以独立模式运行。
 
 ## 简介
 
