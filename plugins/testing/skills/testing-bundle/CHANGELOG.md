@@ -4,6 +4,12 @@
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **token 优化（纯内容迁移）**：SKILL.md 的「使用示例」（8 个演示对话）与「快速上手」外迁至 [knowledge/usage-examples.md](knowledge/usage-examples.md)，入口保留示例索引 + 链接按需加载；路由规则、失败模式、反例黑名单、约束规则全部保留，路由行为无变化
+
 ## [3.1.1] - 2026-07-22
 
 ### Added
