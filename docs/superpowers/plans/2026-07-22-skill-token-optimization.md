@@ -1,5 +1,7 @@
 # Skill Token 优化实施计划
 
+> **状态说明（2026-07-29）**：历史计划文档，PR1-PR3 尚未执行。文中引用的拆分目标文件（knowledge/writing-iron-rules.md 等）尚不存在，所引行号基于旧版文件已过时，执行前需按当前文件重新定位。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 通过结构化拆分降低 3 个高 token skill 的入口文件体积，预期入口 token 总量从 ~54,200 降至 ~44,900（-17%），并修正文档中遗留的维度数不一致问题。

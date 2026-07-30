@@ -17,3 +17,4 @@ timestamp	commit	skill	old_score	new_score	status	dimension	note	eval_mode
 2026-07-08T23:42	b9237a7	change-impact-analyzer	79.8	82.6	keep	dim4+dim9	加2处CHECKPOINT+7条反例黑名单，dim4:1→5,dim9:1→7	dry_run
 2026-07-08T23:44	64bf0a8	change-impact-analyzer	82.6	84.6	keep	dim3	失败模式表升级三段式fallback（触发/一线/兜底），各阶段内联+总览索引	dry_run
 2026-07-08T23:46	7a09b7b	change-impact-analyzer	84.6	87.3	keep	dim5+dim7	dim5去"AI推断"改具体规则+匹配策略具体化；dim7加version/TL;DR/生态协同	dry_run
+2026-07-29T00:00	6c783bb	testing-bundle	78.95	80.85	keep	-	人工裁决闭环：J2所指路由决策表矛盾已修复并合入，撤销revert_pending，恢复3b219b2复检基线80.85。本文件为唯一权威评分记录（.claude/skills/darwin-skill/results.tsv已废弃）	manual_review
