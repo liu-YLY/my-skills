@@ -31,11 +31,10 @@ bug-analyzer/
 │   └── defensive-test-points.md      # 防御性测试点反推流程/5 类测试点/检查清单
 ├── integrations/
 │   └── quickstart.md                 # 命令速查
-├── scripts/
-│   ├── convert_docs.py               # 文档转换（与 test-case-engineer 共用）
-│   └── requirements.txt
-└── test-prompts.json                 # 测试 prompt（3 个 Bug 分析场景）
+└── test-prompts.json                 # 测试 prompt（10 条，含 2 条负例）
 ```
+
+> 文档转换脚本为插件级共享，位于 `plugins/testing/scripts/convert_docs.py`。
 
 ## 快速开始
 

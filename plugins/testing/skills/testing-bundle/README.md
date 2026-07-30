@@ -78,7 +78,8 @@ testing-bundle/
 ├── README.md                      # 本说明文档
 ├── CHANGELOG.md                   # 版本变更记录
 ├── knowledge/
-│   └── mixed-intent-chains.md     # 7 条混合意图链详细步骤流
+│   ├── mixed-intent-chains.md     # 7 条混合意图链详细步骤流
+│   └── usage-examples.md          # 8 个典型路由演示对话与首次上手引导
 └── test-prompts.json              # 路由验证 prompt
 ```
 
