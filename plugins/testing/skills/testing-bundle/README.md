@@ -1,6 +1,6 @@
 # Testing Bundle Skill
 
-> 测试能力 bundle 入口 v3.1.1：统一路由到 5 个核心子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer）+ 1 个协同 skill（change-impact-analyzer）。
+> 测试能力 bundle 入口：统一路由到 5 个核心子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer）+ 1 个协同 skill（change-impact-analyzer）。
 
 ## 简介
 
@@ -34,26 +34,7 @@ Testing Bundle 是一个元 skill（meta skill），本身不实现具体测试�
 
 ## 路由规则
 
-Bundle 根据用户意图自动路由：
-
-| 用户意图 | 路由到 |
-|---------|--------|
-| 测试策略、测试计划、测试分层、风险矩阵、准入准出 | test-strategy-engineer |
-| 生成/评审测试用例、需求分析、单功能测试策略 | test-case-engineer |
-| 性能测试、负载测试、TPS、响应时间、瓶颈 | performance-test-engineer |
-| Bug 根因分析、缺陷定位、5 Whys、防御性用例反推 | bug-analyzer |
-| 状态机、状态流转、状态转换、生命周期、非法跳转、幂等、并发冲突、消息乱序、终态吸收 | state-machine-test-engineer |
-| 混合意图（7 条链） | 见 SKILL.md 混合意图链 |
-| 意图不明确 | 追问用户 |
-
-**7 条混合意图链**：
-1. Bug 分析 + 用例生成（bug-analyzer → case-engineer）
-2. 测试策略 + 分层用例（strategy → case-engineer）
-3. 性能测试 + 瓶颈定位（performance 内部完成）
-4. 性能瓶颈 + 代码缺陷（performance → bug-analyzer）
-5. 状态机建模 + 用例生成（state-machine → case-engineer）
-6. 评审 → 覆盖缺口验证（case-engineer 评审 → change-impact-analyzer）
-7. 评审 → 风险用例根因反推（case-engineer 评审 → bug-analyzer）
+完整路由规则、7 条混合意图链、使用示例与反例黑名单见 [SKILL.md](SKILL.md)（唯一权威源，不在本 README 重复维护）。
 
 ## 安装方式
 
@@ -89,60 +70,6 @@ skills/
 - `state-machine-test-engineer` 知识库独立（含 4 个行业状态机模板：订单退款/审批流/会员/工单）；可选调用 `state-machine-testing-mcp` Server 做 Schema 校验与可视化，未安装时降级为纯 LLM 推理
 - `test-case-engineer` 评审模式可选调用 `review-checker-mcp` Server 做 10 维度确定性校验（9 维度用例级校验 + 1 维度语义一致性冲突检测），未安装时降级为纯 LLM 推理
 
-## 使用示例
-
-### 示例 1：自动路由到用例生成
-```
-用户：我有一个登录功能需要测试...
-→ bundle 路由到 test-case-engineer
- 输出测试用例
-```
-
-### 示例 2：自动路由到 Bug 分析
-```
-用户：线上重复扣款 Bug 帮我分析根因
-→ bundle 路由到 bug-analyzer
- 输出根因分析报告
-```
-
-### 示例 3：混合意图协同（Bug + 用例，链 1）
-```
-用户：分析这个 Bug 并补充测试用例
-→ bundle 路由到 bug-analyzer（输出防御性测试点清单）
- 转交 test-case-engineer（基于清单生成完整用例）
- 输出根因分析 + 完整用例
-```
-
-### 示例 4：自动路由到测试策略
-```
-用户：新项目要制定测试策略，包含分层和准入准出
-→ bundle 路由到 test-strategy-engineer
- 输出项目级测试策略（分层 + 风险矩阵 + 准入准出）
-```
-
-### 示例 5：自动路由到性能测试
-```
-用户：支付接口要做性能测试，目标 TPS 2000
-→ bundle 路由到 performance-test-engineer
- 输出性能测试方案 + 场景设计 + 瓶颈定位流程
-```
-
-### 示例 6：自动路由到状态机测试
-```
-用户：订单退款流程要做测试，订单状态包括待支付/已支付/已取消/退款中/退款成功/退款失败
-→ bundle 路由到 state-machine-test-engineer
- 输出状态机模型 + 场景清单（含依据类型标注，未说明的退款失败恢复路径标"待确认"）
-```
-
-### 示例 7：状态机 + 用例协同（链 5）
-```
-用户：为订单退款流程设计状态机测试场景，并生成完整测试用例
-→ bundle 路由到 state-machine-test-engineer（输出状态机模型 + 场景清单）
-🔴 CHECKPOINT 用户确认后
- 转交 test-case-engineer（基于场景清单生成完整用例）
- 输出状态机模型 + 场景清单 + 完整测试用例
-```
-
 ## 文件结构
 
 ```
@@ -155,25 +82,7 @@ testing-bundle/
 └── test-prompts.json              # 路由验证 prompt
 ```
 
-## 反例与黑名单
-
-- ❌ bundle 层重复实现子 skill 的能力
-- ❌ 不判断意图直接调用某个子 skill
-- ❌ 只装 bundle 不装子 skill（bundle 无法独立完成任何任务）
-- ❌ 路由时不传递上下文
-- ❌ 把性能问题路由到 bug-analyzer（应路由到 performance-test-engineer）
-- ❌ 把项目级策略路由到 test-case-engineer（应路由到 test-strategy-engineer）
-- ❌ 把通用功能用例路由到 state-machine-test-engineer（应路由到 test-case-engineer，仅当含明确状态/生命周期信号才路由到 state-machine）
-
-## 版本历史
-
-- v1.0.0: 初始版本，2-skill 路由
-- v2.0.0: 扩展为 4-skill 路由（+ test-strategy-engineer + performance-test-engineer），breaking change
-- v3.0.0: 扩展为 5-skill 路由（+ state-machine-test-engineer），新增链 5（状态机+用例协同），breaking change
-- v3.1.0: 新增链 6（评审→覆盖缺口验证，协同 change-impact-analyzer）+ 链 7（评审→风险用例根因反推，协同 bug-analyzer），评审模式成为混合意图链起点
-- v3.1.1: 声明 test-case-engineer 评审模式可选调用 review-checker MCP Server（与 state-machine MCP 增强对称），未安装时降级为纯 LLM 推理
-
-详细变更见 [CHANGELOG.md](CHANGELOG.md)。
+版本变更见 [CHANGELOG.md](CHANGELOG.md)。
 
 ---
 
@@ -184,5 +93,5 @@ testing-bundle/
 - [test-case-engineer](../test-case-engineer/) - 功能用例生成子 skill
 - [performance-test-engineer](../performance-test-engineer/) - 性能测试子 skill
 - [bug-analyzer](../bug-analyzer/) - 功能缺陷根因分析子 skill
-- [state-machine-test-engineer](../state-machine-test-engineer/) - 状态机测试子 skill（v3.0.0 新增）
-- [change-impact-analyzer](../change-impact-analyzer/) - 变更影响分析子 skill（v3.1.0 新增协同，链 6 使用）
+- [state-machine-test-engineer](../state-machine-test-engineer/) - 状态机测试子 skill
+- [change-impact-analyzer](../change-impact-analyzer/) - 变更影响分析子 skill（链 6 使用）
