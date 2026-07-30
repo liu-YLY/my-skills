@@ -678,7 +678,7 @@ options: 技术博客风 | 教程指南风 | 深度干货风 | 轻松聊天风
 | 观点文 | hero + verdict + cta |
 | 数据报告 | hero + metrics + compare + cta |
 | 教程 | hero + steps + callout + faq |
-| 产品发布 | hero + features + cases + cta |
+| 产品发布 | hero + cards + cases + cta |
 | 经验分享 | hero + timeline + quote + cta |
 
 ### 按目的选择
@@ -693,6 +693,8 @@ options: 技术博客风 | 教程指南风 | 深度干货风 | 轻松聊天风
 ---
 
 ## 五、渲染规则
+
+> 阶段 3 中，AI 按以下流程将 `:::module` 渲染为带样式的排版结果；阶段 5 如需导出 HTML，再由 `scripts/md2wechat.py` 完成样式内联（该脚本本身不解析 `:::module`）。
 
 ### 模块解析流程
 

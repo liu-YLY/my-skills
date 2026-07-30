@@ -6,12 +6,12 @@
 
 ## SKILL_ROOT
 
-在本仓库中：`SKILL_ROOT` = `skills/test-strategy-engineer`
+在本仓库中：`SKILL_ROOT` = `plugins/testing/skills/test-strategy-engineer`
 
 > 下文命令中的 `$SKILL_ROOT` 是占位符，**Agent 执行命令时必须替换为上述实际路径**。
-> 人在终端使用时，先执行 `export SKILL_ROOT=skills/test-strategy-engineer`，或手动将 `$SKILL_ROOT` 替换为实际路径。
+> 人在终端使用时，先执行 `export SKILL_ROOT=plugins/testing/skills/test-strategy-engineer`，或手动将 `$SKILL_ROOT` 替换为实际路径。
 
-> 路径禁止误写为 `.cursor/skills/test-strategy-engineer` 或 `~/.claude/skills/test-strategy-engineer`。本 skill 随仓库分发，路径以仓库内 `skills/test-strategy-engineer` 为准。
+> 路径禁止误写为 `.cursor/skills/test-strategy-engineer` 或 `~/.claude/skills/test-strategy-engineer`。本 skill 随仓库分发，路径以仓库内 `plugins/testing/skills/test-strategy-engineer` 为准。
 
 ## 快速触发示例
 
