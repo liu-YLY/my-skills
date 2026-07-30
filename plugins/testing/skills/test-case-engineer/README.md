@@ -160,6 +160,9 @@ test-case-engineer/
 │   ├── bug-patterns.md         # 缺陷模式库（与 bug-analyzer 共享）
 │   ├── project-knowledge.md    # 项目知识目录
 │   ├── prompt-strategy.md      # AI 生成 Prompt 策略
+│   ├── anti-patterns.md        # 反模式黑名单（阶段 3/4 自检）
+│   ├── review-mode.md          # 评审模式（10 维度评审）
+│   ├── writing-examples.md     # 用例编写示例（铁律教学示例表）
 │   └── products/               # 产品专项知识
 │       ├── README.md           # 产品知识索引
 │       ├── products-template.md # 知识模板
@@ -168,14 +171,12 @@ test-case-engineer/
 ├── integrations/               # 集成说明
 │   └── quickstart.md           # 本地操作速查
 │
-├── scripts/                    # 工具脚本
-│   ├── convert_docs.py         # 文档转换
-│   └── requirements.txt        # Python 依赖
-│
 └── docs/                       # 文档目录
     ├── skill-analysis.md       # 技能分析
     └── user-guide.md           # 用户指南
 ```
+
+> 文档转换脚本为插件级共享，位于 `plugins/testing/scripts/convert_docs.py`。
 
 ## 知识库说明
 

@@ -141,7 +141,13 @@ diff --git a/src/api/user.ts ...
 change-impact-analyzer/
 ├── SKILL.md              # 入口 + 核心流程（四阶段）
 ├── README.md             # 本说明文档
-└── test-prompts.json     # 测试 prompt（3 个场景）
+├── knowledge/            # 按需加载的方法论与模板
+│   ├── diff-modes.md              # 七种 diff 模式 / 推断规则 / 采集脚本字段
+│   ├── cross-impact-analysis.md   # 跨层影响链路 / 契约检查 / Mode A/B
+│   ├── cross-analysis-guide.md    # 阶段 3 两轮交叉分析操作细则
+│   ├── report-template.md         # 8 段报告结构 / 优先级划分 / 报告示例
+│   └── anti-patterns.md           # 反例清单 + 触发检查时机 + 自检清单
+└── test-prompts.json     # 测试 prompt（10 条，含负例）
 ```
 
 ## 反例与黑名单

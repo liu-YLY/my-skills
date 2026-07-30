@@ -151,6 +151,7 @@ keywords:
 
 > 完整模块规范和示例：[layout/layout-modules.md](layout/layout-modules.md)
 > 模块 CSS 样式：[layout/modules-base.css](layout/modules-base.css)
+> 模块设计原则与互斥规则（如 hero 单篇最多 1 个）：[knowledge/module-design.md](knowledge/module-design.md) §4.1（阶段 4 校验拦截时参阅）
 
 ---
 
