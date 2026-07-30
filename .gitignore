@@ -210,3 +210,8 @@ __marimo__/
 /微信公众号/
 .venv-tools/
 /参考文档/
+
+# 历史评估产物（本地保留，不再跟踪）
+/.patches/
+/.darwin-results/
+.claude/skills/darwin-skill/results.tsv
