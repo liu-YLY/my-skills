@@ -41,7 +41,7 @@ MCP Server 与 skill 同仓，位于：
 plugins/testing/mcp-servers/state-machine-testing/
 ```
 
-如尚未实现，参考 [MCP Server README](../../mcp-servers/state-machine-testing/README.md) 完成开发。
+如尚未实现，参考 [MCP Server README](../../../mcp-servers/state-machine-testing/README.md) 完成开发。
 
 ### 步骤 2：安装 Python 依赖
 
@@ -231,7 +231,7 @@ pip uninstall state-machine-testing-mcp
 | `export_artifacts` | 导出 Markdown / JSON / Mermaid | skill 阶段 5（导出） |
 | `check_coverage` | 覆盖度检查 | skill 阶段 5（覆盖度报告） |
 
-工具详细签名见 [MCP Server README](../../mcp-servers/state-machine-testing/README.md#工具集)。
+工具详细签名见 [MCP Server README](../../../mcp-servers/state-machine-testing/README.md#工具集)。
 
 ## 隐私与安全
 
@@ -244,5 +244,5 @@ pip uninstall state-machine-testing-mcp
 
 **相关文档**：
 - [state-machine-test-engineer SKILL.md](../SKILL.md) - skill 完整方法论
-- [MCP Server README](../../mcp-servers/state-machine-testing/README.md) - Server 安装与开发
-- [设计文档](../../../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
+- [MCP Server README](../../../mcp-servers/state-machine-testing/README.md) - Server 安装与开发
+- [设计文档](https://github.com/liu-YLY/my-skills/blob/main/docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec

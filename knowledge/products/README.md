@@ -416,7 +416,7 @@ git commit -m "feat(knowledge): 添加 {产品名称} 产品知识"
 
 | 产品ID | 产品名称 | 模块关键词 | 知识文件 | 最后更新 |
 |--------|----------|------------|----------|----------|
-| `example` | 示例产品 | demo, 示例 | [example.md](example.md) | 2026-06-17 |
+| `example` | 示例产品 | demo, 示例 | `example.md`（示例占位，非真实文件） | 2026-06-17 |
 
 > **维护说明**：新增产品知识时，在上表添加一行记录。
 
@@ -434,4 +434,4 @@ git commit -m "feat(knowledge): 添加 {产品名称} 产品知识"
 ### C. 相关文档
 
 - [产品知识模板](products-template.md)
-- [测试工程师技能文档](../../skills/test-engineer/README.md)
+- [测试工程师技能文档](../../plugins/testing/skills/test-case-engineer/README.md)
