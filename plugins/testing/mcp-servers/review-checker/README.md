@@ -6,7 +6,7 @@
 
 ## 简介
 
-本 MCP Server 是 testing-bundle v3.1.1 的配套组件，位于 `plugins/testing/mcp-servers/review-checker/`。
+本 MCP Server 是 testing-bundle 的配套组件，位于 `plugins/testing/mcp-servers/review-checker/`。
 
 **本质**：将 review-mode.md R2 表的 10 维度判定规则实现为机器可校验的正则/阈值检查，不依赖 LLM 推理这些本该确定的事。
 

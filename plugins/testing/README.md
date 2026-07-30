@@ -6,7 +6,7 @@
 
 ## 版本
 
-**当前版本**：v3.1.1（详见 [skills/testing-bundle/CHANGELOG.md](skills/testing-bundle/CHANGELOG.md)）
+**版本历史**：详见 [skills/testing-bundle/CHANGELOG.md](skills/testing-bundle/CHANGELOG.md)（当前版本以 skill frontmatter 与 plugin manifest 为准）
 
 ## 能力矩阵
 
@@ -29,7 +29,7 @@
                          │
                          ▼
               ┌─────────────────────────┐
-              │   testing-bundle v3.1.1 │  路由层（只路由，不实现能力）
+              │   testing-bundle        │  路由层（只路由，不实现能力）
               └───────────┬─────────────┘
                           │ 5-way 意图判断
         ┌─────────┬───────┼───────┬───────────┬──────────────┐

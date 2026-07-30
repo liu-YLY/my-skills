@@ -22,7 +22,7 @@ keywords:
 
 # Testing Bundle
 
-测试能力 bundle 入口 v3.1.1：统一路由到 5 个核心子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer），另含第 6 个协同 skill change-impact-analyzer（链 6，随 testing plugin 整体安装获得）。
+测试能力 bundle 入口：统一路由到 5 个核心子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer），另含第 6 个协同 skill change-impact-analyzer（链 6，随 testing plugin 整体安装获得）。
 
 ## 适用范围
 
@@ -45,7 +45,7 @@ keywords:
                          │
                          ▼
               ┌─────────────────────────┐
-              │   testing-bundle v3.1.1 │  路由层（只路由，不实现能力）
+              │   testing-bundle        │  路由层（只路由，不实现能力）
               └───────────┬─────────────┘
                           │ 5-way 意图判断
         ┌─────────┬───────┼───────┬───────────┬──────────────┐
