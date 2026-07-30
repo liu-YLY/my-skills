@@ -38,6 +38,20 @@ repos:
         args: ['--allow-multiple-documents']
 
   # ============================================================
+  # 本地 skill 结构一致性校验（只读，不修改文件）
+  # 在写入时拦截：死文件/漏索引、幽灵模块名、SKILL_ROOT 路径漂移
+  # 与 CI 的 "Check skill consistency" 步骤同源
+  # ============================================================
+  - repo: local
+    hooks:
+      - id: check-skill-consistency
+        name: 校验 skill 结构一致性
+        entry: python scripts/check-skill-consistency.py
+        language: system
+        pass_filenames: false
+        files: ^plugins/.*\.md$
+
+  # ============================================================
   # Conventional Commits 校验
   # 对应 rules/git-commit-message.md 与 .trae/rules/git-commit-message.md
   # type 必须为：feat/fix/docs/style/refactor/perf/test/chore/ci/build/revert

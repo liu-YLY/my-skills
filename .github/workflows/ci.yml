@@ -81,3 +81,6 @@ jobs:
 
       - name: Check markdown link integrity
         run: python scripts/check-md-links.py
+
+      - name: Check skill consistency
+        run: python scripts/check-skill-consistency.py
