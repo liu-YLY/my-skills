@@ -149,34 +149,6 @@ keywords:
 
 三种正文格式：fields / rows / params，详见 [layout/layout-modules.md](layout/layout-modules.md) §二。
 
-```markdown
-:::hero
-variant: editorial
-eyebrow: 深度观察
-title: 高级排版服务阅读决策
-subtitle: 主题决定气质，模块决定读者能不能看懂
-:::
-
-:::steps[落地步骤]
-01 | 发现模块 | layout list 列出所有可用模块
-02 | 查看规格 | layout show 确认字段和示例
-03 | 写进文章 | 直接粘贴 :::module 语法
-:::
-
-:::columns{columns=2 gap=16}
-第一列内容
----
-第二列内容
-:::
-
-:::verdict
-eyebrow: 最终判断
-title: 真正的护城河不是模块数量，而是品牌表达系统
-body: 每个模块必须服务一个真实的阅读任务，否则只是换皮。
-note: 适合观点文、复盘、方案结论
-:::
-```
-
 > 完整模块规范和示例：[layout/layout-modules.md](layout/layout-modules.md)
 > 模块 CSS 样式：[layout/modules-base.css](layout/modules-base.css)
 
