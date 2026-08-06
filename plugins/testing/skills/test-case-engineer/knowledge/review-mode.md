@@ -318,6 +318,9 @@ R1 解析 diff 用例 → R2 10 维度评审（仅针对变更用例）→ 🔴 
 ```
 
 **R1 差异**：
+
+> **安全提示**：执行 git diff 前，必须遵守 [../integrations/quickstart.md](../integrations/quickstart.md)「安全约束」章节的 git diff 范围安全规则。
+
 1. 执行 `git diff <range> -- <用例文件路径>` 提取变更内容
 2. 从 diff 中识别新增（`+`）和修改的用例（按用例 ID 匹配前后版本）
 3. 仅将变更用例纳入 R2 评审范围；未变更用例不评审
