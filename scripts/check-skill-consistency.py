@@ -94,6 +94,13 @@ SHELL_CMD_PATTERNS = [
 SHELL_CMD_RE = re.compile('|'.join(SHELL_CMD_PATTERNS), re.IGNORECASE)
 SECURITY_HEADING_RE = re.compile(r'^##\s+安全约束\b', re.MULTILINE)
 SECURITY_REF_RE = re.compile(r'安全约束|安全提示', re.MULTILINE)
+# Fenced code block: ``` ... ``` or ~~~ ... ~~~ (captures content incl. language tag)
+FENCED_CODE_BLOCK_RE = re.compile(
+    r'^(?:```|~~~)[^\n]*\n(.*?)^(?:```|~~~)\s*$',
+    re.MULTILINE | re.DOTALL,
+)
+# Inline code: `...` (single backtick, not part of fenced block)
+INLINE_CODE_RE = re.compile(r'`([^`\n]+)`')
 
 # --- Core file line count (invariant 6) ---
 CORE_LINE_LIMIT = 500
@@ -107,6 +114,37 @@ def iter_skill_dirs(root: Path):
 
 def _read(path: Path) -> str:
     return path.read_text(encoding='utf-8', errors='replace')
+
+
+def _extract_code_segments(text: str) -> str:
+    """Extract only code blocks and inline code from markdown text.
+
+    This filters out plain-text descriptions of commands (e.g. "git diff" in
+    a flowchart or paragraph) so that only actual command references inside
+    backticks or fenced code blocks are checked for shell execution points.
+
+    Within fenced code blocks, lines containing CJK characters are excluded
+    since real shell commands do not contain CJK text — this filters out
+    ASCII-art flowcharts that happen to be wrapped in code fences.
+    """
+    segments: list[str] = []
+
+    # Collect fenced code block contents and mask them out of inline scan
+    masked = text
+    for m in FENCED_CODE_BLOCK_RE.finditer(text):
+        block = m.group(1)
+        # Filter out lines with CJK characters (flowcharts, not commands)
+        for line in block.splitlines():
+            if not re.search(r'[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]', line):
+                segments.append(line)
+        # Replace the entire fenced block (incl. markers) with placeholders
+        masked = masked.replace(m.group(0), '\n' * m.group(0).count('\n'))
+
+    # Collect inline code from the remaining text (fenced blocks removed)
+    for m in INLINE_CODE_RE.finditer(masked):
+        segments.append(m.group(1))
+
+    return '\n'.join(segments)
 
 
 def check_reachability(skill_dir: Path, root: Path) -> list[str]:
@@ -367,7 +405,8 @@ def check_security_coverage(skill_dir: Path, root: Path) -> list[str]:
             if '.venv-tools' in str(md):
                 continue
             text = _read(md)
-            if SHELL_CMD_RE.search(text):
+            code_text = _extract_code_segments(text)
+            if SHELL_CMD_RE.search(code_text):
                 shell_files.append((md, text))
 
     if not shell_files:
