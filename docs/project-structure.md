@@ -36,7 +36,7 @@ my-skill/
 │   │   │   │   ├── knowledge/     # risk-matrix / test-pyramid / entry-exit / templates
 │   │   │   │   ├── integrations/
 │   │   │   │   └── test-prompts.json
-│   │   │   ├── test-case-engineer/  # 测试用例工程师 v8.2.0
+│   │   │   ├── test-case-engineer/  # 测试用例工程师 v8.3.0
 │   │   │   │   ├── SKILL.md
 │   │   │   │   ├── test-case-engineer-core.md
 │   │   │   │   ├── README.md
