@@ -414,18 +414,14 @@ def check_security_coverage(skill_dir: Path, root: Path) -> list[str]:
 
     errors = []
 
-    # Check that quickstart.md has a 安全约束 section
-    has_security_section = False
-    quickstart_text = ''
+    # Check that quickstart.md has a 安全约束 section (only if it exists)
     if quickstart.exists():
         quickstart_text = _read(quickstart)
-        has_security_section = bool(SECURITY_HEADING_RE.search(quickstart_text))
-
-    if not has_security_section:
-        errors.append(
-            f"{quickstart.relative_to(root).as_posix()}: missing '## 安全约束' "
-            f"section (shell commands found in {len(shell_files)} file(s))"
-        )
+        if not SECURITY_HEADING_RE.search(quickstart_text):
+            errors.append(
+                f"{quickstart.relative_to(root).as_posix()}: missing '## 安全约束' "
+                f"section (shell commands found in {len(shell_files)} file(s))"
+            )
 
     # Check that each file with shell commands has a 安全提示/安全约束 reference
     for md, text in shell_files:
