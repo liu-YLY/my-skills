@@ -168,12 +168,8 @@ test-case-engineer/
 │       ├── products-template.md # 知识模板
 │       └── example.md          # 示例
 │
-├── integrations/               # 集成说明
-│   └── quickstart.md           # 本地操作速查
-│
-└── docs/                       # 文档目录
-    ├── skill-analysis.md       # 技能分析
-    └── user-guide.md           # 用户指南
+└── integrations/               # 集成说明
+    └── quickstart.md           # 本地操作速查
 ```
 
 > 文档转换脚本为插件级共享，位于 `plugins/testing/scripts/convert_docs.py`。
@@ -182,14 +178,14 @@ test-case-engineer/
 
 | 文件 | 何时查阅 |
 |------|---------|
-| test-case-engineer-core.md | **始终必读**（四阶段核心流程） |
+| test-case-engineer-core.md | **默认/快速/探索式模式必读**（四阶段核心流程；评审模式不读，详见 review-mode.md） |
 | knowledge/test-levels.md | 阶段 2/3 强制读（测试分层策略） |
 | knowledge/test-standards.md | 阶段 3 写用例 + 阶段 4 自检 |
 | knowledge/bug-patterns.md | 阶段 2 强制读（防御性测试点补充） |
 | knowledge/project-knowledge.md | 阶段 1 强制读 |
 | knowledge/prompt-strategy.md | 阶段 3 必读（AI 生成模式） |
 | knowledge/anti-patterns.md | 阶段 3/4 自检（反模式黑名单） |
-| knowledge/review-mode.md | 评审模式必读（10 维度评审，含 v8.2.0 新增第 10 维度「语义一致性冲突检测」） |
+| knowledge/review-mode.md | 评审模式必读（10 维度评审） |
 
 ## 编写铁律
 
