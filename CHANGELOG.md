@@ -10,10 +10,7 @@
 ### Added
 - 新增实施计划文档：`docs/superpowers/plans/2026-07-21-skill-consistency-and-infra.md`
 - 新增工程化基础设施：LICENSE / CONTRIBUTING.md / .github 模板 / CI workflow
-
-### Changed
-- wechat-formatter knowledge 文件数从 1 个补齐到 3 个（新增 module-design.md / brand-profile-spec.md）
-- wechat-formatter 新增 integrations/quickstart.md 与 2 个 sample-output（apple / cyber）
+- test-case-engineer 升级到 v8.3.0：生成流程新增「原文问题清单」机制——阶段 1 输出模板新增「原文问题清单」字段（序号/原文位置/问题类型/问题描述/影响范围/处置），阶段 1/2/3/4 发现需求/代码/口述原文问题（模糊/矛盾/缺失/错误）时回填该清单，阶段 4 行为约束从"发现遗漏直接补充到用例，不另外说明"调整为"源于原文问题的遗漏同时回填清单"，阶段 4 自检清单新增「原文问题回填」检查项
 
 ## [testing-bundle-3.1.1] - 2026-07-22
 
