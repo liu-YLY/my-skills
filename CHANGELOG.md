@@ -11,6 +11,14 @@
 - 新增实施计划文档：`docs/superpowers/plans/2026-07-21-skill-consistency-and-infra.md`
 - 新增工程化基础设施：LICENSE / CONTRIBUTING.md / .github 模板 / CI workflow
 - test-case-engineer 升级到 v8.3.0：生成流程新增「原文问题清单」机制——阶段 1 输出模板新增「原文问题清单」字段（序号/原文位置/问题类型/问题描述/影响范围/处置），阶段 1/2/3/4 发现需求/代码/口述原文问题（模糊/矛盾/缺失/错误）时回填该清单，阶段 4 行为约束从"发现遗漏直接补充到用例，不另外说明"调整为"源于原文问题的遗漏同时回填清单"，阶段 4 自检清单新增「原文问题回填」检查项
+- `check-skill-consistency.py` 新增 3 项检查：模式定义一致性（core.md vs SKILL.md vs README.md）、安全约束覆盖（shell 执行点是否有安全引用）、core.md 行数阈值（≤500 行）
+
+### Changed
+- test-case-engineer P0 修复：删除 docs/ 过时文件（skill-analysis.md / user-guide.md）；修正 README.md 与 SKILL.md 模式必读范围矛盾；新增 prompt injection 防御（quickstart.md 安全约束章节 + knowledge 文件安全引用）
+- test-case-engineer P1 修复：core.md 拆分（715→494 行，编写铁律迁移至 writing-rules.md）；test-prompts.json 结构化 expectations + trigger_evals；补全回归验证清单模式定义；README.md 去重（258→157 行）；声明增量评审 git 仓库前置条件
+- test-case-engineer SKILL.md 同步回归验证清单模式（四种→五种模式、模式读取矩阵、知识库表、快速上手）
+- bug-analyzer quickstart.md 新增「安全约束」章节（文件路径消毒 + 禁止事项）
+- change-impact-analyzer diff-modes.md 新增「安全约束：命令注入防护」章节（参数校验 + 禁止拼接）
 
 ## [testing-bundle-3.1.1] - 2026-07-22
 
