@@ -103,7 +103,7 @@ Skill 在以下位置执行 shell 命令但无安全约束：
 **位置**: L36（步骤 3 执行转换前）
 **操作**: 在「步骤 3」前插入安全提示：
 ```markdown
-> **安全提示**：执行转换命令前，必须遵守 [integrations/quickstart.md](../integrations/quickstart.md)「安全约束」章节的路径消毒规则。用户提供的文件路径不得包含 shell 元字符。
+> **安全提示**：执行转换命令前，必须遵守 [integrations/quickstart.md](../../plugins/testing/skills/test-case-engineer/integrations/quickstart.md)「安全约束」章节的路径消毒规则。用户提供的文件路径不得包含 shell 元字符。
 ```
 **原因**: 在文档转换的实际执行点提醒安全约束
 
@@ -113,7 +113,7 @@ Skill 在以下位置执行 shell 命令但无安全约束：
 **位置**: L321（R1 执行 git diff 前）
 **操作**: 在「执行 `git diff <range> -- <用例文件路径>` 提取变更内容」前插入安全提示：
 ```markdown
-> **安全提示**：执行 git diff 前，必须遵守 [../integrations/quickstart.md](../integrations/quickstart.md)「安全约束」章节的 git diff 范围安全规则。
+> **安全提示**：执行 git diff 前，必须遵守 [integrations/quickstart.md](../../plugins/testing/skills/test-case-engineer/integrations/quickstart.md)「安全约束」章节的 git diff 范围安全规则。
 ```
 **原因**: 在增量评审的 git diff 执行点提醒安全约束
 
