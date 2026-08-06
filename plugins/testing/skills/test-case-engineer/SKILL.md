@@ -80,7 +80,8 @@ keywords:
 | [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板）；评审模式 R2 第 10 维度 SemanticFacts 抽取提示词 |
 | [knowledge/review-mode.md](knowledge/review-mode.md) | **评审模式触发时必读**（10 维度评审工作流 + 评审度量报告 + 评审修订闭环 + 增量评审子模式 + 多格式输入 + 评审报告文件化 + 语义一致性维度） |
 | [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **阶段 3/4 自检时对照**（反例黑名单） |
-| [knowledge/writing-examples.md](knowledge/writing-examples.md) | **阶段 3 写用例拿不准格式时查阅**（title/steps/expected_results 好坏写法对照示例；铁律条文本体在 core.md） |
+| [knowledge/writing-examples.md](knowledge/writing-examples.md) | **阶段 3 写用例拿不准格式时查阅**（title/steps/expected_results 好坏写法对照示例；铁律条文本体在 writing-rules.md） |
+| [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（分层测试策略 / 通用格式 / ID 生成规则 / 字段说明 / 编写铁律 / 拆分合并策略 / 效率度量模板） |
 | [knowledge/products/](knowledge/products/) | **阶段 1 必须加载**（产品专项业务知识，若存在对应产品知识文件） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
 
@@ -88,7 +89,7 @@ keywords:
 
 | 模式 | 首轮可读取 | 延迟读取（进入对应阶段/步骤后） |
 |------|-----------|-------------------------------|
-| 默认生成 | 入口（本文件）+ core.md 阶段 1 需求理解规则 | test-levels.md（阶段 2）、bug-patterns.md（阶段 2）、test-standards.md（阶段 3）、prompt-strategy.md（阶段 3）、writing-examples.md（阶段 3，拿不准格式时）、anti-patterns.md（阶段 4 自检） |
+| 默认生成 | 入口（本文件）+ core.md 阶段 1 需求理解规则 | test-levels.md（阶段 2）、bug-patterns.md（阶段 2）、writing-rules.md（阶段 3 必读）、test-standards.md（阶段 3）、prompt-strategy.md（阶段 3）、writing-examples.md（阶段 3，拿不准格式时）、anti-patterns.md（阶段 4 自检） |
 | 快速生成 | 入口 + core.md 最小测试点框架 | test-standards.md（完整标准）、anti-patterns.md（自检） |
 | 探索式 | 入口 + core.md 探索章程模板 | 领域检查表（bug-patterns.md 对应章节） |
 | 评审 | 入口 + review-mode.md + test-standards.md（优先级区间） | prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅用户确认进入修订后读 core.md 生成流程） |
