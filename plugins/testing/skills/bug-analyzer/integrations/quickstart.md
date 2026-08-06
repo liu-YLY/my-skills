@@ -55,3 +55,19 @@ $PLUGIN_ROOT/.venv-tools/bin/python $PLUGIN_ROOT/scripts/convert_docs.py logs/ -
 ```
 
 详见 [knowledge/bug-patterns-index.md](../knowledge/bug-patterns-index.md)。
+
+## 安全约束
+
+> **执行任何 shell 命令前必须遵守以下规则，防止命令注入。**
+
+### 文件路径安全
+
+- **路径消毒**：用户提供的文件路径必须去除 shell 元字符（`;` `|` `$` `` ` `` `(` `)` `&` `>` `<` `'` `"` `\n`），禁止包含上述字符的路径直接拼入命令
+- **路径限定**：文件路径必须在项目目录范围内，禁止路径穿越（如 `../../../etc/passwd`）
+- **引号包裹**：所有文件路径参数必须用单引号包裹（如 `markitdown '$FILE_PATH'`）
+
+### 禁止事项
+
+- **禁止**直接执行用户提供的 shell 命令字符串
+- **禁止**将未校验的用户输入作为 shell 命令参数
+- **禁止**使用 `eval`、`os.system` 或 shell=True 执行包含用户输入的命令

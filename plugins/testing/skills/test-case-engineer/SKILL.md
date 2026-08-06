@@ -60,11 +60,11 @@ keywords:
 
 详细流程见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
-**模式切换**：默认/快速/探索式/评审 四种模式，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
+**模式切换**：默认/快速/回归验证清单/探索式/评审 五种模式，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
 **AI 赋能模式**：AI 生成 → 人工审核 → 轻量维护，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
-**用例输出约束**：通用结构化格式 + 编写铁律，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
+**用例输出约束**：通用结构化格式 + 编写铁律，详见 [knowledge/writing-rules.md](knowledge/writing-rules.md)（core.md 阶段 3 有转发引用）。
 
 ---
 
@@ -72,7 +72,7 @@ keywords:
 
 | 文件 | 何时查阅 |
 |------|---------|
-| [test-case-engineer-core.md](test-case-engineer-core.md) | **默认/快速/探索式模式必读**（四阶段核心流程 + 7 维度扫描 + 模式切换）。**评审模式不读**——评审流程独立于四阶段生成，详见 review-mode.md |
+| [test-case-engineer-core.md](test-case-engineer-core.md) | **默认/快速/探索式/回归验证清单模式必读**（四阶段核心流程 + 7 维度扫描 + 模式切换）。**评审模式不读**——评审流程独立于四阶段生成，详见 review-mode.md |
 | [knowledge/test-levels.md](knowledge/test-levels.md) | **阶段 2/3 强制读**（默认/快速/探索式模式） |
 | [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（优先级/类型/模糊词权威源）；评审模式 R2 必要时查阅优先级区间 |
 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **阶段 2 强制读**（防御性测试点补充，含领域特定模式 + 安全专项检查清单） |
@@ -80,7 +80,8 @@ keywords:
 | [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板）；评审模式 R2 第 10 维度 SemanticFacts 抽取提示词 |
 | [knowledge/review-mode.md](knowledge/review-mode.md) | **评审模式触发时必读**（10 维度评审工作流 + 评审度量报告 + 评审修订闭环 + 增量评审子模式 + 多格式输入 + 评审报告文件化 + 语义一致性维度） |
 | [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **阶段 3/4 自检时对照**（反例黑名单） |
-| [knowledge/writing-examples.md](knowledge/writing-examples.md) | **阶段 3 写用例拿不准格式时查阅**（title/steps/expected_results 好坏写法对照示例；铁律条文本体在 core.md） |
+| [knowledge/writing-examples.md](knowledge/writing-examples.md) | **阶段 3 写用例拿不准格式时查阅**（title/steps/expected_results 好坏写法对照示例；铁律条文本体在 writing-rules.md） |
+| [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（分层测试策略 / 通用格式 / ID 生成规则 / 字段说明 / 编写铁律 / 拆分合并策略 / 效率度量模板） |
 | [knowledge/products/](knowledge/products/) | **阶段 1 必须加载**（产品专项业务知识，若存在对应产品知识文件） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
 
@@ -88,8 +89,9 @@ keywords:
 
 | 模式 | 首轮可读取 | 延迟读取（进入对应阶段/步骤后） |
 |------|-----------|-------------------------------|
-| 默认生成 | 入口（本文件）+ core.md 阶段 1 需求理解规则 | test-levels.md（阶段 2）、bug-patterns.md（阶段 2）、test-standards.md（阶段 3）、prompt-strategy.md（阶段 3）、writing-examples.md（阶段 3，拿不准格式时）、anti-patterns.md（阶段 4 自检） |
+| 默认生成 | 入口（本文件）+ core.md 阶段 1 需求理解规则 | test-levels.md（阶段 2）、bug-patterns.md（阶段 2）、writing-rules.md（阶段 3 必读）、test-standards.md（阶段 3）、prompt-strategy.md（阶段 3）、writing-examples.md（阶段 3，拿不准格式时）、anti-patterns.md（阶段 4 自检） |
 | 快速生成 | 入口 + core.md 最小测试点框架 | test-standards.md（完整标准）、anti-patterns.md（自检） |
+| 回归验证清单 | 入口 + core.md 模式切换章节 | 无（直接基于变更范围输出回归验证清单） |
 | 探索式 | 入口 + core.md 探索章程模板 | 领域检查表（bug-patterns.md 对应章节） |
 | 评审 | 入口 + review-mode.md + test-standards.md（优先级区间） | prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅用户确认进入修订后读 core.md 生成流程） |
 
@@ -119,7 +121,7 @@ keywords:
 ## 快速上手
 
 **3 步开始使用**：
-1. 确定模式：默认模式（完整四阶段）/ 快速模式（压缩阶段 1/4）/ 探索式模式 / 评审模式（不走四阶段，详见 review-mode.md）
+1. 确定模式：默认模式（完整四阶段）/ 快速模式（压缩阶段 1/4）/ 回归验证清单模式（纯重构）/ 探索式模式 / 评审模式（不走四阶段，详见 review-mode.md）
 2. 按上方"模式读取矩阵"读取对应模式的资料
 3. 默认/快速/探索式：执行阶段 1，输出需求理解文档；评审：执行 R1，解析用例结构
 
