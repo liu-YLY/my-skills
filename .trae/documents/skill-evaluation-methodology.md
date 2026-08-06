@@ -319,11 +319,11 @@ Tier 1 (免费) 确定性 —— 脚本/正则/链接检查/版本检查/结构�
 
 ### 3.8 应用示例（TRAE skill 作为落地参考，非设计基础）
 
-工作区 [plugins/testing/](file:///workspace/plugins/testing/) 的 8 个 skill 可作为测评体系的落地参考：
-- [bug-analyzer](file:///workspace/plugins/testing/skills/bug-analyzer/SKILL.md)：演示 A5 反例维度（含 3 类反例表 + 引用 SkillLens 论文 + 触发检查时机）
-- [testing-bundle](file:///workspace/plugins/testing/skills/testing-bundle/SKILL.md)：演示元 skill 的 B1.3 路由正确性（6 路路由决策表）
-- [wechat-formatter](file:///workspace/plugins/wechat-formatter/skills/wechat-formatter/SKILL.md)：演示 A4.5 模式切换 + 资源组织
-- [test-prompts.json](file:///workspace/plugins/testing/skills/bug-analyzer/test-prompts.json)：演示测试集三类用例结构（id 1-7 正例 / id 8 反例 / id 9-10 负例）
+工作区 [plugins/testing/](../../plugins/testing/) 的 8 个 skill 可作为测评体系的落地参考：
+- [bug-analyzer](../../plugins/testing/skills/bug-analyzer/SKILL.md)：演示 A5 反例维度（含 3 类反例表 + 引用 SkillLens 论文 + 触发检查时机）
+- [testing-bundle](../../plugins/testing/skills/testing-bundle/SKILL.md)：演示元 skill 的 B1.3 路由正确性（6 路路由决策表）
+- [wechat-formatter](../../plugins/wechat-formatter/skills/wechat-formatter/SKILL.md)：演示 A4.5 模式切换 + 资源组织
+- [test-prompts.json](../../plugins/testing/skills/bug-analyzer/test-prompts.json)：演示测试集三类用例结构（id 1-7 正例 / id 8 反例 / id 9-10 负例）
 
 > 这些示例用于评分模板的填写演示，方法论本身不依赖 TRAE 格式。
 
