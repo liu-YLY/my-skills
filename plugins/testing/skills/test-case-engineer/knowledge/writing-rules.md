@@ -97,7 +97,7 @@
 |------|------|------|
 | **ID** | 是 | `TC_{模块}_{功能}_{三位序号}`，作为标题 |
 | **标题** | 是 | 建议 40 字符以内（软指导），动宾结构 `{被测对象} - {具体行为}` |
-| **优先级** | 是 | P0/P1/P2/P3，定义与比例见 [knowledge/test-standards.md](test-standards.md) |
+| **优先级** | 是 | P0/P1/P2/P3，定义与比例见 [test-standards.md](test-standards.md) |
 | **类型** | 是 | functional / ui / security / performance / compatibility / usability / accessibility / observability |
 | **需求追溯** | 否 | 需求 ID（Story ID）和测试点编号（TP 编号） |
 | **来源** | 否 | 用例来源：ai-generated / manual / ai-reviewed |

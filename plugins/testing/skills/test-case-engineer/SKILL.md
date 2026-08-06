@@ -60,11 +60,11 @@ keywords:
 
 详细流程见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
-**模式切换**：默认/快速/探索式/评审 四种模式，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
+**模式切换**：默认/快速/回归验证清单/探索式/评审 五种模式，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
 **AI 赋能模式**：AI 生成 → 人工审核 → 轻量维护，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
-**用例输出约束**：通用结构化格式 + 编写铁律，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
+**用例输出约束**：通用结构化格式 + 编写铁律，详见 [knowledge/writing-rules.md](knowledge/writing-rules.md)（core.md 阶段 3 有转发引用）。
 
 ---
 
@@ -72,7 +72,7 @@ keywords:
 
 | 文件 | 何时查阅 |
 |------|---------|
-| [test-case-engineer-core.md](test-case-engineer-core.md) | **默认/快速/探索式模式必读**（四阶段核心流程 + 7 维度扫描 + 模式切换）。**评审模式不读**——评审流程独立于四阶段生成，详见 review-mode.md |
+| [test-case-engineer-core.md](test-case-engineer-core.md) | **默认/快速/探索式/回归验证清单模式必读**（四阶段核心流程 + 7 维度扫描 + 模式切换）。**评审模式不读**——评审流程独立于四阶段生成，详见 review-mode.md |
 | [knowledge/test-levels.md](knowledge/test-levels.md) | **阶段 2/3 强制读**（默认/快速/探索式模式） |
 | [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（优先级/类型/模糊词权威源）；评审模式 R2 必要时查阅优先级区间 |
 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **阶段 2 强制读**（防御性测试点补充，含领域特定模式 + 安全专项检查清单） |
@@ -91,6 +91,7 @@ keywords:
 |------|-----------|-------------------------------|
 | 默认生成 | 入口（本文件）+ core.md 阶段 1 需求理解规则 | test-levels.md（阶段 2）、bug-patterns.md（阶段 2）、writing-rules.md（阶段 3 必读）、test-standards.md（阶段 3）、prompt-strategy.md（阶段 3）、writing-examples.md（阶段 3，拿不准格式时）、anti-patterns.md（阶段 4 自检） |
 | 快速生成 | 入口 + core.md 最小测试点框架 | test-standards.md（完整标准）、anti-patterns.md（自检） |
+| 回归验证清单 | 入口 + core.md 模式切换章节 | 无（直接基于变更范围输出回归验证清单） |
 | 探索式 | 入口 + core.md 探索章程模板 | 领域检查表（bug-patterns.md 对应章节） |
 | 评审 | 入口 + review-mode.md + test-standards.md（优先级区间） | prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅用户确认进入修订后读 core.md 生成流程） |
 
@@ -120,7 +121,7 @@ keywords:
 ## 快速上手
 
 **3 步开始使用**：
-1. 确定模式：默认模式（完整四阶段）/ 快速模式（压缩阶段 1/4）/ 探索式模式 / 评审模式（不走四阶段，详见 review-mode.md）
+1. 确定模式：默认模式（完整四阶段）/ 快速模式（压缩阶段 1/4）/ 回归验证清单模式（纯重构）/ 探索式模式 / 评审模式（不走四阶段，详见 review-mode.md）
 2. 按上方"模式读取矩阵"读取对应模式的资料
 3. 默认/快速/探索式：执行阶段 1，输出需求理解文档；评审：执行 R1，解析用例结构
 
