@@ -20,15 +20,14 @@ keywords:
 
 # 微信公众号排版 Skill
 
-你是一位专业的微信公众号排版设计师，核心价值：**理解文章内容，匹配最佳风格，输出可直接发布的高质量排版**。
+你是一位微信公众号排版设计师：理解内容 → 匹配风格 → 输出可发布 Markdown。
 
-> **阅读策略**：本文件为**纯索引 + 核心决策树**。风格模板详情、排版规则细则全部下沉到子文件。先读子文件首部「何时阅读」摘要再决定是否全文加载，避免上下文浪费。
+> **阅读策略**：本文件为**纯索引 + 决策树**。模板详情/规则细则下沉到子文件；先读子文件「何时阅读」摘要再决定是否全文加载。
 
 ## 适用范围
 
-**适用**：互联网/技术领域文章排版，包括编程知识、测试理论、架构设计、技术分享、经验复盘、行业观察等技术类内容。
-
-**不适用**：纯文学创作、诗歌、小说等非技术类内容（可降级为通用风格处理）。
+**适用**：互联网/技术文章排版（编程知识/测试理论/架构设计/技术分享/经验复盘/行业观察）。
+**不适用**：纯文学/诗歌/小说等非技术类（降级为通用风格）。
 
 ## SKILL_ROOT
 
@@ -44,11 +43,11 @@ keywords:
 
 | 阶段 | 详细指令 | 关键约束 | 强制读取 |
 |------|----------|----------|----------|
-| 1 | [references/formatting-rules.md](references/formatting-rules.md) §1 | 必须识别文章要素（标题层级、代码块、列表、要点）并分析内容特征 | 无（内联处理） |
-| 🔴 2 | [templates/template-index.md](templates/template-index.md) | **自动匹配最合适的 2-3 种风格，展示推荐结果让用户选择** | [templates/template-index.md](templates/template-index.md) |
-| 3 | 各风格模板文件 | 严格按模板规则转换，不自创格式 | 所选风格对应的模板文件 |
-| 🔴 4 | [references/formatting-rules.md](references/formatting-rules.md) §4 | 覆盖度 + 可读性 + 公众号兼容性三项检查 | [references/wechat-markdown.md](references/wechat-markdown.md) + [knowledge/wechat-traps.md](knowledge/wechat-traps.md) |
-| 5 | [scripts/md2wechat.py](scripts/md2wechat.py) | 用户触发时执行，生成带内联样式和"复制"按钮的 HTML | 无 |
+| 1 | [references/formatting-rules.md](references/formatting-rules.md) §1 | 识别要素（标题层级/代码块/列表/要点）+ 内容特征 | 无（内联处理） |
+| 🔴 2 | [templates/template-index.md](templates/template-index.md) | **自动匹配 2-3 种风格，展示给用户选择** | [templates/template-index.md](templates/template-index.md) |
+| 3 | 各风格模板文件 | 严格按模板转换，不自创格式 | 所选风格对应的模板文件 |
+| 🔴 4 | [references/formatting-rules.md](references/formatting-rules.md) §4 | 覆盖度/可读性/公众号兼容性三项检查 | [references/wechat-markdown.md](references/wechat-markdown.md) + [knowledge/wechat-traps.md](knowledge/wechat-traps.md) |
+| 5 | [scripts/md2wechat.py](scripts/md2wechat.py) | 用户触发，生成带内联样式 + 复制按钮的 HTML | 无 |
 
 ### 🔴 CHECKPOINT 定义
 
@@ -61,13 +60,13 @@ keywords:
 
 | 模式 | 触发条件 | 行为 |
 |------|---------|------|
-| **默认** | 用户未指定风格 | 完整五阶段：分析 → 自动匹配风格 → 用户确认 → 排版 → 校验 → 生成 HTML |
-| **快速** | 用户已明确指定风格代号（如"用 tech-blog 排版"） | 跳过阶段 2；阶段 1 仅输出简版分析（要素统计 + 一句话定性），不做详细元信息提取；阶段 4 仅做兼容性检查，跳过覆盖度和风格一致性检查；阶段 5 同默认 |
-| **仅排版** | 用户明确不需要 HTML 输出 | 完成阶段 1-4 后结束，不执行阶段 5 |
+| **默认** | 用户未指定风格 | 完整五阶段 |
+| **快速** | 用户指定风格代号（如"用 tech-blog 排版"） | 跳过阶段 2；阶段 1 简版（要素统计+一句话定性）；阶段 4 仅兼容性检查；阶段 5 同默认 |
+| **仅排版** | 用户明确不需要 HTML | 完成阶段 1-4 后结束 |
 
 ### 自动风格匹配规则
 
-阶段 1 分析内容后，根据以下特征自动推荐最合适的 2-3 种风格：
+阶段 1 后按以下特征推荐 2-3 种风格：
 
 | 文章特征 | 推荐风格（优先级从高到低） |
 |---------|--------------------------|
@@ -116,63 +115,53 @@ keywords:
 
 ## 高级排版模块
 
-**新功能**：支持 `:::module` 语法，提供 9 大类预定义视觉卡片组件，让文章更具视觉层级和品牌感。
+`:::module` 语法提供 9 大类预定义视觉卡片组件，增强视觉层级与品牌感。
 
 ### 4 件事原则
 
-每个模块只服务这 4 件事之一：
+每个模块服务 4 件事之一：
 
 | 目的 | 解决什么 | 代表模块 |
 |------|---------|---------|
-| **attention** | 让读者先知道值不值得读 | hero, cards, verdict |
-| **readability** | 让手机窄屏阅读不累 | toc, steps, part |
-| **memorability** | 让读者记住一个判断或品牌 | verdict, manifesto, author-card |
-| **conversion** | 让读者愿意收藏/关注/咨询/转发/购买 | cta, faq, checklist |
+| **attention** | 判断值不值得读 | hero, cards, verdict |
+| **readability** | 手机窄屏阅读体验 | toc, steps, part |
+| **memorability** | 记住判断/品牌 | verdict, manifesto, author-card |
+| **conversion** | 促进收藏/关注/咨询/转发/购买 | cta, faq, checklist |
 
-**核心原则**：选最少的模块，每件事做好一个。一篇文章 hero 只有一个，verdict 只有一个，cta 只有一个。不要堆模块。
+**核心原则**：每件事一个模块。单篇 hero/verdict/cta 各 1 个，不堆砌。
 
 ### 9 大类模块速览
 
 | 类别 | 模块 | 用途 |
 |------|------|------|
-| **opening 开场类** | hero, toc, cards, part, label-title | 文章开篇第一屏 |
-| **infographic 信息图类** | metrics, compare, steps, timeline, infographic | 数据可视化展示 |
-| **judgment 判断类** | verdict, audience-fit, myth-fact, manifesto, bridge | 核心立场表达 |
-| **evidence 证据类** | quote, image-annotate, image-compare, image-steps, image-text | 支撑判断的证据 |
-| **conversion 行动类** | cta, faq, checklist, cases | 促进读者行动 |
-| **brand 品牌类** | author-card, brand-banner | 建立品牌识别度 |
-| **callout 提示类** | callout, highlight | 强调重要信息 |
-| **free-layout 自由布局类** | split, columns | 灵活布局选项 |
-| **interactive 交互类** | question, poll | 增加读者参与度 |
+| **opening 开场类** | hero, toc, cards, part, label-title | 开篇第一屏 |
+| **infographic 信息图类** | metrics, compare, steps, timeline, infographic | 数据可视化 |
+| **judgment 判断类** | verdict, audience-fit, myth-fact, manifesto, bridge | 核心立场 |
+| **evidence 证据类** | quote, image-annotate, image-compare, image-steps, image-text | 支撑判断 |
+| **conversion 行动类** | cta, faq, checklist, cases | 促行动 |
+| **brand 品牌类** | author-card, brand-banner | 品牌识别 |
+| **callout 提示类** | callout, highlight | 强调信息 |
+| **free-layout 自由布局类** | split, columns | 灵活布局 |
+| **interactive 交互类** | question, poll | 增加参与度 |
 
-### 模块语法示例
+### 模块语法
 
 三种正文格式：fields / rows / params，详见 [layout/layout-modules.md](layout/layout-modules.md) §二。
 
-> 完整模块规范和示例：[layout/layout-modules.md](layout/layout-modules.md)
-> 模块 CSS 样式：[layout/modules-base.css](layout/modules-base.css)
-> 模块设计原则与互斥规则（如 hero 单篇最多 1 个）：[knowledge/module-design.md](knowledge/module-design.md) §4.1（阶段 4 校验拦截时参阅）
+> 完整规范：[layout/layout-modules.md](layout/layout-modules.md) | CSS：[layout/modules-base.css](layout/modules-base.css) | 互斥规则（hero 单篇最多 1 个）：[knowledge/module-design.md](knowledge/module-design.md) §4.1
 
 ---
 
 ## Brand Profile 品牌配置
 
-**新功能**：支持品牌配置文件，让所有文章保持统一的视觉风格和品牌调性。
+品牌配置文件统一视觉风格、避免重复说明品牌偏好、按调性自动选模块。
 
-### 核心价值
+### 配置位置
 
-- **一致性**：所有文章保持统一的视觉风格
-- **效率**：无需每次重复说明品牌偏好
-- **个性化**：根据品牌调性自动选择最合适的模块和样式
+- 全局：`~/.config/md2wechat/brand.md`
+- 项目：`.brand.md`（项目根目录）
 
-### 配置文件位置
-
-Brand Profile 文件位于：
-
-- 全局配置：`~/.config/md2wechat/brand.md`
-- 项目配置：`.brand.md`（项目根目录）
-
-**优先级**：项目配置 `.brand.md` 优先级高于全局配置，相同字段以项目配置为准。
+**优先级**：`.brand.md` > `~/.config/md2wechat/brand.md`，相同字段以项目配置为准。
 
 ### 可配置项
 
@@ -195,9 +184,9 @@ Brand Profile 文件位于：
 
 ### 使用方法
 
-1. **自动读取**：AI 在排版时自动读取 Brand Profile 文件
-2. **手动指定**：用户在对话中指定使用品牌配置
-3. **创建配置**：AI 引导用户创建品牌配置文件
+1. 自动读取：排版时自动加载
+2. 手动指定：用户在对话中指定
+3. 创建配置：AI 引导用户创建
 
 > 完整配置指南：[brand/brand-profile.md](brand/brand-profile.md)（使用指南）| [knowledge/brand-profile-spec.md](knowledge/brand-profile-spec.md)（字段规范）
 
@@ -205,19 +194,19 @@ Brand Profile 文件位于：
 
 ## 排版输出关键约束
 
-- **输出格式**：Markdown 文件，可直接复制到微信公众号编辑器
-- **输出路径**：默认输出到用户原始文件同目录，文件名格式 `{原文件名}_formatted_{风格代号}.md`；若用户未指定输入文件路径，则输出到工作区根目录
-- **代码块**：统一使用三反引号 + 语言标注；公众号不支持的语言高亮需配合 [references/wechat-markdown.md](references/wechat-markdown.md) 中的兼容方案
-- **标题**：公众号最佳实践为二级标题 `##` 起步（`#` 与公众号标题重复），三级 `###` 用于小节
-- **段落长度**：手机屏幕每段不超过 5 行，多分段、多留白
-- **链接**：公众号不支持 Markdown 链接语法，排版时统一使用**脚注式链接**（文中用 `[N]` 标记，文末集中列出 URL），详见 [references/wechat-markdown.md](references/wechat-markdown.md) §1
-- **图片**：使用 `![描述](url)` 占位，提示用户替换为实际图片
+- **输出格式**：Markdown 文件，可直接复制到公众号编辑器
+- **输出路径**：与原文件同目录，文件名 `{原文件名}_formatted_{风格代号}.md`；未指定输入路径时输出到工作区根目录
+- **代码块**：三反引号 + 语言标注；不支持的语言高亮见 [references/wechat-markdown.md](references/wechat-markdown.md) 兼容方案
+- **标题**：`##` 起步（`#` 与公众号标题重复），`###` 用于小节
+- **段落长度**：手机每段 ≤5 行，多分段多留白
+- **链接**：脚注式（文中 `[N]`，文末集中列 URL），详见 [references/wechat-markdown.md](references/wechat-markdown.md) §1
+- **图片**：`![描述](url)` 占位，提示用户替换
 - **Emoji**：`casual-chat` 8-15 个，`cyber` 5-8 个，其他风格不超过 5 处
-- **字号**：默认中等（15px）。用户可指定小号（13px）或大号（17px），在排版结果头部注明字号建议
+- **字号**：默认 medium(15px)，可选 small(13px)/large(17px)，在结果头部注明
 - **字体样式**：粗体 `**重点**`、行内代码 `` `code` ``、引用 `>` 用于提示/注意
-- **一键生成 HTML（可选）**：阶段 5 使用 `scripts/md2wechat.py` 将 Markdown + CSS 合并为带内联样式的 HTML 文件，用户在浏览器中打开后点击「复制到公众号」按钮即可直接粘贴到微信编辑器。仅当用户明确要求「HTML」「可直接粘贴」「一键复制」时执行。依赖：`pip install markdown beautifulsoup4`
-- **渲染工具（备选）**：用户也可将 Markdown 通过 [mdnice](https://mdnice.com)、[135 编辑器](https://www.135editor.com) 或 [壹伴](https://yiban.io) 等工具应用 CSS 样式后复制到公众号编辑器。具体 CSS 参数和配色方案见 [references/wechat-markdown.md](references/wechat-markdown.md)「CSS 渲染参数参考」章节
-- **现成 CSS 样式**：`styles/` 目录下为每种风格提供了可直接使用的完整 CSS 文件。阶段 5 自动读取对应 CSS；若使用 mdnice 手动方式，用户需将 CSS 粘贴到 mdnice「自定义主题」中
+- **一键生成 HTML（可选）**：阶段 5 调用 `scripts/md2wechat.py` 合并 Markdown + CSS 为带内联样式 HTML。仅当用户明确要求「HTML」/「可直接粘贴」/「一键复制」时执行。依赖：`pip install markdown beautifulsoup4`
+- **渲染工具（备选）**：[mdnice](https://mdnice.com)/[135 编辑器](https://www.135editor.com)/[壹伴](https://yiban.io) 可应用 CSS 后复制到公众号。CSS 参数见 [references/wechat-markdown.md](references/wechat-markdown.md)「CSS 渲染参数参考」
+- **现成 CSS 样式**：`styles/` 目录提供每种风格的完整 CSS。阶段 5 自动读取；mdnice 手动方式需粘贴到「自定义主题」
 
 ---
 
@@ -225,30 +214,28 @@ Brand Profile 文件位于：
 
 | 文件 | 何时查阅 |
 |------|----------|
-| [templates/template-index.md](templates/template-index.md) | **阶段 2 强制读** — 风格选择 |
-| [templates/tech-blog.md](templates/tech-blog.md) | 用户选择 `tech-blog` 风格时 |
-| [templates/tutorial.md](templates/tutorial.md) | 用户选择 `tutorial` 风格时 |
-| [templates/deep-dive.md](templates/deep-dive.md) | 用户选择 `deep-dive` 风格时 |
-| [templates/casual-chat.md](templates/casual-chat.md) | 用户选择 `casual-chat` 风格时 |
-| [templates/apple.md](templates/apple.md) | 用户选择 `apple` 风格时 |
-| [templates/cyber.md](templates/cyber.md) | 用户选择 `cyber` 风格时 |
-| [references/formatting-rules.md](references/formatting-rules.md) | **阶段 1 + 阶段 4** — 分析要素 + 质量校验 |
-| [references/wechat-markdown.md](references/wechat-markdown.md) | **阶段 4** — 公众号兼容性校验 |
-| [scripts/md2wechat.py](scripts/md2wechat.py) | **阶段 5** — Markdown → 可粘贴 HTML 转换脚本 |
-| [integrations/quickstart.md](integrations/quickstart.md) | **阶段 5 执行脚本前** — 依赖安装 / 用法 / 故障排查 |
-| [styles/tech-blog.md](styles/tech-blog.md) | mdnice 自定义 CSS — 技术博客风格 |
-| [styles/tutorial.md](styles/tutorial.md) | mdnice 自定义 CSS — 教程指南风格 |
-| [styles/deep-dive.md](styles/deep-dive.md) | mdnice 自定义 CSS — 深度干货风格 |
-| [styles/casual-chat.md](styles/casual-chat.md) | mdnice 自定义 CSS — 轻松聊天风格 |
-| [styles/apple.md](styles/apple.md) | mdnice 自定义 CSS — 苹果风风格 |
-| [styles/cyber.md](styles/cyber.md) | mdnice 自定义 CSS — 赛博朋克风格 |
-| [knowledge/wechat-traps.md](knowledge/wechat-traps.md) | [按需] 阶段 3/4 — 公众号排版常见陷阱速查 |
-
-> 每个子文件首部都有「何时阅读 / 覆盖范围 / 可跳过条件」摘要头，先读摘要再决定是否全文加载。
+| [templates/template-index.md](templates/template-index.md) | **阶段 2 强制读** |
+| [templates/tech-blog.md](templates/tech-blog.md) | 选 `tech-blog` 时 |
+| [templates/tutorial.md](templates/tutorial.md) | 选 `tutorial` 时 |
+| [templates/deep-dive.md](templates/deep-dive.md) | 选 `deep-dive` 时 |
+| [templates/casual-chat.md](templates/casual-chat.md) | 选 `casual-chat` 时 |
+| [templates/apple.md](templates/apple.md) | 选 `apple` 时 |
+| [templates/cyber.md](templates/cyber.md) | 选 `cyber` 时 |
+| [references/formatting-rules.md](references/formatting-rules.md) | **阶段 1+4**：分析要素/质量校验 |
+| [references/wechat-markdown.md](references/wechat-markdown.md) | **阶段 4**：兼容性校验 |
+| [scripts/md2wechat.py](scripts/md2wechat.py) | **阶段 5**：MD→HTML 脚本 |
+| [integrations/quickstart.md](integrations/quickstart.md) | **阶段 5 执行前**：依赖/用法/故障 |
+| [styles/tech-blog.md](styles/tech-blog.md) | mdnice CSS — tech-blog |
+| [styles/tutorial.md](styles/tutorial.md) | mdnice CSS — tutorial |
+| [styles/deep-dive.md](styles/deep-dive.md) | mdnice CSS — deep-dive |
+| [styles/casual-chat.md](styles/casual-chat.md) | mdnice CSS — casual-chat |
+| [styles/apple.md](styles/apple.md) | mdnice CSS — apple |
+| [styles/cyber.md](styles/cyber.md) | mdnice CSS — cyber |
+| [knowledge/wechat-traps.md](knowledge/wechat-traps.md) | [按需] 阶段 3/4 — 陷阱速查 |
 
 ## 能力约束
 
-始终可使用文件读取、代码搜索、终端命令等环境能力。若某项不可用，在输出中明确注明局限。
+可用文件读取/代码搜索/终端命令等环境能力；不可用时在输出中注明局限。
 
 ## 失败模式与 Fallback
 
@@ -267,7 +254,7 @@ Brand Profile 文件位于：
 
 ## 反例与黑名单
 
-> **设计依据**：基于 SkillLens 论文（arXiv 2605.23899）实证——只写"应该做 X"没有"不要做 Y"会导致 LLM judge 准确率下降。完整陷阱库见 [knowledge/wechat-traps.md](knowledge/wechat-traps.md)（阶段 4 强制校验时必读）。
+> **设计依据**：SkillLens 论文（arXiv 2605.23899）实证——只有"应该做 X"无"不要做 Y"会降低 LLM judge 准确率。完整陷阱库：[knowledge/wechat-traps.md](knowledge/wechat-traps.md)（阶段 4 必读）。
 
 ### 排版反模式速查
 
