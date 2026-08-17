@@ -145,33 +145,18 @@
 
 ### 7.1 用户注册
 
-```yaml
-test_cases:
-  - id: "TC_USER_REGISTER_001"
-    title: "用户注册 - 有效凭据成功创建账号"
-    priority: "P0"
-    type: "functional"
-    description: |-
-      追溯: PRD§7.1 / TP-USER-REGISTER-001
-      验证使用未占用的用户名和合规密码邮箱注册，系统创建账号并跳转登录页。
-    preconditions:
-      - "系统可访问"
-      - "用户名 new_user_001 未被占用"
-    steps:
-      - "访问 `/register` 注册页面"
-      - "在 “用户名” 输入框输入 “new_user_001”"
-      - "在 “密码” 输入框输入 “Abc12345”"
-      - "在 “邮箱” 输入框输入 “new_user@example.com”"
-      - "点击 “注册” 按钮"
-    expected_results:
-      - "注册页面加载完成，三个输入框均为空"
-      - "用户名输入框显示 “new_user_001”"
-      - "密码输入框显示圆点掩码"
-      - "邮箱输入框显示 “new_user@example.com”"
-      - "页面跳转至 `/login`，顶部显示绿色提示 “注册成功”"
-    tags: [user-management, registration, happy-path]
-    auto: false
-```
+**前置条件**：
+- 系统可访问
+- 测试用户名未被占用
+
+**测试步骤**：
+1. 访问注册页面
+2. 填写用户名、密码、邮箱
+3. 点击"注册"按钮
+
+**预期结果**：
+- 注册成功，跳转到登录页
+- 提示"注册成功"
 
 **边界/异常补充**：
 - 用户名已存在

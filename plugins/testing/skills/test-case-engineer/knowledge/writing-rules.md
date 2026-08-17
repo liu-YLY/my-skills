@@ -45,31 +45,30 @@
 
 ## 通用用例格式
 
-每条测试用例采用 YAML 结构化格式输出。业务文本统一使用双引号，确保冒号、日期、金额和特殊字符不会被 YAML 误解析；`description` 使用 `|-` 多行文本；列表型字段即使只有一项也保持 YAML 列表。
+每条测试用例采用以下结构化格式输出：
 
-```yaml
-test_cases:
-  - id: "TC_WEBHOOK_ADD_001"
-    title: "Endpoint URL 校验 - 为空时提示错误"
-    priority: "P1"
-    type: "functional"
-    description: |-
-      追溯: WEBHOOK-123 / PRD§3.2 / TP-WEBHOOK-001
-      验证已填写其他必填项时清空 Endpoint URL，系统阻止提交并展示格式错误提示。
-    preconditions:
-      - "测试账号已登录并拥有创建 Webhook 的权限"
-      - "已打开 “Add webhook” 弹窗"
-    steps:
-      - "填写 Version 和至少 1 个 Trigger，使 “Add endpoint” 按钮可点击"
-      - "清空 “Endpoint URL” 输入框"
-    expected_results:
-      - "“Add endpoint” 按钮为可点击状态"
-      - "输入框下方显示红色错误提示：“Wrong URL format!”；“Add endpoint” 按钮变为置灰状态"
-    tags: [webhooks, validation, endpoint-url, boundary]
-    auto: false
+```markdown
+### TC_MODULE_FUNC_001: 被测对象 - 测试意图（具体行为）
+
+- **优先级**: P0
+- **类型**: functional
+- **需求追溯**: Story-42 / TP-03
+- **来源**: ai-generated
+- **业务背景**: 以「验证」开头，一句话描述条件、对象、动作和结果方向
+
+**前置条件**:
+- 已登录为 A 类用户
+- 已打开 "Add webhook" 弹窗
+
+**测试步骤与预期结果**:
+
+| 步骤 | 操作 | 预期结果 |
+|------|------|----------|
+| 1 | 操作步骤 1（祈使句，一步一动作） | 预期结果 1（步骤1完成后立即可观察的结果） |
+| 2 | 操作步骤 2 | 预期结果 2（步骤2完成后立即可观察的结果） |
+
+**标签**: 场景标签
 ```
-
-`id`、`title`、`priority`、`type`、`preconditions`、`steps`、`expected_results`、`tags` 和 `auto` 是最小必需字段。对新增或实质修改的用例，`description` 也应补齐；历史文件可在其所属模块重构时渐进式补齐，不能因只改格式而改变已有业务事实。
 
 ## 补充用例 ID 生成规则（强制）
 
@@ -96,16 +95,16 @@ test_cases:
 
 | 字段 | 必填 | 说明 |
 |------|------|------|
-| **id** | 是 | `TC_{模块}_{功能}_{三位序号}`，全仓库唯一，规则见上方「ID 生成规则」 |
-| **title** | 是 | `被测对象 - 具体行为/条件/结果`，建议 40 字以内；信息删除会造成重复或无法识别环境/版本时可保留长标题，禁止通过截断、`...` 或「等」隐藏关键条件 |
-| **priority** | 是 | P0/P1/P2/P3，定义与比例见 [test-standards.md](test-standards.md) |
-| **type** | 是 | functional / ui / security / performance / compatibility / usability / accessibility / observability；描述「主要验证目标」而非技术实现 |
-| **description** | 应填 | `|-` 多行文本：第一行追溯（需求 ID / Jira / 测试点 / 接口契约 / 设计稿 / 缺陷）；第二行以「验证」开头描述条件、对象、动作和结果方向；不复述步骤 |
-| **preconditions** | 否（建议） | 陈述句列表，覆盖角色/权限、页面或调用条件、数据状态；不写「已准备相关数据」「账号正常」「环境正常」 |
-| **steps** | 是 | 动作开头的列表，包含操作对象、值或路径；每步一个核心动作；不超过 7 步 |
-| **expected_results** | 是 | 与 steps 数量一致（一步一验），明确可观察证据；同一触发动作的紧密业务结果可合并多条断言 |
-| **tags** | 是 | 小写 kebab-case，1–5 个，首位必须是业务域；规则见下方「Tag 规范」 |
-| **auto** | 是 | 布尔值，标识是否已/适合纳入自动化，不替代优先级 |
+| **ID** | 是 | `TC_{模块}_{功能}_{三位序号}`，作为标题 |
+| **标题** | 是 | `被测对象 - 具体行为/条件/结果`，建议 40 字以内（软指导）；信息删除会造成同模块场景重复或无法识别环境/版本时可保留长标题，禁止通过截断、`...` 或「等」隐藏关键条件 |
+| **优先级** | 是 | P0/P1/P2/P3，定义与比例见 [test-standards.md](test-standards.md) |
+| **类型** | 是 | functional / ui / security / performance / compatibility / usability / accessibility / observability；描述「主要验证目标」而非技术实现 |
+| **需求追溯** | 否 | 需求 ID（Story ID）、测试点编号（TP 编号）、接口契约、设计稿或已关联缺陷 |
+| **来源** | 否 | 用例来源：ai-generated / manual / ai-reviewed |
+| **业务背景** | 否 | 以「验证」开头描述条件、对象、动作和结果方向；不复述步骤 |
+| **前置条件** | 否 | 陈述句列表，覆盖角色/权限、页面或调用条件、数据状态；不写「已准备相关数据」「账号正常」「环境正常」 |
+| **测试步骤** | 是 | 操作步骤表格，每步包含操作和对应的预期结果 |
+| **标签** | 否 | 小写 kebab-case，1–5 个，首位必须是业务域；规则见下方「Tag 规范」 |
 
 ## 编写与审核铁律
 
@@ -153,9 +152,9 @@ test_cases:
 - 每步操作后立即写出对应的预期结果
 - 预备动作上移到 preconditions
 
-**description 规范**：
-- 第一行记录追溯：需求 ID / Jira / 测试点编号 / 接口契约 / 设计稿 / 已关联缺陷
-- 第二行以「验证」开头，描述条件、对象、动作和结果方向
+**需求追溯与业务背景规范**：
+- 需求追溯记录：需求 ID / Jira / 测试点编号 / 接口契约 / 设计稿 / 已关联缺陷
+- 业务背景以「验证」开头，描述条件、对象、动作和结果方向
 - 不复述步骤；不写「验证功能正常」「验证符合预期」
 
 **测试点→用例映射规则**：
@@ -189,16 +188,16 @@ Tag 使用小写 kebab-case，单条 1–5 个。第一个 Tag 必须是业务�
 
 示例：
 
-```yaml
-tags: [webhooks, validation, endpoint-url, boundary]
-tags: [api-billing, api-v4, plan-v3, tracking-create, overage]
-tags: [account-management, deletion, child-account]
+```text
+webhooks, validation, endpoint-url, boundary
+api-billing, api-v4, plan-v3, tracking-create, overage
+account-management, deletion, child-account
 ```
 
 规则：
-- Tag 用于跨文件筛选，不重复 title 中没有筛选价值的信息
+- Tag 用于跨模块筛选，不重复 title 中没有筛选价值的信息
 - 复用已有受控词表；新增 Tag 前先检索相近模块
-- 不在每条用例重复版本/发布名称；这类归属放文件级 `metadata.tags`
+- 不在每条用例重复版本/发布名称；这类归属放模块级说明或测试计划
 - `boundary`、`security`、`compatibility` 等仅在确实表达额外测试切面时添加
 
 ## 用例拆分与合并策略
@@ -244,8 +243,8 @@ tags: [account-management, deletion, child-account]
 
 ## 输出格式说明
 
-用例输出采用 YAML 结构化格式，优势：
-- 直接阅读和编辑，业务文本与字段边界清晰
+用例输出必须采用通用结构化格式（Markdown），优势：
+- 直接阅读和编辑
 - 转换为任意测试管理工具格式
 - 版本控制和 diff 比较
 
