@@ -159,7 +159,7 @@ AI（test-strategy-engineer）：
 
 ### 1b. 测试用例工程师 (test-case-engineer)
 
-**版本**：v8.4.0  
+**版本**：v8.5.0  
 **功能**：扮演资深测试工程师角色，AI 赋能用例生成，深入理解需求与产品现状，精准提取测试点，输出完整全面可落地的测试用例。
 
 > v8.0.0 起由原 test-engineer v7.0.0 拆分而来，专注正向用例生成。Bug 根因分析能力已迁移至 bug-analyzer skill。
