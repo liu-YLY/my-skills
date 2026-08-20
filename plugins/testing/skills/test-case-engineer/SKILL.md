@@ -1,6 +1,6 @@
 ---
 name: test-case-engineer
-version: 8.4.0
+version: 8.5.0
 description: >-
   Use when generating, reviewing, or designing test cases and single-feature
   test strategies.
@@ -64,7 +64,7 @@ keywords:
 
 **AI 赋能模式**：AI 生成 → 人工审核 → 轻量维护，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
-**用例输出约束**：通用结构化格式 + 编写铁律，详见 [knowledge/writing-rules.md](knowledge/writing-rules.md)（core.md 阶段 3 有转发引用）。
+**用例输出约束**：通用结构化格式 + 编排排序 + 编写铁律，详见 [knowledge/writing-rules.md](knowledge/writing-rules.md)（core.md 阶段 3 有转发引用）。
 
 ---
 
@@ -81,7 +81,7 @@ keywords:
 | [knowledge/review-mode.md](knowledge/review-mode.md) | **评审模式触发时必读**（10 维度评审工作流 + 评审度量报告 + 评审修订闭环 + 增量评审子模式 + 多格式输入 + 评审报告文件化 + 语义一致性维度） |
 | [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **阶段 3/4 自检时对照**（反例黑名单） |
 | [knowledge/writing-examples.md](knowledge/writing-examples.md) | **阶段 3 写用例拿不准格式时查阅**（title/steps/expected_results 好坏写法对照示例；铁律条文本体在 writing-rules.md） |
-| [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（分层测试策略 / 通用格式 / ID 生成规则 / 字段说明 / 编写铁律 / 拆分合并策略 / 效率度量模板） |
+| [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（分层测试策略 / 通用格式 / ID 生成规则 / 字段说明 / 编写铁律 / 拆分合并策略 / 用例编排与排序 / 效率度量模板） |
 | [knowledge/products/](knowledge/products/) | **阶段 1 必须加载**（产品专项业务知识，若存在对应产品知识文件） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
 
