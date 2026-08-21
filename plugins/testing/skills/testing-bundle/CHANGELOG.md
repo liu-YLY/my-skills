@@ -9,6 +9,7 @@
 ### Changed
 
 - **token 优化（纯内容迁移）**：SKILL.md 的「使用示例」（8 个演示对话）与「快速上手」外迁至 [knowledge/usage-examples.md](knowledge/usage-examples.md)，入口保留示例索引 + 链接按需加载；路由规则、失败模式、反例黑名单、约束规则全部保留，路由行为无变化
+- **state-machine MCP 状态声明同步**：SKILL.md 与 usage-examples.md 中 state-machine-testing MCP 状态从「v0.1.0 协议层尚未联调验证，默认独立模式」更新为「v0.2.0 协议层 stdio + HTTP 已端到端联调验证，安装后增强模式可用」
 
 ## [3.1.1] - 2026-07-22
 

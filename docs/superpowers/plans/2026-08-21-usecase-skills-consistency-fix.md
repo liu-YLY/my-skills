@@ -148,4 +148,4 @@
 | 1 | 已完成 | 2026-08-21 | grep 无 7:2:1/执行率 100% 残留（含 quickstart.md 两处追加发现）；复制表全部去重；4 个一致性脚本全过 |
 | 2 | 已完成 | 2026-08-21 | test-prompts.json 8.6.0；bug-patterns.md 无 bug-analyzer 残留；test-levels.md 映射表覆盖 strategy 三层且接口层拆分去向明确（SKILL.md 索引行补映射可发现性）；JSON 合法性验证过；4 个一致性脚本全过 |
 | 3 | 已完成 | 2026-08-21 | "5-way"清零（CHANGELOG 历史记录保留）；架构图补 change-impact-analyzer 第 6 路节点（图文一致）；定位表述三处统一"链 6 协同使用，亦可单独使用"；MCP 状态声明三处口径统一为"协议层注册代码已实现但尚未端到端联调验证"；新增"直接交付 vs CHECKPOINT"裁定规则（失败模式表 + 约束规则 5 双覆盖）与"测试计划"消解规则；4 个一致性脚本全过 |
-| 4 | 待确认 | — | — |
+| 4 | 已完成（待用户确认） | 2026-08-21 | MCP 协议层端到端联调验证：52 项测试全绿（43 单元 + 9 集成，含 stdio 握手/tools list/call_tool 往返/非法 payload/HTTP 传输/降级信号）；`build_state_machine` 去占位为确定性行业模板加载（4 模板 schema 合规）；集成测试 skip 全部解除；MCP 状态声明全仓统一（skill SKILL.md/README/quickstart/usage-examples、bundle SKILL.md/usage-examples/CHANGELOG、plugin README/plugin.json/marketplace.json、根 README/CLAUDE.md/installation.md/project-structure.md/skills-overview.md）；依赖锁定 mcp<2.0.0 + 新增 pyyaml + pytest-asyncio；4 个一致性脚本全过 |

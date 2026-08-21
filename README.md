@@ -22,13 +22,13 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 
 | Skill | 版本 | 功能 | MCP Server |
 |---|---|---|---|
-| **testing-bundle** | v3.1.1 | bundle 入口，5-way 路由 + 7 条混合意图链 | - |
+| **testing-bundle** | v3.1.1 | bundle 入口，6-way 路由（5 核心 + 1 协同）+ 7 条混合意图链 | - |
 | test-strategy-engineer | v1.0.0 | 项目级测试策略（风险矩阵/分层/准入准出） | - |
-| test-case-engineer | v8.3.0 | 功能用例生成 + 9 维度评审模式 | review-checker v0.2.0（可选） |
+| test-case-engineer | v8.6.0 | 功能用例生成 + 9 维度评审模式 | review-checker v0.2.0（可选） |
 | performance-test-engineer | v1.0.0 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
 | bug-analyzer | v1.0.0 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
-| state-machine-test-engineer | v1.0.0 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.1.0（可选） |
-| change-impact-analyzer | v1.1.0 | 变更影响分析（独立 skill，不集成到 bundle） | - |
+| state-machine-test-engineer | v1.1.0 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.2.0（可选） |
+| change-impact-analyzer | v1.1.0 | 变更影响分析（协同 skill，链 6 协同使用亦可单独使用） | - |
 
 **7 条混合意图链**：
 - 链 1：Bug 分析 + 补充用例 → bug-analyzer → case-engineer
@@ -142,7 +142,7 @@ cp -r plugins/testing/skills/testing-bundle ~/.claude/skills/
 | MCP Server | 版本 | 配套 skill | 功能 |
 |---|---|---|---|
 | [review-checker](plugins/testing/mcp-servers/review-checker/README.md) | v0.2.0 | test-case-engineer 评审模式 | 9 维度确定性校验 + 度量报告（A-D 评级） |
-| [state-machine-testing](plugins/testing/mcp-servers/state-machine-testing/README.md) | v0.1.0 | state-machine-test-engineer | Schema 校验 + 场景穷举 + 覆盖度报告 |
+| [state-machine-testing](plugins/testing/mcp-servers/state-machine-testing/README.md) | v0.2.0 | state-machine-test-engineer | Schema 校验 + 场景穷举 + 覆盖度报告 |
 
 > MCP Server 为可选增强组件，未安装时 skill 降级为纯 LLM 推理，不影响核心能力。
 
