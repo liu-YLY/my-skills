@@ -126,8 +126,8 @@ testing-bundle:
 
 1. 确认已安装 6 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer）
 2. 用户提出测试相关请求时，testing-bundle 自动触发
-3. bundle 按 5-way 路由决策表判断意图并路由到对应子 skill
+3. bundle 按 6-way 路由决策表（5 核心 + 1 协同）判断意图并路由到对应子 skill
 4. 混合意图按对应链路执行（7 条链），转交点 🔴 CHECKPOINT
 5. 子 skill 执行具体任务并输出结果
-6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（⚠️ v0.1.0 协议层未注册，增强模式暂不可达，待 v0.2.0；详见 [state-machine-test-engineer/integrations/quickstart.md](../../state-machine-test-engineer/integrations/quickstart.md)）
+6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（⚠️ v0.1.0 协议层注册代码已实现但尚未端到端联调验证，验证通过前 skill 默认以独立模式运行，待 v0.2.0；详见 [state-machine-test-engineer/integrations/quickstart.md](../../state-machine-test-engineer/integrations/quickstart.md)）
 7. test-case-engineer 评审模式可选安装配套 review-checker MCP Server 进入增强模式（详见 [review-checker README](../../../mcp-servers/review-checker/README.md)）

@@ -57,7 +57,7 @@ State Machine Test Engineer 是 testing-bundle v3.0.0 新增的子 skill，专�
 
 ## 三种运行模式
 
-> ⚠️ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 当前为 **v0.1.0**，确定性工具（validate/generate/export/coverage）已实现并通过 34 项单元测试，但 **MCP 协议层注册待 v0.2.0 完成**。当前即使按 [quickstart.md](integrations/quickstart.md) 配置完成，runtime 也无法通过 MCP 协议调用 Server，**增强模式实际不可达，skill 以独立模式运行**（输出首行标 `⚠ 独立模式（未校验）`）。预计 v0.2.0 发布后增强模式可用。
+> ⚠️ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 当前为 **v0.1.0**，确定性工具（validate/generate/export/coverage）已实现并通过 34 项单元测试，**MCP 协议层注册代码也已在 `server.py` 实现**（FastMCP 注册 5 个工具），但尚未经端到端联调验证。验证通过前，**skill 默认以独立模式运行**（输出首行标 `⚠ 独立模式（未校验）`）；未安装 mcp SDK 时同样降级（详见 [quickstart.md](integrations/quickstart.md)）。
 
 | 模式 | 触发条件 | 行为 | 输出标记 |
 |---|---|---|---|

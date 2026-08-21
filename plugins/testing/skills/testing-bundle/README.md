@@ -95,4 +95,4 @@ testing-bundle/
 - [performance-test-engineer](../performance-test-engineer/) - 性能测试子 skill
 - [bug-analyzer](../bug-analyzer/) - 功能缺陷根因分析子 skill
 - [state-machine-test-engineer](../state-machine-test-engineer/) - 状态机测试子 skill
-- [change-impact-analyzer](../change-impact-analyzer/) - 变更影响分析子 skill（链 6 使用）
+- [change-impact-analyzer](../change-impact-analyzer/) - 变更影响分析子 skill（链 6 协同使用，亦可单独使用）
