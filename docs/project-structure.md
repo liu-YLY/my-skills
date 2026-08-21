@@ -25,7 +25,7 @@ my-skill/
 │   │   ├── .codex-plugin/
 │   │   │   └── plugin.json        # Codex plugin manifest
 │   │   ├── skills/                # runtime 扫描此目录加载 skill
-│   │   │   ├── testing-bundle/    # 测试能力 Bundle（5-way 路由入口 + 链 6 协同）
+│   │   │   ├── testing-bundle/    # 测试能力 Bundle（6-way 路由入口 + 链 6 协同）
 │   │   │   │   ├── SKILL.md       # 入口（路由规则 + 7 条混合意图链）
 │   │   │   │   ├── README.md      # Bundle 说明文档
 │   │   │   │   ├── CHANGELOG.md   # bundle 版本变更记录
@@ -56,7 +56,7 @@ my-skill/
 │   │   │   │   ├── knowledge/     # 含 bug-patterns-index.md 指向 ../test-case-engineer/knowledge/bug-patterns.md
 │   │   │   │   ├── integrations/
 │   │   │   │   └── scripts/
-│   │   │   ├── state-machine-test-engineer/  # 状态机测试工程师 v1.0.0（状态型需求）
+│   │   │   ├── state-machine-test-engineer/  # 状态机测试工程师 v1.1.0（状态型需求）
 │   │   │   │   ├── SKILL.md       # 入口（五阶段流程 + 10 类场景穷举）
 │   │   │   │   ├── state-machine-core.md
 │   │   │   │   ├── README.md
@@ -77,7 +77,7 @@ my-skill/
 │   │       │   ├── tests/
 │   │       │   ├── README.md
 │   │       │   └── pyproject.toml
-│   │       └── state-machine-testing/  # state-machine-testing MCP Server v0.1.0（状态机校验）
+│   │       └── state-machine-testing/  # state-machine-testing MCP Server v0.2.0（状态机校验）
 │   │           ├── src/state_machine_testing_mcp/
 │   │           └── tests/
 │   │

@@ -5,11 +5,11 @@
 ### 1. Testing Bundle (testing-bundle)
 
 **版本**：v3.1.1  
-**功能**：测试能力 bundle 入口，统一路由到 5 个子 skill：test-strategy-engineer（项目级策略）/ test-case-engineer（功能用例生成）/ performance-test-engineer（性能测试）/ bug-analyzer（Bug 根因分析）/ state-machine-test-engineer（状态机测试）。
+**功能**：测试能力 bundle 入口，统一路由到 6 个子 skill（5 核心 + 1 协同）：test-strategy-engineer（项目级策略）/ test-case-engineer（功能用例生成）/ performance-test-engineer（性能测试）/ bug-analyzer（Bug 根因分析）/ state-machine-test-engineer（状态机测试）/ change-impact-analyzer（变更影响分析，协同）。
 
 > Bundle 是元 skill，本身不实现具体能力，而是根据用户意图自动路由到对应子 skill。
 
-**路由规则**（5-way 路由 + 7 条混合意图链）：
+**路由规则**（6-way 路由（5 核心 + 1 协同）+ 7 条混合意图链）：
 
 | 用户意图关键词 | 路由到 | 说明 |
 |---------------|--------|------|
@@ -379,7 +379,7 @@ AI（bug-analyzer）：
 
 ### 1e. 状态机测试工程师 (state-machine-test-engineer)
 
-**版本**：v1.0.0  
+**版本**：v1.1.0  
 **功能**：扮演资深测试工程师角色，基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
 
 > testing-bundle v3.0.0 新增子 skill，专注状态型需求测试。与 test-case-engineer 的粒度边界：本 skill 输出场景级清单（含依据类型标注），test-case-engineer 基于清单落地用例步骤级（链 5 协同）。
@@ -390,7 +390,7 @@ AI（bug-analyzer）：
 - **10 类场景穷举**：合法/非法转换、条件不满足、幂等、并发、消息乱序、超时重试、数据一致性、权限控制、失败恢复
 - **完整性检查**：9 项检查（含死锁/悬挂/终态吸收/依据类型标注）
 - **防幻觉机制**：依据类型强制标注（需求明确/合理推理/待确认），歧义暴露而非补齐
-- **MCP 可选增强**：调用配套 state-machine-testing-mcp Server 做 Schema 校验与 Mermaid 可视化（v0.1.0 协议层待注册，当前以独立模式运行）
+- **MCP 可选增强**：调用配套 state-machine-testing-mcp Server 做 Schema 校验与 Mermaid 可视化（v0.2.0 协议层 stdio + HTTP 已端到端联调验证，安装后增强模式可用）
 
 **适用场景**：
 - ✅ 状态型需求测试（订单生命周期、审批流、工单状态、会员等级）

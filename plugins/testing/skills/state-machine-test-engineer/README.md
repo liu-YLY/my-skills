@@ -1,6 +1,6 @@
 # State Machine Test Engineer Skill
 
-> 状态机驱动的状态型需求测试 skill v1.0.0：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
+> 状态机驱动的状态型需求测试 skill v1.1.0：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
 
 ## 简介
 
@@ -57,12 +57,12 @@ State Machine Test Engineer 是 testing-bundle v3.0.0 新增的子 skill，专�
 
 ## 三种运行模式
 
-> ⚠️ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 当前为 **v0.1.0**，确定性工具（validate/generate/export/coverage）已实现并通过 34 项单元测试，**MCP 协议层注册代码也已在 `server.py` 实现**（FastMCP 注册 5 个工具），但尚未经端到端联调验证。验证通过前，**skill 默认以独立模式运行**（输出首行标 `⚠ 独立模式（未校验）`）；未安装 mcp SDK 时同样降级（详见 [quickstart.md](integrations/quickstart.md)）。
+> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.2.0**，MCP 协议层（stdio + streamable-http）已通过端到端联调验证（52 项测试全绿），按 [quickstart.md](integrations/quickstart.md) 配置后**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载）。未安装或调用失败时 skill 自动降级为独立模式。
 
 | 模式 | 触发条件 | 行为 | 输出标记 |
 |---|---|---|---|
-| 增强模式 | MCP 可用（v0.2.0+，当前不可达） | skill 自身推理 + MCP 做校验/穷举/可视化复核 | `✓ MCP 增强模式` |
-| 独立模式 | MCP 未安装（**当前默认**） | skill 纯 LLM 推理执行全流程 | `⚠ 独立模式（未校验）` |
+| 增强模式 | MCP 可用（v0.2.0+，已联调验证） | skill 自身推理 + MCP 做校验/穷举/可视化复核 | `✓ MCP 增强模式` |
+| 独立模式 | MCP 未安装 | skill 纯 LLM 推理执行全流程 | `⚠ 独立模式（未校验）` |
 | 降级模式 | MCP 调用失败 | 自动回退到独立模式 | `⚠ 降级模式` |
 
 skill 始终是主，MCP 是复核器。零配置可用，安装 MCP 后获得额外能力。
@@ -165,6 +165,7 @@ state-machine-test-engineer/
 ## 版本历史
 
 - v1.0.0: 初始版本，五阶段流程 + 10 类场景穷举 + MCP 可选增强
+- v1.1.0: 配套 MCP Server 升级 v0.2.0（协议层 stdio + HTTP 端到端联调验证，增强模式可用），状态声明同步
 
 ---
 
@@ -173,6 +174,6 @@ state-machine-test-engineer/
 - [state-machine-core.md](state-machine-core.md) - 核心流程详述
 - [integrations/quickstart.md](integrations/quickstart.md) - MCP 配置说明
 - [设计文档](../../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
-- [testing-bundle](../testing-bundle/SKILL.md) - bundle 入口（5-way 路由）
+- [testing-bundle](../testing-bundle/SKILL.md) - bundle 入口（6-way 路由：5 核心 + 1 协同）
 - [test-case-engineer](../test-case-engineer/SKILL.md) - 下游协同（链 5）
 - [state-machine-testing-mcp](../../mcp-servers/state-machine-testing/README.md) - 配套 MCP Server

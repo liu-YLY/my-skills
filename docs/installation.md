@@ -29,7 +29,7 @@
 
 > **review-checker MCP Server 依赖说明**：review-checker 是 test-case-engineer 评审模式的可选增强组件（位于 plugins/testing/mcp-servers/review-checker/），未安装时评审模式降级为纯 LLM 推理。安装方式见 [review-checker README](../plugins/testing/mcp-servers/review-checker/README.md)。
 
-> **state-machine-testing MCP Server 依赖说明**：state-machine-testing 是 state-machine-test-engineer 的可选增强组件（位于 plugins/testing/mcp-servers/state-machine-testing/，v0.1.0 协议层仍在建设中），未安装时降级为纯 LLM 推理。安装方式见 [state-machine-test-engineer quickstart](../plugins/testing/skills/state-machine-test-engineer/integrations/quickstart.md)。
+> **state-machine-testing MCP Server 依赖说明**：state-machine-testing 是 state-machine-test-engineer 的可选增强组件（位于 plugins/testing/mcp-servers/state-machine-testing/，v0.2.0 协议层 stdio + HTTP 已端到端联调验证），未安装时降级为纯 LLM 推理。安装方式见 [state-machine-test-engineer quickstart](../plugins/testing/skills/state-machine-test-engineer/integrations/quickstart.md)。
 
 ---
 

@@ -1,6 +1,6 @@
 [project]
 name = "state-machine-testing-mcp"
-version = "0.1.0"
+version = "0.2.0"
 description = "MCP Server for state-machine-test-engineer skill: schema validation, scenario generation, coverage check"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -8,13 +8,16 @@ authors = [
     { name = "testing-bundle contributors" }
 ]
 dependencies = [
-    "mcp>=0.9.0",
+    # mcp 2.0.0 移除了 mcp.server.fastmcp 模块，锁定 1.x 线
+    "mcp>=0.9.0,<2.0.0",
     "pydantic>=2.0",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0",
+    "pytest-asyncio>=0.23",
     "pytest-cov>=4.0",
     "mypy>=1.0",
     "ruff>=0.1.0",
@@ -35,6 +38,7 @@ where = ["src"]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-v --tb=short"
+asyncio_mode = "auto"
 
 [tool.coverage.run]
 source = ["src/state_machine_testing_mcp"]

@@ -1,6 +1,6 @@
 {
   "name": "testing-bundle",
-  "description": "Testing capability bundle v3.1.1: testing-bundle (router) + test-strategy-engineer (project-level strategy) + test-case-engineer (test case generation) + performance-test-engineer (performance testing) + bug-analyzer (bug root cause) + state-machine-test-engineer (state-machine-driven testing) + change-impact-analyzer (change impact analysis) + state-machine-testing MCP Server (optional enhancement). Use when user needs any testing capability.",
+  "description": "Testing capability bundle v3.1.1: testing-bundle (6-way router: 5 core + 1 cooperative) + test-strategy-engineer (project-level strategy) + test-case-engineer (test case generation) + performance-test-engineer (performance testing) + bug-analyzer (bug root cause) + state-machine-test-engineer (state-machine-driven testing) + change-impact-analyzer (change impact analysis) + state-machine-testing MCP Server (optional enhancement). Use when user needs any testing capability.",
   "version": "3.1.1",
   "author": {
     "name": "lyle"

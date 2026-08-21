@@ -38,7 +38,7 @@ def build_state_machine(
     object_hint: str | None = None,
     industry_template: str | None = None,
 ) -> StateMachineBuildResult:
-    """从需求文本构建状态机模型。"""
+    """确定性加载行业模板作为建模起点；自由文本建模由调用方 LLM 完成。"""
     return _build_state_machine(requirement, object_hint, industry_template)
 
 
@@ -83,7 +83,7 @@ def _register_mcp_tools(mcp_server) -> None:
         object_hint: str | None = None,
         industry_template: str | None = None,
     ) -> StateMachineBuildResult:
-        """从需求文本构建状态机模型。"""
+        """确定性加载行业模板作为建模起点；自由文本建模由调用方 LLM 完成。"""
         return _build_state_machine(requirement, object_hint, industry_template)
 
     @mcp_server.tool()
@@ -126,13 +126,24 @@ def main() -> int:
     """命令行入口。"""
     parser = argparse.ArgumentParser(
         prog="state-machine-testing-mcp",
-        description="State Machine Testing MCP Server v0.1.0",
+        description="State Machine Testing MCP Server v0.2.0",
     )
     parser.add_argument(
         "--transport",
         choices=["stdio", "http"],
         default="stdio",
         help="传输方式（默认 stdio）",
+    )
+    parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="HTTP 传输监听地址（默认 127.0.0.1）",
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="HTTP 传输监听端口（默认 8000）",
     )
     parser.add_argument(
         "--help-tools",
@@ -145,7 +156,7 @@ def main() -> int:
         print("State Machine Testing MCP Server - 5 工具")
         print()
         print("1. build_state_machine(requirement, object_hint?, industry_template?)")
-        print("   - 从需求文本构建状态机模型")
+        print("   - 确定性加载行业模板作为建模起点；自由文本建模由调用方 LLM 完成")
         print()
         print("2. validate_state_machine(state_machine, strict=True)")
         print("   - 校验状态机完整性与一致性（9 项检查）")
@@ -160,22 +171,24 @@ def main() -> int:
         print("   - 覆盖度检查")
         return 0
 
-    if args.transport == "http":
-        # HTTP 传输待 v0.2.0 实现
-        print("HTTP 传输待 v0.2.0 实现，当前仅支持 stdio", file=sys.stderr)
-        return 1
-
     try:
         from mcp.server.fastmcp import FastMCP
     except ImportError:
         print(
-            "mcp SDK 未安装。请运行: pip install mcp>=0.9.0",
+            "mcp SDK 未安装。请运行: pip install 'mcp>=0.9.0,<2.0.0'",
             file=sys.stderr,
         )
         return 1
 
     mcp_server = FastMCP("state-machine-testing")
     _register_mcp_tools(mcp_server)
+
+    if args.transport == "http":
+        mcp_server.settings.host = args.host
+        mcp_server.settings.port = args.port
+        mcp_server.run(transport="streamable-http")
+        return 0
+
     mcp_server.run(transport="stdio")
 
     return 0

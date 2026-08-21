@@ -2,14 +2,14 @@
 
 > 本文档说明如何配置 `state-machine-testing-mcp` Server，让 state-machine-test-engineer skill 进入增强模式。
 
-> ⚠️ **当前 MCP Server 状态（v0.1.0）**：确定性工具（validate/generate/export/coverage）已实现并通过 34 项单元测试，**MCP 协议层注册代码也已在 `server.py` 实现**（FastMCP 注册 5 个工具），但尚未经端到端联调验证。验证通过前，即使按本文档完成配置，**skill 仍以独立模式运行**（增强模式待联调验证后可用）。以下配置步骤可供提前准备。
+> ✅ **当前 MCP Server 状态（v0.2.0）**：MCP 协议层（stdio + streamable-http 传输）已通过端到端联调验证（52 项测试全绿，含真实协议调用的握手/工具清单/call_tool/降级信号测试）。按本文档完成配置后，**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 自动降级为独立模式。
 
 ## 三种运行模式回顾
 
 | 模式 | 触发条件 | 行为 |
 |---|---|---|
-| **增强模式** | MCP 可用（v0.2.0+，当前不可达） | skill 自身推理 + MCP 做校验/穷举/可视化复核 |
-| **独立模式** | MCP 未安装（**当前默认**） | skill 纯 LLM 推理执行全流程 |
+| **增强模式** | MCP 可用（v0.2.0+，已联调验证） | skill 自身推理 + MCP 做校验/穷举/可视化复核 |
+| **独立模式** | MCP 未安装 | skill 纯 LLM 推理执行全流程 |
 | **降级模式** | MCP 调用失败 | 自动回退到独立模式 |
 
 **关键原则**：skill 始终是主，MCP 是复核器。未配置 MCP 时 skill 完全可用，配置后获得额外能力。
@@ -41,7 +41,7 @@ MCP Server 与 skill 同仓，位于：
 plugins/testing/mcp-servers/state-machine-testing/
 ```
 
-如尚未实现，参考 [MCP Server README](../../../mcp-servers/state-machine-testing/README.md) 完成开发。
+如尚未实现，参考 [MCP Server README](../../../mcp-servers/state-machine-testing/README.md) 完成开发。安装与开发细节见该 README。
 
 ### 步骤 2：安装 Python 依赖
 
@@ -53,8 +53,9 @@ uv pip install -e .
 ```
 
 依赖清单（pyproject.toml）：
-- `mcp >= 0.9.0`
+- `mcp >= 0.9.0, < 2.0.0`（2.0.0 移除了 `mcp.server.fastmcp` 模块）
 - `pydantic >= 2.0`
+- `pyyaml >= 6.0`（解析行业模板）
 - Python 3.11+
 
 ### 步骤 3：验证 Server 可独立启动
@@ -203,7 +204,7 @@ python -m state_machine_testing_mcp.server
 ### 问题 4：MCP 调用超时
 
 skill 默认超时 10s，单次重试。若仍超时：
-- 检查 Server 是否有性能问题（如 `build_state_machine` 内部 LLM 调用慢）
+- 检查 Server 启动是否缓慢（首次 import 依赖耗时）
 - 在 `~/.trae/state-machine-mcp.json` 中确认 `fallback_on_error: true`，让 skill 自动降级
 
 ## 卸载
@@ -225,7 +226,7 @@ pip uninstall state-machine-testing-mcp
 
 | 工具名 | 用途 | 何时被 skill 调用 |
 |---|---|---|
-| `build_state_machine` | 从需求文本构建状态机模型 | skill 阶段 2 后（可选复核） |
+| `build_state_machine` | 确定性加载行业模板（order-refund/approval-flow/membership/ticket）作为建模起点；自由文本建模由 skill 自身完成 | skill 阶段 2（可选，模板起步） |
 | `validate_state_machine` | 校验状态机完整性与一致性 | skill 阶段 3（完整性检查） |
 | `generate_scenarios` | 基于状态机穷举 10 类场景 | skill 阶段 4（交叉复核） |
 | `export_artifacts` | 导出 Markdown / JSON / Mermaid | skill 阶段 5（导出） |
@@ -236,9 +237,8 @@ pip uninstall state-machine-testing-mcp
 ## 隐私与安全
 
 - MCP Server 本地运行，不外发数据
-- `build_state_machine` 内部可能调用 LLM 解析需求，若使用云端 LLM 会发送需求文本
-- 其他 4 个工具为确定性计算，不发任何数据出本机
-- 如需完全离线，配置 `build_state_machine` 使用本地 LLM 或禁用该工具（skill 会自行用 LLM 推理）
+- 全部 5 个工具均为确定性计算（v0.2.0 起 `build_state_machine` 为行业模板加载，不内置 LLM），不发任何数据出本机
+- HTTP 传输模式（`--transport http`）默认仅监听 127.0.0.1，仅本机可访问
 
 ---
 

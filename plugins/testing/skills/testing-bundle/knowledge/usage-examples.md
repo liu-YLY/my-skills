@@ -129,5 +129,5 @@ testing-bundle:
 3. bundle 按 6-way 路由决策表（5 核心 + 1 协同）判断意图并路由到对应子 skill
 4. 混合意图按对应链路执行（7 条链），转交点 🔴 CHECKPOINT
 5. 子 skill 执行具体任务并输出结果
-6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（⚠️ v0.1.0 协议层注册代码已实现但尚未端到端联调验证，验证通过前 skill 默认以独立模式运行，待 v0.2.0；详见 [state-machine-test-engineer/integrations/quickstart.md](../../state-machine-test-engineer/integrations/quickstart.md)）
+6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（v0.2.0 协议层 stdio + HTTP 已端到端联调验证，安装后增强模式可用；详见 [state-machine-test-engineer/integrations/quickstart.md](../../state-machine-test-engineer/integrations/quickstart.md)）
 7. test-case-engineer 评审模式可选安装配套 review-checker MCP Server 进入增强模式（详见 [review-checker README](../../../mcp-servers/review-checker/README.md)）
