@@ -111,12 +111,12 @@ keywords:
 
 - `bug-patterns.md` 主归属 test-case-engineer，bug-analyzer 通过相对路径 `../test-case-engineer/knowledge/bug-patterns.md` 引用
 - strategy/performance/state-machine 不共享知识库（聚焦点不同，共享会引入路由歧义）
-- state-machine-test-engineer 可选调用 `state-machine-testing-mcp` Server 做 Schema 校验与可视化（未安装时降级为纯 LLM 推理）。⚠️ 该 MCP 当前为 v0.1.0，协议层注册代码已在 `server.py` 实现但尚未端到端联调验证，在验证通过前 skill 默认以独立模式运行（详见 state-machine-test-engineer/SKILL.md 状态说明）
+- state-machine-test-engineer 可选调用 `state-machine-testing-mcp` Server 做 Schema 校验与可视化（未安装时降级为纯 LLM 推理）。该 MCP 已升级至 v0.2.0，协议层（stdio + streamable-http）已通过端到端联调验证，安装后增强模式可用（详见 state-machine-test-engineer/SKILL.md 状态说明）
 - test-case-engineer 评审模式可选调用 `review-checker-mcp` Server 做 10 维度确定性校验与度量报告（9 维度用例级校验 + 1 维度语义一致性冲突检测，未安装时降级为纯 LLM 推理）
 
 **依赖说明**：
 - bug-analyzer 单独安装时，步骤 2/3 的"对照缺陷模式库"能力会降级（仍有通用模式兜底，但无法查阅完整缺陷模式库）。通过本 bundle 整体安装获得完整能力。
-- state-machine-test-engineer 单独安装时完全可用；安装配套 MCP Server 后可进入“增强模式”，获得 Schema 校验、Mermaid 可视化、覆盖度报告等额外能力。⚠️ 增强模式的协议层注册代码已实现，但尚未经端到端联调验证，验证通过前默认仍以独立模式运行。
+- state-machine-test-engineer 单独安装时完全可用；安装配套 MCP Server（v0.2.0，协议层已联调验证）后可进入“增强模式”，获得 Schema 校验、Mermaid 可视化、覆盖度报告等额外能力。
 - test-case-engineer 评审模式单独可用；安装配套 review-checker MCP Server 后进入"增强模式"，获得 10 维度确定性校验与度量报告（通过率/问题密度/评级 A-D）。
 
 ## 安装方式

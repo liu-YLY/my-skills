@@ -1,8 +1,8 @@
 # State Machine Testing MCP Server
 
-> 配套 state-machine-test-engineer skill 的 Python MCP Server v0.1.0：提供状态机建模/校验/穷举/导出/覆盖度 5 个工具，作为 skill 的可选增强引擎。
+> 配套 state-machine-test-engineer skill 的 Python MCP Server v0.2.0：提供状态机建模/校验/穷举/导出/覆盖度 5 个工具，作为 skill 的可选增强引擎。
 
-> **实现状态**：v0.1.0 已完成 pydantic Schema + 4 个确定性工具（validate/generate/export/coverage）+ 单元测试（34 通过）+ 集成测试（2 通过）。`build_state_machine` 为占位实现（推荐通过 skill 自身 LLM 推理建模，再传给确定性工具校验）。MCP 协议层注册代码已在 `server.py` 实现（FastMCP 注册 5 个工具），但尚未经端到端联调验证；在验证通过前，skill 默认以独立模式运行。
+> **实现状态**：v0.2.0 已完成 pydantic Schema + 5 个工具 + MCP 协议层端到端联调验证（stdio + streamable-http 两种传输，52 项测试全绿）。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM；自由文本建模由调用方 skill 的 LLM 完成）。skill 安装本 Server 后进入增强模式，未安装时降级为独立模式。
 
 ## 简介
 
@@ -22,14 +22,14 @@
 | 语言 | Python 3.11+ | 与项目现有 scripts/convert_docs.py 一致 |
 | MCP SDK | `mcp` 官方 Python SDK | 协议标准、跨 Host 复用 |
 | Schema 校验 | pydantic v2 | 类型安全、错误信息详细 |
-| 传输 | stdio（默认）+ HTTP/SSE（可选） | 本地用 stdio，远端用 HTTP |
-| LLM 调用 | 仅 `build_state_machine` 内部使用 | 其他 4 个工具为确定性计算 |
+| 传输 | stdio（默认）+ streamable-http（`--transport http`，已联调验证） | 本地用 stdio，远端用 HTTP |
+| LLM 调用 | 无（v0.2.0 起 `build_state_machine` 为确定性模板加载） | 5 个工具全部为确定性计算 |
 
 ## 工具集（5 个）
 
 | 工具名 | 用途 | 输入 | 输出 | 是否调 LLM |
 |---|---|---|---|---|
-| `build_state_machine` | 从需求文本构建状态机模型 | 需求文本/PRD 片段 | StateMachineBuildResult | 是（内部解析需求） |
+| `build_state_machine` | 确定性加载行业模板作为建模起点；纯需求文本时返回建模指引（建模由调用方 LLM 完成） | 需求文本 + 可选 industry_template | StateMachineBuildResult | 否 |
 | `validate_state_machine` | 校验状态机完整性与一致性 | StateMachine | ValidationReport | 否 |
 | `generate_scenarios` | 基于状态机穷举 10 类场景 | StateMachine | ScenarioList | 否 |
 | `export_artifacts` | 导出为 Markdown / JSON / Mermaid | StateMachine + Scenarios | ExportResult | 否 |
@@ -158,11 +158,12 @@ uv pip install -e .
 ```toml
 [project]
 name = "state-machine-testing-mcp"
-version = "0.1.0"
+version = "0.2.0"
 requires-python = ">=3.11"
 dependencies = [
-    "mcp>=0.9.0",
+    "mcp>=0.9.0,<2.0.0",  # 2.0.0 移除了 mcp.server.fastmcp 模块
     "pydantic>=2.0",
+    "pyyaml>=6.0",
 ]
 ```
 
@@ -194,7 +195,7 @@ plugins/testing/mcp-servers/state-machine-testing/
 │       ├── generators.py               # generate_scenarios 实现（10 类穷举）
 │       ├── exporters.py                # export_artifacts 实现（Markdown/JSON/Mermaid）
 │       ├── coverage.py                 # check_coverage 实现
-│       └── prompts/                    # LLM 提示词模板（build_state_machine 内部用）
+│       └── prompts/                    # 建模提示词模板（供调用方 LLM 参考的抽取提示词）
 │           ├── extract_states.txt
 │           ├── identify_transitions.txt
 │           └── generate_scenarios.txt
@@ -204,7 +205,8 @@ plugins/testing/mcp-servers/state-machine-testing/
     │   ├── test_validators.py
     │   ├── test_generators.py
     │   ├── test_exporters.py
-    │   └── test_coverage.py
+    │   ├── test_coverage.py
+    │   └── test_builders.py
     ├── integration/
     │   ├── test_mcp_protocol.py
     │   ├── test_end_to_end.py
@@ -224,7 +226,7 @@ plugins/testing/mcp-servers/state-machine-testing/
 | 状态机为空 | 拒绝执行 | 400 + EmptyInputError |
 | `generate_scenarios` 输入 `scenario_types` 含未知类型 | 忽略未知类型，标 warning | 200 + warnings[] |
 | `export_artifacts` 输出目录无写权限 | 返回错误，建议备选目录 | 400 + PermissionError |
-| 内部 LLM 调用失败（`build_state_machine`） | 返回错误 + 原始异常 | 500 + LLMError |
+| `build_state_machine` 指定不存在的行业模板 | 返回可用模板清单（不静默降级为空模型） | 200 + ambiguities[] |
 | 未捕获异常 | 返回 500 + 通用错误信息 + trace_id | 500 + InternalError |
 
 **关键设计**：死锁/悬挂是质量问题不是协议错误，返回 200 + warnings 让 skill 决定是否阻塞。
@@ -269,21 +271,22 @@ class CoverageReport(BaseModel):
 ## 测试
 
 ```bash
-# 单元测试
+# 单元测试（含 4 个行业模板的 schema 合规性验证）
 pytest tests/unit/ -v
 
-# 集成测试
+# 集成测试（含 MCP 协议真实调用：stdio 握手 / 工具清单 / call_tool / HTTP 传输 / 降级信号）
 pytest tests/integration/ -v
 
 # 覆盖率（目标 ≥90%）
 pytest tests/ --cov=state_machine_testing_mcp --cov-report=term-missing
 ```
 
-测试用例覆盖目标：
-- 4 个行业模板各至少 1 个完整端到端用例
+当前 52 项测试全绿（43 单元 + 9 集成）。测试覆盖：
+- 4 个行业模板全部可解析且 schema 合规
 - 9 项完整性检查每项至少 1 个 pass + 1 个 fail 用例
 - 10 类场景穷举每类至少 1 个验证用例
-- 错误注入测试：死锁/悬挂/缺依据/空输入
+- MCP 协议层：stdio 握手、tools/list（5 工具）、call_tool 往返、非法 payload 错误返回、streamable-http 传输
+- skill 协作契约：validate → generate 流水线、Server 不可达时的降级信号
 
 ## 开发
 
@@ -313,14 +316,13 @@ ruff check src/ tests/
 
 ## 隐私与安全
 
-- Server 本地运行，不外发数据
-- `build_state_machine` 内部可能调用 LLM 解析需求，若使用云端 LLM 会发送需求文本
-- 其他 4 个工具为确定性计算，不发任何数据出本机
-- 如需完全离线，配置 `build_state_machine` 使用本地 LLM 或在 skill 侧禁用该工具
+- Server 本地运行，5 个工具全部为确定性计算（v0.2.0 起不内置 LLM），不发任何数据出本机
+- HTTP 传输模式默认仅监听 127.0.0.1，仅本机可访问
 
 ## 版本历史
 
 - v0.1.0: 首版，5 个工具（build/validate/generate/export/coverage）+ pydantic Schema + 9 项检查 + 10 类穷举
+- v0.2.0: MCP 协议层端到端联调验证（stdio + streamable-http）；`build_state_machine` 去占位，改为确定性行业模板加载（不内置 LLM）；新增 HTTP 传输与 `--host/--port` 参数；新增协议测试与 skill 协作契约测试（52 项全绿）；依赖锁定 mcp < 2.0.0 并新增 pyyaml
 
 ## 待后续版本
 
