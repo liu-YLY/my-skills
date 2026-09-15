@@ -78,13 +78,13 @@ keywords:
 
 ### 1.1 确认分析范围
 
-向用户确认 diff 范围，支持七种模式（工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Diff 或外部 Patch）。
+依据用户请求确定并披露 diff 范围，关键信息不足时询问，支持七种模式（工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Diff 或外部 Patch）。
 
 > 七种模式的 Git 命令、自动推断规则、模式选择决策树、只读采集脚本字段语义与安全策略、各模式输入输出示例，详见 [knowledge/diff-modes.md](knowledge/diff-modes.md)。
 
 ### 1.2 获取 Diff 内容
 
-执行对应的 git diff 命令，获取完整 diff 输出。
+执行对应的 git diff 命令，获取完整 diff 输出。默认使用 `git diff --no-ext-diff --no-textconv HEAD` 查看已跟踪文件相对 HEAD 的最终变更，用 `git status --short` 披露暂存、未暂存和未跟踪状态。未跟踪文件按任务范围决定是否读取；仅有未跟踪文件时不声称无变更。
 
 **失败模式与 Fallback**：
 
@@ -119,7 +119,7 @@ keywords:
 | 用例内容为空 | 提示文件中未找到测试用例 | 检查文件编码（UTF-8/GBK），尝试不同编码重新读取 |
 | 用例数量过少（< 3 条） | 提示用户是否还有其他用例文件未提供 | 继续分析，报告中标注「用例覆盖不足，结果仅供参考」 |
 
-🔴 **CHECKPOINT · 阶段 1 完成**：向用户展示以下内容，确认后才进入阶段 2：
+**阶段 1 范围记录**：记录以下内容并继续；范围歧义影响结论时再询问：
 - 分析范围（diff 模式 + 目标分支/commit）
 - 加载的用例文件列表 + 解析出的用例数量
 - 过滤掉的文件数量及原因
@@ -145,10 +145,10 @@ keywords:
 - 锁文件：`package-lock.json`、`yarn.lock`、`pnpm-lock.yaml`
 - 构建产物：`dist/`、`build/`、`out/`
 - 配置文件（除非用例涉及配置）：`.eslintrc`、`.prettierrc`、`tsconfig.json`
-- 文档文件：`*.md`（除非用例涉及文档内容）、`CHANGELOG.md`
+- 纯说明性文档可降低优先级；SKILL.md、知识规则、配置和测试文档若承载功能或验收约定，必须分析
 
 **测试文件分两条通道**（不再一刀切过滤）：
-- **非业务逻辑变更**（测试基础设施）：`__tests__/helpers/`、`__mocks__/`、`fixtures/`、`setup.ts`、`teardown.ts` 等测试工具/配置文件 → 跳过，不纳入影响分析
+- **测试依赖**：helpers、mocks、fixtures、setup、teardown 等分析其对造数、断言、环境和覆盖证据的影响
 - **覆盖证据**（测试用例本身）：`*.test.*`、`*.spec.*` 中针对业务逻辑的测试用例变更 → **不跳过，标记为「覆盖证据」**，在阶段 3 交叉分析时用于判断"该变更点是否有对应测试覆盖"
 
 ### 2.3 解析每个文件的变更详情
@@ -209,7 +209,7 @@ changes:
 
 > 四类变更侧（前端改请求参数 / 后端改返回字段 / 后端改业务规则 / DB schema 变更）的检查清单、示例、`contract_checks` 输出格式，详见 [knowledge/cross-impact-analysis.md](knowledge/cross-impact-analysis.md) 第 2 节。
 
-🔴 **CHECKPOINT · 阶段 2 完成**：向用户展示结构化变更清单，确认后才进入阶段 3：
+**阶段 2 结果记录**：展示结构化变更清单并继续阶段 3：
 - 变更文件数 + 变更类型分布（新增/修改/删除）
 - 关键变更点摘要（函数/接口/字段变化）
 - 跨层影响链路摘要（多少变更点牵涉到上下游）
@@ -295,7 +295,7 @@ changes:
 
 | # | 场景 | 用户输入示例 | 执行流程 |
 |---|------|------------|---------|
-| 1 | 分析本地改动 | 帮我分析一下当前改动对测试用例的影响，用例在 docs/test-cases.md | `git diff` + `git diff --cached` → 加载用例 → 解析 → 交叉分析 → 报告到 `docs/change-impact-report.md` |
+| 1 | 分析本地改动 | 帮我分析一下当前改动对测试用例的影响，用例在 docs/test-cases.md | `git diff --no-ext-diff --no-textconv HEAD` → 加载用例 → 解析 → 交叉分析 → 报告到 `docs/change-impact-report.md` |
 | 2 | 分支差异 | 对比 main 和 feat/order-cancel 分支的改动，检查对 order 相关用例的影响 | `git diff main...feat/order-cancel` → 加载用例 → 解析 → 交叉分析 → 报告 |
 | 3 | 单个 commit | 检查 commit abc1234 的改动是否影响了 regression 用例 | `git diff abc1234~1..abc1234` → 加载 regression 用例 → 解析 → 交叉分析 → 报告 |
 | 4 | Mode B 需求对照 | 使用 $analyze-change-test-scope，对照 docs/requirement.md，分析 main...当前分支的代码改动 | `git diff main...HEAD` → 加载需求文档 + 用例 → 阶段 2 解析+链路+契约 → 阶段 3 Mode B 三向对照 → 报告（含第 7 节需求追踪矩阵） |
@@ -363,10 +363,10 @@ changes:
 
 | # | 反模式 | 替代做法 |
 |---|--------|---------|
-| 1 | 跳过阶段 1 CHECKPOINT 直接分析 | 必须让用户确认 diff 范围和用例文件后再继续 |
-| 2 | 将测试基础设施变更（helpers/mocks/fixtures）误计入影响分析 | 阶段 2.2 按两条通道分类：测试基础设施跳过，测试用例本身标记为「覆盖证据」 |
+| 1 | 不披露分析范围 | 说明 diff 基线与用例来源；已明确范围无需重复确认 |
+| 2 | 将测试基础设施变更（helpers/mocks/fixtures）全部跳过 | 阶段 2.2 按两条通道分类：测试基础设施标记为「测试依赖」，测试用例本身标记为「覆盖证据」 |
 | 3 | 把所有变更都标记为"高风险" | 严格按影响程度/风险等级判定表打标，低风险也要标注 |
-| 4 | 在阶段 3 中修改变更清单 | 如需调整，回退到阶段 2 CHECKPOINT 让用户修改 |
+| 4 | 静默改变分析范围 | 新证据修正判断时说明依据；范围扩大或授权改变时询问 |
 | 5 | 报告中只列问题不给建议 | 每个问题必须附带建议操作（修改用例/补充用例/验证确认） |
 | 6 | 对 Excel 格式强行解析 | 提示用户转换为 CSV/Markdown，或在对话中粘贴内容 |
 | 7 | 忽略重命名/移动文件的语义 | 阶段 2 识别重命名（R）类型，阶段 3 检查用例中的文件路径引用 |
