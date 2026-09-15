@@ -1,6 +1,6 @@
 ---
 name: test-strategy-engineer
-version: 1.0.0
+version: 1.0.1
 description: >-
   Use when designing project-level test strategies, risk matrices, test pyramid layering, or entry/exit criteria.
   Triggers on: 测试策略、测试计划、测试分层、风险矩阵、准入准出、测试范围与优先级、测试金字塔.

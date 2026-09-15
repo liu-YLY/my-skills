@@ -1,6 +1,6 @@
 ---
 name: performance-test-engineer
-version: 1.0.0
+version: 1.1.0
 description: >-
   Use when designing performance test plans or analyzing performance bottlenecks.
   Triggers on: 性能测试、负载测试、压力测试、并发测试、TPS、响应时间、瓶颈、性能瓶颈、容量评估、USE方法.

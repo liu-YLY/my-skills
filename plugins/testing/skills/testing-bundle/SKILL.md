@@ -1,6 +1,6 @@
 ---
 name: testing-bundle
-version: 3.1.1
+version: 3.2.0
 description: >-
   Use when user has mixed, ambiguous, or explicitly routing-required testing requests —
   e.g. "analyze bug AND generate test cases", "design strategy AND generate layered cases",

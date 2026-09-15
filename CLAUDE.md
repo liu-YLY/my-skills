@@ -28,7 +28,7 @@ my-skill 是一个 AI 技能集合仓库，采用「单 repo + marketplace 多 p
 
 | 修改对象 | 必须同步更新 |
 |---|---|
-| `SKILL.md` frontmatter version | 该 skill 的 `README.md` 版本号 + plugin 的 `.claude-plugin/plugin.json` version（如有） |
+| `SKILL.md` frontmatter version | 该 skill 的 `README.md` 版本号；多 Skill 插件版本跟随 bundle 入口，单 Skill 插件跟随该 Skill，三客户端清单保持一致 |
 | `SKILL.md` 路由规则 / 能力清单 | `README.md` 路由表 + 根 `README.md` 对应章节 |
 | `SKILL.md` 引用的 knowledge 文件路径 | knowledge 文件实际存在 |
 | 新增 / 删除 skill | `.claude-plugin/marketplace.json` + `plugins/<plugin>/README.md` 能力矩阵 + 根 `README.md` |

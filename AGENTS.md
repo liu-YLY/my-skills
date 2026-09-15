@@ -158,10 +158,10 @@ git commit -m "fix: 紧急修复描述"
 # 3. 推送并发起 PR（标记为紧急）
 git push -u origin hotfix/xxx
 
-# 4. 合并后删除分支
+# 4. 在远程发起 PR，至少 1 人 review 通过后 squash merge
+# 5. 远程 PR 合并完成后同步 main 并删除分支
 git checkout main
-git merge --squash hotfix/xxx
-git push origin main
+git pull --ff-only origin main
 git push origin --delete hotfix/xxx
 ```
 

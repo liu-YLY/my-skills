@@ -1,6 +1,6 @@
 [project]
 name = "state-machine-testing-mcp"
-version = "0.2.0"
+version = "0.3.0"
 description = "MCP Server for state-machine-test-engineer skill: schema validation, scenario generation, coverage check"
 requires-python = ">=3.11"
 license = { text = "MIT" }

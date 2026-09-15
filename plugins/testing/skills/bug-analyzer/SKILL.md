@@ -1,6 +1,6 @@
 ---
 name: bug-analyzer
-version: 1.0.0
+version: 1.1.0
 description: >-
   Use when analyzing bug root causes, reproducing defects, or designing defensive test cases.
   Triggers on: Bug分析、根因、缺陷定位、复现、5 Whys、鱼骨图、NullPointerException、500错误、测试环境与预发不一致.
