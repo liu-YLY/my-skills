@@ -16,43 +16,50 @@ def check_coverage(state_machine: StateMachine, scenarios: ScenarioList) -> Cove
     Returns:
         CoverageReport: 覆盖度报告
     """
-    # 1. transition_coverage: 每条转换至少有 1 个合法场景
-    legal_scenarios = [s for s in scenarios.scenarios if s.risk_type == "legal_transition"]
-    covered_transitions: set[str] = set()
-    for s in legal_scenarios:
-        # 通过 current_state + trigger_event 匹配 transition
-        for t in state_machine.transitions:
-            if t.from_state == s.current_state and t.event == s.trigger_event:
-                covered_transitions.add(f"{t.from_state}→{t.to_state}:{t.event}")
-                break
+    # A reference narrows candidates; it never bypasses structural matching.
+    covered_transitions: set[int] = set()
+    covered_forbidden: set[int] = set()
+    unmatched: list[str] = []
+    for scenario in scenarios.scenarios:
+        matches: list[int] = []
+        if scenario.risk_type == "legal_transition":
+            for index, transition in enumerate(state_machine.transitions):
+                if scenario.transition_id and scenario.transition_id != transition.id:
+                    continue
+                if (scenario.current_state == transition.from_state
+                        and scenario.trigger_event == transition.event
+                        and scenario.expected_target_state == transition.to_state
+                        and set(scenario.guard_conditions) == set(transition.guards)):
+                    matches.append(index)
+            if len(matches) == 1:
+                covered_transitions.add(matches[0])
+            else:
+                unmatched.append(scenario.id)
+        elif scenario.risk_type == "illegal_transition":
+            for index, forbidden in enumerate(state_machine.forbidden):
+                if scenario.forbidden_id and scenario.forbidden_id != forbidden.id:
+                    continue
+                target = scenario.attempted_target_state
+                target_matches = target == forbidden.to_state and target != "*"
+                if forbidden.to_state == "*" and target in {s.name for s in state_machine.states}:
+                    target_matches = True
+                if (scenario.current_state == forbidden.from_state
+                        and scenario.expected_target_state == forbidden.from_state
+                        and target is not None and target_matches):
+                    matches.append(index)
+            if len(matches) == 1:
+                covered_forbidden.add(matches[0])
+            else:
+                unmatched.append(scenario.id)
 
     total_transitions = len(state_machine.transitions)
-    transition_coverage = (
-        len(covered_transitions) / total_transitions if total_transitions > 0 else 0.0
-    )
-
-    uncovered_transitions = [
-        f"{t.from_state}→{t.to_state}:{t.event}"
-        for t in state_machine.transitions
-        if f"{t.from_state}→{t.to_state}:{t.event}" not in covered_transitions
-    ]
-
-    # 2. forbidden_coverage: 每条禁止转换至少有 1 个非法场景
-    illegal_scenarios = [s for s in scenarios.scenarios if s.risk_type == "illegal_transition"]
-    covered_forbidden: set[str] = set()
-    for s in illegal_scenarios:
-        for f in state_machine.forbidden:
-            target = "任意状态" if f.to_state == "*" else f.to_state
-            if f.from_state == s.current_state and (
-                f.to_state == "*" or target in s.trigger_event
-            ):
-                covered_forbidden.add(f"{f.from_state}→{target}:{f.reason}")
-                break
-
+    transition_coverage = len(covered_transitions) / total_transitions if total_transitions else 0.0
     total_forbidden = len(state_machine.forbidden)
-    forbidden_coverage = (
-        len(covered_forbidden) / total_forbidden if total_forbidden > 0 else 0.0
-    )
+    forbidden_coverage = len(covered_forbidden) / total_forbidden if total_forbidden else 0.0
+    uncovered_transitions = [
+        f"{t.id}: {t.from_state}→{t.to_state}:{t.event} guards={t.guards}"
+        for index, t in enumerate(state_machine.transitions) if index not in covered_transitions
+    ]
 
     # 3. scenario_type_coverage: 10 类场景类型分布
     type_coverage: dict[str, int] = {t: 0 for t in ALL_SCENARIO_TYPES}
@@ -75,4 +82,5 @@ def check_coverage(state_machine: StateMachine, scenarios: ScenarioList) -> Cove
         evidence_distribution=evidence_dist,
         uncovered_transitions=uncovered_transitions,
         missing_scenario_types=missing_scenario_types,
+        unmatched_scenarios=unmatched,
     )
