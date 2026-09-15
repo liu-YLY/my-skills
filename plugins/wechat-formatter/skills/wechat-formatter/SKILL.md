@@ -204,7 +204,7 @@ keywords:
 - **Emoji**：`casual-chat` 8-15 个，`cyber` 5-8 个，其他风格不超过 5 处
 - **字号**：默认 medium(15px)，可选 small(13px)/large(17px)，在结果头部注明
 - **字体样式**：粗体 `**重点**`、行内代码 `` `code` ``、引用 `>` 用于提示/注意
-- **一键生成 HTML（可选）**：阶段 5 调用 `scripts/md2wechat.py` 合并 Markdown + CSS 为带内联样式 HTML。仅当用户明确要求「HTML」/「可直接粘贴」/「一键复制」时执行。依赖：`pip install markdown beautifulsoup4`
+- **一键生成 HTML（可选）**：阶段 5 调用 `scripts/md2wechat.py` 合并 Markdown + CSS 为带内联样式 HTML。仅当用户明确要求「HTML」/「可直接粘贴」/「一键复制」时执行。依赖：`pip install -r "$SKILL_ROOT/scripts/requirements.txt"`
 - **渲染工具（备选）**：[mdnice](https://mdnice.com)/[135 编辑器](https://www.135editor.com)/[壹伴](https://yiban.io) 可应用 CSS 后复制到公众号。CSS 参数见 [references/wechat-markdown.md](references/wechat-markdown.md)「CSS 渲染参数参考」
 - **现成 CSS 样式**：`styles/` 目录提供每种风格的完整 CSS。阶段 5 自动读取；mdnice 手动方式需粘贴到「自定义主题」
 
@@ -247,7 +247,7 @@ keywords:
 | 用户在 🔴 CHECKPOINT 1 拒绝所有推荐风格 | 列出全部 6 种风格简介让用户二次选择 | 用户明确不选时终止流程，输出原文不做排版 |
 | 阶段 3 所选风格模板文件读取失败 | 检测路径是否正确（`templates/{style}.md`），提示用户检查 skill 安装完整性 | 降级为 tech-blog 模板（最通用），并标注「模板加载失败，已降级」 |
 | 阶段 4 校验发现公众号不兼容语法（如 Markdown 表格、`~~删除线~~`） | 按 [wechat-markdown.md](references/wechat-markdown.md) 替代方案自动转换 | 无法自动转换的语法加 `<!-- ⚠️ 需手动处理：具体说明 -->` 注释，在校验报告中列出 |
-| 阶段 5 `md2wechat.py` 执行失败（如 pip 依赖缺失） | 提示用户安装依赖：`pip install markdown beautifulsoup4`，给出完整命令 | 跳过 HTML 生成，仅输出 Markdown 文件，提示用户使用 mdnice 等第三方工具手动转换 |
+| 阶段 5 `md2wechat.py` 执行失败（如 pip 依赖缺失） | 提示用户安装依赖：`pip install -r "$SKILL_ROOT/scripts/requirements.txt"`，给出完整命令 | 跳过 HTML 生成，仅输出 Markdown 文件，提示用户使用 mdnice 等第三方工具手动转换 |
 | CSS 样式文件（`styles/{style}.md`）提取失败 | 检测 styles 目录完整性，提示用户重新安装 skill | 输出无样式的纯 Markdown，标注「CSS 缺失，需手动应用样式」 |
 
 ---

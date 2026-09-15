@@ -350,7 +350,7 @@ class TestConvertFlow:
 def test_six_styles_regression(style_stem, tmp_path):
     """每种风格至少一条回归：转换成功 + 输出存在 + 容器结构正确。"""
     md_path = _write_markdown(tmp_path, f'{style_stem}-sample')
-    style_path = _write_style_file(tmp_path, style_stem)
+    style_path = SCRIPT_PATH.parent.parent / 'styles' / f'{style_stem}.md'
 
     out_path = md2wechat.convert(str(md_path), str(style_path), 'medium')
     out_file = Path(out_path)
@@ -363,6 +363,39 @@ def test_six_styles_regression(style_stem, tmp_path):
     # 风格标签出现
     expected_name = md2wechat.STYLE_NAMES[style_stem]
     assert expected_name in html
+
+
+@pytest.mark.parametrize('payload', [
+    '# </title><script>window.auditMarker = 1</script>',
+    '<img src="https://example.com/a.png" onerror="window.auditMarker = 1">',
+    '<a href="javascript:alert(1)">链接</a><iframe srcdoc="x"></iframe>',
+    '<svg onload="alert(1)"><script>alert(1)</script></svg>',
+])
+def test_untrusted_content_cannot_add_active_html(payload, tmp_path):
+    from bs4 import BeautifulSoup
+    source = tmp_path / 'unsafe.md'
+    source.write_text(payload, encoding='utf-8')
+    style = _write_style_file(tmp_path, 'tech-blog')
+    output = md2wechat.convert(str(source), str(style))
+    soup = BeautifulSoup(Path(output).read_text(), 'html.parser')
+    assert len(soup.find_all('script')) == 1  # Only the trusted copy toolbar script.
+    content = soup.select_one('#content')
+    assert not content.select('script, iframe, svg, object, form')
+    for node in content.find_all(True):
+        assert not any(key.lower().startswith('on') for key in node.attrs)
+        assert not any(str(node.get(key, '')).lower().startswith('javascript:') for key in ('href', 'src'))
+
+
+def test_styles_on_unmatched_elements_are_filtered(tmp_path):
+    from bs4 import BeautifulSoup
+    source = tmp_path / 'modules.md'
+    source.write_text('<section style="color:red; box-shadow:0 0 2px; background:url(javascript:alert(1))">模块</section>')
+    output = md2wechat.convert(str(source), str(_write_style_file(tmp_path, 'tech-blog')))
+    content = BeautifulSoup(Path(output).read_text(), 'html.parser').select_one('#content')
+    assert '模块' in content.get_text()
+    assert 'color:red' in str(content).replace(' ', '')
+    assert 'box-shadow' not in str(content)
+    assert 'url(' not in str(content)
 
 
 # ─── 8. CLI 无效路径 ───────────────────────────────────────────────────────
