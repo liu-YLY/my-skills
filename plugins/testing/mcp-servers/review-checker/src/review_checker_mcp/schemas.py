@@ -1,8 +1,7 @@
 """pydantic Schema 定义。
 
 与 test-case-engineer 评审模式的用例结构严格对齐，TestCase 的必填字段
-（ID/title/priority/type/steps/expected_results）由 pydantic 强制校验，
-从机制上防止字段缺失。
+由 pydantic 检查类型，缺失正文及检查点引用由领域校验返回问题。
 """
 
 from __future__ import annotations
@@ -39,8 +38,13 @@ class Severity(str, Enum):
     P2 = "P2"
 
 
+class Checkpoint(BaseModel):
+    after_step: int = Field(strict=True)
+    expected_results: list[str] = Field(default_factory=list)
+
+
 class TestCase(BaseModel):
-    """用例定义。必填字段缺失由 pydantic 校验报错。"""
+    """用例定义。允许正文缺失，以便领域校验生成可定位的问题。"""
 
     id: str
     title: str
@@ -48,7 +52,8 @@ class TestCase(BaseModel):
     type: str = ""
     scenario: ScenarioType | None = None
     steps: list[str] = Field(default_factory=list)
-    expected_results: str = ""
+    expected_results: str | list[str] = ""
+    checkpoints: list[Checkpoint] = Field(default_factory=list)
     preconditions: list[str] = Field(default_factory=list)
     test_point_id: str = ""
     notes: str = ""  # 用例备注，超长标题等场景记录保留原因
@@ -60,6 +65,7 @@ class TestCaseSet(BaseModel):
     cases: list[TestCase]
     test_point_ids: list[str] = Field(default_factory=list)
     supports_p3: bool = True
+    required_scenarios: list[ScenarioType] | None = None
 
 
 class Issue(BaseModel):
@@ -73,6 +79,7 @@ class Issue(BaseModel):
     rule: str
     evidence: str
     suggestion: str = ""
+    confirmation: Literal["confirmed", "candidate"] = "confirmed"
 
 
 class PreconditionFact(BaseModel):
@@ -80,7 +87,7 @@ class PreconditionFact(BaseModel):
 
     subject: str  # 规范化主体，如 "用户登录状态"
     state: str  # 规范化状态值，如 "已登录"
-    polarity: Literal["affirmative", "negation"]  # 肯定/否定断言
+    polarity: Literal["affirmative", "negation", "unknown"]  # 不确定的事实不补齐极性
 
 
 class InputFact(BaseModel):
@@ -102,6 +109,7 @@ class SemanticFacts(BaseModel):
     preconditions: list[PreconditionFact] = Field(default_factory=list)
     inputs: list[InputFact] = Field(default_factory=list)
     dependencies: list[str] = Field(default_factory=list)  # 依赖的其他 case_id
+    context: dict[str, str] = Field(default_factory=dict)
 
 
 class DimensionStat(BaseModel):
@@ -117,10 +125,13 @@ class ReviewReport(BaseModel):
 
     total_cases: int
     issue_cases: int
-    pass_rate: float
+    pass_rate: float | None
     total_issues: int
     issue_density: float
-    grade: Literal["A", "B", "C", "D"]
+    grade: Literal["A", "B", "C", "D", "未评估"]
     issues: list[Issue]
     dimension_stats: list[DimensionStat]
     severity_stats: dict[str, int]
+    candidate_issues: list[Issue] = Field(default_factory=list)
+    assessed_dimensions: list[str] = Field(default_factory=list)
+    not_assessed: dict[str, str] = Field(default_factory=dict)

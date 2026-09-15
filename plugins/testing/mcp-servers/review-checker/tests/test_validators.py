@@ -48,7 +48,8 @@ def _make_case(
 
 
 def _make_set(cases: list[TestCase], test_point_ids: list[str] | None = None) -> TestCaseSet:
-    return TestCaseSet(cases=cases, test_point_ids=test_point_ids or ["TP_001"])
+    return TestCaseSet(cases=cases, test_point_ids=test_point_ids or ["TP_001"],
+                       required_scenarios=list(ScenarioType))
 
 
 class TestCoverage:
@@ -75,11 +76,11 @@ class TestCoverage:
         assert issues[0].severity.value == "P0"
         assert "异常" in issues[0].evidence
 
-    def test_scenario_inferred_from_title_when_missing(self):
+    def test_missing_scenario_is_not_inferred_from_title(self):
         case = _make_case(title="登录-网络超时-提示重试", scenario=None)
         issues = check_coverage(_make_set([case]))
-        # 单条用例无法覆盖全部 4 类，应触发 P0
-        assert any(i.severity.value == "P0" for i in issues)
+        # 未标注类型不能证明覆盖缺失。
+        assert issues and all(i.confirmation == "candidate" for i in issues)
 
 
 class TestPriorityBalance:
@@ -98,18 +99,18 @@ class TestPriorityBalance:
         issues = check_priority_balance(_make_set(cases))
         assert len(issues) == 0
 
-    def test_p0_ratio_too_high_triggers_p1(self):
+    def test_p0_ratio_does_not_override_business_risk(self):
         cases = [_make_case(id=f"TC_{i:03d}", priority=Priority.P0) for i in range(10)]
         cases += [_make_case(id=f"TC_{i:03d}", priority=Priority.P2) for i in range(10, 20)]
         issues = check_priority_balance(_make_set(cases))
-        assert any(i.severity.value == "P1" and "P0" in i.evidence for i in issues)
+        assert issues == []
 
-    def test_p0_p1_sum_below_50_percent_triggers_p1(self):
+    def test_low_p0_p1_ratio_is_not_a_defect(self):
         cases = [_make_case(id=f"TC_{i:03d}", priority=Priority.P0) for i in range(2)]
         cases += [_make_case(id=f"TC_{i:03d}", priority=Priority.P1) for i in range(2)]
         cases += [_make_case(id=f"TC_{i:03d}", priority=Priority.P2) for i in range(6)]
         issues = check_priority_balance(_make_set(cases))
-        assert any("P0+P1" in i.rule for i in issues)
+        assert issues == []
 
     def test_p3_not_supported_no_issue(self):
         cases = [_make_case(id=f"TC_{i:03d}", priority=Priority.P0) for i in range(15)]
@@ -203,12 +204,12 @@ class TestExecutability:
     def test_vague_expected_triggers_p1(self):
         case = _make_case(expected_results="功能正常")
         issues = check_executability(case)
-        assert any(i.severity.value == "P1" and "模糊预期" in i.rule for i in issues)
+        assert any(i.severity.value == "P1" and "模糊" in i.rule for i in issues)
 
-    def test_too_many_steps_triggers_p2(self):
+    def test_long_business_flow_has_no_count_penalty(self):
         case = _make_case(steps=[f"步骤{i}" for i in range(8)])
         issues = check_executability(case)
-        assert any(i.severity.value == "P2" and "步骤数" in i.rule for i in issues)
+        assert not any("步骤数" in i.rule for i in issues)
 
 
 class TestRedundancy:
