@@ -24,7 +24,7 @@ def test_order_refund_end_to_end(tmp_path: Path) -> None:
     # 2. 校验
     report = validate_state_machine(sm, strict=False)
     assert report.overall_status in ("pass", "warn")
-    assert len(report.checks) == 9
+    assert len(report.checks) == 10
 
     # 3. 生成场景
     scenarios = generate_scenarios(sm)
