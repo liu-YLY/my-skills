@@ -20,7 +20,7 @@
 | [state-machine-test-engineer](skills/state-machine-test-engineer/) | v1.1.0 | 子 skill | 状态机驱动的状态型需求测试：10 类场景穷举 |
 | [change-impact-analyzer](skills/change-impact-analyzer/) | v1.1.0 | 协同 skill | git 代码变更与测试用例交叉分析（链 6 协同，随 plugin 整体安装） |
 
-**可选配套**：[state-machine-testing MCP Server](mcp-servers/state-machine-testing/) v0.2.0 — 为 state-machine-test-engineer 提供 5 个工具（build / validate / generate / export / coverage，协议层 stdio + HTTP 已端到端联调验证），未安装时降级为纯 LLM 推理。
+**可选配套**：[state-machine-testing MCP Server](mcp-servers/state-machine-testing/) v0.3.0 — 为 state-machine-test-engineer 提供 5 个工具（build / validate / generate / export / coverage，协议层 stdio + HTTP 已端到端联调验证），未安装时降级为纯 LLM 推理。
 
 ## 路由架构
 
@@ -42,6 +42,8 @@
 
 详细的 6-way 路由表与 7 条混合意图链见 [skills/testing-bundle/SKILL.md](skills/testing-bundle/SKILL.md)。
 
+评审 MCP：[review-checker](mcp-servers/review-checker/) 支持业务结果数组、可选关键检查点和候选问题分离统计；只提供 stdio 传输。
+
 ## 多 runtime 适配
 
 | Runtime | manifest 位置 | 安装命令 |
@@ -59,18 +61,17 @@ testing/
 ├── .codex-plugin/plugin.json         # Codex plugin manifest
 ├── README.md                         # 本文件
 ├── mcp-servers/
+│   ├── review-checker/               # 用例评审 MCP（stdio）
 │   └── state-machine-testing/        # 可选 MCP Server（Python 3.11+）
 │       ├── src/state_machine_testing_mcp/
 │       ├── tests/{unit,integration,fixtures}
 │       ├── pyproject.toml
 │       └── README.md
-├── scripts/
-│   ├── convert_docs.py               # 文档转换降级方案
-│   └── requirements.txt
 └── skills/
     ├── testing-bundle/               # 路由入口 + CHANGELOG
     ├── test-strategy-engineer/       # 项目级策略
     ├── test-case-engineer/           # 功能用例生成（含 bug-patterns.md，被 bug-analyzer 引用）
+    │   └── scripts/{convert_docs.py,requirements.txt}
     ├── performance-test-engineer/    # 性能测试
     ├── bug-analyzer/                 # Bug 根因（bug-patterns-index 指向 test-case-engineer）
     ├── state-machine-test-engineer/  # 状态机测试
