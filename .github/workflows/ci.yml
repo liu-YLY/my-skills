@@ -10,6 +10,30 @@ permissions:
   contents: read
 
 jobs:
+  functional-tests:
+    name: Functional tests (${{ matrix.suite }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [review-checker, state-machine-testing, wechat-formatter]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install and test MCP package
+        if: matrix.suite != 'wechat-formatter'
+        working-directory: plugins/testing/mcp-servers/${{ matrix.suite }}
+        run: |
+          python -m pip install -e '.[dev]'
+          python -m pytest
+      - name: Test HTML conversion
+        if: matrix.suite == 'wechat-formatter'
+        run: |
+          python -m pip install pytest -r plugins/wechat-formatter/skills/wechat-formatter/scripts/requirements.txt
+          python -m pytest plugins/wechat-formatter/skills/wechat-formatter/scripts/tests
+
   lint-and-validate:
     name: Lint & Validate
     runs-on: ubuntu-latest
@@ -26,7 +50,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install markdownlint-cli
         run: npm install -g markdownlint-cli
