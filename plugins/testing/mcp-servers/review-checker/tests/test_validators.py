@@ -460,7 +460,7 @@ def _make_facts(
 class TestCheckPreconditionStateConflicts:
     """冲突类型 ①：前置条件状态矛盾。"""
 
-    def test_same_subject_opposite_polarity_triggers_p0(self):
+    def test_different_cases_can_have_opposite_preconditions(self):
         from review_checker_mcp.schemas import PreconditionFact
         from review_checker_mcp.validators import check_precondition_state_conflicts
 
@@ -485,11 +485,7 @@ class TestCheckPreconditionStateConflicts:
             ),
         ]
         issues = check_precondition_state_conflicts(facts)
-        assert len(issues) == 1
-        assert issues[0].severity.value == "P0"
-        assert "TC_001" in issues[0].case_id
-        assert "TC_002" in issues[0].case_id
-        assert "用户登录状态" in issues[0].evidence
+        assert issues == []
 
     def test_same_subject_same_polarity_no_issue(self):
         from review_checker_mcp.schemas import PreconditionFact
@@ -569,8 +565,8 @@ class TestCheckPreconditionStateConflicts:
         issues = check_precondition_state_conflicts(facts)
         assert len(issues) == 0
 
-    def test_no_test_point_id_falls_back_to_module_function_segment(self):
-        """无 test_point_id 时按 case_id 模块+功能段分组。"""
+    def test_similar_ids_do_not_make_different_cases_conflict(self):
+        """不同业务条件不因编号相近被当作矛盾。"""
         from review_checker_mcp.schemas import PreconditionFact
         from review_checker_mcp.validators import check_precondition_state_conflicts
 
@@ -595,7 +591,7 @@ class TestCheckPreconditionStateConflicts:
             ),
         ]
         issues = check_precondition_state_conflicts(facts)
-        assert len(issues) == 1  # 同 WEBHOOK_ADD 组内冲突
+        assert issues == []
 
     def test_no_test_point_id_different_function_no_issue(self):
         """无 test_point_id 且不同功能段不视为冲突。"""
@@ -629,7 +625,7 @@ class TestCheckPreconditionStateConflicts:
 class TestCheckInputOutcomeConflicts:
     """冲突类型 ②：同输入不同预期。"""
 
-    def test_same_signature_different_outcome_triggers_p0(self):
+    def test_same_signature_different_outcome_is_a_candidate(self):
         from review_checker_mcp.schemas import InputFact
         from review_checker_mcp.validators import check_input_outcome_conflicts
 
@@ -655,7 +651,8 @@ class TestCheckInputOutcomeConflicts:
         ]
         issues = check_input_outcome_conflicts(facts)
         assert len(issues) == 1
-        assert issues[0].severity.value == "P0"
+        assert issues[0].confirmation == "candidate"
+        assert issues[0].severity.value == "P1"
         assert "TC_001" in issues[0].case_id
         assert "TC_002" in issues[0].case_id
 
@@ -852,7 +849,7 @@ class TestCheckDependencyCycles:
 class TestCheckSemanticConflicts:
     """check_semantic_conflicts 聚合函数。"""
 
-    def test_aggregates_all_three_conflict_types(self):
+    def test_different_contexts_only_report_dependency_cycle(self):
         from review_checker_mcp.schemas import (
             InputFact,
             PreconditionFact,
@@ -895,11 +892,11 @@ class TestCheckSemanticConflicts:
             ),
         ]
         issues = check_semantic_conflicts(facts)
-        # 应同时检出：①前置条件矛盾(P0) + ②同输入异预期(P0) + ③依赖闭环(P1)
+        # 两条用例前置条件不同，仅依赖闭环属于确定问题。
         dims = [i.dimension for i in issues]
-        assert dims.count("语义一致性") == 3
+        assert dims.count("语义一致性") == 1
         severities = [i.severity.value for i in issues]
-        assert severities.count("P0") == 2
+        assert severities.count("P0") == 0
         assert severities.count("P1") == 1
 
     def test_empty_facts_returns_empty(self):

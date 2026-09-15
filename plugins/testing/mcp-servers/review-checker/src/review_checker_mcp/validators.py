@@ -367,93 +367,44 @@ def _extract_module_function_segment(case_id: str) -> str:
 
 
 def check_precondition_state_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
-    """冲突类型 ①：前置条件状态矛盾。
-
-    同 test_point_id 分组内（无 test_point_id 时按 case_id 模块+功能段分组），
-    存在两条用例的 PreconditionFact.subject 相同，但 state 不同且 polarity
-    互为肯定/否定 → P0。
-    """
+    """检测单用例抽取事实的直接矛盾，不把不同场景的前置条件当作冲突。"""
     issues: list[Issue] = []
-
-    # 分组：优先用 test_point_id，无则用模块+功能段
-    groups: dict[str, list[SemanticFacts]] = {}
     for fact in facts:
-        if fact.test_point_id:
-            group_key = fact.test_point_id
-        else:
-            group_key = _extract_module_function_segment(fact.case_id)
-        groups.setdefault(group_key, []).append(fact)
-
-    for group_key, group_facts in groups.items():
-        if len(group_facts) < 2:
-            continue
-        # 收集组内所有 (case_id, PreconditionFact)
-        entries: list[tuple[str, PreconditionFact]] = []
-        for f in group_facts:
-            for pc in f.preconditions:
-                entries.append((f.case_id, pc))
-
-        # 两两比对
-        for i, (case_a, pc_a) in enumerate(entries):
-            for case_b, pc_b in entries[i + 1 :]:
-                if case_a == case_b:
-                    continue
-                if (
-                    pc_a.subject == pc_b.subject
-                    and pc_a.polarity != pc_b.polarity
-                ):
-                    issues.append(
-                        Issue(
-                            case_id=f"{case_a},{case_b}",
-                            dimension="语义一致性",
-                            severity=Severity.P0,
-                            rule="同分组内 subject 相同且 polarity 互斥 → P0",
-                            evidence=(
-                                f"{case_a}.preconditions[{pc_a.subject}={pc_a.state}] "
-                                f"vs {case_b}.preconditions[{pc_b.subject}={pc_b.state}]"
-                            ),
-                            suggestion="核对场景归属：若属不同测试场景则拆分 test_point_id；若属同场景则修正其中一条的前置条件",
-                        )
-                    )
+        states: dict[tuple[str, str], set[str]] = {}
+        for condition in fact.preconditions:
+            states.setdefault((condition.subject, condition.state), set()).add(condition.polarity)
+        for (subject, state), polarities in states.items():
+            if {"affirmative", "negation"} <= polarities:
+                issues.append(Issue(
+                    case_id=fact.case_id, dimension="语义一致性", severity=Severity.P0,
+                    rule="同一用例对同一事实同时肯定和否定 → P0",
+                    evidence=f"{fact.case_id}.preconditions[{subject}={state}] 同时为 affirmative/negation",
+                    suggestion="核对原文及抽取结果，修正互斥前置条件",
+                ))
     return issues
 
 def check_input_outcome_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
-    """冲突类型 ②：同输入不同预期。
-
-    全用例集范围内，用例 A 的任一 InputFact 与用例 B 的任一 InputFact 的
-    input_signature 完全相同，但 expected_outcome 不同 → P0。
-    支持参数化用例的多 InputFact 笛卡尔比对。
-    """
+    """相同输入的不同结果仅作为候选；已知上下文不同则不报冲突。"""
     issues: list[Issue] = []
-
-    # 收集所有 (case_id, InputFact)
-    entries: list[tuple[str, InputFact]] = []
-    for fact in facts:
-        for inp in fact.inputs:
-            entries.append((fact.case_id, inp))
-
-    # 两两比对（不同 case_id 之间）
-    for i, (case_a, inp_a) in enumerate(entries):
-        for case_b, inp_b in entries[i + 1 :]:
-            if case_a == case_b:
+    entries = [(fact, inp) for fact in facts for inp in fact.inputs]
+    for i, (a, inp_a) in enumerate(entries):
+        for b, inp_b in entries[i + 1:]:
+            if inp_a.input_signature != inp_b.input_signature or inp_a.expected_outcome == inp_b.expected_outcome:
                 continue
-            if (
-                inp_a.input_signature == inp_b.input_signature
-                and inp_a.expected_outcome != inp_b.expected_outcome
-            ):
-                issues.append(
-                    Issue(
-                        case_id=f"{case_a},{case_b}",
-                        dimension="语义一致性",
-                        severity=Severity.P0,
-                        rule="input_signature 相同且 expected_outcome 不同 → P0",
-                        evidence=(
-                            f"{case_a}[{inp_a.input_signature}]→{inp_a.expected_outcome} "
-                            f"vs {case_b}[{inp_b.input_signature}]→{inp_b.expected_outcome}"
-                        ),
-                        suggestion="核对预期：同一输入应有唯一预期，修正其中一条的 expected_outcome",
-                    )
-                )
+            if a.test_point_id and b.test_point_id and a.test_point_id != b.test_point_id:
+                continue
+            context_differs = any(a.context[k] != b.context[k] for k in a.context.keys() & b.context.keys())
+            states_a = {(p.subject, p.state, p.polarity) for p in a.preconditions if p.polarity != "unknown"}
+            states_b = {(p.subject, p.state, p.polarity) for p in b.preconditions if p.polarity != "unknown"}
+            if context_differs or (states_a and states_b and states_a != states_b):
+                continue
+            issues.append(Issue(
+                case_id=a.case_id if a.case_id == b.case_id else f"{a.case_id},{b.case_id}",
+                dimension="语义一致性", severity=Severity.P1, confirmation="candidate",
+                rule="相同输入的预期不同，需核实完整业务上下文",
+                evidence=f"{a.case_id}[{inp_a.input_signature}]→{inp_a.expected_outcome} vs {b.case_id}→{inp_b.expected_outcome}",
+                suggestion="核对权限、配置、环境、时间条件及需求依据后再确认问题",
+            ))
     return issues
 
 def check_dependency_cycles(facts: list[SemanticFacts]) -> list[Issue]:

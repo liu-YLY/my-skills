@@ -385,7 +385,7 @@ class TestMcpIntegration:
 class TestCheckSemanticConflictsTool:
     """check_semantic_conflicts 工具。"""
 
-    def test_returns_issues_for_conflicting_facts(self):
+    def test_different_case_preconditions_do_not_conflict(self):
         from review_checker_mcp.schemas import (
             PreconditionFact,
             SemanticFacts,
@@ -417,7 +417,7 @@ class TestCheckSemanticConflictsTool:
             ),
         ]
         issues = check_semantic_conflicts(facts)
-        assert len(issues) > 0
+        assert issues == []
         assert all(i.dimension == "语义一致性" for i in issues)
 
     def test_returns_empty_for_consistent_facts(self):

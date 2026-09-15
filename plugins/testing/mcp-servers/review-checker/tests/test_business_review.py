@@ -72,3 +72,38 @@ def test_only_declared_applicable_scenarios_are_required():
     issues = review_test_cases(dataset)
     assert len(issues) == 1
     assert "逆向" in issues[0].evidence
+
+
+def fact(case_id, state, outcome, **changes):
+    values = dict(case_id=case_id, test_point_id="TP_VIEW", preconditions=[
+        {"subject": "登录状态", "state": state, "polarity": "affirmative"}],
+        inputs=[{"input_signature": "查看订单42", "expected_outcome": outcome}])
+    return SemanticFacts(**(values | changes))
+
+
+def test_different_business_contexts_are_not_conflicts():
+    assert not check_semantic_conflicts([
+        fact("TC_A", "已登录", "显示详情"), fact("TC_B", "未登录", "提示登录")])
+
+
+def test_matching_context_with_different_outcome_is_only_a_candidate():
+    issues = check_semantic_conflicts([
+        fact("TC_A", "已登录", "显示详情"), fact("TC_B", "已登录", "提示登录")])
+    assert len(issues) == 1
+    assert issues[0].confirmation == "candidate"
+
+
+def test_same_case_opposite_claims_are_detected():
+    sample = fact("TC_A", "已登录", "显示详情")
+    sample.preconditions.append(sample.preconditions[0].model_copy(update={"polarity": "negation"}))
+    issues = check_semantic_conflicts([sample])
+    assert len(issues) == 1
+    assert issues[0].case_id == "TC_A"
+    assert issues[0].severity == "P0"
+
+
+def test_same_subject_different_states_are_not_opposite_claims():
+    sample = fact("TC_A", "已登录", "显示详情")
+    sample.preconditions.append(sample.preconditions[0].model_copy(
+        update={"state": "被冻结", "polarity": "negation"}))
+    assert not check_semantic_conflicts([sample])
