@@ -1,18 +1,21 @@
-# 完整性检查清单（9 项）
+# 完整性检查清单（结构校验＋9 项）
 
-> **何时阅读**：阶段 3（完整性检查）执行时查阅。定义 9 项检查的判定条件、pass/fail/warn 规则、缺口/矛盾标记方式。
+> **何时阅读**：阶段 3（完整性检查）执行时查阅。定义 9 项检查的判定条件、pass/fail/warn/not_checked 规则、缺口/矛盾标记方式。
 > **覆盖范围**：9 项检查 / 检查顺序 / overall_status 计算规则 / 缺口与矛盾的输出格式。
 > **与 MCP 对齐**：本文件与 MCP Server `validate_state_machine` 工具的 9 项检查完全对齐，skill 自检与 MCP 校验使用相同规则。
 
-## 1. 9 项检查总览
+## 1. 结构校验与 9 项检查总览
+
+`overall_status` 只汇总已执行的机器检查；`not_checked` 不参与严格模式升级。`manual_review_required=true` 表示仍需对照需求审阅，不能将结构通过写成业务完整性已证明。严格模式将实际 `warn` 升为 `fail`，不会把未检查事项升级为失败。
 
 | # | 检查项 | 检查对象 | 默认状态 | fail 触发条件 |
 |---|---|---|---|---|
+| C0 | 模型结构一致 | 状态、端点、初始态、规则标识和合法/禁止关系 | pass | 名称或标识重复、端点不存在、缺少初始态、明确矛盾 |
 | C1 | 每个状态有明确含义 | `states[].meaning` | pass | meaning 字段为空或为占位符 |
 | C2 | 每个状态有进入条件（除初始态） | `transitions[].to` | pass | 非初始态无任何 transition 指向它 |
 | C3 | 每个非终态有退出路径 | `transitions[].from` | pass | 非终态无任何 transition 从它出发 |
 | C4 | 终态真的不可变化 | `transitions[].from` | pass | 终态出现在任何 transition 的 from |
-| C5 | 禁止转换无遗漏 | `forbidden[]` + 业务规则 | warn | 无法自动判定，需人工审视 |
+| C5 | 禁止转换无遗漏 | `forbidden[]` + 业务规则 | not_checked | 无法自动判定，需人工审视 |
 | C6 | 状态变化有副作用定义 | `transitions[].side_effects` | warn | transition 无 side_effects |
 | C7 | 依据类型已标注 | `transitions[].evidence_type` | pass | 任何 transition/forbidden 缺 evidence_type |
 | C8 | 无悬挂状态 | `states[]` 可达性 | warn | 状态无法从初始态到达 |
@@ -30,7 +33,7 @@ overall_status =
 | overall_status | 阶段 3 退出动作 |
 |---|---|
 | `pass` | 直接进入阶段 4 |
-| `warn` | 列出 warning，询问用户是否继续（默认继续） |
+| `warn` | 披露结构风险，按已有授权继续可完成的分析；不自动改变模型或执行环境 |
 | `fail` | **不进入阶段 4**，触发 CHECKPOINT 要求用户先修正 |
 
 ## 3. 各项检查详细规则
@@ -127,13 +130,13 @@ contradictions:
 
 **检查对象**：`forbidden[]` 的完整性
 
-**判定方式**：本项无法自动判定（业务规则可能很多），默认 `warn`，提示用户人工审视：
+**判定方式**：本项无法自动判定（业务规则可能很多），标记 `not_checked`，提示用户人工审视：
 
 - 终态是否都加了"终态吸收"的 forbidden（`from: 终态, to: "*"`）
 - 已知不可逆操作是否都加了 forbidden（如"已取消 → 已支付"）
 - 是否有"看似合法但业务禁止"的转换未在 forbidden 中声明
 
-**warn 处理**：
+**未检查事项处理**：
 - 在 `suggestions[]` 中追加提示
 
 **示例**：
@@ -142,7 +145,7 @@ contradictions:
 checks:
   - check_id: C5
     name: 禁止转换无遗漏
-    status: warn
+    status: not_checked
     detail: 需人工审视终态吸收规则与已知不可逆操作是否完整
 suggestions:
   - 检查所有终态是否都加了"终态吸收"forbidden
@@ -180,7 +183,7 @@ checks:
 **fail 处理**：
 - 缺 evidence_type 是 Schema 违反（pydantic 校验会直接报错），标 `contradiction`
 
-**说明**：本项是防幻觉机制的核心，pydantic Schema 已强制 evidence_type 必填，所以本项 fail 极少发生（除非手动绕过 Schema）。
+**说明**：本项只证明依据标签存在且合法，不能证明引用需求真实或建模完整；需人工核对 source 和原文。
 
 ### C8: 无悬挂状态
 

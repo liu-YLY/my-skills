@@ -24,7 +24,7 @@ python --version
 阶段 5 生成可粘贴 HTML 依赖以下 Python 库：
 
 ```bash
-pip install markdown beautifulsoup4
+pip install -r "$SKILL_ROOT/scripts/requirements.txt"
 ```
 
 - `markdown`：Markdown → HTML 解析
@@ -211,14 +211,14 @@ AI：（仅输出格式化 Markdown 文件路径）
 **解决**：
 
 ```bash
-pip install markdown beautifulsoup4
+pip install -r "$SKILL_ROOT/scripts/requirements.txt"
 ```
 
 如果使用虚拟环境，确保在正确的环境中安装：
 
 ```bash
 # 激活虚拟环境后
-pip install markdown beautifulsoup4
+pip install -r "$SKILL_ROOT/scripts/requirements.txt"
 ```
 
 **验证**：

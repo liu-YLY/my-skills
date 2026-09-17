@@ -1,6 +1,6 @@
 ---
 name: state-machine-test-engineer
-version: 1.1.0
+version: 1.2.0
 description: >-
   Use when user needs state-machine-driven testing for stateful business objects
   (orders, approvals, tickets, membership, etc.). Triggers on: 状态机、状态流转、状态转换、
@@ -70,14 +70,14 @@ PRD 通常只描述"用户做什么"，没有显性表达"对象处于什么状�
   → 定义禁止转换
   → 输出：状态机模型（YAML/JSON 结构）
   ↓
-🔴 CHECKPOINT · 状态机模型展示给用户确认（可修改/补充/终止）
+模型自检 · 展示模型与未决事项，已有授权内继续分析
   ↓
-阶段 3: 完整性检查（9 项，与 MCP validate_state_machine 对齐）
+阶段 3: 完整性检查（C0 结构检查 + 9 项业务检查）
   → 每个状态有明确含义？
   → 每个状态有进入条件（除初始态）？
   → 每个非终态有退出路径？
   → 终态是否真的不可变化（无出边）？
-  → 禁止转换是否明确无遗漏？
+  → 禁止转换结构核对；需求完整性标 not_checked，待人工核实
   → 状态变化有副作用定义？
   → 依据类型已标注（无遗漏）？
   → 无悬挂状态（unreachable）？
@@ -127,36 +127,42 @@ MCP 配置方式见 [integrations/quickstart.md](integrations/quickstart.md)。
 
 ## 核心数据结构
 
+转换和禁止规则可提供稳定 `id`；省略时 MCP 按规则内容生成。合法场景携带 `transition_id`、`guard_conditions`，非法场景携带 `forbidden_id`、`attempted_target_state`。引用不能替代目标与守卫条件的匹配；缺少引用且不能唯一匹配的场景列入 `unmatched_scenarios`。
+
 ### 状态机模型 Schema
 
 ```yaml
 state_machine:
   meta:
-    object: Order                      # 业务对象
-    version: 1.0
-    source: 需求文档/PRD/口头描述
-    confidence: high/medium/low
+    object: Order
+    version: "1.0"
+    source: 示例需求 PRD §3.2
+    confidence: medium
   states:
     - name: 待支付
       meaning: 订单已创建未支付
-      is_terminal: false
+      is_initial: true
       entry_events: [订单创建]
       invariants: [订单金额不可修改]
-    - name: 退款成功
+    - name: 已支付
+      meaning: 已收到可信支付结果
       is_terminal: true
-      invariants: [退款金额不可再修改]
+      invariants: [支付金额与订单一致]
   transitions:
-    - from: 待支付
+    - id: T-PAY
+      from: 待支付
       to: 已支付
       event: 支付成功回调
       guards: [订单有效, 金额一致, 回调可信]
       side_effects: [生成支付记录, 触发履约]
-      evidence_type: 需求明确           # 需求明确/合理推理/待确认
-      source: PRD §3.2
+      evidence_type: 需求明确
+      source: 示例需求 PRD §3.2
   forbidden:
-    - from: 退款成功
-      to: 任何状态
-      reason: 终态吸收
+    - id: F-PAID
+      from: 已支付
+      to: "*"
+      reason: 示例中已支付为终态
+      evidence_type: 需求明确
 ```
 
 ### 场景清单 Schema（转交 test-case-engineer 的契约）
@@ -168,7 +174,8 @@ scenarios:
     current_state: 已取消
     trigger_event: 支付成功回调
     precondition: 订单已取消
-    expected_target_state: 已取消（保持不变）
+    expected_target_state: 已取消
+    attempted_target_state: 已支付
     forbidden_states: [已支付]
     risk_type: illegal_transition
     related_objects: [支付记录, 订单日志]
@@ -226,7 +233,7 @@ scenarios:
 |---|---|---|
 | 需求文本无状态信号 | 提示并询问是否继续/转 test-case-engineer | 标注「非状态型需求」，建议转 test-case-engineer |
 | 状态机建模出现矛盾 | 标"待确认"暴露给用户，不强行消解 | 列出矛盾点，要求用户裁定（🔴 CHECKPOINT） |
-| 完整性检查失败（缺口/死锁） | 触发 CHECKPOINT，不进入场景穷举 | 展示缺口报告，等用户补充后再继续 |
+| 完整性检查失败（缺口/死锁） | 修正有依据的结构问题 | 暂停依赖未决规则的场景，先交付缺口和已有结论 |
 | MCP 探测失败 | 静默降级到独立模式 | 输出首行标 `⚠ 独立模式` |
 | MCP 调用超时（>10s） | 单次重试，仍失败则降级 | 输出首行标 `⚠ 降级模式（超时）` |
 | MCP 返回结果与 skill 严重冲突 | 不自动取舍，标"待确认"交给用户 | 列出差异，要求用户裁定 |
@@ -235,7 +242,7 @@ scenarios:
 ## 约束规则
 
 1. **场景清单是契约** — 只输出场景级，不输出用例步骤，避免与 test-case-engineer 职责重叠
-2. **依据类型强制标注** — 每条 transition 和场景必须标 `需求明确/合理推理/待确认`，防幻觉
+2. **依据类型强制标注** — 每条 transition 和场景必须标 `需求明确/合理推理/待确认`；标签不代表依据已核实
 3. **歧义暴露而非补齐** — PRD 缺权限/异常路径时必须输出"待确认"节点，禁止 LLM 自行脑补
 4. **完整性检查独立成阶段** — 不混在建模里，强制人工审视缺口（终态吸收/退出路径/副作用）
 5. **skill 始终是主，MCP 是辅** — MCP 校验失败不影响 skill 输出，只追加警告

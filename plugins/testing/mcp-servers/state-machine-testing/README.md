@@ -1,8 +1,8 @@
 # State Machine Testing MCP Server
 
-> 配套 state-machine-test-engineer skill 的 Python MCP Server v0.2.0：提供状态机建模/校验/穷举/导出/覆盖度 5 个工具，作为 skill 的可选增强引擎。
+> 配套 state-machine-test-engineer skill 的 Python MCP Server v0.3.0：提供状态机建模/校验/穷举/导出/覆盖度 5 个工具，作为 skill 的可选增强引擎。
 
-> **实现状态**：v0.2.0 已完成 pydantic Schema + 5 个工具 + MCP 协议层端到端联调验证（stdio + streamable-http 两种传输，52 项测试全绿）。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM；自由文本建模由调用方 skill 的 LLM 完成）。skill 安装本 Server 后进入增强模式，未安装时降级为独立模式。
+> **实现状态**：已实现 pydantic Schema、5 个工具及 stdio / streamable-http 传输。当前版本校验结果区分机器检查与待人工核实项，测试记录见本次交付报告。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM；自由文本建模由调用方 skill 的 LLM 完成）。skill 安装本 Server 后进入增强模式，未安装时降级为独立模式。
 
 ## 简介
 
@@ -75,6 +75,13 @@ def check_coverage(
 
 详细签名与返回结构见 [设计文档 §3.3](../../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md#33-工具详设)。
 
+## 校验与覆盖契约
+
+- C0 检查重复状态、初始态、端点和明确合法／禁止冲突；C5 返回 `not_checked`，不因严格模式升级失败。`manual_review_required` 单独提示需求核实。
+- 转换按源状态、事件、目标和守卫条件计覆盖；禁止规则按引用及具体尝试目标核对。`transition_id` / `forbidden_id` 不能掩盖错误结构。
+- 通配禁止规则生成具体尝试目标；禁止覆盖率统计规则命中数，不代表全部目标组合均已执行。
+- 无引用时仅完整且唯一匹配的场景计覆盖，歧义和错误结构列入 `unmatched_scenarios`。依据标签存在不代表业务事实已核实。
+
 ## 核心 Schema（pydantic）
 
 ```python
@@ -133,7 +140,7 @@ class Scenario(BaseModel):
     notes: str = ""
 ```
 
-**关键约束**：`Transition` 和 `Scenario` 的 `evidence_type` 是必填字段，pydantic 会在校验时报错，从机制上防幻觉。
+**关键约束**：`Transition` 和 `Scenario` 的 `evidence_type` 是必填字段，pydantic 会在校验时报错，保证依据标签存在；标签不能证明业务事实已核实。
 
 完整 Schema 见 [设计文档 §3.4](../../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md#34-核心数据结构-schemapydantic)。
 

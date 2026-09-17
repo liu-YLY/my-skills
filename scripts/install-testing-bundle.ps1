@@ -1,16 +1,10 @@
 <#
 .SYNOPSIS
-    Install testing-bundle (test-case-engineer + bug-analyzer + testing-bundle) to a runtime skills directory
+    Install all testing skills to a runtime skills directory
 
 .DESCRIPTION
-    testing-bundle is a meta skill with no concrete capability. It must be installed
-    together with its two sub-skills to work. This script copies the three skill
-    directories to the target runtime's skills folder.
-
-    Source layout (flat under skills/, runtime-compatible):
-      skills/testing-bundle/      # router entry
-      skills/test-case-engineer/  # forward test-case generation
-      skills/bug-analyzer/        # backward root-cause analysis
+    Discover all skills under plugins/testing/skills, validate resources,
+    then install specialist skills before the testing-bundle router.
 
 .PARAMETER TargetDir
     Target skills directory. Defaults to ~\.claude\skills (Claude Code).
@@ -48,10 +42,14 @@ $ProjectRoot = Split-Path -Parent $ScriptDir
 $SkillsSource = Join-Path $ProjectRoot "plugins\testing\skills"
 
 # Install order: depended-upon sub-skills first, bundle entry last
-$BundleSkills = @("test-case-engineer", "bug-analyzer", "testing-bundle")
+$BundleSkills = @(Get-ChildItem -LiteralPath $SkillsSource -Directory |
+    Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "SKILL.md") } |
+    Sort-Object @{Expression = { $_.Name -eq "testing-bundle" }}, Name |
+    ForEach-Object { $_.Name })
 
+$ProfileDir = [Environment]::GetFolderPath("UserProfile")
 if (-not $TargetDir) {
-    $TargetDir = Join-Path $env:USERPROFILE ".claude\skills"
+    $TargetDir = Join-Path $ProfileDir ".claude\skills"
 }
 
 if ($Uninstall) {
@@ -70,12 +68,27 @@ if ($Uninstall) {
 }
 
 # Pre-install validation
-Write-Host "Install testing-bundle (3 skills) -> $TargetDir" -ForegroundColor Green
-foreach ($skill in $BundleSkills) {
-    $src = Join-Path $SkillsSource $skill
-    if (-not (Test-Path $src)) {
-        Write-Host "  source skill not found: $src" -ForegroundColor Red
-        exit 1
+Write-Host "Install testing-bundle ($($BundleSkills.Count) skills) -> $TargetDir" -ForegroundColor Green
+foreach ($required in @("testing-bundle", "test-case-engineer", "bug-analyzer")) {
+    if ($required -notin $BundleSkills) { throw "Missing required skill: $required" }
+}
+foreach ($resource in @("convert_docs.py", "requirements.txt")) {
+    $resourcePath = Join-Path $SkillsSource "test-case-engineer/scripts/$resource"
+    if (-not (Test-Path -LiteralPath $resourcePath -PathType Leaf)) {
+        throw "Missing conversion resource: $resourcePath"
+    }
+}
+# Validate runtime references before replacing any installed skill.
+$SourcePrefix = [IO.Path]::GetFullPath($SkillsSource) + [IO.Path]::DirectorySeparatorChar
+foreach ($document in Get-ChildItem -LiteralPath $SkillsSource -Recurse -File -Filter "*.md") {
+    if ($document.Name -in @("README.md", "CHANGELOG.md") -or $document.FullName -match '[/\\]docs[/\\]') { continue }
+    foreach ($link in [regex]::Matches((Get-Content -LiteralPath $document.FullName -Raw), '\[[^\]]*\]\(([^)\s]+)\)')) {
+        $relative = ($link.Groups[1].Value -split '#', 2)[0]
+        if (-not $relative -or $relative -match '^[a-zA-Z][a-zA-Z0-9+.-]*:|^/|[{}*]') { continue }
+        $resolved = [IO.Path]::GetFullPath((Join-Path $document.DirectoryName $relative))
+        if ($resolved.StartsWith($SourcePrefix) -and -not (Test-Path -LiteralPath $resolved)) {
+            throw "Missing runtime reference: $($document.FullName) -> $relative"
+        }
     }
 }
 
@@ -99,6 +112,6 @@ Write-Host ""
 Write-Host "Done. Restart the runtime to activate testing-bundle." -ForegroundColor Cyan
 Write-Host ""
 Write-Host "For other runtimes, use -TargetDir, e.g.:" -ForegroundColor DarkGray
-Write-Host "  Cursor: -TargetDir `"$env:USERPROFILE\.cursor\skills`"" -ForegroundColor DarkGray
-Write-Host "  Codex:   -TargetDir `"$env:USERPROFILE\.codex\skills`"" -ForegroundColor DarkGray
-Write-Host "  TRAE:    -TargetDir `"$env:USERPROFILE\.trae-cn\skills`" (path to be confirmed)" -ForegroundColor DarkGray
+Write-Host "  Cursor: -TargetDir `"$ProfileDir\.cursor\skills`"" -ForegroundColor DarkGray
+Write-Host "  Codex:   -TargetDir `"$ProfileDir\.codex\skills`"" -ForegroundColor DarkGray
+Write-Host "  TRAE:    -TargetDir `"$ProfileDir\.trae-cn\skills`" (path to be confirmed)" -ForegroundColor DarkGray

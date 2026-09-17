@@ -9,15 +9,17 @@ md2wechat.py — 将格式化 Markdown 转为可直接粘贴到微信公众号�
     {markdown_file}_wechat.html — 带"复制到公众号"按钮的 HTML 文件
 
 依赖:
-    pip install markdown beautifulsoup4
+    pip install -r requirements.txt
 """
 
 import argparse
+from html import escape
 import re
 import sys
 from pathlib import Path
 
 import markdown
+import nh3
 from bs4 import BeautifulSoup
 
 
@@ -33,6 +35,37 @@ UNSUPPORTED_PROPS = frozenset({
 })
 
 UNSUPPORTED_VALUE_KEYWORDS = ['linear-gradient', 'radial-gradient', 'text-shadow', 'box-shadow']
+
+SAFE_STYLE_PROPERTIES = frozenset({
+    'color', 'background', 'background-color', 'font-family', 'font-size', 'font-weight',
+    'font-style', 'line-height', 'letter-spacing', 'text-align', 'text-decoration',
+    'word-break', 'white-space', 'border', 'border-top', 'border-bottom', 'border-left',
+    'border-right', 'border-color', 'border-bottom-color', 'border-radius', 'border-collapse',
+    'margin', 'margin-top', 'margin-bottom', 'margin-left', 'margin-right',
+    'padding', 'padding-top', 'padding-bottom', 'padding-left', 'padding-right',
+    'width', 'height', 'max-width', 'min-width', 'display', 'overflow-x', 'opacity',
+    'list-style-type', 'vertical-align',
+})
+
+
+def sanitize_content(html: str) -> str:
+    return nh3.clean(
+        html,
+        tags={'div', 'section', 'p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+              'strong', 'b', 'em', 'i', 's', 'del', 'u', 'br', 'hr', 'blockquote',
+              'ul', 'ol', 'li', 'pre', 'code', 'a', 'img', 'table', 'thead', 'tbody',
+              'tfoot', 'tr', 'th', 'td', 'sup', 'sub', 'figure', 'figcaption'},
+        clean_content_tags={'script', 'style', 'iframe', 'object', 'embed', 'svg', 'math', 'form'},
+        attributes={'*': {'style', 'class'}, 'div': {'id'}, 'a': {'href', 'title'},
+                    'img': {'src', 'alt', 'title', 'width', 'height'},
+                    'td': {'colspan', 'rowspan'}, 'th': {'colspan', 'rowspan', 'scope'},
+                    'ol': {'start'}, 'li': {'value'}},
+        attribute_filter=lambda tag, attr, value: (
+            value if attr != 'id' or value == 'nice' else None
+        ),
+        url_schemes={'http', 'https', 'mailto'},
+        filter_style_properties=set(SAFE_STYLE_PROPERTIES),
+    )
 
 
 # ─── Step 1: 从样式 .md 文件提取 CSS ─────────────────────────────────────
@@ -151,6 +184,19 @@ def apply_inline_styles(html: str, rules: list[tuple[str, dict[str, str]]],
 
             el['style'] = style_dict_to_str(filtered)
 
+    # Raw module HTML may not match a stylesheet selector.
+    for el in soup.find_all(style=True):
+        filtered = {}
+        for key, value in parse_inline_style(el['style']).items():
+            lowered = value.lower()
+            if (key.lower() in UNSUPPORTED_PROPS
+                    or any(token in lowered for token in UNSUPPORTED_VALUE_KEYWORDS)
+                    or any(token in lowered for token in ('url', 'expression', '\\', '@', '/*'))):
+                filtered_count += 1
+                continue
+            filtered[key] = value
+        el['style'] = style_dict_to_str(filtered)
+
     return str(soup), filtered_count
 
 
@@ -268,6 +314,7 @@ def convert(md_path: str, style_path: str, size: str = 'medium') -> str:
 
     # CSS 内联化 + 微信兼容性过滤
     html_inlined, filtered_count = apply_inline_styles(html_body, rules, size)
+    html_inlined = sanitize_content(html_inlined)
 
     if filtered_count > 0:
         print(f"警告: 已过滤 {filtered_count} 个微信不支持的 CSS 属性", file=sys.stderr)
@@ -276,8 +323,8 @@ def convert(md_path: str, style_path: str, size: str = 'medium') -> str:
 
     # 生成最终 HTML
     final_html = HTML_TEMPLATE.format(
-        title=title,
-        style_name=style_name,
+        title=escape(title),
+        style_name=escape(style_name),
         html_content=html_inlined,
     )
 

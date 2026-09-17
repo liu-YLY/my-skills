@@ -35,10 +35,11 @@ def test_legal_transitions_generated() -> None:
 
 
 def test_illegal_transitions_generated() -> None:
-    """每条 forbidden 应生成 1 个 illegal_transition 场景。"""
+    """禁止规则生成具体尝试目标，通配规则展开为各已知状态。"""
     sm = _load_order_refund()
     result = generate_scenarios(sm, scenario_types=["illegal_transition"])
-    assert len(result.scenarios) == len(sm.forbidden)
+    assert len(result.scenarios) == sum(len(sm.states) if f.to_state == "*" else 1 for f in sm.forbidden)
+    assert all(s.attempted_target_state in {state.name for state in sm.states} for s in result.scenarios)
 
 
 def test_failure_recovery_always_generated() -> None:

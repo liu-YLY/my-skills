@@ -2,7 +2,7 @@
 
 验证 state-machine-test-engineer skill 增强模式依赖的两条 MCP 侧契约：
 1. 阶段 3 → 阶段 4 流水线：validate_state_machine → generate_scenarios
-   可通过协议连续调用，返回结构符合 skill 消费预期（9 项检查 /
+   可通过协议连续调用，返回结构符合 skill 消费预期（10 项检查 /
    场景清单含依据类型标注）。
 2. 降级信号：MCP Server 不可达时，客户端得到可判定异常（而非挂死），
    对应 skill SKILL.md 失败模式表「MCP 探测失败 → 降级独立模式」。
@@ -45,7 +45,7 @@ async def test_skill_validate_then_generate() -> None:
             assert not validate.isError
             report = json.loads(validate.content[0].text)
             assert report["overall_status"] in ("pass", "warn")
-            assert len(report["checks"]) == 9
+            assert len(report["checks"]) == 10
 
             # skill 阶段 4：10 类场景穷举
             generate = await session.call_tool(
@@ -74,3 +74,17 @@ async def test_skill_fallback_on_mcp_failure() -> None:
         async with stdio_client(params) as (read, write):
             async with ClientSession(read, write) as session:
                 await session.initialize()
+
+
+def test_skill_model_example_parses_and_passes_structure():
+    import re
+    import yaml
+    from state_machine_testing_mcp.schemas import StateMachine
+    from state_machine_testing_mcp.validators import validate_state_machine
+
+    skill = Path(__file__).resolve().parents[4] / "skills/state-machine-test-engineer/SKILL.md"
+    block = re.search(r"```yaml\n(.*?)```", skill.read_text(), re.S).group(1)
+    sm = StateMachine.model_validate(yaml.safe_load(block)["state_machine"])
+    report = validate_state_machine(sm)
+    assert report.overall_status == "pass"
+    assert report.manual_review_required

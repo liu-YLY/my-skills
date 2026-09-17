@@ -1,15 +1,17 @@
 """pydantic Schema 定义。
 
 与 skill 输出的 YAML/JSON 严格对齐，Transition 和 Scenario 的 evidence_type 必填，
-pydantic 会在校验时报错，从机制上防幻觉。
+pydantic 会在校验时报错，保证依据标签存在；标签不能证明业务事实已核实。
 """
 
 from __future__ import annotations
 
 from enum import Enum
+import hashlib
+import json
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class EvidenceType(str, Enum):
@@ -41,7 +43,7 @@ class State(BaseModel):
 
 
 class Transition(BaseModel):
-    """转换定义。evidence_type 必填，从机制上防幻觉。"""
+    """转换定义。evidence_type 必填，保证依据标签存在；标签不能证明业务事实已核实。"""
 
     from_state: str = Field(alias="from")
     to_state: str = Field(alias="to")
@@ -50,6 +52,14 @@ class Transition(BaseModel):
     side_effects: list[str] = Field(default_factory=list)
     evidence_type: EvidenceType
     source: str = ""
+    id: str | None = None
+
+    @model_validator(mode="after")
+    def assign_id(self):
+        if not self.id:
+            key = [self.from_state, self.event, self.to_state, sorted(set(self.guards))]
+            self.id = "T-" + hashlib.sha256(json.dumps(key).encode()).hexdigest()[:16]
+        return self
 
     model_config = {"populate_by_name": True}
 
@@ -61,6 +71,14 @@ class ForbiddenTransition(BaseModel):
     to_state: str | Literal["*"] = Field(alias="to")
     reason: str
     evidence_type: EvidenceType
+    id: str | None = None
+
+    @model_validator(mode="after")
+    def assign_id(self):
+        if not self.id:
+            key = [self.from_state, self.to_state, self.reason]
+            self.id = "F-" + hashlib.sha256(json.dumps(key).encode()).hexdigest()[:16]
+        return self
 
     model_config = {"populate_by_name": True}
 
@@ -103,6 +121,10 @@ class Scenario(BaseModel):
     evidence_type: EvidenceType
     source: str = ""
     notes: str = ""
+    transition_id: str | None = None
+    forbidden_id: str | None = None
+    guard_conditions: list[str] = Field(default_factory=list)
+    attempted_target_state: str | None = None
 
 
 class ScenarioList(BaseModel):
@@ -137,7 +159,7 @@ class CheckItem(BaseModel):
 
     check_id: str
     name: str
-    status: Literal["pass", "fail", "warn"]
+    status: Literal["pass", "fail", "warn", "not_checked"]
     detail: str = ""
 
 
@@ -171,6 +193,7 @@ class ValidationReport(BaseModel):
     gaps: list[Gap] = Field(default_factory=list)
     contradictions: list[Contradiction] = Field(default_factory=list)
     suggestions: list[str] = Field(default_factory=list)
+    manual_review_required: bool = False
 
 
 class CoverageReport(BaseModel):
@@ -182,6 +205,7 @@ class CoverageReport(BaseModel):
     evidence_distribution: dict[str, int]
     uncovered_transitions: list[str] = Field(default_factory=list)
     missing_scenario_types: list[str] = Field(default_factory=list)
+    unmatched_scenarios: list[str] = Field(default_factory=list)
 
 
 class ExportResult(BaseModel):

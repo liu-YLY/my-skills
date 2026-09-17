@@ -126,7 +126,7 @@ def main() -> int:
     """命令行入口。"""
     parser = argparse.ArgumentParser(
         prog="state-machine-testing-mcp",
-        description="State Machine Testing MCP Server v0.2.0",
+        description="State Machine Testing MCP Server v0.3.0",
     )
     parser.add_argument(
         "--transport",

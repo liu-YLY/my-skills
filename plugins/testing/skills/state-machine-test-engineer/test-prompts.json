@@ -63,11 +63,11 @@
       "id": "SM-TP-05",
       "category": "转交 case-engineer（链 5 协同）",
       "prompt": "为订单退款流程设计状态机测试场景，并生成完整测试用例",
-      "expected_behavior": "识别为'建模 + 用例'混合意图，testing-bundle 路由到 state-machine-test-engineer 执行五阶段输出场景清单，CHECKPOINT 后转交 test-case-engineer 基于场景清单生成完整测试用例（含步骤）",
+      "expected_behavior": "识别为'建模 + 用例'混合意图，testing-bundle 路由到 state-machine-test-engineer 执行五阶段输出场景清单，按授权范围继续转交 test-case-engineer 基于场景清单生成完整测试用例（含步骤）",
       "validation_points": [
         "识别混合意图（建模 + 用例）",
         "state-machine 只输出场景清单不出步骤",
-        "CHECKPOINT 在转交前触发",
+        "转交前披露依据，不重复确认已授权分析",
         "test-case-engineer 接收场景清单作为输入",
         "test-case-engineer 输出完整用例步骤"
       ],

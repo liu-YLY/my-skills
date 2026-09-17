@@ -12,15 +12,15 @@
 
 | Skill | 版本 | 类型 | 职责 |
 |---|---|---|---|
-| [testing-bundle](skills/testing-bundle/) | v3.1.1 | 元 skill / 路由入口 | 6-way 意图路由（5 核心 + 1 协同）+ 7 条混合意图链 |
-| [test-strategy-engineer](skills/test-strategy-engineer/) | v1.0.0 | 子 skill | 项目级测试策略：风险矩阵 / 分层 / 范围优先级 / 准入准出 |
-| [test-case-engineer](skills/test-case-engineer/) | v8.6.0 | 子 skill | 功能用例生成：需求分析 / 测试点提取 / 用例编写 / 自检补全 |
-| [performance-test-engineer](skills/performance-test-engineer/) | v1.0.0 | 子 skill | 性能测试方案 + 瓶颈定位（资源/架构层）|
-| [bug-analyzer](skills/bug-analyzer/) | v1.0.0 | 子 skill | Bug 根因分析（代码逻辑层）：五步定位法 / 鱼骨图 / 5 Whys |
-| [state-machine-test-engineer](skills/state-machine-test-engineer/) | v1.1.0 | 子 skill | 状态机驱动的状态型需求测试：10 类场景穷举 |
-| [change-impact-analyzer](skills/change-impact-analyzer/) | v1.1.0 | 协同 skill | git 代码变更与测试用例交叉分析（链 6 协同，随 plugin 整体安装） |
+| [testing-bundle](skills/testing-bundle/) | v3.2.0 | 元 skill / 路由入口 | 6-way 意图路由（5 核心 + 1 协同）+ 7 条混合意图链 |
+| [test-strategy-engineer](skills/test-strategy-engineer/) | v1.0.1 | 子 skill | 项目级测试策略：风险矩阵 / 分层 / 范围优先级 / 准入准出 |
+| [test-case-engineer](skills/test-case-engineer/) | v9.0.0 | 子 skill | 功能用例生成：需求分析 / 测试点提取 / 用例编写 / 自检补全 |
+| [performance-test-engineer](skills/performance-test-engineer/) | v1.1.0 | 子 skill | 性能测试方案 + 瓶颈定位（资源/架构层）|
+| [bug-analyzer](skills/bug-analyzer/) | v1.1.0 | 子 skill | Bug 根因分析（代码逻辑层）：五步定位法 / 鱼骨图 / 5 Whys |
+| [state-machine-test-engineer](skills/state-machine-test-engineer/) | v1.2.0 | 子 skill | 状态机驱动的状态型需求测试：10 类场景穷举 |
+| [change-impact-analyzer](skills/change-impact-analyzer/) | v1.2.0 | 协同 skill | git 代码变更与测试用例交叉分析（链 6 协同，随 plugin 整体安装） |
 
-**可选配套**：[state-machine-testing MCP Server](mcp-servers/state-machine-testing/) v0.2.0 — 为 state-machine-test-engineer 提供 5 个工具（build / validate / generate / export / coverage，协议层 stdio + HTTP 已端到端联调验证），未安装时降级为纯 LLM 推理。
+**可选配套**：[state-machine-testing MCP Server](mcp-servers/state-machine-testing/) v0.3.0 — 为 state-machine-test-engineer 提供 5 个工具（build / validate / generate / export / coverage，协议层 stdio + HTTP 已端到端联调验证），未安装时降级为纯 LLM 推理。
 
 ## 路由架构
 
@@ -42,6 +42,8 @@
 
 详细的 6-way 路由表与 7 条混合意图链见 [skills/testing-bundle/SKILL.md](skills/testing-bundle/SKILL.md)。
 
+评审 MCP：[review-checker](mcp-servers/review-checker/) 支持业务结果数组、可选关键检查点和候选问题分离统计；只提供 stdio 传输。
+
 ## 多 runtime 适配
 
 | Runtime | manifest 位置 | 安装命令 |
@@ -59,18 +61,17 @@ testing/
 ├── .codex-plugin/plugin.json         # Codex plugin manifest
 ├── README.md                         # 本文件
 ├── mcp-servers/
+│   ├── review-checker/               # 用例评审 MCP（stdio）
 │   └── state-machine-testing/        # 可选 MCP Server（Python 3.11+）
 │       ├── src/state_machine_testing_mcp/
 │       ├── tests/{unit,integration,fixtures}
 │       ├── pyproject.toml
 │       └── README.md
-├── scripts/
-│   ├── convert_docs.py               # 文档转换降级方案
-│   └── requirements.txt
 └── skills/
     ├── testing-bundle/               # 路由入口 + CHANGELOG
     ├── test-strategy-engineer/       # 项目级策略
     ├── test-case-engineer/           # 功能用例生成（含 bug-patterns.md，被 bug-analyzer 引用）
+    │   └── scripts/{convert_docs.py,requirements.txt}
     ├── performance-test-engineer/    # 性能测试
     ├── bug-analyzer/                 # Bug 根因（bug-patterns-index 指向 test-case-engineer）
     ├── state-machine-test-engineer/  # 状态机测试

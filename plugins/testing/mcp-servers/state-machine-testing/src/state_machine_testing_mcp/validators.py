@@ -147,20 +147,10 @@ def check_c4_terminal_unchangeable(sm: StateMachine) -> tuple[CheckItem, list[Co
 
 
 def check_c5_forbidden_complete(sm: StateMachine) -> CheckItem:
-    """C5: 禁止转换无遗漏（无法自动判定，默认 warn）。"""
-    terminals = _terminal_states(sm)
-    forbidden_froms = {f.from_state for f in sm.forbidden}
-    missing_terminals = terminals - forbidden_froms
-
-    suggestions: list[str] = []
-    if missing_terminals:
-        suggestions.append(f"终态未加终态吸收 forbidden: {missing_terminals}")
-
+    """C5 的需求完整性无法仅由模型结构证明。"""
     return CheckItem(
-        check_id="C5",
-        name="禁止转换无遗漏",
-        status="warn",
-        detail="需人工审视终态吸收规则与已知不可逆操作是否完整",
+        check_id="C5", name="禁止转换无遗漏", status="not_checked",
+        detail="需对照需求人工审视终态吸收规则与不可逆操作；结构通过不代表需求完整",
     )
 
 
@@ -239,9 +229,34 @@ def check_c9_no_deadlock(sm: StateMachine) -> CheckItem:
     return check_c3_exit_path(sm).model_copy(update={"check_id": "C9", "name": "无死锁状态"})
 
 
+def check_structure(sm: StateMachine) -> CheckItem:
+    names = _state_names(sm)
+    errors: list[str] = []
+    if len(names) != len(sm.states):
+        errors.append("状态名称重复")
+    if any(not name.strip() for name in names):
+        errors.append("状态名称为空")
+    if not _initial_states(sm):
+        errors.append("缺少初始态")
+    for rules, label in [(sm.transitions, "transition"), (sm.forbidden, "forbidden")]:
+        ids = [rule.id for rule in rules]
+        if len(set(ids)) != len(ids):
+            errors.append(f"{label} 标识重复")
+        for rule in rules:
+            allowed_target = rule.to_state in names or (label == "forbidden" and rule.to_state == "*")
+            if rule.from_state not in names or not allowed_target:
+                errors.append(f"{label} 端点不存在: {rule.from_state} → {rule.to_state}")
+    for transition in sm.transitions:
+        for forbidden in sm.forbidden:
+            if transition.from_state == forbidden.from_state and forbidden.to_state in {"*", transition.to_state}:
+                errors.append(f"合法与禁止转换矛盾: {transition.id} / {forbidden.id}")
+    return CheckItem(check_id="C0", name="模型结构一致", status="fail" if errors else "pass",
+                     detail="；".join(errors))
+
+
 def validate_state_machine(state_machine: StateMachine, strict: bool = True) -> ValidationReport:
     """执行 9 项完整性检查。"""
-    checks: list[CheckItem] = []
+    checks: list[CheckItem] = [check_structure(state_machine)]
     gaps: list[Gap] = []
     contradictions: list[Contradiction] = []
     suggestions: list[str] = []
@@ -283,7 +298,7 @@ def validate_state_machine(state_machine: StateMachine, strict: bool = True) -> 
     checks.append(check_c9_no_deadlock(state_machine))
 
     # 计算 overall_status
-    statuses = [c.status for c in checks]
+    statuses = [c.status for c in checks if c.status != "not_checked"]
     if "fail" in statuses:
         overall = "fail"
     elif "warn" in statuses:
@@ -301,4 +316,5 @@ def validate_state_machine(state_machine: StateMachine, strict: bool = True) -> 
         gaps=gaps,
         contradictions=contradictions,
         suggestions=suggestions,
+        manual_review_required=any(c.status == "not_checked" for c in checks),
     )

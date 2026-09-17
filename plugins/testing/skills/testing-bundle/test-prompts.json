@@ -12,7 +12,7 @@
   {
     "id": 3,
     "prompt": "分析这个登录失败的 Bug 根因，并补充测试用例防止同类问题再次出现",
-    "expected": "混合意图（链 1）：先路由到 bug-analyzer 输出防御性测试点清单，🔴 CHECKPOINT 后转交 test-case-engineer 生成完整用例"
+    "expected": "混合意图（链 1）：先路由到 bug-analyzer 输出防御性测试点清单，🔴 按授权范围继续转交 test-case-engineer 生成完整用例"
   },
   {
     "id": 4,
@@ -22,22 +22,22 @@
   {
     "id": 5,
     "prompt": "我们有一个电商项目即将启动测试，包含用户中心、商品、订单、支付等模块，团队 20 人，请帮我制定测试策略",
-    "expected": "路由到 test-strategy-engineer，执行五阶段策略制定流程（项目特征→风险矩阵→分层→CHECKPOINT→范围准入准出）"
+    "expected": "路由到 test-strategy-engineer，执行五阶段策略制定流程（项目特征→风险矩阵→分层→阶段自检→范围准入准出）"
   },
   {
     "id": 6,
     "prompt": "我们有一个电商下单接口，大促峰值预计 3000 QPS，SLA 要求 P99 ≤ 800ms，请帮我设计性能测试方案",
-    "expected": "路由到 performance-test-engineer，执行四阶段流程（需求理解→场景设计→CHECKPOINT→瓶颈定位/转交判断）"
+    "expected": "路由到 performance-test-engineer，执行四阶段流程（需求理解→场景设计→阶段自检→瓶颈定位/转交判断）"
   },
   {
     "id": 7,
     "prompt": "制定测试策略并生成分层用例",
-    "expected": "混合意图（链 2）：strategy 输出分层策略 → 🔴 CHECKPOINT → 转交 case-engineer 基于策略生成各层用例"
+    "expected": "混合意图（链 2）：strategy 输出分层策略 → 阶段自检与依据披露 → 转交 case-engineer 基于策略生成各层用例"
   },
   {
     "id": 8,
     "prompt": "性能问题定位到代码缺陷",
-    "expected": "混合意图（链 4）：performance 资源/架构层瓶颈定位 → 🔴 CHECKPOINT → 转交 bug-analyzer 代码逻辑层根因分析（命中'代码缺陷'关键词）"
+    "expected": "混合意图（链 4）：performance 资源/架构层瓶颈定位 → 阶段自检与依据披露 → 转交 bug-analyzer 代码逻辑层根因分析（命中'代码缺陷'关键词）"
   },
   {
     "id": 9,
@@ -67,7 +67,7 @@
   {
     "id": 14,
     "prompt": "帮我给审批流建模并生成对应的测试用例",
-    "expected": "混合意图（链 5）：含'建模'+'用例'混合信号 → 默认路由到 state-machine-test-engineer 完成状态机建模 + 10 类场景穷举 → 🔴 CHECKPOINT 转交 test-case-engineer 基于场景清单生成可执行用例"
+    "expected": "混合意图（链 5）：含'建模'+'用例'混合信号 → 默认路由到 state-machine-test-engineer 完成状态机建模 + 10 类场景穷举 → 披露转交依据后转交 test-case-engineer 基于场景清单生成可执行用例"
   },
   {
     "id": 15,
@@ -97,16 +97,16 @@
   {
     "id": 20,
     "prompt": "评审这批用例，对于发现的高风险用例帮我反推一下根因：[附用例，含 P0 占位符问题]",
-    "expected": "混合意图（链 7）：含'评审'+'根因反推'混合信号 → 先路由到 test-case-engineer 评审模式 → 发现高风险用例（P0 优先级集中/可执行性 P0 占位符）→ 🔴 CHECKPOINT 展示风险用例清单 → 转交 bug-analyzer 按五步定位法反推根因 → 输出评审意见+度量报告+风险用例清单+根因反推+防御性测试点清单"
+    "expected": "混合意图（链 7）：含'评审'+'根因反推'混合信号 → 先路由到 test-case-engineer 评审模式 → 用例质量问题进入用例修订，不按 P0 分布推断软件故障；仅有实际故障证据时转交 bug-analyzer，输出已确认问题、候选原因与证据不足范围"
   },
   {
     "id": 21,
     "prompt": "评审用例覆盖度并对照代码改动确认缺口，但 change-impact-analyzer 没装",
-    "expected": "链 6 降级：混合意图命中链 6 → test-case-engineer 评审完成输出覆盖度问题 → 🔴 CHECKPOINT → 检测到 change-impact-analyzer 不可用 → 提示用户安装 → 降级输出 bundle 层方向性指导（按四阶段：收集输入→Diff 解析→交叉分析→生成报告）"
+    "expected": "链 6 降级：混合意图命中链 6 → test-case-engineer 评审完成输出覆盖度问题 → 阶段自检与依据披露 → 检测到 change-impact-analyzer 不可用 → 提示用户安装 → 降级输出 bundle 层方向性指导（按四阶段：收集输入→Diff 解析→交叉分析→生成报告）"
   },
   {
     "id": 22,
     "prompt": "帮我对下单接口做一轮压测，压完顺便分析一下瓶颈出在哪一层",
-    "expected": "混合意图（链 3）：性能测试 + 瓶颈定位 → 路由到 performance-test-engineer 内部完成（方案设计 → 瓶颈定位按 应用层→资源层→架构层 排查），不跨 skill 转交；无'代码缺陷'信号不触发链 4，仅当阶段 4 判定瓶颈位于代码逻辑层时 🔴 CHECKPOINT 征询是否转交 bug-analyzer"
+    "expected": "混合意图（链 3）：性能测试 + 瓶颈定位 → 路由到 performance-test-engineer 内部完成（方案设计 → 瓶颈定位按观测证据和可证伪假设安排排查），不跨 skill 转交；无'代码缺陷'信号不触发链 4，仅有代码逻辑故障证据时携带依据转交 bug-analyzer"
   }
 ]

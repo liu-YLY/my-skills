@@ -5,6 +5,14 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [2026-09-15] - Skills 业务规则修正
+
+- testing-bundle 3.2.0、test-case-engineer 9.0.0：新用例围绕业务目标组织，取消机械步骤／结果配对。
+- 两个 MCP 0.3.0：候选问题不扣分、已确认 P0 否决评级、未评估范围显式输出；状态机按守卫及目标准确计算覆盖。
+- wechat-formatter 3.0.1：标题转义、正文白名单净化、所有节点样式过滤。
+- 补齐 7 个测试 Skills 安装资源与功能 CI，调整诊断／路由／影响／性能流程，统一知识来源优先级。
+- 历史用例与旧评测报告保持原样，已安装个人 Skills 不自动覆盖；验证和模型对照结果见[本次交付报告](docs/skill-evaluation/2026-09-15-business-rules.md)。
+
 ## [Unreleased]
 
 ### Added

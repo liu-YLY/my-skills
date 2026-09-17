@@ -46,8 +46,8 @@
 - [ ] 不包含敏感文件（.env、credentials 等）
 - [ ] 分支存活时间未超过 2 天
 - [ ] 分支已与 main 同步（rebase 过）
-- [ ] PR 变更行数未超过 400 行（超过需说明理由）
-- [ ] 若修改 SKILL.md frontmatter version，已同步 README.md 与 plugin.json 版本号
+- [ ] PR 变更行数未超过 400 行（超过必须拆分）
+- [ ] 若修改 SKILL.md frontmatter version，已同步相关 README.md；插件版本仅与路由入口（单 Skill 插件为该 Skill）及各客户端清单保持一致
 - [ ] 若新增 / 删除 skill，已更新 marketplace.json 与根 README.md
 
 ## 关联 Issue

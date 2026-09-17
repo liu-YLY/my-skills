@@ -1,6 +1,6 @@
 ---
 name: testing-bundle
-version: 3.1.1
+version: 3.2.0
 description: >-
   Use when user has mixed, ambiguous, or explicitly routing-required testing requests —
   e.g. "analyze bug AND generate test cases", "design strategy AND generate layered cases",
@@ -26,7 +26,7 @@ keywords:
 
 ## 适用范围
 
-**适用**：任何测试相关请求（测试策略 / 测试用例生成 / 用例评审 / 性能测试方案 / 性能瓶颈定位 / Bug 根因分析 / 缺陷定位 / 防御性用例反推 / 状态机驱动的状态型需求测试）
+**适用**：混合测试意图、目标模糊或用户明确要求路由；单一意图直接使用对应专业 Skill。
 
 **不适用**：非测试领域（文档撰写、代码风格、其他 skill 范畴）
 
@@ -78,7 +78,7 @@ keywords:
 
 ### 混合意图链
 
-当用户请求同时涉及多个子 skill 时，按以下 7 条链路执行，每条链的转交点都必须设 🔴 CHECKPOINT。
+当用户请求同时涉及多个子 skill 时，按以下 7 条链路执行，转交时记录依据与未决事项；既有授权内的只读分析连续执行。
 
 **链路索引**（命中后读取对应链的完整步骤流）：
 
@@ -140,14 +140,14 @@ keywords:
 | 触发条件 | 一线修复 | 仍失败兜底 |
 |----------|----------|------------|
 | 意图判断不明确（用户请求含"测试"但未指明策略/用例/性能/Bug/状态机/变更影响） | 追问用户：列出 6 个子 skill 的能力让用户选择（🔴 CHECKPOINT） | 持续追问，不默认路由。仅当用户明确授权"你来决定"时，可路由到 test-case-engineer，并在输出首行标注「已默认路由到用例生成，如需其他能力请说明」 |
-| 混合意图判定争议（如"防御性用例反推"既属 bug-analyzer 又与 test-case-engineer 边界模糊） | 优先路由到 bug-analyzer（根因分析是前置），完成后 🔴 CHECKPOINT 转交 test-case-engineer 生成完整用例 | 若用户明确只需用例不需根因分析，直接路由到 test-case-engineer |
+| 混合意图判定争议（如"防御性用例反推"既属 bug-analyzer 又与 test-case-engineer 边界模糊） | 有实际故障证据时先诊断，再转交生成用例；只有用例质量问题时直接进入用例修订 | 若用户明确只需用例不需根因分析，直接路由到 test-case-engineer |
 | 子 skill 未安装（路由目标 skill 不存在） | 检测到子 skill 不可用，提示用户安装对应 skill，并给出安装命令 | 标注「子 skill 不可用」，输出 bundle 层方向性指导模板（按目标 skill 选一）：bug-analyzer→「按五步定位法：复现→隔离→定位→验证→报告」；case-engineer→「按四阶段：理解需求→提取测试点→编写用例→自检补全」；strategy→「按五阶段：项目特征→风险矩阵→分层→范围准入准出→资源附录」；performance→「按四阶段：需求理解→场景设计→瓶颈定位→转交判断」；state-machine→「按五阶段：状态型需求识别→状态机建模→完整性检查→10类场景穷举→MCP增强」 |
 | 混合意图协同失败（上游 skill 完成但下游 skill 不可用） | 输出上游 skill 的中间产物（防御性测试点清单 / 分层策略 / 瓶颈定位报告），提示用户手动转交下游 skill 或自行处理 | 标注「协同中断」，仅输出上游 skill 报告，中间产物按上下文 schema 格式作为附录 |
 | 子 skill 执行失败（路由后子 skill 内部错误） | 捕获子 skill 错误信息，回退到 bundle 层向用户报告失败原因 | 提示用户直接调用子 skill 重试，或降级为 bundle 层方向性指导模板（同上） |
 | 上下文传递丢失（路由后子 skill 未收到原始请求） | 在路由调用时按上下文 schema 显式传递（见下方 schema 定义） | 标注「上下文不完整」，要求子 skill 主动向用户确认缺失信息 |
 | "性能 Bug"路由歧义（既属 bug-analyzer 又属 performance） | 默认路由到 performance（资源/架构层优先排查），performance 内部判断是否转交 bug-analyzer | 若用户明确指明为代码逻辑缺陷（如死锁/N+1），直接路由到 bug-analyzer |
 | "测试计划"/"测试策略"一词双义（项目级 strategy vs 单功能 case-engineer） | 关键词限定：含"项目级/测试计划/分层/风险矩阵/准入准出"→ strategy；含"单功能/某功能/某模块"→ case-engineer | 追问用户：明确是项目级策略还是单功能用例策略（🔴 CHECKPOINT） |
-| 混合意图链转交 CHECKPOINT 与"直接交付"诉求冲突（如"制定策略并直接生成用例，一次给我"） | 用户明确要求"直接交付/一次完成"时，链路转交 CHECKPOINT 降级为文末汇总确认（列出全部转交点与假设） | 冲突以用户明确指令优先；用户未明确要求时恢复标准 CHECKPOINT 行为 |
+| 转交可能重复请求确认 | 展示转交依据，继续已授权的分析 | 仅缺关键信息、改变范围或未授权写操作时询问；用户要求逐阶段确认时遵循其要求 |
 | strategy 与 case-engineer 协同失败（strategy 完成但 case-engineer 不可用） | 输出 strategy 的分层策略与优先级，提示用户手动转交 case-engineer 生成对应层用例 | 标注「协同中断」，仅输出测试策略报告，分层策略作为用例生成依据附录 |
 
 **上下文传递 schema**（路由/转交时必须按此 JSON 结构传递）：
@@ -174,7 +174,7 @@ keywords:
 | 2 | 在 bundle 层重复实现子 skill 的能力 | 破坏职责边界，导致内容冗余和维护成本翻倍 | bundle 只做路由，具体能力由子 skill 承载 |
 | 3 | 路由后不传递上下文 | 用户需重新描述需求，体验差且信息丢失 | 路由时显式传递：原始请求 + 已收集上下文 + 已完成步骤摘要 |
 | 4 | 混合意图不按"先上游后下游"顺序 | 跳过上游直接下游，下游缺乏上游输入，输出缺乏针对性 | strategy → case-engineer；performance → bug-analyzer（当瓶颈定位到代码缺陷时） |
-| 5 | 混合意图协同无用户确认点 | 用户无法终止流程或修改中间产物 | 每个转交点必须 🔴 CHECKPOINT，用户确认后才转交 |
+| 5 | 混合意图协同无用户确认点 | 用户无法终止流程或修改中间产物 | 报告转交依据；既有授权覆盖的只读分析连续执行，仅缺关键信息、范围变化或未授权写操作时询问 |
 
 > 路由方向性反例（"性能 Bug 路由到 bug-analyzer""项目级策略路由到 case-engineer"等）已编码在失败模式表第 7/8 行，此处不重复。
 
@@ -191,7 +191,7 @@ keywords:
 2. **路由必须基于显式意图判断** — 不得"默认路由"或"随机路由"
 3. **性能类问题默认路由到 performance，不路由到 bug-analyzer** — 性能问题属资源/架构层，仅当瓶颈指向代码逻辑层时才转交 bug-analyzer
 4. **strategy 是并列 peer，不是必经入口** — 大多数具体请求直接路由到对应 skill，仅项目级策略请求路由到 strategy
-5. **混合意图遵循"先上游后下游"顺序，转交点必须 🔴 CHECKPOINT** — strategy → case-engineer；performance → bug-analyzer。用户明确要求"直接交付/一次完成"时，转交 CHECKPOINT 降级为文末汇总确认（列出全部转交点与假设），冲突以用户明确指令优先
+5. **混合意图按业务依赖转交** — strategy → case-engineer；有实际故障证据时 performance → bug-analyzer。既有授权内连续分析，文末列出转交依据和未决事项
 6. **上下文必须完整传递** — 路由时需携带用户原始请求和已收集的上下文
 7. **子 skill 独立可用** — bundle 不是子 skill 的前置依赖，用户可绕过 bundle 直接调用子 skill
 

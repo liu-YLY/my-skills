@@ -7,7 +7,7 @@
 
 | 模式 | 触发条件 | Git 命令 |
 |------|---------|---------|
-| 工作区改动 | 用户说"当前改动"/"本地改动"/未指定范围 | `git diff`（未暂存） |
+| 工作区改动 | 用户说"当前改动"/"本地改动"/未指定范围 | `git diff --no-ext-diff --no-textconv HEAD`（已跟踪文件相对 HEAD 的最终变更） |
 | 暂存区改动 | 用户说"已暂存"/"staged" | `git diff --cached` |
 | 分支对比 | 用户指定了两个分支名 | `git diff <base>...<head>` |
 | 单个 Commit | 用户指定了单个 commit hash | `git diff <commit>~1..<commit>` |
@@ -47,7 +47,7 @@
   │    → 模式 2：暂存区改动（git diff --cached）
   │
   ├─ 未指定范围 / 说"当前改动"/"本地改动"
-  │    → 模式 1：工作区改动（git diff）
+  │    → 模式 1：工作区改动（git diff --no-ext-diff --no-textconv HEAD）
   │
   └─ 上述均不匹配
        → 主动追问用户，不擅自选择
@@ -104,7 +104,7 @@
 用户：帮我分析一下当前改动对测试用例的影响，用例在 docs/test-cases.md
 ```
 
-执行：`git diff` + `git diff --cached`（获取本地改动）
+执行：`git diff --no-ext-diff --no-textconv HEAD` + `git status --short`（区分最终变更与暂存/未暂存/未跟踪状态）
 
 产出：
 ```json
