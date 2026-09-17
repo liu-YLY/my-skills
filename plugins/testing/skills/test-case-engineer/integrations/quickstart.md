@@ -6,36 +6,36 @@
 
 > 本文档提供本 Skill 在本仓库中的**具体可执行命令和路径**,与 IDE 无关,Agent 按需查阅。
 
-## SKILL_ROOT / PLUGIN_ROOT
+## SKILL_ROOT / TOOLS_ROOT
 
-在本仓库中：
-- `SKILL_ROOT` = `skills/test-case-engineer`
-- `PLUGIN_ROOT` = `plugins/testing`（共享虚拟环境和脚本所在层级）
+`SKILL_ROOT` 为当前实际读取的 `SKILL.md` 所在目录，使用绝对路径；源码安装和运行时安装均适用。转换资源包含在本 Skill 内。
 
-> 下文命令中的 `$SKILL_ROOT` / `$PLUGIN_ROOT` 是占位符，**Agent 执行命令时必须替换为上述实际路径**。
-> 人在终端使用时，先执行：
-> ```bash
-> export SKILL_ROOT=plugins/testing/skills/test-case-engineer
-> export PLUGIN_ROOT=plugins/testing
-> ```
+```bash
+# 将路径替换为当前实际读取的 SKILL.md 所在目录
+SKILL_ROOT="/absolute/path/to/test-case-engineer"
+TOOLS_ROOT="$SKILL_ROOT"
+TOOLS_ENV="$(python3 -c 'import tempfile; print(tempfile.mkdtemp(prefix="testing-skill-tools-"))')"
+```
+
+脚本位于 `TOOLS_ROOT/scripts`；虚拟环境位于临时目录，不写入只读的插件缓存。
 
 ## 文档转换命令
 
-> **共享虚拟环境**：`.venv-tools` 和 `scripts/` 位于 `$PLUGIN_ROOT/` 层级，test-case-engineer 与 bug-analyzer 共享使用，避免重复安装。
+> test-case-engineer 与 bug-analyzer 共享同一转换依赖，脚本随 test-case-engineer 分发。
 
 **主方案：Microsoft MarkItDown（推荐）**
 
 ```bash
-# 首次使用：创建共享 venv 并安装（plugin 层级，两个 skill 共用）
-python3 -m venv $PLUGIN_ROOT/.venv-tools
-$PLUGIN_ROOT/.venv-tools/bin/pip install -r $PLUGIN_ROOT/scripts/requirements.txt
+# 首次使用：创建共享 venv 并安装（临时目录，两个 skill 共用）
+python3 -m venv "$TOOLS_ENV"
+"$TOOLS_ENV/bin/pip" install -r "$TOOLS_ROOT/scripts/requirements.txt"
 
 # 转换单个文件 → 输出同名 .md
-$PLUGIN_ROOT/.venv-tools/bin/markitdown docs/需求文档.docx -o docs/需求文档.md
+"$TOOLS_ENV/bin/markitdown" docs/需求文档.docx -o docs/需求文档.md
 
 # 批量转换整个目录
 for f in docs/*.docx docs/*.pptx docs/*.xlsx docs/*.xls; do
-    [ -f "$f" ] && $PLUGIN_ROOT/.venv-tools/bin/markitdown "$f" -o "${f%.*}.md"
+    [ -f "$f" ] && "$TOOLS_ENV/bin/markitdown" "$f" -o "${f%.*}.md"
 done
 ```
 
@@ -43,11 +43,11 @@ done
 
 ```bash
 # 依赖已在 requirements.txt 中一并安装，直接运行即可
-$PLUGIN_ROOT/.venv-tools/bin/python $PLUGIN_ROOT/scripts/convert_docs.py docs/ --recursive
+"$TOOLS_ENV/bin/python" "$TOOLS_ROOT/scripts/convert_docs.py" docs/ --recursive
 ```
 
 > 降级方案仅支持 `.docx`、`.xlsx`、`.pptx`，不支持 PDF 和 `.xls`。
-> Windows 环境下路径为 `$PLUGIN_ROOT/.venv-tools/Scripts/markitdown.exe`。
+> Windows 环境下路径为 `$TOOLS_ENV/Scripts/markitdown.exe`。
 
 ## 项目知识目录
 
@@ -59,9 +59,9 @@ $PLUGIN_ROOT/.venv-tools/bin/python $PLUGIN_ROOT/scripts/convert_docs.py docs/ -
 
 ### 文件路径安全
 
-- **路径消毒**：用户提供的文件路径必须去除 shell 元字符（`;` `|` `$` `` ` `` `(` `)` `&` `>` `<` `'` `"` `\n`），禁止包含上述字符的路径直接拼入命令
+- **路径处理**：保持用户文件名原样，解析绝对路径并核对任务范围；用参数数组传递，不把路径拼成 shell 代码，也不擅自删除文件名中的字符
 - **路径限定**：文件路径必须在项目目录范围内，禁止路径穿越（如 `../../../etc/passwd`）
-- **引号包裹**：所有文件路径参数必须用单引号包裹（如 `markitdown '$FILE_PATH'`）
+- **参数传递**：脚本使用参数数组且不启用 shell；终端示例中的变量路径用双引号包裹，不对用户内容进行二次求值
 
 ### Git diff 范围安全
 

@@ -150,8 +150,8 @@ class TestGenerateReport:
         case_set = TestCaseSet(cases=[], test_point_ids=[])
         report = generate_report(case_set)
         assert report.total_cases == 0
-        assert report.pass_rate == 0.0
-        assert report.grade == "D"
+        assert report.pass_rate is None
+        assert report.grade == "未评估"
 
     def test_accepts_precomputed_issues(self):
         case_set = _make_clean_set()
@@ -255,17 +255,16 @@ class TestIncrementalReviewScenarios:
 
     def test_single_clean_changed_case_pass_rate_one(self):
         # 增量评审：1 条变更用例且无字段问题 → pass_rate == 1.0
-        # 注意：单条用例会触发覆盖度 P0（缺其他 3 类场景），但覆盖度问题 case_id="-"
-        # 不计入 issue_cases，故 pass_rate 仍为 1.0；但 issue_density > 0 → 评级非 A
+        # 未提供适用场景要求，不把单条增量用例按完整场景集扣分。
         case = _make_case(id="TC_001", title="登录-正向", test_point_id="TP_001")
         case_set = TestCaseSet(cases=[case], test_point_ids=["TP_001"])
         report = generate_report(case_set)
         assert report.total_cases == 1
         assert report.pass_rate == 1.0
         assert report.issue_cases == 0
-        # 覆盖度 P0 存在但 case_id="-"，不影响 pass_rate
-        assert report.issue_density > 0  # 覆盖度问题使密度 > 0
-        assert report.grade == "B"  # pass_rate 100% 但密度高 → B 非 A
+        assert report.issue_density == 0
+        assert report.grade == "A"
+        assert "覆盖度" in report.not_assessed
 
     def test_single_problematic_changed_case_gets_low_grade(self):
         # 增量评审：1 条变更用例且有问题 → D 级（通过率 0%）
@@ -281,7 +280,7 @@ class TestIncrementalReviewScenarios:
         assert report.issue_density > 0
 
     def test_small_batch_mixed_cases_grade(self):
-        # 增量评审：5 条变更用例，3 条干净 2 条有问题 → 通过率 60% → C 级
+        # 增量评审：5 条变更用例，3 条干净 2 条有问题 → 通过率 60%，含 P0 → D 级
         cases = []
         for i in range(3):
             cases.append(_make_case(
@@ -303,7 +302,7 @@ class TestIncrementalReviewScenarios:
         assert report.total_cases == 5
         assert report.issue_cases == 2
         assert report.pass_rate == 0.6
-        assert report.grade == "C"
+        assert report.grade == "D"
 
     def test_incremental_report_has_full_dimension_stats(self):
         # 增量评审报告仍应包含全部 10 维度统计（即使多数为 0）
@@ -311,10 +310,10 @@ class TestIncrementalReviewScenarios:
         case_set = TestCaseSet(cases=[case], test_point_ids=["TP_001"])
         report = generate_report(case_set)
         assert len(report.dimension_stats) == 10
-        # 单条干净用例不应有覆盖度问题（因为只有 1 条正向，其他 3 类为 0 → P0）
-        # 实际上单条用例会触发覆盖度 P0，验证 dimension_stats 正确反映
+        # 统计与未评估范围分别展示。
         coverage_stat = next(s for s in report.dimension_stats if s.dimension == "覆盖度")
-        assert coverage_stat.issue_count > 0
+        assert coverage_stat.issue_count == 0
+        assert "覆盖度" in report.not_assessed
 
 
 class TestMcpIntegration:
@@ -346,7 +345,7 @@ class TestMcpIntegration:
         issues = review_test_cases(case_set)
         report = generate_report(case_set, issues=issues)
         from collections import Counter
-        dim_counts = Counter(i.dimension for i in issues)
+        dim_counts = Counter(i.dimension for i in issues if i.confirmation == "confirmed")
         for stat in report.dimension_stats:
             assert stat.issue_count == dim_counts.get(stat.dimension, 0), \
                 f"维度 {stat.dimension} 统计不一致"
@@ -362,7 +361,7 @@ class TestMcpIntegration:
         issues = review_test_cases(case_set)
         report = generate_report(case_set, issues=issues)
         from collections import Counter
-        sev_counts = Counter(i.severity.value for i in issues)
+        sev_counts = Counter(i.severity.value for i in issues if i.confirmation == "confirmed")
         for sev in ("P0", "P1", "P2"):
             assert report.severity_stats[sev] == sev_counts.get(sev, 0), \
                 f"严重等级 {sev} 统计不一致"
@@ -370,13 +369,13 @@ class TestMcpIntegration:
     def test_issue_cases_count_matches_unique_case_ids(self):
         # issue_cases 应等于有问题的唯一用例 ID 数（排除 case_id="-" 的集合级问题）
         cases = [
-            _make_case(id="TC_001", title="登录-等", test_point_id="TP_001"),
-            _make_case(id="TC_002", title="登录-之类", test_point_id="TP_002"),
+            _make_case(id="TC_001", title="登录-等", test_point_id="TP_001", expected_results=""),
+            _make_case(id="TC_002", title="登录-之类", test_point_id="TP_002", expected_results=""),
             _make_case(id="TC_003", title="登录成功-跳转首页", test_point_id="TP_003"),
         ]
         case_set = TestCaseSet(cases=cases, test_point_ids=["TP_001", "TP_002", "TP_003"])
         report = generate_report(case_set)
-        # TC_001 和 TC_002 有字段规范 P1 问题，TC_003 无字段问题
+        # TC_001 和 TC_002 缺少预期结果，TC_003 无字段问题
         # 注意：覆盖度/优先级问题 case_id="-" 不计入 issue_cases
         assert report.issue_cases == 2
         assert report.total_cases == 3
@@ -386,7 +385,7 @@ class TestMcpIntegration:
 class TestCheckSemanticConflictsTool:
     """check_semantic_conflicts 工具。"""
 
-    def test_returns_issues_for_conflicting_facts(self):
+    def test_different_case_preconditions_do_not_conflict(self):
         from review_checker_mcp.schemas import (
             PreconditionFact,
             SemanticFacts,
@@ -418,7 +417,7 @@ class TestCheckSemanticConflictsTool:
             ),
         ]
         issues = check_semantic_conflicts(facts)
-        assert len(issues) > 0
+        assert issues == []
         assert all(i.dimension == "语义一致性" for i in issues)
 
     def test_returns_empty_for_consistent_facts(self):

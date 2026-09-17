@@ -93,21 +93,21 @@ requirement_summary:
 
 ### 2.4 🔴 CHECKPOINT
 
-阶段 2 输出后**必须**展示给用户确认：
+阶段 2 输出后展示模型与未决事项，已有依据的部分继续结构检查：
 
 - 显示完整状态机模型（状态/转换/禁止/不变量）
 - 列出所有"待确认"项
-- 询问：是否修改/补充/终止？
+- 仅缺少影响结论的关键信息、范围变化或未授权写操作时询问
 
 **CHECKPOINT 规则**：
 - 用户修改 → 重新执行阶段 2
 - 用户补充 → 更新模型后重新展示
-- 用户确认 → 进入阶段 3
+- 无阻塞信息 → 进入阶段 3
 - 用户终止 → 输出当前状态机模型，不进入后续阶段
 
 ---
 
-## 阶段 3: 完整性检查（9 项）
+## 阶段 3: 完整性检查（C0 结构检查 + 9 项业务检查）
 
 ### 3.1 目标
 
@@ -153,11 +153,13 @@ completeness_report:
     - 为退款中状态补充超时转人工的退出路径
 ```
 
+`not_checked` 不参与机器通过／失败判定；`manual_review_required` 记录仍需对照需求审阅的事项。
+
 ### 3.4 退出条件
 
 - `overall_status = pass` → 直接进入阶段 4
-- `overall_status = warn` → 列出 warning，询问用户是否继续（默认继续）
-- `overall_status = fail` → **不进入阶段 4**，触发 CHECKPOINT 要求用户先修正
+- `overall_status = warn` → 列出风险，继续有依据的场景；不把警告当作已确认需求
+- `overall_status = fail` → 先按已确认资料修正结构；不能确认的部分暂停依赖场景，交付缺口与已有结论
 
 ---
 
@@ -220,7 +222,7 @@ completeness_report:
   skill 调用 MCP validate_state_machine
   → MCP 返回 ValidationReport
   → skill 把 gaps/contradictions 追加到自己的完整性检查报告
-  → 若 validation_status=fail，触发 CHECKPOINT 让用户先修正
+  → 若 validation_status=fail，先核对结构与来源，未决部分单列待确认
 
 阶段 4 增强：
   skill 自身穷举 + 调用 MCP generate_scenarios 交叉复核
@@ -287,7 +289,7 @@ test-case-engineer 输出：
 |---|---|---|
 | 需求文本无状态信号 | 提示并询问是否继续/转 test-case-engineer | 标注「非状态型需求」，建议转 test-case-engineer |
 | 状态机建模出现矛盾 | 标"待确认"暴露给用户，不强行消解 | 列出矛盾点，要求用户裁定（CHECKPOINT） |
-| 完整性检查 fail | 触发 CHECKPOINT，不进入场景穷举 | 展示缺口报告，等用户补充后再继续 |
+| 完整性检查 fail | 修正有依据的结构问题 | 未决部分暂停依赖场景，展示缺口报告 |
 | MCP 探测失败 | 静默降级到独立模式 | 输出首行标 `⚠ 独立模式` |
 | MCP 调用超时（>10s） | 单次重试，仍失败则降级 | 输出首行标 `⚠ 降级模式（超时）` |
 | MCP 返回结果与 skill 严重冲突 | 不自动取舍，标"待确认"交给用户 | 列出差异，要求用户裁定 |

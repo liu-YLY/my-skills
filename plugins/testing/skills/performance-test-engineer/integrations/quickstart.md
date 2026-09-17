@@ -6,12 +6,7 @@
 
 ## SKILL_ROOT
 
-在本仓库中：`SKILL_ROOT` = `plugins/testing/skills/performance-test-engineer`
-
-> 下文命令中的 `$SKILL_ROOT` 是占位符，**Agent 执行命令时必须替换为上述实际路径**。
-> 人在终端使用时，先执行 `export SKILL_ROOT=plugins/testing/skills/performance-test-engineer`，或手动将 `$SKILL_ROOT` 替换为实际路径。
-
-> 路径禁止误写为 `.cursor/skills/performance-test-engineer` 或 `~/.claude/skills/performance-test-engineer`。本 skill 随仓库分发，路径以仓库内 `plugins/testing/skills/performance-test-engineer` 为准。
+`SKILL_ROOT` 为当前实际读取的 `SKILL.md` 所在目录。源码目录及运行时安装目录均有效；命令执行时使用该实际绝对路径，不硬编码仓库或个人目录。
 
 ## 快速触发示例
 
@@ -36,7 +31,7 @@
 
 **skill 执行阶段**：
 - 阶段 3 瓶颈定位（逆向触发）：现象收集（TPS 800 停滞、RT 陡增、CPU 40%）
-- 分层排查（按序，禁止跳层）：
+- 分层排查（按证据选择起点）：
   - 应用层：GC 频率、线程状态、连接池占用、慢 SQL
   - 资源层：USE 方法，CPU 40% 未饱和排除 CPU；排查连接池/IO/网络饱和度
   - 架构层：DB 连接池规格、缓存命中、限流配置

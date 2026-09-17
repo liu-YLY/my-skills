@@ -68,7 +68,9 @@ def _generate_legal_transitions(sm: StateMachine) -> list[Scenario]:
                 title=f"{t.from_state} 收到 {t.event} 后转为 {t.to_state}",
                 current_state=t.from_state,
                 trigger_event=t.event,
-                precondition=f"{t.from_state} 状态，{t.event}",
+                precondition=f"{t.from_state} 状态" + ("，" + "；".join(t.guards) if t.guards else ""),
+                transition_id=t.id,
+                guard_conditions=list(t.guards),
                 expected_target_state=t.to_state,
                 forbidden_states=[],
                 risk_type="legal_transition",
@@ -85,24 +87,27 @@ def _generate_illegal_transitions(sm: StateMachine) -> list[Scenario]:
     """生成 illegal_transition 场景。"""
     scenarios: list[Scenario] = []
     base = len(sm.transitions)
-    for i, f in enumerate(sm.forbidden, 1):
-        target = "任意状态" if f.to_state == "*" else f.to_state
-        scenarios.append(
-            Scenario(
-                id=f"SM-{base + i:03d}",
-                title=f"{f.from_state} 尝试转到 {target} 应被拒绝",
-                current_state=f.from_state,
-                trigger_event=f"尝试进入 {target}",
-                precondition=f"{f.from_state} 状态",
-                expected_target_state=f.from_state,
-                forbidden_states=[target] if f.to_state != "*" else [],
-                risk_type="illegal_transition",
-                related_objects=[],
-                evidence_type=f.evidence_type,
-                source=f"状态机 forbidden 规则: {f.reason}",
-                notes=f"reason: {f.reason}",
+    for f in sm.forbidden:
+        targets = [state.name for state in sm.states] if f.to_state == "*" else [f.to_state]
+        for target in targets:
+            scenarios.append(
+                Scenario(
+                    id=f"SM-{base + len(scenarios) + 1:03d}",
+                    title=f"{f.from_state} 尝试转到 {target} 应被拒绝",
+                    current_state=f.from_state,
+                    trigger_event=f"尝试进入 {target}",
+                    precondition=f"{f.from_state} 状态",
+                    expected_target_state=f.from_state,
+                    forbidden_states=[target],
+                    risk_type="illegal_transition",
+                    forbidden_id=f.id,
+                    attempted_target_state=target,
+                    related_objects=[],
+                    evidence_type=f.evidence_type,
+                    source=f"状态机 forbidden 规则: {f.reason}",
+                    notes=f"reason: {f.reason}",
+                )
             )
-        )
     return scenarios
 
 

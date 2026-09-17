@@ -1,6 +1,6 @@
 # 微信公众号排版技能 (wechat-formatter)
 
-> **版本**：v3.0.0（与 [SKILL.md](SKILL.md) frontmatter / plugin.json 同步）
+> **版本**：v3.0.1（与 [SKILL.md](SKILL.md) frontmatter / plugin.json 同步）
 
 一套面向技术领域的微信公众号文章排版技能，提供六种风格模板、9 大类高级排版模块和 Brand Profile 品牌配置，自动分析文章内容并输出可直接复制到公众号编辑器的格式化 Markdown。
 
@@ -196,7 +196,7 @@ Markdown 文件本身不包含 CSS。默认输出为格式化 Markdown；如需�
 使用 `scripts/md2wechat.py` 脚本，自动将 Markdown + CSS 合并为带内联样式的 HTML 文件。**仅当用户明确要求「HTML」「可直接粘贴」「一键复制」时执行**：
 
 ```bash
-pip install markdown beautifulsoup4
+pip install -r "$SKILL_ROOT/scripts/requirements.txt"
 python scripts/md2wechat.py <markdown_file> <style_file> [--size small|medium|large]
 ```
 

@@ -1,5 +1,7 @@
 # 项目知识自动发现与文档格式处理
 
+> **来源优先级**：用户明确要求 > 当前项目已确认资料 > Skill 通用知识 > 行业模板。冲突、缺少日期或疑似过期资料须注明来源与待确认事项；模板不覆盖项目事实，也不改写历史用例。
+
 > **何时阅读**:阶段 1 信息收集时**必读**(SKILL.md 强制要求);遇到 Office/PDF 文件需要转换时必读。
 > **覆盖范围**:项目知识目录约定(docs/prd 等扫描清单) + Office/PDF 文档转换流程(MarkItDown 主方案 + convert_docs.py 降级)。
 > **跳过条件**:本次任务用户已直接提供需求文本/Markdown,且无项目内文档需扫描时必须跳过。
@@ -33,32 +35,24 @@
 
 **步骤 2**：若不存在，由当前 Agent **主动执行转换**，生成可读文件后再读取，并**继续完成后续阶段**（需求理解 → 测试点提取 → 用例编写 → 自检）。**不得**回复「请先手动执行转换命令」或中途停下让用户操作。
 
-> **安全提示**：执行转换命令前，必须遵守 [integrations/quickstart.md](../integrations/quickstart.md)「安全约束」章节的路径消毒规则。用户提供的文件路径不得包含 shell 元字符。
+> **安全提示**：执行转换命令前，必须遵守 [integrations/quickstart.md](../integrations/quickstart.md)「安全约束」章节的参数传递与任务范围规则，不拼接或改写用户路径。
 
 **步骤 3**：执行转换，**优先使用 MarkItDown**（支持 PDF + Office + 更多格式）：
 
 ```bash
 # 主方案：Microsoft MarkItDown（推荐，支持 PDF/.docx/.pptx/.xlsx/.xls 等）
-$PLUGIN_ROOT/.venv-tools/bin/markitdown <文件路径> -o <输出路径>.md
+"$TOOLS_ENV/bin/markitdown" <文件路径> -o <输出路径>.md
 ```
 
-**步骤 4（首次自举）**：使用 plugin 层级共享虚拟环境 `$PLUGIN_ROOT/.venv-tools`：
-1. 若 `$PLUGIN_ROOT/.venv-tools` 已存在 → 直接用
-2. 若不存在 → 自动创建：
-```bash
-python3 -m venv $PLUGIN_ROOT/.venv-tools
-$PLUGIN_ROOT/.venv-tools/bin/pip install -r $PLUGIN_ROOT/scripts/requirements.txt
-```
-> 共享 venv 位于 `plugins/testing/.venv-tools`，test-case-engineer 与 bug-analyzer 共用，避免重复安装。
-> 禁止使用项目自带的 `.venv`，避免依赖冲突干扰项目环境。
+**步骤 4（首次自举）**：按 [本地操作速查](../integrations/quickstart.md) 从实际 Skill 目录解析 `TOOLS_ROOT`，使用临时目录中的 `TOOLS_ENV` 安装依赖。
 
-依赖列表：`$PLUGIN_ROOT/scripts/requirements.txt`（`markitdown[docx,pptx,xlsx,xls]`）
+依赖列表：`$TOOLS_ROOT/scripts/requirements.txt`（`markitdown[docx,pptx,xlsx,xls]`）
 
 ### 降级策略
 
 **若 MarkItDown 不可用**（Python < 3.10、安装失败、找不到命令），降级为共享 `convert_docs.py`（依赖已在 requirements.txt 中一并安装）：
 ```bash
-$PLUGIN_ROOT/.venv-tools/bin/python $PLUGIN_ROOT/scripts/convert_docs.py <文件或目录路径> --recursive
+"$TOOLS_ENV/bin/python" "$TOOLS_ROOT/scripts/convert_docs.py" <文件或目录路径> --recursive
 ```
 
 降级方案仅支持 `.docx`、`.xlsx`、`.pptx`，不支持 PDF 和 `.xls`，须在输出中说明局限。

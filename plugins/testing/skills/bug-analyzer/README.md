@@ -34,7 +34,7 @@ bug-analyzer/
 └── test-prompts.json                 # 测试 prompt（10 条，含 2 条负例）
 ```
 
-> 文档转换脚本为插件级共享，位于 `plugins/testing/scripts/convert_docs.py`。
+> 文档转换脚本为插件级共享，位于 `plugins/testing/skills/test-case-engineer/scripts/convert_docs.py`。
 
 ## 快速开始
 

@@ -64,7 +64,7 @@ async def test_call_validate_state_machine() -> None:
             assert not result.isError
             payload = json.loads(result.content[0].text)
             assert payload["overall_status"] in ("pass", "warn")
-            assert len(payload["checks"]) == 9
+            assert len(payload["checks"]) == 10
 
 
 async def test_call_build_state_machine_with_template() -> None:

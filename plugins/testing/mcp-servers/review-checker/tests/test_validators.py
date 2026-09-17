@@ -48,7 +48,8 @@ def _make_case(
 
 
 def _make_set(cases: list[TestCase], test_point_ids: list[str] | None = None) -> TestCaseSet:
-    return TestCaseSet(cases=cases, test_point_ids=test_point_ids or ["TP_001"])
+    return TestCaseSet(cases=cases, test_point_ids=test_point_ids or ["TP_001"],
+                       required_scenarios=list(ScenarioType))
 
 
 class TestCoverage:
@@ -75,11 +76,11 @@ class TestCoverage:
         assert issues[0].severity.value == "P0"
         assert "异常" in issues[0].evidence
 
-    def test_scenario_inferred_from_title_when_missing(self):
+    def test_missing_scenario_is_not_inferred_from_title(self):
         case = _make_case(title="登录-网络超时-提示重试", scenario=None)
         issues = check_coverage(_make_set([case]))
-        # 单条用例无法覆盖全部 4 类，应触发 P0
-        assert any(i.severity.value == "P0" for i in issues)
+        # 未标注类型不能证明覆盖缺失。
+        assert issues and all(i.confirmation == "candidate" for i in issues)
 
 
 class TestPriorityBalance:
@@ -98,18 +99,18 @@ class TestPriorityBalance:
         issues = check_priority_balance(_make_set(cases))
         assert len(issues) == 0
 
-    def test_p0_ratio_too_high_triggers_p1(self):
+    def test_p0_ratio_does_not_override_business_risk(self):
         cases = [_make_case(id=f"TC_{i:03d}", priority=Priority.P0) for i in range(10)]
         cases += [_make_case(id=f"TC_{i:03d}", priority=Priority.P2) for i in range(10, 20)]
         issues = check_priority_balance(_make_set(cases))
-        assert any(i.severity.value == "P1" and "P0" in i.evidence for i in issues)
+        assert issues == []
 
-    def test_p0_p1_sum_below_50_percent_triggers_p1(self):
+    def test_low_p0_p1_ratio_is_not_a_defect(self):
         cases = [_make_case(id=f"TC_{i:03d}", priority=Priority.P0) for i in range(2)]
         cases += [_make_case(id=f"TC_{i:03d}", priority=Priority.P1) for i in range(2)]
         cases += [_make_case(id=f"TC_{i:03d}", priority=Priority.P2) for i in range(6)]
         issues = check_priority_balance(_make_set(cases))
-        assert any("P0+P1" in i.rule for i in issues)
+        assert issues == []
 
     def test_p3_not_supported_no_issue(self):
         cases = [_make_case(id=f"TC_{i:03d}", priority=Priority.P0) for i in range(15)]
@@ -203,12 +204,12 @@ class TestExecutability:
     def test_vague_expected_triggers_p1(self):
         case = _make_case(expected_results="功能正常")
         issues = check_executability(case)
-        assert any(i.severity.value == "P1" and "模糊预期" in i.rule for i in issues)
+        assert any(i.severity.value == "P1" and "模糊" in i.rule for i in issues)
 
-    def test_too_many_steps_triggers_p2(self):
+    def test_long_business_flow_has_no_count_penalty(self):
         case = _make_case(steps=[f"步骤{i}" for i in range(8)])
         issues = check_executability(case)
-        assert any(i.severity.value == "P2" and "步骤数" in i.rule for i in issues)
+        assert not any("步骤数" in i.rule for i in issues)
 
 
 class TestRedundancy:
@@ -459,7 +460,7 @@ def _make_facts(
 class TestCheckPreconditionStateConflicts:
     """冲突类型 ①：前置条件状态矛盾。"""
 
-    def test_same_subject_opposite_polarity_triggers_p0(self):
+    def test_different_cases_can_have_opposite_preconditions(self):
         from review_checker_mcp.schemas import PreconditionFact
         from review_checker_mcp.validators import check_precondition_state_conflicts
 
@@ -484,11 +485,7 @@ class TestCheckPreconditionStateConflicts:
             ),
         ]
         issues = check_precondition_state_conflicts(facts)
-        assert len(issues) == 1
-        assert issues[0].severity.value == "P0"
-        assert "TC_001" in issues[0].case_id
-        assert "TC_002" in issues[0].case_id
-        assert "用户登录状态" in issues[0].evidence
+        assert issues == []
 
     def test_same_subject_same_polarity_no_issue(self):
         from review_checker_mcp.schemas import PreconditionFact
@@ -568,8 +565,8 @@ class TestCheckPreconditionStateConflicts:
         issues = check_precondition_state_conflicts(facts)
         assert len(issues) == 0
 
-    def test_no_test_point_id_falls_back_to_module_function_segment(self):
-        """无 test_point_id 时按 case_id 模块+功能段分组。"""
+    def test_similar_ids_do_not_make_different_cases_conflict(self):
+        """不同业务条件不因编号相近被当作矛盾。"""
         from review_checker_mcp.schemas import PreconditionFact
         from review_checker_mcp.validators import check_precondition_state_conflicts
 
@@ -594,7 +591,7 @@ class TestCheckPreconditionStateConflicts:
             ),
         ]
         issues = check_precondition_state_conflicts(facts)
-        assert len(issues) == 1  # 同 WEBHOOK_ADD 组内冲突
+        assert issues == []
 
     def test_no_test_point_id_different_function_no_issue(self):
         """无 test_point_id 且不同功能段不视为冲突。"""
@@ -628,7 +625,7 @@ class TestCheckPreconditionStateConflicts:
 class TestCheckInputOutcomeConflicts:
     """冲突类型 ②：同输入不同预期。"""
 
-    def test_same_signature_different_outcome_triggers_p0(self):
+    def test_same_signature_different_outcome_is_a_candidate(self):
         from review_checker_mcp.schemas import InputFact
         from review_checker_mcp.validators import check_input_outcome_conflicts
 
@@ -654,7 +651,8 @@ class TestCheckInputOutcomeConflicts:
         ]
         issues = check_input_outcome_conflicts(facts)
         assert len(issues) == 1
-        assert issues[0].severity.value == "P0"
+        assert issues[0].confirmation == "candidate"
+        assert issues[0].severity.value == "P1"
         assert "TC_001" in issues[0].case_id
         assert "TC_002" in issues[0].case_id
 
@@ -851,7 +849,7 @@ class TestCheckDependencyCycles:
 class TestCheckSemanticConflicts:
     """check_semantic_conflicts 聚合函数。"""
 
-    def test_aggregates_all_three_conflict_types(self):
+    def test_different_contexts_only_report_dependency_cycle(self):
         from review_checker_mcp.schemas import (
             InputFact,
             PreconditionFact,
@@ -894,11 +892,11 @@ class TestCheckSemanticConflicts:
             ),
         ]
         issues = check_semantic_conflicts(facts)
-        # 应同时检出：①前置条件矛盾(P0) + ②同输入异预期(P0) + ③依赖闭环(P1)
+        # 两条用例前置条件不同，仅依赖闭环属于确定问题。
         dims = [i.dimension for i in issues]
-        assert dims.count("语义一致性") == 3
+        assert dims.count("语义一致性") == 1
         severities = [i.severity.value for i in issues]
-        assert severities.count("P0") == 2
+        assert severities.count("P0") == 0
         assert severities.count("P1") == 1
 
     def test_empty_facts_returns_empty(self):

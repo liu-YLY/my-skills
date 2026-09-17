@@ -40,7 +40,7 @@ def test_validate_minimal_pass() -> None:
     sm = _make_minimal_state_machine()
     report = validate_state_machine(sm, strict=False)
     assert report.overall_status == "warn"  # C5 默认 warn
-    assert len(report.checks) == 9
+    assert len(report.checks) == 10
 
 
 def test_c1_empty_meaning_fails() -> None:

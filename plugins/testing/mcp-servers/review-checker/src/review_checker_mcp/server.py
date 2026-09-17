@@ -57,7 +57,8 @@ def review_test_cases(case_set: TestCaseSet) -> list[Issue]:
     return _validate_all(case_set)
 
 
-def generate_report(case_set: TestCaseSet, issues: list[Issue] | None = None) -> ReviewReport:
+def generate_report(case_set: TestCaseSet, issues: list[Issue] | None = None,
+                    semantic_reviewed: bool = False) -> ReviewReport:
     """基于评审结果生成度量报告。
 
     含通过率、问题密度、整体评级（A/B/C/D）、维度分布、严重等级分布。
@@ -65,7 +66,10 @@ def generate_report(case_set: TestCaseSet, issues: list[Issue] | None = None) ->
     if issues is None:
         issues = review_test_cases(case_set)
 
+    candidates = [issue for issue in issues if issue.confirmation == "candidate"]
+    issues = [issue for issue in issues if issue.confirmation == "confirmed"]
     total_cases = len(case_set.cases)
+    known_ids = {case.id for case in case_set.cases}
     # 拆分逗号分隔的 case_id（语义冲突对/闭环），分别计入
     issue_case_ids: set[str] = set()
     for i in issues:
@@ -73,16 +77,21 @@ def generate_report(case_set: TestCaseSet, issues: list[Issue] | None = None) ->
             continue
         for cid in i.case_id.split(","):
             cid = cid.strip()
-            if cid:
+            if cid in known_ids:
                 issue_case_ids.add(cid)
     issue_cases = len(issue_case_ids)
-    pass_rate = (total_cases - issue_cases) / total_cases if total_cases > 0 else 0.0
+    pass_rate = (total_cases - issue_cases) / total_cases if total_cases > 0 else None
     total_issues = len(issues)
     issue_density = total_issues / total_cases if total_cases > 0 else 0.0
 
     # 整体评级
-    if pass_rate >= 0.95 and issue_density < 0.5:
-        grade: Literal["A", "B", "C", "D"] = "A"
+    grade: Literal["A", "B", "C", "D", "未评估"]
+    if pass_rate is None:
+        grade = "未评估"
+    elif any(issue.severity == "P0" for issue in issues):
+        grade = "D"
+    elif pass_rate >= 0.95 and issue_density < 0.5:
+        grade = "A"
     elif pass_rate >= 0.80:
         grade = "B"
     elif pass_rate >= 0.60:
@@ -100,8 +109,7 @@ def generate_report(case_set: TestCaseSet, issues: list[Issue] | None = None) ->
     for dim in DIMENSIONS:
         count = dim_counts.get(dim, 0)
         if count > 0:
-            sev_counts = Counter(dim_severity[dim])
-            main_sev = sev_counts.most_common(1)[0][0]
+            main_sev = min(dim_severity[dim])
         else:
             main_sev = "-"
         dimension_stats.append(
@@ -112,16 +120,31 @@ def generate_report(case_set: TestCaseSet, issues: list[Issue] | None = None) ->
     severity_counts: Counter[str] = Counter(i.severity.value for i in issues)
     severity_stats = {sev: severity_counts.get(sev, 0) for sev in ("P0", "P1", "P2")}
 
+    not_assessed = {"优先级合理性": "需结合业务风险审阅；比例不作为扣分依据"}
+    if case_set.required_scenarios is None:
+        not_assessed["覆盖度"] = "未提供适用场景要求"
+    elif any(case.scenario is None for case in case_set.cases):
+        not_assessed["覆盖度"] = "部分用例未标注场景类型，无法确认缺失"
+    if not case_set.test_point_ids:
+        not_assessed["溯源"] = "未提供需求或测试点基线"
+    if not semantic_reviewed:
+        not_assessed["语义一致性"] = "未声明完成全部用例的语义事实审阅"
+    if not total_cases:
+        not_assessed = {dim: "用例集合为空" for dim in DIMENSIONS}
+
     return ReviewReport(
         total_cases=total_cases,
         issue_cases=issue_cases,
-        pass_rate=round(pass_rate, 4),
+        pass_rate=round(pass_rate, 4) if pass_rate is not None else None,
         total_issues=total_issues,
         issue_density=round(issue_density, 4),
         grade=grade,
         issues=issues,
         dimension_stats=dimension_stats,
         severity_stats=severity_stats,
+        candidate_issues=candidates,
+        assessed_dimensions=[dim for dim in DIMENSIONS if dim not in not_assessed],
+        not_assessed=not_assessed,
     )
 
 
@@ -130,7 +153,7 @@ def check_semantic_conflicts(facts: list[SemanticFacts]) -> list[Issue]:
 
     接收 skill 侧 LLM 抽取的 SemanticFacts 列表，执行 3 类确定性冲突检测：
       ① 前置条件状态矛盾（P0）
-      ② 同输入不同预期（P0）
+      ② 同输入不同预期（上下文核对后的 P1 候选）
       ③ 数据依赖闭环（P1）
 
     与 review_test_cases（9 维度）独立，skill 侧应分别调用后合并 issues
@@ -154,7 +177,7 @@ def main() -> int:
     """命令行入口。"""
     parser = argparse.ArgumentParser(
         prog="review-checker-mcp",
-        description="Review Checker MCP Server v0.2.0",
+        description="Review Checker MCP Server v0.3.0",
     )
     parser.add_argument(
         "--transport",
@@ -170,7 +193,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.help_tools:
-        print("Review Checker MCP Server v0.2.0 - 3 工具")
+        print("Review Checker MCP Server v0.3.0 - 3 工具")
         print()
         print("1. review_test_cases(case_set)")
         print("   - 对用例集执行 9 维度评审，返回全部 Issue")
@@ -183,7 +206,7 @@ def main() -> int:
         return 0
 
     if args.transport == "http":
-        print("HTTP 传输待 v0.3.0 实现，当前仅支持 stdio", file=sys.stderr)
+        print("当前仅支持 stdio，尚未实现 HTTP 传输", file=sys.stderr)
         return 1
 
     try:

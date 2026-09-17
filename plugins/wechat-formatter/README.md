@@ -6,7 +6,7 @@
 
 ## 版本
 
-**当前版本**：v3.0.0（plugin manifest / skill frontmatter 同步）
+**当前版本**：v3.0.1（plugin manifest / skill frontmatter 同步）
 
 ## 能力概览
 
@@ -57,7 +57,7 @@ wechat-formatter/
 ├── .codex-plugin/plugin.json         # Codex plugin manifest
 ├── README.md                         # 本文件
 └── skills/
-    └── wechat-formatter/             # 排版 skill v3.0.0
+    └── wechat-formatter/             # 排版 skill v3.0.1
         ├── SKILL.md                  # 入口 + 五阶段流程
         ├── README.md                 # skill 说明
         ├── test-prompts.json
