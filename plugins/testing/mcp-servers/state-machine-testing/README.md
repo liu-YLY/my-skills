@@ -202,10 +202,6 @@ plugins/testing/mcp-servers/state-machine-testing/
 │       ├── generators.py               # generate_scenarios 实现（10 类穷举）
 │       ├── exporters.py                # export_artifacts 实现（Markdown/JSON/Mermaid）
 │       ├── coverage.py                 # check_coverage 实现
-│       └── prompts/                    # 建模提示词模板（供调用方 LLM 参考的抽取提示词）
-│           ├── extract_states.txt
-│           ├── identify_transitions.txt
-│           └── generate_scenarios.txt
 └── tests/
     ├── unit/
     │   ├── test_schemas.py
@@ -288,10 +284,10 @@ pytest tests/integration/ -v
 pytest tests/ --cov=state_machine_testing_mcp --cov-report=term-missing
 ```
 
-当前 52 项测试全绿（43 单元 + 9 集成）。测试覆盖：
+当前 68 项测试全绿（单元（含 4 个行业模板 schema 合规）/ 集成（含 MCP 协议真实调用））。测试覆盖：
 - 4 个行业模板全部可解析且 schema 合规
 - 9 项完整性检查每项至少 1 个 pass + 1 个 fail 用例
-- 10 类场景穷举每类至少 1 个验证用例
+- 10 类场景穷举每类至少 1 个验证用例（含 access_control 默认生成、concurrency 事件组合、待确认必填 reason 约束）
 - MCP 协议层：stdio 握手、tools/list（5 工具）、call_tool 往返、非法 payload 错误返回、streamable-http 传输
 - skill 协作契约：validate → generate 流水线、Server 不可达时的降级信号
 
@@ -323,7 +319,7 @@ ruff check src/ tests/
 
 ## 隐私与安全
 
-- Server 本地运行，5 个工具全部为确定性计算（v0.3.0 起不内置 LLM），不发任何数据出本机
+- Server 本地运行，5 个工具全部为确定性计算（v0.2.0 起 `build_state_machine` 为行业模板加载，不内置 LLM），不发任何数据出本机
 - HTTP 传输模式默认仅监听 127.0.0.1，仅本机可访问
 
 ## 版本历史
