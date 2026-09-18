@@ -209,4 +209,5 @@ keywords:
 - v2.0.0: 扩展为 4-skill 路由（+ strategy + performance），breaking change
 - v3.0.0: 扩展为 5-skill 路由（+ state-machine-test-engineer），新增链 5（状态机+用例协同），breaking change
 - v3.1.0: 新增链 6（评审→覆盖缺口验证，协同外部 change-impact-analyzer）+ 链 7（评审→风险用例根因反推，协同 bug-analyzer），评审模式成为混合意图链起点
+- v3.2.0: 使用示例与快速上手外迁至 knowledge/usage-examples.md（token 优化）；state-machine MCP 状态声明同步至 v0.2.0 已联调验证
 - v3.1.1: 声明 test-case-engineer 评审模式可选调用 review-checker MCP Server（与 state-machine MCP 增强对称），未安装时降级为纯 LLM 推理

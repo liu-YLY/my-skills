@@ -4,19 +4,18 @@
 
 ---
 
-## [3.2.0] - 2026-09-15
-
-### Changed
-
-- 新用例采用业务结果与关键检查点；评审区分确定问题、候选线索与未评估范围。
-- 修复状态机结构校验、覆盖统计、完整安装和诊断路由；保留历史用例与历史评测报告。
-
-## [Unreleased]
+## [3.2.0] - 2026-09-18
 
 ### Changed
 
 - **token 优化（纯内容迁移）**：SKILL.md 的「使用示例」（8 个演示对话）与「快速上手」外迁至 [knowledge/usage-examples.md](knowledge/usage-examples.md)，入口保留示例索引 + 链接按需加载；路由规则、失败模式、反例黑名单、约束规则全部保留，路由行为无变化
 - **state-machine MCP 状态声明同步**：SKILL.md 与 usage-examples.md 中 state-machine-testing MCP 状态从「v0.1.0 协议层尚未联调验证，默认独立模式」更新为「v0.2.0 协议层 stdio + HTTP 已端到端联调验证，安装后增强模式可用」
+
+## [Unreleased]
+
+### Changed
+
+- （待定）
 
 ## [3.1.1] - 2026-07-22
 

@@ -165,7 +165,7 @@ uv pip install -e .
 ```toml
 [project]
 name = "state-machine-testing-mcp"
-version = "0.2.0"
+version = "0.3.0"
 requires-python = ">=3.11"
 dependencies = [
     "mcp>=0.9.0,<2.0.0",  # 2.0.0 移除了 mcp.server.fastmcp 模块
@@ -323,13 +323,14 @@ ruff check src/ tests/
 
 ## 隐私与安全
 
-- Server 本地运行，5 个工具全部为确定性计算（v0.2.0 起不内置 LLM），不发任何数据出本机
+- Server 本地运行，5 个工具全部为确定性计算（v0.3.0 起不内置 LLM），不发任何数据出本机
 - HTTP 传输模式默认仅监听 127.0.0.1，仅本机可访问
 
 ## 版本历史
 
-- v0.1.0: 首版，5 个工具（build/validate/generate/export/coverage）+ pydantic Schema + 9 项检查 + 10 类穷举
+- v0.3.0: 结构校验与需求完整性分开判定；按转换目标、事件、守卫和规则引用计算覆盖（不再依赖关键词粗判）
 - v0.2.0: MCP 协议层端到端联调验证（stdio + streamable-http）；`build_state_machine` 去占位，改为确定性行业模板加载（不内置 LLM）；新增 HTTP 传输与 `--host/--port` 参数；新增协议测试与 skill 协作契约测试（52 项全绿）；依赖锁定 mcp < 2.0.0 并新增 pyyaml
+- v0.1.0: 首版，5 个工具（build/validate/generate/export/coverage）+ pydantic Schema + 9 项检查 + 10 类穷举
 
 ## 待后续版本
 
