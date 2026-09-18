@@ -31,12 +31,12 @@ USE 方法（Utilization / Saturation / Errors）由 Brendan Gregg 提出，用�
 | 磁盘 | `iostat -x 1`、`sar -d 1`、`iotop` |
 | 网络 | `sar -n DEV 1`、`netstat -s`、`ifconfig`、`ethtool -S <iface>` |
 
-**关键指标阈值参考**：
+**关键指标阈值参考**（阈值分档以 [metrics-framework.md](metrics-framework.md) 阈值表为权威源，本表为通用告警参考）：
 
 | 指标 | 命令 | 告警阈值 |
 |------|------|----------|
 | CPU 利用率 | `mpstat` %usr+%sys | 单核持续 >90% |
-| runqueue 长度 | `vmstat` r 列 | > CPU 核数 × 1 |
+| runqueue 长度 | `vmstat` r 列 | > CPU 核数 × 1（持续） |
 | iowait | `mpstat` %iowait | >20% |
 | 磁盘 await | `iostat -x` await | >20ms（HDD）/ >10ms（SSD） |
 | 队列深度 | `iostat -x` avgqu-sz | >2 持续 |

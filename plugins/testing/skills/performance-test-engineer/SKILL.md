@@ -73,7 +73,7 @@ keywords:
 3. 估算关键指标初值，参考 [knowledge/metrics-framework.md](knowledge/metrics-framework.md) 阈值表，示例：
    - RT：P99 ≤ 业务 SLA，P999 ≤ 业务 SLA × 2
    - TPS：峰值用户量 × 单用户请求频率
-   - 错误率：支付类 ≤ 0.1%，查询类 ≤ 1%
+   - 错误率：金融交易类 ≤ 0.01%，支付类 ≤ 0.1%，查询类 ≤ 1%（分档详见 [knowledge/metrics-framework.md](knowledge/metrics-framework.md) 阈值表）
    - 资源利用率：CPU ≤ 70%、内存 ≤ 80%、磁盘 IO ≤ 80%、网络 ≤ 60%
 4. 输出性能需求摘要：场景、目标、约束
 
