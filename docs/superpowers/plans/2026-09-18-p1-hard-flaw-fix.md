@@ -592,7 +592,7 @@ from __future__ import annotations
 
 - [ ] **Step 2: quickstart 版本声明更新**
 
-`quickstart.md:13` `- **Python 3.8 及以上**（推荐 3.10+）` → `- **Python 3.8 及以上**（脚本已用 `from __future__ import annotations` 兼容 3.8；推荐 3.10+）`
+`quickstart.md:13` 的版本声明行改为 `- **Python 3.8 及以上**（脚本已用 from __future__ import annotations 兼容 3.8；推荐 3.10+）`（内层反引号省略，避免嵌套）
 
 - [ ] **Step 3: 验证 + 提交**
 
