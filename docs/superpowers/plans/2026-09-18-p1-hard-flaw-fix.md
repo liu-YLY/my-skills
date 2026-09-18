@@ -1105,4 +1105,4 @@ git status
 
 **Spec 覆盖检查：** 23 项评审确认的 P1 硬伤 → Task 1-24 一一对应（SYS-1→Task1；BA-1/2/3/4→Task2/11/15；CI-1/2/3→Task3/13/16；PF-1/2/3→Task5/10/17；SM-1/2/3/4→Task6/18/21/22；TC-1/2→Task7/12；ST→Task4/9；TB-1/2/3→Task8/19/24；WF-1/2/3→Task14/20/23）。无遗漏。
 
-**已知边界：** 评审报告中 P2 级遗留项（模糊词清单并集、ID 规则去重、products/ 真实数据沉淀、MCP prompts 孤文件、反例检查时机标注、A5.4 关联、直接交付模式中"多链同中"裁定过度设计风险）不在本计划范围，后续单独排期。Task 17/18/19/20 追加用例时若原文件为 dict 形态（顶层 skill/version/prompts），需先读文件确认结构与字段命名（`expected` vs `expected_behavior`），以匹配原文件为准。
+**已知边界（已处理，2026-09-18 追加）：** Self-Review 记录的 P2 遗留项已全部完成——①模糊词清单并集（writing-rules 基础 15 词 + test-standards 扩展 41 词，writing-rules 为唯一权威源）；②ID 生成规则去重（review-mode.md 改为引用 writing-rules.md）；③state-machine products/ 新增 order-refund.md 示例沉淀（验证机制端到端可用）；④MCP prompts 孤文件（上一轮瘦身时已删除）；⑤performance A5.4 反例检查时机（新增按阶段映射标注）。Task 17/18/19/20 追加用例时若原文件为 dict 形态（顶层 skill/version/prompts），需先读文件确认结构与字段命名（`expected` vs `expected_behavior`），以匹配原文件为准。
