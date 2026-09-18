@@ -50,4 +50,5 @@
 
 ## 版本历史
 
+- v1.1.0: 新增默认值兜底与意图切换（plan/diagnose/plan-and-diagnose）；阈值以 metrics-framework.md 为权威源
 - v1.0.0: 初始版本，作为 testing-bundle 的性能测试方向子 skill

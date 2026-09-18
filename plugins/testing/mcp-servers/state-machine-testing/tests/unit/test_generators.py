@@ -88,3 +88,64 @@ def test_pending_confirmation_correct() -> None:
     for s in result.scenarios:
         if s.evidence_type.value == "待确认":
             assert s.id in pending_ids
+
+
+def test_pending_target_has_reason() -> None:
+    """expected_target_state=待确认 的场景必须提供 expected_target_state_reason。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm)
+    for s in result.scenarios:
+        if s.expected_target_state == "待确认":
+            assert s.expected_target_state_reason, f"{s.id} 缺待确认原因"
+        else:
+            assert s.expected_target_state in {state.name for state in sm.states}
+
+
+def test_access_control_generates_when_target_implies_role() -> None:
+    """event 无角色词但 target 隐含权限时应生成 access_control 场景。"""
+    sm = StateMachine.model_validate({
+        "meta": {"object": "审批流", "source": "test"},
+        "states": [
+            {"name": "待审批", "meaning": "等待审批"},
+            {"name": "审批中", "meaning": "审批人处理中"},
+            {"name": "已通过", "meaning": "审批通过", "is_terminal": True},
+        ],
+        "transitions": [
+            {"from": "待审批", "to": "审批中", "event": "提交", "evidence_type": "需求明确"},
+            {"from": "审批中", "to": "已通过", "event": "通过", "evidence_type": "需求明确"},
+        ],
+        "forbidden": [],
+    })
+    result = generate_scenarios(sm, scenario_types=["access_control"])
+    assert len(result.scenarios) > 0
+    for s in result.scenarios:
+        assert s.risk_type == "access_control"
+        assert s.evidence_type.value in ("需求明确", "合理推理", "待确认")
+
+
+def test_access_control_defaults_pending_without_role_signal() -> None:
+    """无任何角色信号时仍默认生成 1 条待确认越权场景，不静默跳过。"""
+    sm = StateMachine.model_validate({
+        "meta": {"object": "订单", "source": "test"},
+        "states": [
+            {"name": "已创建", "meaning": "订单已创建"},
+            {"name": "已支付", "meaning": "订单已支付", "is_terminal": True},
+        ],
+        "transitions": [
+            {"from": "已创建", "to": "已支付", "event": "支付成功", "evidence_type": "需求明确"},
+        ],
+        "forbidden": [],
+    })
+    result = generate_scenarios(sm, scenario_types=["access_control"])
+    assert len(result.scenarios) >= 1
+    assert result.scenarios[0].evidence_type.value == "待确认"
+
+
+def test_concurrency_generates_for_different_events() -> None:
+    """不同事件的 transition 组合应生成并发场景（不再仅限 用户+回调）。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm, scenario_types=["concurrency"])
+    assert len(result.scenarios) > 0
+    for s in result.scenarios:
+        assert "+" in s.trigger_event
+        assert s.evidence_type.value == "待确认"

@@ -398,6 +398,53 @@ def test_styles_on_unmatched_elements_are_filtered(tmp_path):
     assert 'url(' not in str(content)
 
 
+# ─── 7.5 高级排版模块 (:::module) 渲染 ─────────────────────────────────────
+
+def test_render_modules_hero():
+    """:::hero 模块块应被渲染为带 module-hero 类名的 HTML 卡片。"""
+    md = ':::hero\neyebrow: 深度观察\ntitle: 排版的真问题\nsubtitle: 读者读不读得完\n::::'
+    out = md2wechat.render_modules(md)
+    assert 'module-hero' in out
+    assert 'module-body' in out
+    assert '深度观察' in out
+    assert ':::' not in out
+
+
+def test_render_modules_preserves_plain_markdown():
+    """不含模块语法的普通 Markdown 应原样保留。"""
+    md = '# 标题\n\n正文内容\n\n- 列表\n'
+    out = md2wechat.render_modules(md)
+    assert out == md
+
+
+def test_html_export_includes_module_structure(tmp_path):
+    """convert 输出应包含模块卡片结构（模块不再在导出路径丢失）。"""
+    from bs4 import BeautifulSoup
+    source = tmp_path / 'with-module.md'
+    source.write_text(
+        '# 带模块的文章\n\n:::hero\neyebrow: 深度观察\ntitle: 排版的真问题\n::::\n\n正文内容\n',
+        encoding='utf-8',
+    )
+    output = md2wechat.convert(str(source), str(_write_style_file(tmp_path, 'tech-blog')))
+    content = BeautifulSoup(Path(output).read_text(), 'html.parser').select_one('#content')
+    assert content is not None
+    assert content.select_one('.module-hero') is not None
+    assert '深度观察' in content.get_text()
+    # 模块基础样式合并进导出 HTML（<style> 中含 .module 规则）
+    html_text = Path(output).read_text(encoding='utf-8')
+    assert '.module' in html_text
+
+
+def test_html_export_includes_modules_css(tmp_path):
+    """导出 HTML 的 <style> 中应包含 modules-base.css 的模块选择器。"""
+    source = tmp_path / 'no-module.md'
+    source.write_text('# 标题\n\n正文内容\n', encoding='utf-8')
+    output = md2wechat.convert(str(source), str(_write_style_file(tmp_path, 'tech-blog')))
+    html_text = Path(output).read_text(encoding='utf-8')
+    assert '.module-body' in html_text
+    assert '.hero' in html_text
+
+
 # ─── 8. CLI 无效路径 ───────────────────────────────────────────────────────
 
 class TestCliInvalidPaths:

@@ -27,9 +27,9 @@ integrations:
 
 # State Machine Test Engineer
 
-状态机驱动的状态型需求测试 skill v1.1.0：基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
+状态机驱动的状态型需求测试 skill v1.2.0：基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
 
-> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.2.0**，MCP 协议层（stdio + streamable-http）已通过端到端联调验证（52 项测试全绿，含真实协议调用的握手/工具清单/call_tool/降级信号测试），**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 仍自动降级为独立模式（输出首行标 `⚠ 独立模式（未校验）`）。
+> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.3.0**，MCP 协议层（stdio + streamable-http）已通过端到端联调验证（52 项测试全绿，含真实协议调用的握手/工具清单/call_tool/降级信号测试），**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 仍自动降级为独立模式（输出首行标 `⚠ 独立模式（未校验）`）。
 
 ## 适用范围
 
@@ -112,11 +112,11 @@ PRD 通常只描述"用户做什么"，没有显性表达"对象处于什么状�
 
 | 模式 | 触发条件 | 行为 | 输出标记 |
 |---|---|---|---|
-| **增强模式** | MCP 可用（v0.2.0+，已联调验证） | skill 自身推理 + 调用 MCP 做校验/穷举/可视化复核 | `✓ MCP 增强模式` |
+| **增强模式** | MCP 可用（v0.3.0+，已联调验证） | skill 自身推理 + 调用 MCP 做校验/穷举/可视化复核 | `✓ MCP 增强模式` |
 | **独立模式** | MCP 未安装 | skill 纯 LLM 推理执行全流程 | `⚠ 独立模式（未校验）` |
 | **降级模式** | MCP 调用失败 | 自动回退到独立模式，记录失败原因 | `⚠ 降级模式（MCP 失败：原因）` |
 
-> **当前状态（v0.2.0）**：MCP 协议层（stdio + streamable-http）已端到端联调验证，安装 MCP Server 后增强模式可用；未安装时自动以独立模式运行。
+> **当前状态（v0.3.0）**：MCP 协议层（stdio + streamable-http）已端到端联调验证，安装 MCP Server 后增强模式可用；未安装时自动以独立模式运行。
 
 **关键原则**：
 - skill 始终是主，MCP 是复核器（MCP 校验失败不影响 skill 输出，只追加警告）
@@ -196,7 +196,7 @@ scenarios:
 | [knowledge/industry-templates/](knowledge/industry-templates/) | **仅用户指定行业对象时读**（订单退款/审批流/会员/工单，按需加载对应模板） |
 | [knowledge/products/](knowledge/products/) | **仅产品可识别且知识文件存在时读**（产品专项知识） |
 | [knowledge/usage-examples.md](knowledge/usage-examples.md) | **仅用户想看演示对话或首次使用时读**（3 个使用示例 + 快速上手） |
-| [integrations/quickstart.md](integrations/quickstart.md) | **仅用户要求安装/配置 MCP 时读**（MCP 配置说明，v0.2.0 已联调验证，配置后增强模式可用） |
+| [integrations/quickstart.md](integrations/quickstart.md) | **仅用户要求安装/配置 MCP 时读**（MCP 配置说明，v0.3.0 已联调验证，配置后增强模式可用） |
 
 ### 阶段读取矩阵
 
@@ -265,5 +265,6 @@ scenarios:
 - [state-machine-testing-mcp](../../mcp-servers/state-machine-testing/README.md) - 配套 MCP Server
 
 **版本历史**：
-- v1.0.0: 初始版本，五阶段流程 + 10 类场景穷举 + MCP 可选增强
+- v1.2.0: 配套 MCP Server 升级 v0.3.0（结构校验与覆盖统计按转换目标/守卫/规则引用匹配计算）
 - v1.1.0: 配套 MCP Server 升级 v0.2.0（协议层 stdio + HTTP 端到端联调验证，增强模式可用），状态声明同步
+- v1.0.0: 初始版本，五阶段流程 + 10 类场景穷举 + MCP 可选增强

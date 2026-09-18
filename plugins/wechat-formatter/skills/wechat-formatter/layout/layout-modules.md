@@ -694,7 +694,7 @@ options: 技术博客风 | 教程指南风 | 深度干货风 | 轻松聊天风
 
 ## 五、渲染规则
 
-> 阶段 3 中，AI 按以下流程将 `:::module` 渲染为带样式的排版结果；阶段 5 如需导出 HTML，再由 `scripts/md2wechat.py` 完成样式内联（该脚本本身不解析 `:::module`）。
+> 阶段 3 中，AI 按以下流程将 `:::module` 渲染为带样式的排版结果；阶段 5 导出 HTML 时 `scripts/md2wechat.py` 会预渲染 `:::module` 块（`render_modules`）并合并 `modules-base.css`，模块卡片在导出路径中完整保留。
 
 ### 模块解析流程
 

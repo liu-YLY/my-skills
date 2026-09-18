@@ -59,7 +59,7 @@ testing-bundle → state-machine-test-engineer:
 ## 快速上手
 
 1. 确认已安装本 skill（独立可用，无需 MCP）
-2. （可选增强）配套 MCP Server v0.2.0 协议层（stdio + HTTP）已端到端联调验证，按 [integrations/quickstart.md](../integrations/quickstart.md) 配置后进入增强模式；未配置时以独立模式运行
+2. （可选增强）配套 MCP Server v0.3.0 协议层（stdio + HTTP）已端到端联调验证，按 [integrations/quickstart.md](../integrations/quickstart.md) 配置后进入增强模式；未配置时以独立模式运行
 3. 通过 testing-bundle 路由，或直接调用本 skill
 4. 提供状态型需求（含业务对象、状态名、状态转换描述）
 5. 五阶段流程自动执行，CHECKPOINT 处确认状态机模型
