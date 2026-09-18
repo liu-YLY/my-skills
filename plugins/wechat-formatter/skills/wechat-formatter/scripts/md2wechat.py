@@ -12,6 +12,8 @@ md2wechat.py — 将格式化 Markdown 转为可直接粘贴到微信公众号�
     pip install -r requirements.txt
 """
 
+from __future__ import annotations  # PEP 585 内建泛型（list[...]/dict[...]）在 Python 3.8 兼容
+
 import argparse
 from html import escape
 import re
@@ -113,10 +115,65 @@ def parse_css_rules(css_text: str) -> list[tuple[str, dict[str, str]]]:
 
 # ─── Step 3: Markdown → HTML ──────────────────────────────────────────────
 
+MODULE_BLOCK_RE = re.compile(
+    r'(?ms)^:::(module|[a-zA-Z][\w-]*)(?:\s*\[([^\]]*)\])?(?:\s*\{[^}]*\})?\s*\n(.*?)^:::+\s*(?:\n|$)'
+)
+
+
+def render_module_block(name: str, title: str | None, body: str) -> str:
+    """将单个 :::module 块渲染为带模块类名的 HTML 片段。
+
+    body 按行解析：`key: value` 字段转为 .module-field，其余文本原样保留。
+    """
+    header = f'<div class="module-header">{escape(title)}</div>' if title else ''
+    fields: list[str] = []
+    paragraphs: list[str] = []
+    for line in body.strip().split('\n'):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        m = re.match(r'^([^:|：]{1,20}?)[:：]\s*(.+)$', stripped)
+        if m and '|' not in stripped:
+            fields.append(
+                f'<div class="module-field"><span class="module-field-name">'
+                f'{escape(m.group(1))}</span>'
+                f'<span class="module-field-value">{escape(m.group(2))}</span></div>'
+            )
+        else:
+            paragraphs.append(f'<p>{escape(stripped)}</p>')
+    field_html = '\n'.join(fields)
+    para_html = '\n'.join(paragraphs)
+    module_body = f'<div class="module-body">\n{field_html}\n{para_html}\n</div>'
+    return (
+        f'<div class="module module-{escape(name)}">\n{header}\n{module_body}\n</div>'
+    )
+
+
+def render_modules(md_text: str) -> str:
+    """将 Markdown 中的 :::module 块预渲染为 HTML，替换回文本。
+
+    位置保持：占位替换后 BeautifulSoup 内联阶段仍能保留结构。
+    """
+    return MODULE_BLOCK_RE.sub(
+        lambda m: '\n' + render_module_block(m.group(1), m.group(2), m.group(3)) + '\n',
+        md_text,
+    )
+
+
+def load_modules_css() -> str:
+    """读取 layout/modules-base.css 内容（供导出 HTML 合并）。"""
+    css_path = Path(__file__).resolve().parent.parent / 'layout' / 'modules-base.css'
+    if css_path.exists():
+        return css_path.read_text(encoding='utf-8')
+    return ''
+
+
 def md_to_html(md_text: str) -> str:
     """将 Markdown 转为 HTML。"""
     # 移除文件头部的 HTML 注释
     md_text = re.sub(r'^<!--.*?-->\s*', '', md_text, flags=re.DOTALL)
+    # 预渲染 :::module 高级排版模块（避免被当作普通引用于代码块丢弃）
+    md_text = render_modules(md_text)
     return markdown.markdown(md_text, extensions=[
         'fenced_code',
         'tables',
@@ -238,6 +295,7 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             overflow: hidden;
         }}
+        {modules_css}
     </style>
 </head>
 <body>
@@ -304,8 +362,11 @@ def convert(md_path: str, style_path: str, size: str = 'medium') -> str:
         print("错误: 未能提取到 CSS，请检查样式文件格式", file=sys.stderr)
         sys.exit(1)
 
-    # 解析
+    # 解析（合并模块基础样式规则，使 :::module 卡片在复制内容中也带样式）
     rules = parse_css_rules(css_text)
+    module_css = load_modules_css()
+    if module_css:
+        rules = rules + parse_css_rules(module_css)
     title = extract_title(md_text)
     style_name = detect_style_name(style_path)
 
@@ -321,11 +382,15 @@ def convert(md_path: str, style_path: str, size: str = 'medium') -> str:
         if 'cyber' in style_path.lower():
             print("提示: cyber 风格使用了较多高级 CSS 特性，粘贴到公众号后视觉效果会有降级", file=sys.stderr)
 
-    # 生成最终 HTML
+    # 生成最终 HTML（合并模块基础样式，保证 :::module 卡片在公众号可见）
+    modules_css = load_modules_css()
+    if modules_css:
+        modules_css = '\n        /* modules-base.css */\n' + modules_css.strip()
     final_html = HTML_TEMPLATE.format(
         title=escape(title),
         style_name=escape(style_name),
         html_content=html_inlined,
+        modules_css=modules_css,
     )
 
     # 写入文件

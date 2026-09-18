@@ -10,7 +10,7 @@
 
 ### 1.1 Python 版本
 
-- **Python 3.8 及以上**（推荐 3.10+）
+- **Python 3.8 及以上**（脚本已用 `from __future__ import annotations` 兼容 3.8；推荐 3.10+）
 - 检查命令：
 
 ```bash

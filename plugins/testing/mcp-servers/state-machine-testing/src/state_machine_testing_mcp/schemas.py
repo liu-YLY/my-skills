@@ -115,6 +115,7 @@ class Scenario(BaseModel):
     trigger_event: str
     precondition: str
     expected_target_state: str
+    expected_target_state_reason: str | None = None
     forbidden_states: list[str] = Field(default_factory=list)
     risk_type: RiskType
     related_objects: list[str] = Field(default_factory=list)
@@ -125,6 +126,15 @@ class Scenario(BaseModel):
     forbidden_id: str | None = None
     guard_conditions: list[str] = Field(default_factory=list)
     attempted_target_state: str | None = None
+
+    @model_validator(mode="after")
+    def require_reason_for_pending_target(self):
+        """expected_target_state 为「待确认」时必须给出待确认原因。"""
+        if self.expected_target_state == "待确认" and not self.expected_target_state_reason:
+            raise ValueError(
+                "expected_target_state='待确认' 时必须提供 expected_target_state_reason"
+            )
+        return self
 
 
 class ScenarioList(BaseModel):

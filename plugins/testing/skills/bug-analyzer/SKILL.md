@@ -5,6 +5,8 @@ description: >-
   Use when analyzing bug root causes, reproducing defects, or designing defensive test cases.
   Triggers on: Bug分析、根因、缺陷定位、复现、5 Whys、鱼骨图、NullPointerException、500错误、测试环境与预发不一致.
   For test case generation, use test-case-engineer instead.
+  Do NOT trigger for load/performance testing requests — route to performance-test-engineer;
+  only code-level bottlenecks handed off from its chain 4 flow enter this skill.
 keywords:
   - Bug分析
   - 根因
@@ -252,7 +254,11 @@ keywords:
 | 修复建议不可执行（如"优化代码"） | 拆分为三档：紧急修复（24h 内止血的具体操作）+ 长期改进（含涉及模块/预估工作量）+ 预防措施（含具体校验规则/监控项/测试用例编号） | 标注「建议待细化」，输出方向性建议并提示用户与开发团队对齐细节 |
 | 防御性测试点清单与根因无关联 | 每个测试点必须标注「关联根因」字段，且能在根因描述中找到对应点；反推顺序：根因 → 可能触发的同类场景 → 防御测试点 | 标注「关联弱」，仅保留强关联测试点，弱关联的列入「待评估」 |
 
-**步骤 5 完成**：交付报告和防御性测试点；已授权的后续工作继续执行，不重复确认。
+**步骤 5 完成**：交付报告和防御性测试点。
+
+#### 🔴 CHECKPOINT · 报告确认
+
+报告输出后暂停，展示：根因分析结论、验证状态（已验证/候选原因/未验证事项）、防御性测试点清单、转交建议。等待用户确认后再进入后续动作（如转交 test-case-engineer 生成用例）。已授权的后续工作继续执行。
 
 ---
 
@@ -273,7 +279,7 @@ keywords:
 **3 步开始使用**：
 1. 确认输入：用户提供 Bug 现象描述（必填）+ 环境/复现步骤（可选）
 2. 从步骤 1 复现开始，按顺序执行到步骤 5 报告
-3. 步骤 1-4 连续分析，步骤 5 交付证据分级报告；仅关键信息缺失、范围改变或未授权写操作需要停下
+3. 步骤 1-4 连续分析，步骤 5 交付证据分级报告并 🔴 CHECKPOINT 暂停确认；仅关键信息缺失、范围改变或未授权写操作也需要停下
 
 **首次使用提示**：
 - 必须按顺序执行步骤 1→2→3→4→5，禁止跳过步骤

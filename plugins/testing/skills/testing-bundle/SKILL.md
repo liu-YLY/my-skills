@@ -148,6 +148,7 @@ keywords:
 | "性能 Bug"路由歧义（既属 bug-analyzer 又属 performance） | 默认路由到 performance（资源/架构层优先排查），performance 内部判断是否转交 bug-analyzer | 若用户明确指明为代码逻辑缺陷（如死锁/N+1），直接路由到 bug-analyzer |
 | "测试计划"/"测试策略"一词双义（项目级 strategy vs 单功能 case-engineer） | 关键词限定：含"项目级/测试计划/分层/风险矩阵/准入准出"→ strategy；含"单功能/某功能/某模块"→ case-engineer | 追问用户：明确是项目级策略还是单功能用例策略（🔴 CHECKPOINT） |
 | 转交可能重复请求确认 | 展示转交依据，继续已授权的分析 | 仅缺关键信息、改变范围或未授权写操作时询问；用户要求逐阶段确认时遵循其要求 |
+| 多链同时命中（两条及以上混合意图链的触发信号并存，如"分析订单退款 bug 根因并补用例"同时命中链 1 与链 5） | 按 mixed-intent-chains.md「链冲突裁定」优先级执行最高优先链 | 优先级无法判定时，🔴 CHECKPOINT 列出候选链请用户选择；用户明确"你来决定"时按默认顺序（先根因/建模，后用例生成） |
 | strategy 与 case-engineer 协同失败（strategy 完成但 case-engineer 不可用） | 输出 strategy 的分层策略与优先级，提示用户手动转交 case-engineer 生成对应层用例 | 标注「协同中断」，仅输出测试策略报告，分层策略作为用例生成依据附录 |
 
 **上下文传递 schema**（路由/转交时必须按此 JSON 结构传递）：
@@ -209,4 +210,5 @@ keywords:
 - v2.0.0: 扩展为 4-skill 路由（+ strategy + performance），breaking change
 - v3.0.0: 扩展为 5-skill 路由（+ state-machine-test-engineer），新增链 5（状态机+用例协同），breaking change
 - v3.1.0: 新增链 6（评审→覆盖缺口验证，协同外部 change-impact-analyzer）+ 链 7（评审→风险用例根因反推，协同 bug-analyzer），评审模式成为混合意图链起点
+- v3.2.0: 使用示例与快速上手外迁至 knowledge/usage-examples.md（token 优化）；state-machine MCP 状态声明同步至 v0.2.0 已联调验证
 - v3.1.1: 声明 test-case-engineer 评审模式可选调用 review-checker MCP Server（与 state-machine MCP 增强对称），未安装时降级为纯 LLM 推理

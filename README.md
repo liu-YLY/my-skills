@@ -55,13 +55,13 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 
 | Skill | 入口行数 | 配套 Markdown 文件数 |
 |---|---:|---:|
-| bug-analyzer | 331 | 5 |
-| change-impact-analyzer | 372 | 5 |
-| performance-test-engineer | 231 | 5 |
-| state-machine-test-engineer | 269 | 12 |
-| test-case-engineer | 145 | 13 |
-| test-strategy-engineer | 251 | 5 |
-| testing-bundle | 212 | 2 |
+| bug-analyzer | 337 | 5 |
+| change-impact-analyzer | 373 | 5 |
+| performance-test-engineer | 241 | 5 |
+| state-machine-test-engineer | 270 | 13 |
+| test-case-engineer | 147 | 13 |
+| test-strategy-engineer | 252 | 5 |
+| testing-bundle | 214 | 2 |
 | wechat-formatter | 276 | 29 |
 
 2 个插件共包含 8 个 Skills，测试插件包含 7 个 Skills 和 2 个可选 MCP 服务。

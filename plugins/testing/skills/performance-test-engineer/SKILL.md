@@ -73,7 +73,7 @@ keywords:
 3. 估算关键指标初值，参考 [knowledge/metrics-framework.md](knowledge/metrics-framework.md) 阈值表，示例：
    - RT：P99 ≤ 业务 SLA，P999 ≤ 业务 SLA × 2
    - TPS：峰值用户量 × 单用户请求频率
-   - 错误率：支付类 ≤ 0.1%，查询类 ≤ 1%
+   - 错误率：金融交易类 ≤ 0.01%，支付类 ≤ 0.1%，查询类 ≤ 1%（分档详见 [knowledge/metrics-framework.md](knowledge/metrics-framework.md) 阈值表）
    - 资源利用率：CPU ≤ 70%、内存 ≤ 80%、磁盘 IO ≤ 80%、网络 ≤ 60%
 4. 输出性能需求摘要：场景、目标、约束
 
@@ -194,6 +194,15 @@ keywords:
 | 5 | **TPS 到顶后继续加压看 RT** | TPS 已达上限说明系统饱和，继续加压只会堆积请求、RT 线性恶化，无信息增量 | TPS 停滞点即瓶颈证据点，停止加压，分析停滞原因（资源饱和/锁竞争/连接池耗尽） |
 | 6 | **忽略瓶颈传导链只修表面** | 瓶颈会传导（DB 慢 → 连接池满 → 线程阻塞 → RT 飙升），只修表面（加连接池）治标不治本 | 沿传导链溯源到根因（DB 慢 SQL），参考 [knowledge/bottleneck-patterns.md](knowledge/bottleneck-patterns.md) 瓶颈传导链分析 |
 
+### 触发检查时机
+
+每个阶段完成时对照相应反例，命中即按「替代做法」纠正：
+
+- **阶段 1 完成时**：对照反例 2（分位数 reporting）
+- **阶段 2 完成时**：对照反例 1（负载模型选择——容量场景不得用峰值模型）、反例 5（加压终止条件）
+- **阶段 3 完成时**：对照反例 3（按证据定位）、反例 4（代码逻辑缺陷转交）、反例 6（传导链溯源）
+- **阶段 4 / 转交判断时**：对照反例 4（代码逻辑缺陷必须转交 bug-analyzer，不自行处理）
+
 ---
 
 ## 约束规则
@@ -228,4 +237,5 @@ keywords:
 ---
 
 **版本历史**：
+- v1.1.0: 新增默认值兜底与意图切换（plan/diagnose/plan-and-diagnose）；阈值以 metrics-framework.md 为权威源
 - v1.0.0: 初始版本，作为 testing-bundle 的性能测试方向子 skill
