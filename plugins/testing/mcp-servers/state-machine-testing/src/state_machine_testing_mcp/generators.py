@@ -167,23 +167,29 @@ def _generate_idempotency(sm: StateMachine) -> list[Scenario]:
 
 
 def _generate_concurrency(sm: StateMachine) -> list[Scenario]:
-    """生成 concurrency 场景。"""
+    """生成 concurrency 场景。
+
+    对任意一对「不同事件」的 transition 组合生成并发场景，而不是仅限
+    「用户事件 + 回调事件」。事件无 actor 信息时，默认来自不同触发源
+    （用户/回调/定时器），避免漏判。
+    """
     scenarios: list[Scenario] = []
     base = len(sm.transitions) + len(sm.forbidden) + 100
-    idx = 0
-    # 找涉及用户操作 + 系统回调的 transition 对
-    user_events = [t for t in sm.transitions if "用户" in t.event]
-    system_events = [t for t in sm.transitions if _is_external_callback(t.event)]
-    for t in user_events + system_events:
-        idx += 1
+    paires: list[tuple] = []
+    for i, t1 in enumerate(sm.transitions):
+        for t2 in sm.transitions[i + 1:]:
+            if t1.event != t2.event:
+                paires.append((t1, t2))
+    for t1, t2 in paires[:20]:  # 限制数量，避免组合爆炸
         scenarios.append(
             Scenario(
-                id=f"SM-{base + idx:03d}",
-                title=f"{t.event} 与其他事件并发时 {t.from_state} 最终状态正确",
-                current_state=t.from_state,
-                trigger_event=f"{t.event} + 其他事件（并发）",
-                precondition=f"{t.from_state} 状态，{t.event} 与其他事件同时到达",
+                id=f"SM-{base + len(scenarios) + 1:03d}",
+                title=f"{t1.event} 与 {t2.event} 并发时最终状态正确",
+                current_state=t1.from_state,
+                trigger_event=f"{t1.event} + {t2.event}（并发）",
+                precondition=f"{t1.from_state} 状态，{t1.event} 与 {t2.event} 同时到达（不同触发源）",
                 expected_target_state="待确认",
+                expected_target_state_reason="PRD 未说明两个事件并发的目标态",
                 forbidden_states=[],
                 risk_type="concurrency",
                 related_objects=[],
@@ -211,6 +217,7 @@ def _generate_message_reorder(sm: StateMachine) -> list[Scenario]:
                 trigger_event=f"{t.event}（乱序）",
                 precondition=f"{t.from_state} 状态，{t.event} 消息乱序",
                 expected_target_state="待确认",
+                expected_target_state_reason="PRD 通常未说明消息乱序后的目标态",
                 forbidden_states=[],
                 risk_type="message_reorder",
                 related_objects=[],
@@ -278,13 +285,49 @@ def _generate_data_consistency(sm: StateMachine) -> list[Scenario]:
 
 
 def _generate_access_control(sm: StateMachine) -> list[Scenario]:
-    """生成 access_control 场景。"""
+    """生成 access_control 场景。
+
+    判定条件放宽：transition 事件或目标态涉及角色操作（管理员/审批人/客服/
+    运营/商家/店长/用户本人/admin 等），或模型含角色/权限字段时即生成；
+    否则（无任何权限信号）仍默认生成并标「待确认」，避免依赖事件关键词丢场景。
+    """
+    role_hints = ["管理员", "审批人", "客服", "admin", "运营", "商家", "店长", "用户"]
     scenarios: list[Scenario] = []
     base = 500
     idx = 0
-    # 涉及管理员/审批人/特定角色的 transition
+    has_role_signal = any(
+        (hasattr(t, 'event') and any(h in t.event for h in role_hints))
+        or any(h in t.to_state for h in role_hints)
+        for t in sm.transitions
+    )
+    has_role_fields = any(
+        f in {"role", "roles", "actor", "operator", "permission"}
+        for f in (getattr(sm, "fields", None) or {})
+    )
+    if not (has_role_signal or has_role_fields):
+        # 无任何权限信号：仍默认生成 1 条待确认场景（PRD 未定义权限矩阵）
+        for t in sm.transitions[:1]:
+            scenarios.append(
+                Scenario(
+                    id=f"SM-{base + idx + 1:03d}",
+                    title=f"{t.event} 的权限控制规则未定义，越权访问应被拒绝",
+                    current_state=t.from_state,
+                    trigger_event=f"{t.event}（非授权角色）",
+                    precondition=f"{t.from_state} 状态，操作者为未授权角色",
+                    expected_target_state=t.from_state,
+                    expected_target_state_reason="PRD 未定义权限矩阵，默认生成越权拒绝场景",
+                    forbidden_states=[t.to_state],
+                    risk_type="access_control",
+                    related_objects=[],
+                    evidence_type=EvidenceType.PENDING,
+                    source="PRD 通常未说明权限矩阵",
+                )
+            )
+        return scenarios
     for t in sm.transitions:
-        if not any(kw in t.event for kw in ["管理员", "审批人", "客服", "admin"]):
+        if not any(h in t.event for h in role_hints) and not any(
+            h in t.to_state for h in role_hints
+        ):
             continue
         idx += 1
         scenarios.append(
@@ -295,6 +338,7 @@ def _generate_access_control(sm: StateMachine) -> list[Scenario]:
                 trigger_event=f"{t.event}（非授权角色）",
                 precondition=f"{t.from_state} 状态，操作者为非授权角色",
                 expected_target_state=t.from_state,
+                expected_target_state_reason="PRD 未细化权限矩阵，越权行为按拒绝处理",
                 forbidden_states=[t.to_state],
                 risk_type="access_control",
                 related_objects=[],
@@ -318,6 +362,7 @@ def _generate_failure_recovery(sm: StateMachine) -> list[Scenario]:
                 trigger_event=f"{t.event}（执行失败）",
                 precondition=f"{t.from_state} 状态，{t.event} 执行失败",
                 expected_target_state="待确认",
+                expected_target_state_reason="PRD 通常未说明执行失败后的恢复状态",
                 forbidden_states=[],
                 risk_type="failure_recovery",
                 related_objects=t.side_effects,
