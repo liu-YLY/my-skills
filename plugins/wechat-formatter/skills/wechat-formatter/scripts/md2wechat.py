@@ -12,6 +12,8 @@ md2wechat.py — 将格式化 Markdown 转为可直接粘贴到微信公众号�
     pip install -r requirements.txt
 """
 
+from __future__ import annotations  # PEP 585 内建泛型（list[...]/dict[...]）在 Python 3.8 兼容
+
 import argparse
 from html import escape
 import re
