@@ -85,23 +85,134 @@ def check_test_prompts_version_drift(skill_dir: Path) -> list[str]:
     """Check that test-prompts.json expected fields lack version-prefix drift.
 
     Flags expected fields starting with "vX.Y.Z " — historical version markers
-    that create drift when the current version changes.
+    that create drift when the current version changes. Supports both
+    list-form (top-level JSON array of prompts) and dict-form
+    ({"skill":..., "version":..., "prompts": [...]}) layouts.
     """
     errors = []
     test_prompts = skill_dir / 'test-prompts.json'
     if not test_prompts.exists():
         return errors
     try:
-        prompts = json.loads(test_prompts.read_text(encoding='utf-8'))
+        data = json.loads(test_prompts.read_text(encoding='utf-8'))
     except json.JSONDecodeError:
         return errors  # JSON validity is checked by other tooling
+    prompts = data.get('prompts', []) if isinstance(data, dict) else data
     for prompt in prompts:
+        if not isinstance(prompt, dict):
+            continue
         expected = prompt.get('expected', '')
         if re.match(r'^v\d+\.\d+\.\d+\s', expected):
             errors.append(
                 f"{test_prompts}: prompt id {prompt.get('id', '?')} expected "
                 f"field has version prefix — remove historical version markers"
             )
+    return errors
+
+
+def check_test_prompts_version_field(skill_dir: Path, version: str) -> list[str]:
+    """Check test-prompts.json top-level "version" field matches frontmatter.
+
+    Only applies to dict-form files that carry a top-level version key.
+    """
+    errors = []
+    test_prompts = skill_dir / 'test-prompts.json'
+    if not test_prompts.exists():
+        return errors
+    try:
+        data = json.loads(test_prompts.read_text(encoding='utf-8'))
+    except json.JSONDecodeError:
+        return errors  # JSON validity is checked by other tooling
+    if isinstance(data, dict):
+        tv = data.get('version')
+        if tv and tv != version:
+            errors.append(
+                f"{test_prompts}: top-level version {tv} != "
+                f"SKILL.md frontmatter {version}"
+            )
+    return errors
+
+
+def check_readme_version_field(readme: Path, version: str) -> list[str]:
+    """Check README.md top section version marker matches frontmatter.
+
+    Matches "vX.Y.Z" appearing within the first 5 lines (the skill tagline),
+    e.g. "Bug 根因分析与缺陷定位技能包，v1.0.0。".
+    """
+    errors = []
+    if not readme.exists():
+        return errors
+    content = readme.read_text(encoding='utf-8')
+    first_lines = '\n'.join(content.split('\n')[:5])
+    versions = re.findall(r'v(\d+\.\d+\.\d+)', first_lines)
+    if versions and versions[0] != version:
+        errors.append(
+            f"{readme}: tagline references v{versions[0]} but "
+            f"SKILL.md frontmatter version is {version}"
+        )
+    return errors
+
+
+def check_readme_version_history_latest(readme: Path, version: str) -> list[str]:
+    """Check README.md 版本历史 latest entry matches frontmatter.
+
+    Finds the first "- vX.Y.Z:" entry under the "## 版本历史" or
+    "**版本历史**" section. If the section exists and its latest entry
+    differs from the frontmatter version, the changelog is stale.
+    """
+    errors = []
+    if not readme.exists():
+        return errors
+    content = readme.read_text(encoding='utf-8')
+    m = re.search(
+        r'##+?\s*版本历史[^\n]*\n[^\S\n]*(?:\n[^\S\n]*)*'
+        r'((?:- v\d+\.\d+\.\d+[^\n]*\n?)+)',
+        content,
+    )
+    if not m:
+        m = re.search(
+            r'\*\*版本历史\*\*[^\n]*\n[^\S\n]*(?:\n[^\S\n]*)*'
+            r'((?:- v\d+\.\d+\.\d+[^\n]*\n?)+)',
+            content,
+        )
+    if not m:
+        return errors
+    entries = re.findall(r'- v(\d+\.\d+\.\d+)', m.group(1))
+    if entries and entries[0] != version:
+        errors.append(
+            f"{readme}: 版本历史 latest entry is v{entries[0]} but "
+            f"SKILL.md frontmatter version is {version}"
+        )
+    return errors
+
+
+def check_skill_version_consistency(skill_dir: Path) -> list[str]:
+    """Run the version consistency checks valid for every skill.
+
+    Extends the previous bundle-only coverage to all skills:
+    - test-prompts.json top-level version vs frontmatter
+    - README tagline vs frontmatter
+    - README 版本历史 latest entry vs frontmatter
+    - CHANGELOG.md [X.Y.Z] entry vs frontmatter (if CHANGELOG exists)
+    """
+    errors = []
+    skill_md = skill_dir / 'SKILL.md'
+    version = extract_skill_version(skill_md)
+    if not version:
+        return errors
+    errors.extend(check_test_prompts_version_field(skill_dir, version))
+    readme = skill_dir / 'README.md'
+    errors.extend(check_readme_version_field(readme, version))
+    errors.extend(check_readme_version_history_latest(readme, version))
+    # Architecture diagram version labels must match frontmatter
+    err = check_skill_diagram_version(skill_md, version, skill_dir.name)
+    if err:
+        errors.append(err)
+    changelog = skill_dir / 'CHANGELOG.md'
+    if changelog.exists():
+        err = check_changelog_has_version(skill_dir, version)
+        if err:
+            errors.append(err)
     return errors
 
 
@@ -311,22 +422,14 @@ def check_plugin(plugin_root: Path) -> list[str]:
                     )
             # If no bundle found, skip plugin version check (cannot determine expected version)
 
-    # Content consistency checks for bundle skill (CHANGELOG, diagram, test-prompts)
-    bundle_dir = find_bundle_skill(skills_dir)
-    if bundle_dir:
-        bundle_md = bundle_dir / 'SKILL.md'
-        bundle_version = extract_skill_version(bundle_md)
-        if bundle_version:
-            # CHANGELOG must have current version entry
-            err = check_changelog_has_version(bundle_dir, bundle_version)
-            if err:
-                errors.append(err)
-            # Architecture diagram version must match frontmatter
-            err = check_skill_diagram_version(bundle_md, bundle_version, bundle_dir.name)
-            if err:
-                errors.append(err)
-            # test-prompts must not have historical version prefixes
-            errors.extend(check_test_prompts_version_drift(bundle_dir))
+    # Content consistency checks for EVERY skill (extended coverage;
+    # previously only the bundle meta skill was checked)
+    for skill_dir in skill_dirs:
+        # test-prompts must not have historical version prefixes
+        errors.extend(check_test_prompts_version_drift(skill_dir))
+        # version consistency: test-prompts top-level / README tagline /
+        # README 版本历史 / CHANGELOG entry vs frontmatter
+        errors.extend(check_skill_version_consistency(skill_dir))
 
     # Plugin root README.md skill version references (architecture diagram, capability matrix)
     errors.extend(check_plugin_readme_skill_versions(plugin_root, skills_dir))
