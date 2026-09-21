@@ -82,8 +82,11 @@ def test_skill_model_example_parses_and_passes_structure():
     from state_machine_testing_mcp.schemas import StateMachine
     from state_machine_testing_mcp.validators import validate_state_machine
 
-    skill = Path(__file__).resolve().parents[4] / "skills/state-machine-test-engineer/SKILL.md"
-    block = re.search(r"```yaml\n(.*?)```", skill.read_text(), re.S).group(1)
+    core = (Path(__file__).resolve().parents[4] /
+            "skills/state-machine-test-engineer/state-machine-core.md")
+    match = re.search(r"```yaml\n(state_machine:\n.*?)```", core.read_text(), re.S)
+    assert match, "state-machine-core.md must contain the canonical state_machine example"
+    block = match.group(1)
     sm = StateMachine.model_validate(yaml.safe_load(block)["state_machine"])
     report = validate_state_machine(sm)
     assert report.overall_status == "pass"
