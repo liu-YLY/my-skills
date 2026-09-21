@@ -105,7 +105,7 @@ def test_performance_diagnosis_is_evidence_first_when_data_is_missing():
     assert "标为待定" in vague_request
     assert "默认值兜底" not in vague_request
     assert "缺 TPS 时不得推断吞吐拐点或资源饱和" in skill
-    assert "不输出已确认瓶颈" in skill
+    assert "不得输出已确认瓶颈" in skill
 
 
 def test_model_results_are_validated_and_summarized(tmp_path):
