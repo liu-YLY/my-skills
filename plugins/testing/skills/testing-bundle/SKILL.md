@@ -1,6 +1,6 @@
 ---
 name: testing-bundle
-version: 3.2.0
+version: 3.2.1
 description: >-
   Use when user has mixed, ambiguous, or explicitly routing-required testing requests —
   e.g. "analyze bug AND generate test cases", "design strategy AND generate layered cases",
@@ -111,12 +111,12 @@ keywords:
 
 - `bug-patterns.md` 主归属 test-case-engineer，bug-analyzer 通过相对路径 `../test-case-engineer/knowledge/bug-patterns.md` 引用
 - strategy/performance/state-machine 不共享知识库（聚焦点不同，共享会引入路由歧义）
-- state-machine-test-engineer 可选调用 `state-machine-testing-mcp` Server 做 Schema 校验与可视化（未安装时降级为纯 LLM 推理）。该 MCP 已升级至 v0.2.0，协议层（stdio + streamable-http）已通过端到端联调验证，安装后增强模式可用（详见 state-machine-test-engineer/SKILL.md 状态说明）
+- state-machine-test-engineer 可选调用 `state-machine-testing-mcp` Server 做 Schema 校验与可视化（未安装时降级为纯 LLM 推理）。该 MCP 已升级至 v0.3.0，协议层（stdio + streamable-http）已通过端到端联调验证，安装后增强模式可用（详见 state-machine-test-engineer/SKILL.md 状态说明）
 - test-case-engineer 评审模式可选调用 `review-checker-mcp` Server 做 10 维度确定性校验与度量报告（9 维度用例级校验 + 1 维度语义一致性冲突检测，未安装时降级为纯 LLM 推理）
 
 **依赖说明**：
 - bug-analyzer 单独安装时，步骤 2/3 的"对照缺陷模式库"能力会降级（仍有通用模式兜底，但无法查阅完整缺陷模式库）。通过本 bundle 整体安装获得完整能力。
-- state-machine-test-engineer 单独安装时完全可用；安装配套 MCP Server（v0.2.0，协议层已联调验证）后可进入“增强模式”，获得 Schema 校验、Mermaid 可视化、覆盖度报告等额外能力。
+- state-machine-test-engineer 单独安装时完全可用；安装配套 MCP Server（v0.3.0，协议层已联调验证）后可进入“增强模式”，获得 Schema 校验、Mermaid 可视化、覆盖度报告等额外能力。
 - test-case-engineer 评审模式单独可用；安装配套 review-checker MCP Server 后进入"增强模式"，获得 10 维度确定性校验与度量报告（通过率/问题密度/评级 A-D）。
 
 ## 安装方式
@@ -206,6 +206,7 @@ keywords:
 ---
 
 **版本历史**：
+- v3.2.1: 同步 state-machine-testing MCP v0.3.0，并增加依赖版本一致性门禁
 - v1.0.0: 初始版本，2-skill 路由（case-engineer + bug-analyzer）
 - v2.0.0: 扩展为 4-skill 路由（+ strategy + performance），breaking change
 - v3.0.0: 扩展为 5-skill 路由（+ state-machine-test-engineer），新增链 5（状态机+用例协同），breaking change
