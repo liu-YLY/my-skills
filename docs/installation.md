@@ -164,7 +164,7 @@ cp -r plugins/wechat-formatter/skills/wechat-formatter ~/.claude/skills/
 如果需要使用 testing plugin 内的 Python 脚本（如 convert_docs.py 文档转换降级方案）：
 
 ```bash
-cd plugins/testing/scripts
+cd plugins/testing/skills/test-case-engineer/scripts
 pip install -r requirements.txt
 ```
 
