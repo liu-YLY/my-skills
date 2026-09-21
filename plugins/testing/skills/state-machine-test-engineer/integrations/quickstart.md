@@ -2,7 +2,7 @@
 
 > 本文档说明如何配置 `state-machine-testing-mcp` Server，让 state-machine-test-engineer skill 进入增强模式。
 
-> ✅ **当前 MCP Server 状态（v0.3.0）**：MCP 协议层（stdio + streamable-http 传输）已通过端到端联调验证（52 项测试全绿，含真实协议调用的握手/工具清单/call_tool/降级信号测试）。按本文档完成配置后，**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 自动降级为独立模式。
+> ✅ **当前 MCP Server 状态（v0.3.0）**：MCP 协议层（stdio + streamable-http 传输）和真实工具调用已通过端到端测试。按本文档完成配置后，**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 自动降级为独立模式。
 
 ## 三种运行模式回顾
 

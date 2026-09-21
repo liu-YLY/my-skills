@@ -1,6 +1,6 @@
 ---
 name: state-machine-test-engineer
-version: 1.2.0
+version: 1.2.1
 description: >-
   Use when user needs state-machine-driven testing for stateful business objects
   (orders, approvals, tickets, membership, etc.). Triggers on: 状态机、状态流转、状态转换、
@@ -27,9 +27,9 @@ integrations:
 
 # State Machine Test Engineer
 
-状态机驱动的状态型需求测试 skill v1.2.0：基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
+状态机驱动的状态型需求测试 skill v1.2.1：基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
 
-> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.3.0**，MCP 协议层（stdio + streamable-http）已通过端到端联调验证（52 项测试全绿，含真实协议调用的握手/工具清单/call_tool/降级信号测试），**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 仍自动降级为独立模式（输出首行标 `⚠ 独立模式（未校验）`）。
+> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.3.0**，MCP 协议层（stdio + streamable-http）和真实工具调用已通过端到端测试，**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 仍自动降级为独立模式（输出首行标 `⚠ 独立模式（未校验）`）。
 
 ## 适用范围
 
@@ -265,6 +265,7 @@ scenarios:
 - [state-machine-testing-mcp](../../mcp-servers/state-machine-testing/README.md) - 配套 MCP Server
 
 **版本历史**：
+- v1.2.1: 移除易漂移的测试总数声明，保留协议与真实工具调用验证边界
 - v1.2.0: 配套 MCP Server 升级 v0.3.0（结构校验与覆盖统计按转换目标/守卫/规则引用匹配计算）
 - v1.1.0: 配套 MCP Server 升级 v0.2.0（协议层 stdio + HTTP 端到端联调验证，增强模式可用），状态声明同步
 - v1.0.0: 初始版本，五阶段流程 + 10 类场景穷举 + MCP 可选增强
