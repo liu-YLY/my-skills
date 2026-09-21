@@ -1,5 +1,6 @@
 import importlib.util
 import json
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -36,6 +37,23 @@ def test_eval_reader_preserves_negative_trigger(tmp_path):
     path = tmp_path / "test-prompts.json"
     path.write_text(json.dumps({"trigger_evals": [{"query": "translate", "should_trigger": False}]}))
     assert evals.read_cases(path)[0]["should_trigger"] is False
+
+
+def test_every_skill_has_complete_trigger_coverage():
+    cases = evals.load_cases(ROOT)
+    evals.validate_trigger_coverage(cases)
+    trigger_counts = Counter(case["skill"] for case in cases if case["kind"] == "trigger")
+    assert set(trigger_counts) == {
+        "bug-analyzer",
+        "change-impact-analyzer",
+        "performance-test-engineer",
+        "state-machine-test-engineer",
+        "test-case-engineer",
+        "test-strategy-engineer",
+        "testing-bundle",
+        "wechat-formatter",
+    }
+    assert min(trigger_counts.values()) >= 4
 
 
 def test_model_results_are_validated_and_summarized(tmp_path):

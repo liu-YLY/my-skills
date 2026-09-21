@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 RESULT_VARIANTS = {"with_skill", "baseline"}
+TRIGGER_CATEGORIES = {"positive", "negative", "near_miss", "skill_conflict"}
 
 
 def read_cases(path: Path) -> list[dict]:
@@ -41,8 +42,25 @@ def read_cases(path: Path) -> list[dict]:
                 raise ValueError(f"{path}: {case_id} has no trigger label")
             cases.append(dict(skill=row.get("skill", path.parent.name), id=case_id, kind=kind,
                               prompt=prompt, checks=checks,
-                              should_trigger=row.get("should_trigger")))
+                              should_trigger=row.get("should_trigger"),
+                              category=row.get("category")))
     return cases
+
+
+def validate_trigger_coverage(cases: list[dict]) -> None:
+    """Require routing coverage for every skill represented by task cases."""
+    skills = {case["skill"] for case in cases if case["kind"] == "task"}
+    for skill in sorted(skills):
+        triggers = [case for case in cases
+                    if case["skill"] == skill and case["kind"] == "trigger"]
+        categories = {case["category"] for case in triggers}
+        missing = sorted(TRIGGER_CATEGORIES - categories)
+        if missing:
+            raise ValueError(f"{skill}: missing trigger categories {missing}")
+        if not any(case["should_trigger"] for case in triggers):
+            raise ValueError(f"{skill}: trigger suite has no positive label")
+        if not any(not case["should_trigger"] for case in triggers):
+            raise ValueError(f"{skill}: trigger suite has no negative label")
 
 
 def read_results(path: Path, cases: list[dict]) -> list[dict]:
@@ -160,6 +178,7 @@ def main():
     cases = load_cases(args.root, args.skill)
     if not cases:
         parser.error("No evaluation cases found")
+    validate_trigger_coverage(cases)
     if args.results:
         results = read_results(args.results, cases)
         print(json.dumps(summarize_results(results, cases), ensure_ascii=False, indent=2))

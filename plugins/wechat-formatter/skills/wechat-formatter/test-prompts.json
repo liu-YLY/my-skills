@@ -1,4 +1,6 @@
-[
+{
+  "skill": "wechat-formatter",
+  "prompts": [
   {
     "id": 1,
     "prompt": "我写了一篇关于 Python 装饰器的技术文章，想排版成公众号文章",
@@ -92,4 +94,11 @@
     "category": "对抗（链接注入）",
     "expected": "对抗用例：拒绝保留 javascript: 协议链接；导出 HTML 时按 nh3 白名单（http/https/mailto）过滤拦截，输出净化后链接或提示风险"
   }
-]
+  ],
+  "trigger_evals": [
+    {"query": "把这篇 Python 教程排版成可复制到微信公众号的文章", "should_trigger": true, "category": "positive"},
+    {"query": "帮我从零写一篇 Python 教程", "should_trigger": false, "category": "negative"},
+    {"query": "文章内容已经完成，只需要选择公众号风格并美化排版", "should_trigger": true, "category": "near_miss"},
+    {"query": "把普通 Markdown 转成通用网页 HTML，不涉及微信公众号", "should_trigger": false, "category": "skill_conflict"}
+  ]
+}
