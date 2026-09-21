@@ -108,6 +108,20 @@ def test_performance_diagnosis_is_evidence_first_when_data_is_missing():
     assert "不得输出已确认瓶颈" in skill
 
 
+def test_case_review_respects_existing_revision_authority_and_risk_evidence():
+    skill_dir = ROOT / "plugins/testing/skills/test-case-engineer"
+    review = (skill_dir / "knowledge/review-mode.md").read_text(encoding="utf-8")
+    core = (skill_dir / "test-case-engineer-core.md").read_text(encoding="utf-8")
+    prompts = json.loads((skill_dir / "test-prompts.json").read_text(encoding="utf-8"))
+    revision = next(item for item in prompts["evals"] if item["id"] == 14)["expectations"]
+    priority = next(item for item in prompts["evals"] if item["id"] == 15)["expectations"]
+    assert any("不重复要求确认" in item for item in revision)
+    assert any("不得仅凭" in item and "固定占比" in item for item in priority)
+    assert "P0 占比应 < 30%" not in review
+    assert "不重跑与当前问题无关的完整四阶段" in review
+    assert "优先级比例严重偏离" not in core
+
+
 def test_model_results_are_validated_and_summarized(tmp_path):
     cases = [
         dict(skill="sample", id="task-1", kind="task", prompt="do it",
