@@ -60,7 +60,7 @@ def test_current_changes_include_committed_feature_branch_work():
     skill_dir = ROOT / "plugins/testing/skills/change-impact-analyzer"
     skill = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
     modes = (skill_dir / "knowledge/diff-modes.md").read_text(encoding="utf-8")
-    assert "工作区干净且当前 feature 分支领先默认分支" in skill
+    assert "工作区干净且 feature 分支领先默认分支" in skill
     assert "不得忽略 feature 分支上已提交但未合并的改动" in modes
     assert "git diff <default>...HEAD" in modes
 
