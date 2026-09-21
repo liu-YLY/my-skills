@@ -127,3 +127,58 @@ MCP 与微信排版测试按各自目录独立执行，避免 pytest 同名模�
 4. `refactor(<skill>): 下沉流程细则并压缩入口上下文`
 
 每个提交只包含一个阶段的可验证成果，不混入无关格式化。
+
+## 执行结果（2026-09-21）
+
+### 已完成
+
+- 阶段 1：修复完整安装路径与依赖路径，并增加安装文档回归检查。
+- 阶段 2：增加模型运行结果契约、结果校验与离线汇总；无模型输出时只报告输入校验，不宣称行为通过。
+- 阶段 3：8 个 Skill 均补齐 positive / negative / near-miss / skill-conflict 触发样本。
+- 阶段 4：在首轮候选验证通过后，经用户连续授权，将相同方法扩展到全部 8 个 Skill；每个 Skill 单独评测、独立成对判断并分批提交。
+- 阶段 5：完成仓库、两个 testing MCP Server 与 wechat-formatter 全量回归。
+
+### 主要修复与优化
+
+| Skill | 已确认问题 | 处理结果 |
+|-------|------------|----------|
+| change-impact-analyzer | 干净工作区会漏掉 feature 分支中已提交但未合并的改动；入口重复阶段细则 | 增加 `default...HEAD` 分支差异模式；下沉细则并保留证据门禁 |
+| bug-analyzer | 入口与知识文件重复，报告边界分散 | 下沉报告细则，保留根因证据、未知项和修复验证契约 |
+| testing-bundle | MCP 依赖版本漂移；入口重复子 Skill 细节 | 同步依赖版本；入口收敛为路由与混合意图契约 |
+| state-machine-test-engineer | 文档硬编码测试总数易漂移；入口重复 core 流程 | 改为从 core 校验协作契约；下沉流程并保留状态场景输出契约 |
+| wechat-formatter | 入口一次性加载过多资源 | 改为按阶段加载，并保留内容真实性、排版与输出边界 |
+| test-strategy-engineer | 缺失风险维度仍可能被补分；固定优先级配额会扭曲风险 | 缺失项标待补且不计算正式总分；取消固定配额；下沉阶段细则 |
+| performance-test-engineer | 评测要求固定排查顺序；缺 TPS 时可能误判饱和 | 改为证据优先和可证伪假设；缺 TPS 禁止推断吞吐拐点；入口由 242 行降至 118 行 |
+| test-case-engineer | 已有修订授权仍可能重复确认；固定优先级占比与权威规则冲突 | 按既有授权定向修订并强制复审；优先级逐条按业务风险判断，不设固定占比 |
+
+### 本地提交
+
+所有提交位于本地分支 `feat/skill-iteration-plan`，未推送远程：
+
+1. `efc18ec` 修复 Skill 安装路径与完整性
+2. `11ece21` 增加模型评测结果契约与汇总
+3. `75006bd` 补齐触发与路由评测样本
+4. `41ef246`、`b6f3e0f` 修复并精简 change-impact-analyzer
+5. `e9ada16` 精简 bug-analyzer
+6. `525debd`、`ff79739` 修复并精简 testing-bundle
+7. `6e9a94e`、`5896664`、`7decf72` 修复并精简 state-machine-test-engineer
+8. `173469d` 精简 wechat-formatter
+9. `1c3af45`、`1e70988` 修复并精简 test-strategy-engineer
+10. `ad015ff`、`d1bf9b7` 修复并精简 performance-test-engineer
+11. `6fb0d96` 修复 test-case-engineer 的授权和优先级契约
+
+### 验证证据
+
+- 仓库测试：18 passed，3 skipped；跳过原因为本机无 PowerShell，CI 负责安装器 PowerShell 冒烟测试。
+- review-checker：101 passed。
+- state-machine-testing：68 passed。
+- wechat-formatter：54 passed。
+- 项目清单、版本同步、知识引用、Markdown 相对链接、Skill 一致性和 `git diff --check` 全部通过。
+- 结构优化均执行相同输入的改前/改后比较；最近的 performance-test-engineer 与 test-case-engineer 均获得 3:0 clear-margin 选择。
+
+### 验证边界
+
+- `scripts/skill-evals.py` 已验证评测输入与结果契约，但仓库未保存可复现的外部模型批量运行结果；不能把样本校验等同于线上模型行为通过。
+- 本机未执行 PowerShell 安装器测试。
+- 未在 Claude/Cursor/Codex 等真实宿主中重新安装全部插件并逐一触发；静态路由和配套单测通过不等于所有宿主行为一致。
+- 未执行远程推送、PR、合并或发布。
