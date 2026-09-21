@@ -1,6 +1,6 @@
 ---
 name: change-impact-analyzer
-version: 1.2.0
+version: 1.2.1
 description: >-
   Analyzes git changes against test cases to find behavioral impacts and coverage gaps.
   Invoke when user asks to check code changes impact on tests, analyze diff coverage,
@@ -78,13 +78,13 @@ keywords:
 
 ### 1.1 确认分析范围
 
-依据用户请求确定并披露 diff 范围，关键信息不足时询问，支持七种模式（工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Diff 或外部 Patch）。
+依据用户请求和仓库状态确定并披露 diff 范围，关键信息不足时询问，支持七种模式（工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Diff 或外部 Patch）。用户说“当前改动”且工作区干净时，不得直接得出“无变更”：若当前是有未合并提交的 feature 分支，自动改用默认分支与 `HEAD` 的 merge-base 三点对比；只有默认分支也无工作区改动时，才输出“无变更”。
 
 > 七种模式的 Git 命令、自动推断规则、模式选择决策树、只读采集脚本字段语义与安全策略、各模式输入输出示例，详见 [knowledge/diff-modes.md](knowledge/diff-modes.md)。
 
 ### 1.2 获取 Diff 内容
 
-执行对应的 git diff 命令，获取完整 diff 输出。默认使用 `git diff --no-ext-diff --no-textconv HEAD` 查看已跟踪文件相对 HEAD 的最终变更，用 `git status --short` 披露暂存、未暂存和未跟踪状态。未跟踪文件按任务范围决定是否读取；仅有未跟踪文件时不声称无变更。
+执行对应的 git diff 命令，获取完整 diff 输出。有工作区修改时使用 `git diff --no-ext-diff --no-textconv HEAD` 查看已跟踪文件相对 HEAD 的最终变更；工作区干净且当前 feature 分支领先默认分支时，使用 `<default>...HEAD` 分析已提交的分支变更。始终用 `git status --short` 披露暂存、未暂存和未跟踪状态。未跟踪文件按任务范围决定是否读取；仅有未跟踪文件时不声称无变更。
 
 **失败模式与 Fallback**：
 
