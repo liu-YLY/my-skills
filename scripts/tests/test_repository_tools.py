@@ -133,33 +133,65 @@ def test_model_results_are_validated_and_summarized(tmp_path):
     ]
     rows = [
         dict(skill="sample", id="task-1", kind="task", variant="with_skill", run=1,
-             duration_seconds=2.0, output_characters=100, check_results=[True, False]),
+             duration_seconds=2.0, output_characters=100, output_path="outputs/task-1.md",
+             check_results=[True, False]),
         dict(skill="sample", id="trigger-1", kind="trigger", variant="with_skill", run=1,
-             duration_seconds=1.0, output_characters=20, predicted_trigger=True),
+             duration_seconds=1.0, output_characters=20,
+             output_path="outputs/trigger-1.md", predicted_trigger=True),
         dict(skill="sample", id="trigger-2", kind="trigger", variant="with_skill", run=1,
-             duration_seconds=1.0, output_characters=20, predicted_trigger=False),
+             duration_seconds=1.0, output_characters=20,
+             output_path="outputs/trigger-2.md", predicted_trigger=False),
     ]
     path = tmp_path / "results.jsonl"
     path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
     results = evals.read_results(path, cases)
-    summary = evals.summarize_results(results, cases)["variants"]["with_skill"]
+    result_summary = evals.summarize_results(results, cases)
+    summary = result_summary["variants"]["with_skill"]
     assert summary["checks_passed"] == 1
     assert summary["checks_total"] == 2
     assert summary["trigger_precision"] == 1.0
     assert summary["trigger_recall"] == 1.0
     assert summary["mean_duration_seconds"] == pytest.approx(4 / 3)
+    assert summary["completion_rate"] == 1.0
+    assert summary["missing_cases"] == []
+    baseline = evals.summarize_results(results, cases)["variants"]["baseline"]
+    assert baseline["completion_rate"] == 0.0
+    assert len(baseline["missing_cases"]) == 3
+    assert result_summary["status"] == "partial"
+
+
+def test_model_results_report_partial_case_completion(tmp_path):
+    cases = [
+        dict(skill="sample", id="task-1", kind="task", prompt="do it",
+             checks=["complete"], should_trigger=None),
+        dict(skill="sample", id="task-2", kind="task", prompt="do more",
+             checks=["grounded"], should_trigger=None),
+    ]
+    row = dict(skill="sample", id="task-1", kind="task", variant="with_skill", run=1,
+               duration_seconds=1.0, output_characters=10, output_path="outputs/task-1.md",
+               check_results=[True])
+    path = tmp_path / "results.jsonl"
+    path.write_text(json.dumps(row), encoding="utf-8")
+    summary = evals.summarize_results(evals.read_results(path, cases), cases)
+    variant = summary["variants"]["with_skill"]
+    assert variant["completed_cases"] == 1
+    assert variant["expected_cases"] == 2
+    assert variant["completion_rate"] == 0.5
+    assert variant["missing_cases"] == ["sample:task:task-2"]
 
 
 @pytest.mark.parametrize("field,value,message", [
     ("run", 0, "positive integer"),
     ("variant", "unknown", "invalid variant"),
     ("check_results", [True], "2 booleans"),
+    ("output_path", "", "output_path"),
 ])
 def test_model_results_reject_invalid_contract(tmp_path, field, value, message):
     cases = [dict(skill="sample", id="task-1", kind="task", prompt="do it",
                   checks=["complete", "grounded"], should_trigger=None)]
     row = dict(skill="sample", id="task-1", kind="task", variant="with_skill", run=1,
-               duration_seconds=2.0, output_characters=100, check_results=[True, True])
+               duration_seconds=2.0, output_characters=100, output_path="outputs/task-1.md",
+               check_results=[True, True])
     row[field] = value
     path = tmp_path / "results.jsonl"
     path.write_text(json.dumps(row), encoding="utf-8")

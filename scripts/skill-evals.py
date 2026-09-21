@@ -90,10 +90,13 @@ def read_results(path: Path, cases: list[dict]) -> list[dict]:
         seen.add(result_key)
         duration = row.get("duration_seconds")
         output_chars = row.get("output_characters")
+        output_path = row.get("output_path")
         if not isinstance(duration, (int, float)) or isinstance(duration, bool) or duration < 0:
             raise ValueError(f"{path}:{line_number}: invalid duration_seconds")
         if not isinstance(output_chars, int) or isinstance(output_chars, bool) or output_chars < 0:
             raise ValueError(f"{path}:{line_number}: invalid output_characters")
+        if not isinstance(output_path, str) or not output_path.strip():
+            raise ValueError(f"{path}:{line_number}: output_path must be a non-empty string")
         case = case_map[key]
         if key[2] == "task":
             checks = row.get("check_results")
@@ -116,14 +119,18 @@ def read_results(path: Path, cases: list[dict]) -> list[dict]:
 def summarize_results(results: list[dict], cases: list[dict]) -> dict:
     """Produce deterministic task and trigger metrics grouped by variant."""
     case_map = {(case["skill"], case["id"], case["kind"]): case for case in cases}
+    expected_keys = set(case_map)
     summaries = {}
     for variant in sorted(RESULT_VARIANTS):
         rows = [row for row in results if row["variant"] == variant]
-        if not rows:
-            continue
         task_rows = [row for row in rows if row["kind"] == "task"]
         trigger_rows = [row for row in rows if row["kind"] == "trigger"]
         check_values = [value for row in task_rows for value in row["check_results"]]
+        completed_keys = {
+            (str(row["skill"]), str(row["id"]), row["kind"])
+            for row in rows
+        }
+        missing_keys = sorted(expected_keys - completed_keys)
         confusion = Counter()
         for row in trigger_rows:
             case = case_map[(row["skill"], str(row["id"]), "trigger")]
@@ -135,8 +142,15 @@ def summarize_results(results: list[dict], cases: list[dict]) -> dict:
         fn = confusion[(True, False)]
         precision = tp / (tp + fp) if tp + fp else None
         recall = tp / (tp + fn) if tp + fn else None
+        expected_count = len(expected_keys)
+        completed_count = len(completed_keys)
         summaries[variant] = {
             "runs": len(rows),
+            "expected_cases": expected_count,
+            "completed_cases": completed_count,
+            "completion_rate": completed_count / expected_count if expected_count else None,
+            "missing_cases": [f"{skill}:{kind}:{case_id}"
+                              for skill, case_id, kind in missing_keys],
             "task_runs": len(task_rows),
             "checks_passed": sum(check_values),
             "checks_total": len(check_values),
@@ -149,10 +163,17 @@ def summarize_results(results: list[dict], cases: list[dict]) -> dict:
             },
             "trigger_precision": precision,
             "trigger_recall": recall,
-            "mean_duration_seconds": sum(row["duration_seconds"] for row in rows) / len(rows),
-            "mean_output_characters": sum(row["output_characters"] for row in rows) / len(rows),
+            "mean_duration_seconds": (
+                sum(row["duration_seconds"] for row in rows) / len(rows) if rows else None
+            ),
+            "mean_output_characters": (
+                sum(row["output_characters"] for row in rows) / len(rows) if rows else None
+            ),
         }
-    return {"status": "evaluated", "variants": summaries}
+    status = "evaluated" if all(
+        summary["completion_rate"] == 1.0 for summary in summaries.values()
+    ) else "partial"
+    return {"status": status, "variants": summaries}
 
 
 def load_cases(root: Path, skill: str | None = None) -> list[dict]:
