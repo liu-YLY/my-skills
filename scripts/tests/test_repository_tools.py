@@ -88,7 +88,7 @@ def test_strategy_does_not_invent_missing_risk_scores_or_force_ratios():
     skill = (ROOT / "plugins/testing/skills/test-strategy-engineer/SKILL.md").read_text(
         encoding="utf-8"
     )
-    assert "不计算正式 5 维总分" in skill
+    assert "缺失维度标「待补」且不计算正式总分" in skill
     assert "不得为满足固定比例下调风险等级" in skill
     assert "P0 占比 ≤ 30%" not in skill
     assert "前 30% → P0" not in skill
