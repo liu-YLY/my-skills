@@ -89,7 +89,41 @@ requirement_summary:
 
 ### 2.3 输出格式
 
-见 SKILL.md "核心数据结构" 章节。状态机模型必须符合 `knowledge/state-modeling.md` 中定义的 6 要素 + MAE + 不变量结构。
+状态机模型必须符合 `knowledge/state-modeling.md` 中定义的 6 要素 + MAE + 不变量结构。以下示例同时作为 skill 与 MCP 的结构协作契约：
+
+```yaml
+state_machine:
+  meta:
+    object: Order
+    version: "1.0"
+    source: 示例需求 PRD §3.2
+    confidence: medium
+  states:
+    - name: 待支付
+      meaning: 订单已创建未支付
+      is_initial: true
+      entry_events: [订单创建]
+      invariants: [订单金额不可修改]
+    - name: 已支付
+      meaning: 已收到可信支付结果
+      is_terminal: true
+      invariants: [支付金额与订单一致]
+  transitions:
+    - id: T-PAY
+      from: 待支付
+      to: 已支付
+      event: 支付成功回调
+      guards: [订单有效, 金额一致, 回调可信]
+      side_effects: [生成支付记录, 触发履约]
+      evidence_type: 需求明确
+      source: 示例需求 PRD §3.2
+  forbidden:
+    - id: F-PAID
+      from: 已支付
+      to: "*"
+      reason: 示例中已支付为终态
+      evidence_type: 需求明确
+```
 
 ### 2.4 🔴 CHECKPOINT
 
