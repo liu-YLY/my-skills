@@ -1,6 +1,6 @@
 ---
 name: testing-bundle
-version: 3.2.0
+version: 3.2.1
 description: >-
   Use when user has mixed, ambiguous, or explicitly routing-required testing requests —
   e.g. "analyze bug AND generate test cases", "design strategy AND generate layered cases",
@@ -38,27 +38,7 @@ keywords:
 2. **第二步**：未命中混合意图链 → 查单意图路由决策表 → 路由到对应子 skill
 3. **第三步**：单意图也未命中 → 追问用户（🔴 CHECKPOINT）
 
-按以下架构图路由到子 skill（5 个核心子 skill + 1 个协同 skill change-impact-analyzer，共 6 路）：
-
-```
-                    用户测试请求
-                         │
-                         ▼
-              ┌─────────────────────────┐
-              │   testing-bundle        │  路由层（只路由，不实现能力）
-              └───────────┬─────────────┘
-                         │ 6-way 意图判断（5 核心 + 1 协同）
-  ┌─────────┬─────────┬───────┬───────────┬──────────────┬─────────────┐
-  ▼         ▼         ▼       ▼           ▼              ▼
-┌──────────┐┌─────────┐┌──────┐┌───────────┐┌──────────────┐┌─────────────┐
-│strategy- ││case-    ││bug-  ││performance││state-machine ││change-impact│
-│engineer  ││engineer ││anlyz ││-engineer  ││-test-engineer││-analyzer    │
-├──────────┤├─────────┤├──────┤├───────────┤├──────────────┤├─────────────┤
-│项目级     ││功能用例  ││功能缺陷││性能测试    ││状态机建模     ││变更影响      │
-│策略/分层  ││设计      ││根因   ││场景+瓶颈   ││+场景穷举      ││×覆盖缺口     │
-└──────────┘└─────────┘└──────┘└───────────┘└──────────────┘└─────────────┘
- peer          peer       peer      peer         peer      peer（链 6 协同）
-```
+路由目标共 6 个：5 个核心子 skill，加 1 个可独立使用的协同 skill `change-impact-analyzer`。bundle 只判断和传递上下文，不在入口重复实现专业流程。
 
 ### 路由决策表（单意图）
 
@@ -94,46 +74,18 @@ keywords:
 
 > **按需加载**：每条链的完整步骤流、CHECKPOINT 定义、触发条件与二级判定规则见 [knowledge/mixed-intent-chains.md](knowledge/mixed-intent-chains.md)。仅当判定顺序第一步命中某条链时，才读取该链的详细步骤流。
 
-## 子 skill 协同
+## 子 skill 加载规则
 
-本 bundle 包含 5 个核心子 skill + 1 个协同 skill（change-impact-analyzer，链 6 协同使用，亦可单独使用），各自独立可用，也可通过 bundle 统一调用：
+路由确定后才读取目标文件；混合链按顺序加载，禁止预先加载全部子 skill：
 
-| 子 skill | 职责 | 核心工作流 | 独立可用 |
-|---------|------|----------|---------|
-| [test-strategy-engineer](../test-strategy-engineer/SKILL.md) | 项目级测试策略（风险矩阵+分层+准入准出） | 五阶段：项目特征→风险矩阵→分层→CHECKPOINT→范围准入准出→（可选）资源附录 | ✅ 是 |
-| [test-case-engineer](../test-case-engineer/SKILL.md) | 功能用例生成（需求→测试用例） | 四阶段：理解需求→提取测试点→编写用例→自检补全 | ✅ 是 |
-| [performance-test-engineer](../performance-test-engineer/SKILL.md) | 性能测试方案+瓶颈定位（资源/架构层） | 四阶段：需求理解→场景设计→CHECKPOINT→瓶颈定位→转交判断 | ✅ 是 |
-| [bug-analyzer](../bug-analyzer/SKILL.md) | 功能缺陷根因（代码逻辑层） | 五步定位法：复现→隔离→定位→验证→报告 | ⚠️ 依赖 test-case-engineer 的 bug-patterns.md |
-| [state-machine-test-engineer](../state-machine-test-engineer/SKILL.md) | 状态机建模+场景穷举（状态型需求） | 五阶段：状态型需求识别→状态机建模→CHECKPOINT→完整性检查→10类场景穷举→（可选）MCP增强 | ✅ 是（MCP 可选增强） |
-| [change-impact-analyzer](../change-impact-analyzer/SKILL.md) | 代码变更影响分析（git diff × 用例交叉验证） | 四阶段：收集输入→Diff 解析→交叉分析→生成报告 | ✅ 是 |
+- [test-strategy-engineer](../test-strategy-engineer/SKILL.md)：项目级策略、分层、风险矩阵、准入准出。
+- [test-case-engineer](../test-case-engineer/SKILL.md)：功能用例、测试点、用例评审；review-checker MCP 为可选增强。
+- [performance-test-engineer](../performance-test-engineer/SKILL.md)：性能方案与资源/架构层瓶颈。
+- [bug-analyzer](../bug-analyzer/SKILL.md)：功能缺陷根因；缺少共享 bug-patterns 时按其自身规则降级。
+- [state-machine-test-engineer](../state-machine-test-engineer/SKILL.md)：状态建模与场景穷举；state-machine-testing MCP v0.3.0 为可选增强。
+- [change-impact-analyzer](../change-impact-analyzer/SKILL.md)：代码变更 × 用例的影响与覆盖缺口。
 
-### 知识库共享
-
-- `bug-patterns.md` 主归属 test-case-engineer，bug-analyzer 通过相对路径 `../test-case-engineer/knowledge/bug-patterns.md` 引用
-- strategy/performance/state-machine 不共享知识库（聚焦点不同，共享会引入路由歧义）
-- state-machine-test-engineer 可选调用 `state-machine-testing-mcp` Server 做 Schema 校验与可视化（未安装时降级为纯 LLM 推理）。该 MCP 已升级至 v0.2.0，协议层（stdio + streamable-http）已通过端到端联调验证，安装后增强模式可用（详见 state-machine-test-engineer/SKILL.md 状态说明）
-- test-case-engineer 评审模式可选调用 `review-checker-mcp` Server 做 10 维度确定性校验与度量报告（9 维度用例级校验 + 1 维度语义一致性冲突检测，未安装时降级为纯 LLM 推理）
-
-**依赖说明**：
-- bug-analyzer 单独安装时，步骤 2/3 的"对照缺陷模式库"能力会降级（仍有通用模式兜底，但无法查阅完整缺陷模式库）。通过本 bundle 整体安装获得完整能力。
-- state-machine-test-engineer 单独安装时完全可用；安装配套 MCP Server（v0.2.0，协议层已联调验证）后可进入“增强模式”，获得 Schema 校验、Mermaid 可视化、覆盖度报告等额外能力。
-- test-case-engineer 评审模式单独可用；安装配套 review-checker MCP Server 后进入"增强模式"，获得 10 维度确定性校验与度量报告（通过率/问题密度/评级 A-D）。
-
-## 安装方式
-
-### 方式 1：整体安装（推荐）
-
-安装 testing plugin，获得 `testing-bundle` + `test-strategy-engineer` + `test-case-engineer` + `performance-test-engineer` + `bug-analyzer` + `state-machine-test-engineer` + `change-impact-analyzer` 共 7 个 skill，获得完整测试能力（含链 6 覆盖缺口验证）。
-
-### 方式 2：按需安装
-
-- 只需项目级策略 → 安装 `test-strategy-engineer`
-- 只需用例生成 → 安装 `test-case-engineer`（评审模式可选再装 review-checker MCP Server 进入增强模式）
-- 只需性能测试 → 安装 `performance-test-engineer`
-- 只需 Bug 分析 → 安装 `bug-analyzer`（缺陷模式库引用会降级）
-- 只需状态机测试 → 安装 `state-machine-test-engineer`（可选再装 MCP Server 进入增强模式）
-- 只需变更影响分析 → 安装 `change-impact-analyzer`
-- 多项需求 → 安装 `testing-bundle` + 对应子 skill
+安装方式、依赖关系和 MCP 配置属于部署文档，见 [../../README.md](../../README.md)，不参与运行时路由判断。
 
 ## 失败模式与 Fallback
 
@@ -205,10 +157,4 @@ keywords:
 
 ---
 
-**版本历史**：
-- v1.0.0: 初始版本，2-skill 路由（case-engineer + bug-analyzer）
-- v2.0.0: 扩展为 4-skill 路由（+ strategy + performance），breaking change
-- v3.0.0: 扩展为 5-skill 路由（+ state-machine-test-engineer），新增链 5（状态机+用例协同），breaking change
-- v3.1.0: 新增链 6（评审→覆盖缺口验证，协同外部 change-impact-analyzer）+ 链 7（评审→风险用例根因反推，协同 bug-analyzer），评审模式成为混合意图链起点
-- v3.2.0: 使用示例与快速上手外迁至 knowledge/usage-examples.md（token 优化）；state-machine MCP 状态声明同步至 v0.2.0 已联调验证
-- v3.1.1: 声明 test-case-engineer 评审模式可选调用 review-checker MCP Server（与 state-machine MCP 增强对称），未安装时降级为纯 LLM 推理
+版本历史见 [CHANGELOG.md](CHANGELOG.md)。

@@ -65,6 +65,17 @@ def test_current_changes_include_committed_feature_branch_work():
     assert "git diff <default>...HEAD" in modes
 
 
+def test_bundle_declares_current_state_machine_mcp_version():
+    bundle = ROOT / "plugins/testing/skills/testing-bundle"
+    package = ROOT / "plugins/testing/mcp-servers/state-machine-testing/pyproject.toml"
+    version_line = next(line for line in package.read_text(encoding="utf-8").splitlines()
+                        if line.startswith("version = "))
+    version = version_line.split('"')[1]
+    for path in (bundle / "SKILL.md", bundle / "knowledge/usage-examples.md"):
+        content = path.read_text(encoding="utf-8")
+        assert f"v{version}" in content
+
+
 def test_model_results_are_validated_and_summarized(tmp_path):
     cases = [
         dict(skill="sample", id="task-1", kind="task", prompt="do it",
