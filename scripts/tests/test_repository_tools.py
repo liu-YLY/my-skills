@@ -9,6 +9,11 @@ ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location("skill_evals", ROOT / "scripts/skill-evals.py")
 evals = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(evals)
+version_spec = importlib.util.spec_from_file_location(
+    "version_sync", ROOT / "scripts/check-version-sync.py"
+)
+version_sync = importlib.util.module_from_spec(version_spec)
+version_spec.loader.exec_module(version_sync)
 
 
 @pytest.mark.parametrize("payload", [
@@ -54,6 +59,22 @@ def test_every_skill_has_complete_trigger_coverage():
         "wechat-formatter",
     }
     assert min(trigger_counts.values()) >= 4
+
+
+def test_root_readme_skill_versions_follow_frontmatter(tmp_path):
+    skill_dir = tmp_path / "plugins/testing/skills/sample-skill"
+    skill_dir.mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        "---\nname: sample-skill\nversion: 1.2.1\n---\n", encoding="utf-8"
+    )
+    (tmp_path / "README.md").write_text(
+        "| Skill | 版本 |\n|---|---|\n| sample-skill | v1.2.0 |\n", encoding="utf-8"
+    )
+    errors = version_sync.check_root_readme_skill_versions(tmp_path)
+    assert errors == [
+        f"{tmp_path / 'README.md'}: references 'sample-skill v1.2.0' "
+        "but SKILL.md frontmatter version is 1.2.1"
+    ]
 
 
 def test_current_changes_include_committed_feature_branch_work():
