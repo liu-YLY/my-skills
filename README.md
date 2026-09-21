@@ -81,8 +81,11 @@ npx skills add liu-YLY/my-skills --skill '*' -g -y
 /plugin marketplace add liu-YLY/my-skills
 /plugin install testing-bundle@my-skill-marketplace
 
-# 方式 3：本地脚本（离线兜底）
-cp -r plugins/testing/skills/testing-bundle ~/.claude/skills/
+# 方式 3：手动复制（离线兜底）
+# 按实际 runtime 修改目标目录，例如 ~/.claude/skills、~/.cursor/skills、~/.codex/skills
+SKILLS_DIR="$HOME/.codex/skills"
+mkdir -p "$SKILLS_DIR"
+for skill_dir in plugins/testing/skills/*; do cp -R "$skill_dir" "$SKILLS_DIR/"; done
 ```
 
 安装后重启 runtime，技能自动识别注册。
