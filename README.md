@@ -23,7 +23,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | Skill | 版本 | 功能 | MCP Server |
 |---|---|---|---|
 | **testing-bundle** | v3.2.1 | bundle 入口，6-way 路由（5 核心 + 1 协同）+ 7 条混合意图链 | - |
-| test-strategy-engineer | v1.0.1 | 项目级测试策略（风险矩阵/分层/准入准出） | - |
+| test-strategy-engineer | v1.0.2 | 项目级测试策略（风险矩阵/分层/准入准出） | - |
 | test-case-engineer | v9.0.0 | 功能用例生成 + 10 维度评审模式 | review-checker v0.3.0（可选） |
 | performance-test-engineer | v1.1.0 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
 | bug-analyzer | v1.2.0 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
@@ -60,7 +60,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | performance-test-engineer | 241 | 5 |
 | state-machine-test-engineer | 169 | 13 |
 | test-case-engineer | 147 | 13 |
-| test-strategy-engineer | 252 | 5 |
+| test-strategy-engineer | 139 | 5 |
 | testing-bundle | 160 | 2 |
 | wechat-formatter | 169 | 29 |
 
