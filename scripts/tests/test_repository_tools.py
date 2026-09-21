@@ -76,6 +76,14 @@ def test_bundle_declares_current_state_machine_mcp_version():
         assert f"v{version}" in content
 
 
+def test_state_machine_runtime_docs_do_not_hardcode_test_totals():
+    skill_dir = ROOT / "plugins/testing/skills/state-machine-test-engineer"
+    for path in (skill_dir / "SKILL.md", skill_dir / "README.md",
+                 skill_dir / "integrations/quickstart.md"):
+        content = path.read_text(encoding="utf-8")
+        assert "项测试全绿" not in content
+
+
 def test_model_results_are_validated_and_summarized(tmp_path):
     cases = [
         dict(skill="sample", id="task-1", kind="task", prompt="do it",

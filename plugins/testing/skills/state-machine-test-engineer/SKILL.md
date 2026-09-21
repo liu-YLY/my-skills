@@ -1,6 +1,6 @@
 ---
 name: state-machine-test-engineer
-version: 1.2.0
+version: 1.2.1
 description: >-
   Use when user needs state-machine-driven testing for stateful business objects
   (orders, approvals, tickets, membership, etc.). Triggers on: 状态机、状态流转、状态转换、
@@ -27,9 +27,9 @@ integrations:
 
 # State Machine Test Engineer
 
-状态机驱动的状态型需求测试 skill v1.2.0：基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
+状态机驱动的状态型需求测试 skill v1.2.1：基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
 
-> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.3.0**，MCP 协议层（stdio + streamable-http）已通过端到端联调验证（52 项测试全绿，含真实协议调用的握手/工具清单/call_tool/降级信号测试），**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 仍自动降级为独立模式（输出首行标 `⚠ 独立模式（未校验）`）。
+> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.3.0**，MCP 协议层（stdio + streamable-http）和真实工具调用已通过端到端测试，**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 仍自动降级为独立模式（输出首行标 `⚠ 独立模式（未校验）`）。
 
 ## 适用范围
 
@@ -56,57 +56,16 @@ PRD 通常只描述"用户做什么"，没有显性表达"对象处于什么状�
 
 ## 工作流（五阶段）
 
-```
-阶段 1: 状态型需求识别
-  → 识别业务对象（订单/审批/工单/会员等）
-  → 识别参与者（人/系统/外部/定时器/管理员）
-  → 标记歧义为"待确认"（不补齐）
-  → 输出：状态型需求摘要 + 业务对象清单
-  ↓
-阶段 2: 状态机建模
-  → 抽取状态（只保留名词，避免动词状态）
-  → 定义转换：FROM --(事件 [守卫])--> TO {副作用}
-  → 定义不变量与终态（终态吸收规则）
-  → 定义禁止转换
-  → 输出：状态机模型（YAML/JSON 结构）
-  ↓
-模型自检 · 展示模型与未决事项，已有授权内继续分析
-  ↓
-阶段 3: 完整性检查（C0 结构检查 + 9 项业务检查）
-  → 每个状态有明确含义？
-  → 每个状态有进入条件（除初始态）？
-  → 每个非终态有退出路径？
-  → 终态是否真的不可变化（无出边）？
-  → 禁止转换结构核对；需求完整性标 not_checked，待人工核实
-  → 状态变化有副作用定义？
-  → 依据类型已标注（无遗漏）？
-  → 无悬挂状态（unreachable）？
-  → 无死锁状态（非终态但无出边）？
-  → 输出：完整性检查报告（标记缺口）
-  ↓
-阶段 4: 10 类场景穷举
-  → 对每条 transition 生成：
-    1. 合法转换（legal_transition）
-    2. 非法转换（illegal_transition）
-    3. 条件不满足（guard_violation）
-    4. 重复事件与幂等（idempotency）
-    5. 并发事件（concurrency）
-    6. 消息乱序（message_reorder）
-    7. 超时与重试（timeout_retry）
-    8. 转换后数据一致性（data_consistency）
-    9. 权限控制（access_control）
-    10. 失败后恢复路径（failure_recovery）
-  → 每场景标注依据类型（需求明确/合理推理/待确认）
-  → 输出：场景清单（场景级，不出用例步骤）
-  ↓
-阶段 5: MCP 增强（可选）
-  → 检测 MCP Server 可用性
-  → 可用：调用 validate_state_machine 校验 + generate_scenarios 复核 + export_artifacts 导出
-  → 不可用：降级为纯 LLM 推理（在输出首行标注「⚠ 独立模式（未校验）」）
-  → 输出：最终状态机模型 + 场景清单（含校验状态标记）
-```
+始终先读 [state-machine-core.md](state-machine-core.md)，再按阶段延迟加载知识文件：
 
-详细流程见 [state-machine-core.md](state-machine-core.md)。
+| 阶段 | 输入 | 必须输出 | 门禁 |
+|------|------|----------|------|
+| 1. 状态型需求识别 | 用户需求 | 对象、参与者、明确事实、歧义清单 | 缺失规则标「待确认」，不补齐 |
+| 2. 状态机建模 | 阶段 1 结果 | 状态、转换、守卫、副作用、不变量、禁止转换 | 状态用名词、事件用动词；每条规则标依据类型 |
+| 模型自检 | 候选模型 | 模型摘要和未决事项 | 已授权的只读分析继续；结论性矛盾进入 🔴 CHECKPOINT |
+| 3. 完整性检查 | 候选模型 | C0 结构检查 + 9 项业务检查及缺口 | 需求完整性不能由结构校验代替 |
+| 4. 场景穷举 | 已检查模型 | 10 类场景清单，不输出用例步骤 | 每类场景标依据类型；未知目标保持待确认 |
+| 5. MCP 增强 | 模型与场景 | 校验状态、差异和最终产物 | MCP 仅复核；不可用或失败必须显式降级 |
 
 ## 三种运行模式
 
@@ -125,64 +84,16 @@ PRD 通常只描述"用户做什么"，没有显性表达"对象处于什么状�
 
 MCP 配置方式见 [integrations/quickstart.md](integrations/quickstart.md)。
 
-## 核心数据结构
+## 核心数据契约
 
-转换和禁止规则可提供稳定 `id`；省略时 MCP 按规则内容生成。合法场景携带 `transition_id`、`guard_conditions`，非法场景携带 `forbidden_id`、`attempted_target_state`。引用不能替代目标与守卫条件的匹配；缺少引用且不能唯一匹配的场景列入 `unmatched_scenarios`。
+完整 Schema 与示例见 [state-machine-core.md](state-machine-core.md)。入口只保留跨阶段和下游必须稳定的字段：
 
-### 状态机模型 Schema
-
-```yaml
-state_machine:
-  meta:
-    object: Order
-    version: "1.0"
-    source: 示例需求 PRD §3.2
-    confidence: medium
-  states:
-    - name: 待支付
-      meaning: 订单已创建未支付
-      is_initial: true
-      entry_events: [订单创建]
-      invariants: [订单金额不可修改]
-    - name: 已支付
-      meaning: 已收到可信支付结果
-      is_terminal: true
-      invariants: [支付金额与订单一致]
-  transitions:
-    - id: T-PAY
-      from: 待支付
-      to: 已支付
-      event: 支付成功回调
-      guards: [订单有效, 金额一致, 回调可信]
-      side_effects: [生成支付记录, 触发履约]
-      evidence_type: 需求明确
-      source: 示例需求 PRD §3.2
-  forbidden:
-    - id: F-PAID
-      from: 已支付
-      to: "*"
-      reason: 示例中已支付为终态
-      evidence_type: 需求明确
-```
-
-### 场景清单 Schema（转交 test-case-engineer 的契约）
-
-```yaml
-scenarios:
-  - id: SM-001
-    title: 已取消订单尝试支付
-    current_state: 已取消
-    trigger_event: 支付成功回调
-    precondition: 订单已取消
-    expected_target_state: 已取消
-    attempted_target_state: 已支付
-    forbidden_states: [已支付]
-    risk_type: illegal_transition
-    related_objects: [支付记录, 订单日志]
-    evidence_type: 需求明确
-    source: PRD §3.1 + 状态机 forbidden 规则
-    notes: 需验证后端拒绝 + 前端按钮置灰
-```
+- 状态模型：`meta / states / transitions / forbidden`；transition 与 forbidden 应有稳定 `id`。
+- 每条转换与禁止规则必须包含 `evidence_type` 和 `source`；未知业务规则标 `待确认`，不得伪造目标状态。
+- 合法场景携带 `transition_id`、`guard_conditions`；非法场景携带 `forbidden_id`、`attempted_target_state`。
+- 场景至少包含 `id / title / current_state / trigger_event / expected_target_state / risk_type / evidence_type / source`。
+- 引用不能替代目标与守卫匹配；无法唯一匹配的场景进入 `unmatched_scenarios`。
+- 下游 test-case-engineer 只消费场景契约，不依赖 MCP 是否启用。
 
 ## 知识库
 
@@ -255,16 +166,4 @@ scenarios:
 
 ---
 
-**相关文档**：
-- [README.md](README.md) - 简介与使用指南
-- [state-machine-core.md](state-machine-core.md) - 核心流程详述
-- [integrations/quickstart.md](integrations/quickstart.md) - MCP 配置说明
-- [设计文档](https://github.com/liu-YLY/my-skills/blob/main/docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
-- [testing-bundle](../testing-bundle/SKILL.md) - bundle 入口（6-way 路由：5 核心 + 1 协同）
-- [test-case-engineer](../test-case-engineer/SKILL.md) - 下游协同（链 5）
-- [state-machine-testing-mcp](../../mcp-servers/state-machine-testing/README.md) - 配套 MCP Server
-
-**版本历史**：
-- v1.2.0: 配套 MCP Server 升级 v0.3.0（结构校验与覆盖统计按转换目标/守卫/规则引用匹配计算）
-- v1.1.0: 配套 MCP Server 升级 v0.2.0（协议层 stdio + HTTP 端到端联调验证，增强模式可用），状态声明同步
-- v1.0.0: 初始版本，五阶段流程 + 10 类场景穷举 + MCP 可选增强
+版本和人类使用说明见 [README.md](README.md)；MCP 实现边界见 [state-machine-testing-mcp](../../mcp-servers/state-machine-testing/README.md)。
