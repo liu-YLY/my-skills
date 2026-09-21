@@ -11,6 +11,7 @@ Rules:
   matching the current frontmatter version; architecture diagram version
   labels in SKILL.md must match frontmatter; test-prompts.json expected
   fields must not carry historical "vX.Y.Z " version prefixes.
+- Root README skill table versions must match each SKILL.md frontmatter.
 
 Usage: python scripts/check-version-sync.py
 Exit code: 0 if all versions in sync, 1 if any mismatch found.
@@ -323,6 +324,32 @@ def check_skills_overview_version(root: Path) -> list[str]:
     return errors
 
 
+def check_root_readme_skill_versions(root: Path) -> list[str]:
+    """Check root README skill table versions against SKILL.md frontmatter."""
+    errors = []
+    readme = root / 'README.md'
+    plugins_dir = root / 'plugins'
+    if not readme.exists() or not plugins_dir.exists():
+        return errors
+    content = readme.read_text(encoding='utf-8')
+    for skill_md in sorted(plugins_dir.glob('*/skills/*/SKILL.md')):
+        skill_name = skill_md.parent.name
+        expected = extract_skill_version(skill_md)
+        if not expected:
+            continue
+        pattern = (
+            rf'^\|\s*(?:\*\*)?{re.escape(skill_name)}(?:\*\*)?\s*\|'
+            rf'\s*v(\d+\.\d+\.\d+)\s*\|'
+        )
+        match = re.search(pattern, content, re.MULTILINE)
+        if match and match.group(1) != expected:
+            errors.append(
+                f"{readme}: references '{skill_name} v{match.group(1)}' but "
+                f"SKILL.md frontmatter version is {expected}"
+            )
+    return errors
+
+
 def check_marketplace_version(root: Path) -> list[str]:
     """Check that .claude-plugin/marketplace.json plugin descriptions reference
     the version declared in the corresponding plugin manifest.
@@ -447,7 +474,8 @@ def main() -> int:
             continue
         errors.extend(check_plugin(plugin_root))
 
-    # Cross-plugin checks: docs/skills-overview.md and marketplace.json
+    # Cross-plugin checks: root README, docs/skills-overview.md and marketplace.json
+    errors.extend(check_root_readme_skill_versions(root))
     errors.extend(check_skills_overview_version(root))
     errors.extend(check_marketplace_version(root))
 
