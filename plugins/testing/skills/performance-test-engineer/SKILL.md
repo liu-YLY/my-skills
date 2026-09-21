@@ -1,6 +1,6 @@
 ---
 name: performance-test-engineer
-version: 1.1.0
+version: 1.1.1
 description: >-
   Use when designing performance test plans or analyzing performance bottlenecks.
   Triggers on: 性能测试、负载测试、压力测试、并发测试、TPS、响应时间、瓶颈、性能瓶颈、容量评估、USE方法.
@@ -174,7 +174,7 @@ keywords:
 |----------|----------|------------|
 | 性能需求模糊（用户只说"测一下性能"） | 追问清单：业务场景、峰值用户量、核心交易路径、SLA 承诺、关注指标（RT/TPS/资源）；至少收齐 3 项 | 交付已有范围的方案骨架，将 RT/TPS/错误率目标列为待定及其所需依据，不将模板值当作业务承诺 |
 | 负载模型选择争议（阶梯 vs 容量） | 对照 [knowledge/load-models.md](knowledge/load-models.md) 决策表：目标=找崩溃点→压力测试；目标=找最大承载→容量测试；目标=验证预期负载→负载测试 | 同时设计两类场景：负载测试验证达标 + 压力测试找临界点，由用户在 🔴 CHECKPOINT 选择 |
-| 瓶颈定位数据不全（缺 CPU/IO 采样） | 要求补充采样：CPU（user/sys/iowait）、内存（used/cached）、磁盘 IO（await/svctm）、网络（带宽/包量）；采样间隔 ≤ 10s，覆盖加压全过程 | 标注「数据不全」，基于已有 RT/TPS 曲线推断瓶颈层（RT 陡增点 + TPS 停滞点 → 推断资源饱和），要求补采后再确认 |
+| 瓶颈定位数据不全（缺 CPU/IO/TPS 采样） | 要求补充采样：CPU（user/sys/iowait）、内存（used/cached）、磁盘 IO（await/svctm）、网络（带宽/包量）、RT/TPS/错误率；采样间隔 ≤ 10s，覆盖加压全过程 | 标注「数据不全」，只基于已有证据提出可证伪假设和补采步骤；缺 TPS 时不得推断吞吐拐点或资源饱和，不输出已确认瓶颈 |
 | 瓶颈层归属不清（资源层 vs 代码逻辑层） | 比较应用、资源和架构证据，优先验证最强可证伪假设 | 标注归属待定和缺少指标，不以固定顺序替代证据 |
 | 性能方案与实际环境不符（压测环境规格低于生产） | 对齐硬件、依赖、数据量、流量和负载差异；用实测基线校准估算 | 分开列实测值与估算假设，无校准时不按规格比例推算生产 TPS |
 | 混合意图（性能测试 + 功能 Bug 分析） | 🔴 CHECKPOINT 明确主意图：以性能瓶颈为主、Bug 为辅 → 本 skill 先定位瓶颈再转交 bug-analyzer 分析代码缺陷；以 Bug 为主 → 直接转交 bug-analyzer | 拆分为两个独立任务：本 skill 输出瓶颈定位报告，bug-analyzer 输出根因报告，两份报告独立交付 |
@@ -237,5 +237,6 @@ keywords:
 ---
 
 **版本历史**：
+- v1.1.1: 修正固定排查顺序的评测契约；数据不全时仅提出可证伪假设，不将缺失 TPS 误判为资源饱和
 - v1.1.0: 新增默认值兜底与意图切换（plan/diagnose/plan-and-diagnose）；阈值以 metrics-framework.md 为权威源
 - v1.0.0: 初始版本，作为 testing-bundle 的性能测试方向子 skill

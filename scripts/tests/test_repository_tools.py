@@ -94,6 +94,20 @@ def test_strategy_does_not_invent_missing_risk_scores_or_force_ratios():
     assert "前 30% → P0" not in skill
 
 
+def test_performance_diagnosis_is_evidence_first_when_data_is_missing():
+    skill_dir = ROOT / "plugins/testing/skills/performance-test-engineer"
+    skill = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+    prompts = json.loads((skill_dir / "test-prompts.json").read_text(encoding="utf-8"))
+    diagnosis = next(item for item in prompts["prompts"] if item["id"] == 2)["expected"]
+    vague_request = next(item for item in prompts["prompts"] if item["id"] == 4)["expected"]
+    assert "不按固定顺序确认根因" in diagnosis
+    assert "按 应用层→资源层→架构层 顺序" not in diagnosis
+    assert "标为待定" in vague_request
+    assert "默认值兜底" not in vague_request
+    assert "缺 TPS 时不得推断吞吐拐点或资源饱和" in skill
+    assert "不输出已确认瓶颈" in skill
+
+
 def test_model_results_are_validated_and_summarized(tmp_path):
     cases = [
         dict(skill="sample", id="task-1", kind="task", prompt="do it",
