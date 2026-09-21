@@ -15,7 +15,7 @@
 | [testing-bundle](skills/testing-bundle/) | v3.2.1 | 元 skill / 路由入口 | 6-way 意图路由（5 核心 + 1 协同）+ 7 条混合意图链 |
 | [test-strategy-engineer](skills/test-strategy-engineer/) | v1.0.2 | 子 skill | 项目级测试策略：风险矩阵 / 分层 / 范围优先级 / 准入准出 |
 | [test-case-engineer](skills/test-case-engineer/) | v9.0.0 | 子 skill | 功能用例生成：需求分析 / 测试点提取 / 用例编写 / 自检补全 |
-| [performance-test-engineer](skills/performance-test-engineer/) | v1.1.0 | 子 skill | 性能测试方案 + 瓶颈定位（资源/架构层）|
+| [performance-test-engineer](skills/performance-test-engineer/) | v1.1.1 | 子 skill | 性能测试方案 + 瓶颈定位（资源/架构层）|
 | [bug-analyzer](skills/bug-analyzer/) | v1.2.0 | 子 skill | Bug 根因分析（代码逻辑层）：五步定位法 / 鱼骨图 / 5 Whys |
 | [state-machine-test-engineer](skills/state-machine-test-engineer/) | v1.2.1 | 子 skill | 状态机驱动的状态型需求测试：10 类场景穷举 |
 | [change-impact-analyzer](skills/change-impact-analyzer/) | v1.2.1 | 协同 skill | git 代码变更与测试用例交叉分析（链 6 协同，随 plugin 整体安装） |
