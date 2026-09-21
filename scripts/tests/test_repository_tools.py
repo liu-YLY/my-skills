@@ -36,3 +36,48 @@ def test_eval_reader_preserves_negative_trigger(tmp_path):
     path = tmp_path / "test-prompts.json"
     path.write_text(json.dumps({"trigger_evals": [{"query": "translate", "should_trigger": False}]}))
     assert evals.read_cases(path)[0]["should_trigger"] is False
+
+
+def test_model_results_are_validated_and_summarized(tmp_path):
+    cases = [
+        dict(skill="sample", id="task-1", kind="task", prompt="do it",
+             checks=["complete", "grounded"], should_trigger=None),
+        dict(skill="sample", id="trigger-1", kind="trigger", prompt="route it",
+             checks=[], should_trigger=True),
+        dict(skill="sample", id="trigger-2", kind="trigger", prompt="translate it",
+             checks=[], should_trigger=False),
+    ]
+    rows = [
+        dict(skill="sample", id="task-1", kind="task", variant="with_skill", run=1,
+             duration_seconds=2.0, output_characters=100, check_results=[True, False]),
+        dict(skill="sample", id="trigger-1", kind="trigger", variant="with_skill", run=1,
+             duration_seconds=1.0, output_characters=20, predicted_trigger=True),
+        dict(skill="sample", id="trigger-2", kind="trigger", variant="with_skill", run=1,
+             duration_seconds=1.0, output_characters=20, predicted_trigger=False),
+    ]
+    path = tmp_path / "results.jsonl"
+    path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+    results = evals.read_results(path, cases)
+    summary = evals.summarize_results(results, cases)["variants"]["with_skill"]
+    assert summary["checks_passed"] == 1
+    assert summary["checks_total"] == 2
+    assert summary["trigger_precision"] == 1.0
+    assert summary["trigger_recall"] == 1.0
+    assert summary["mean_duration_seconds"] == pytest.approx(4 / 3)
+
+
+@pytest.mark.parametrize("field,value,message", [
+    ("run", 0, "positive integer"),
+    ("variant", "unknown", "invalid variant"),
+    ("check_results", [True], "2 booleans"),
+])
+def test_model_results_reject_invalid_contract(tmp_path, field, value, message):
+    cases = [dict(skill="sample", id="task-1", kind="task", prompt="do it",
+                  checks=["complete", "grounded"], should_trigger=None)]
+    row = dict(skill="sample", id="task-1", kind="task", variant="with_skill", run=1,
+               duration_seconds=2.0, output_characters=100, check_results=[True, True])
+    row[field] = value
+    path = tmp_path / "results.jsonl"
+    path.write_text(json.dumps(row), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        evals.read_results(path, cases)
