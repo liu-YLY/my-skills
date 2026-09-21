@@ -61,7 +61,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | state-machine-test-engineer | 270 | 13 |
 | test-case-engineer | 147 | 13 |
 | test-strategy-engineer | 252 | 5 |
-| testing-bundle | 215 | 2 |
+| testing-bundle | 160 | 2 |
 | wechat-formatter | 276 | 29 |
 
 2 个插件共包含 8 个 Skills，测试插件包含 7 个 Skills 和 2 个可选 MCP 服务。
