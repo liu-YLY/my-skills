@@ -7,7 +7,7 @@
 
 | 模式 | 触发条件 | Git 命令 |
 |------|---------|---------|
-| 工作区改动 | 用户说"当前改动"/"本地改动"/未指定范围 | `git diff --no-ext-diff --no-textconv HEAD`（已跟踪文件相对 HEAD 的最终变更） |
+| 当前改动 | 用户说"当前改动"/"本地改动"/未指定范围 | 工作区非空：`git diff --no-ext-diff --no-textconv HEAD`；工作区干净且 feature 分支领先默认分支：`git diff <default>...HEAD` |
 | 暂存区改动 | 用户说"已暂存"/"staged" | `git diff --cached` |
 | 分支对比 | 用户指定了两个分支名 | `git diff <base>...<head>` |
 | 单个 Commit | 用户指定了单个 commit hash | `git diff <commit>~1..<commit>` |
@@ -17,7 +17,9 @@
 
 ## 2. 自动推断规则
 
-- 若用户未指定范围，默认使用「工作区改动」模式
+- 若用户未指定范围，先检查 `git status --short`；工作区非空时使用「工作区改动」模式
+- 若工作区干净，检查当前分支及默认分支：feature 分支存在未合并提交时，使用默认分支的远端跟踪引用（优先 `origin/main` / `origin/master`）与 `HEAD` 做三点对比
+- 若工作区干净且当前位于默认分支，才输出「无变更」；不得忽略 feature 分支上已提交但未合并的改动
 - 若用户指定了单个分支名如 `feat/xxx`，自动对比 `main...feat/xxx`
 - 若用户提供了 commit hash，使用该 commit 与前一个 commit 的 diff
 - 若用户粘贴了 `diff --git ...` 开头的内容，识别为外部 Patch，跳过 git 命令
@@ -47,7 +49,9 @@
   │    → 模式 2：暂存区改动（git diff --cached）
   │
   ├─ 未指定范围 / 说"当前改动"/"本地改动"
-  │    → 模式 1：工作区改动（git diff --no-ext-diff --no-textconv HEAD）
+  │    ├─ 工作区非空 → 模式 1：工作区改动（git diff --no-ext-diff --no-textconv HEAD）
+  │    ├─ 工作区干净 + feature 分支领先默认分支 → 模式 3：分支对比（<default>...HEAD）
+  │    └─ 工作区干净 + 默认分支 → 输出「无变更」
   │
   └─ 上述均不匹配
        → 主动追问用户，不擅自选择
@@ -104,7 +108,7 @@
 用户：帮我分析一下当前改动对测试用例的影响，用例在 docs/test-cases.md
 ```
 
-执行：`git diff --no-ext-diff --no-textconv HEAD` + `git status --short`（区分最终变更与暂存/未暂存/未跟踪状态）
+执行：先运行 `git status --short`。工作区非空时执行 `git diff --no-ext-diff --no-textconv HEAD`；工作区干净且当前 feature 分支领先默认分支时，解析默认分支后执行 `git diff <default>...HEAD`。两者均为空时才报告「无变更」。
 
 产出：
 ```json

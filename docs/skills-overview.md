@@ -440,7 +440,7 @@ AI（testing-bundle）：
 
 ### 1f. 变更影响分析师 (change-impact-analyzer)
 
-**版本**：v1.2.0
+**版本**：v1.2.1
 **功能**：扮演资深测试工程师角色，将 git 代码变更与测试用例交叉分析，发现行为变更影响和覆盖缺口，输出可落地的影响报告。
 
 > testing plugin 内第 6 个协同 skill（链 6 使用），随 plugin 整体安装，也可单独使用。
