@@ -142,6 +142,12 @@
       "target_score": 95
     }
   ],
+  "trigger_evals": [
+    {"query": "穷举订单从待支付到退款完成的合法和非法状态跳转", "should_trigger": true, "category": "positive"},
+    {"query": "为没有状态流转的搜索框编写测试用例", "should_trigger": false, "category": "negative"},
+    {"query": "需求只写了订单状态字段，还没说明允许哪些转换，请先建模缺口", "should_trigger": true, "category": "near_miss"},
+    {"query": "给整个电商项目制定测试分层、风险矩阵和准入准出", "should_trigger": false, "category": "skill_conflict"}
+  ],
   "scoring_dimensions": {
     "方法论完整性": {"weight": 0.25, "target": 85},
     "防幻觉能力": {"weight": 0.20, "target": 90},

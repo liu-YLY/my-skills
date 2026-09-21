@@ -336,47 +336,57 @@
   "trigger_evals": [
     {
       "query": "帮我为登录功能编写测试用例",
-      "should_trigger": true
+      "should_trigger": true,
+      "category": "positive"
     },
     {
       "query": "评审这批测试用例的质量",
-      "should_trigger": true
+      "should_trigger": true,
+      "category": "positive"
     },
     {
       "query": "快速帮我写支付模块的测试用例",
-      "should_trigger": true
+      "should_trigger": true,
+      "category": "positive"
     },
     {
       "query": "增量评审 feat/order 分支的用例改动",
-      "should_trigger": true
+      "should_trigger": true,
+      "category": "near_miss"
     },
     {
       "query": "用探索式模式测试登录功能",
-      "should_trigger": true
+      "should_trigger": true,
+      "category": "near_miss"
     },
     {
       "query": "帮我做性能测试方案，需要压测接口吞吐量",
       "should_trigger": false,
+      "category": "skill_conflict",
       "reason": "性能测试方案应路由到 performance-test-engineer"
     },
     {
       "query": "分析这个bug的根因，线上登录接口返回500",
       "should_trigger": false,
+      "category": "skill_conflict",
       "reason": "Bug根因分析应路由到 bug-analyzer"
     },
     {
       "query": "制定项目的整体测试策略和测试计划",
       "should_trigger": false,
+      "category": "skill_conflict",
       "reason": "测试策略制定应路由到 test-strategy-engineer"
     },
     {
       "query": "帮我写单元测试代码",
       "should_trigger": false,
+      "category": "negative",
       "reason": "单元测试代码编写不属于测试用例设计范畴"
     },
     {
       "query": "帮我部署测试环境",
       "should_trigger": false,
+      "category": "negative",
       "reason": "环境部署不属于测试用例设计范畴"
     }
   ]

@@ -1,4 +1,6 @@
-[
+{
+  "skill": "testing-bundle",
+  "prompts": [
   {
     "id": 1,
     "prompt": "我有一个用户注册功能需要测试，需求是用户通过邮箱+密码注册，密码需 8 位以上含大小写字母和数字",
@@ -137,4 +139,11 @@
     "expected": "识别为变更影响分析单意图，路由到 change-impact-analyzer；不转交其他子 skill",
     "target_skill": "change-impact-analyzer"
   }
-]
+  ],
+  "trigger_evals": [
+    {"query": "先分析重复扣款根因，再生成对应防御性测试用例", "should_trigger": true, "category": "positive"},
+    {"query": "只为登录功能生成测试用例", "should_trigger": false, "category": "negative"},
+    {"query": "我不确定该做测试策略、用例还是缺陷分析，请帮我判断", "should_trigger": true, "category": "near_miss"},
+    {"query": "分析当前 diff 的覆盖缺口并补充缺失用例", "should_trigger": true, "category": "skill_conflict"}
+  ]
+}

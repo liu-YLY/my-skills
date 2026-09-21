@@ -1,4 +1,6 @@
-[
+{
+  "skill": "test-strategy-engineer",
+  "prompts": [
   {
     "id": 1,
     "prompt": "我们有一个电商项目即将启动测试，包含用户中心、商品、订单、支付、营销等模块，团队 20 人，3 个月迭代周期，请帮我制定测试策略",
@@ -49,4 +51,11 @@
     "prompt": "大促峰值预计 5000 QPS，帮我设计一套压测方案",
     "expected": "不应触发 test-strategy-engineer（负例）：性能压测信号（QPS/压测方案）→ 应由 performance-test-engineer 处理；项目级测试策略中的性能专项章节也只做范围界定，不产出具体压测方案"
   }
-]
+  ],
+  "trigger_evals": [
+    {"query": "为微服务项目制定风险矩阵、测试分层和准入准出标准", "should_trigger": true, "category": "positive"},
+    {"query": "为登录功能编写手机号和邮箱两类测试用例", "should_trigger": false, "category": "negative"},
+    {"query": "项目历史缺陷数据不全，先给出可披露假设的测试策略框架", "should_trigger": true, "category": "near_miss"},
+    {"query": "大促目标 5000 QPS，请直接设计压测脚本和负载模型", "should_trigger": false, "category": "skill_conflict"}
+  ]
+}
