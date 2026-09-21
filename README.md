@@ -24,7 +24,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 |---|---|---|---|
 | **testing-bundle** | v3.2.1 | bundle 入口，6-way 路由（5 核心 + 1 协同）+ 7 条混合意图链 | - |
 | test-strategy-engineer | v1.0.2 | 项目级测试策略（风险矩阵/分层/准入准出） | - |
-| test-case-engineer | v9.0.0 | 功能用例生成 + 10 维度评审模式 | review-checker v0.3.0（可选） |
+| test-case-engineer | v9.0.1 | 功能用例生成 + 10 维度评审模式 | review-checker v0.3.0（可选） |
 | performance-test-engineer | v1.1.1 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
 | bug-analyzer | v1.2.0 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
 | state-machine-test-engineer | v1.2.1 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.3.0（可选） |
@@ -103,7 +103,7 @@ for skill_dir in plugins/testing/skills/*; do cp -R "$skill_dir" "$SKILLS_DIR/";
 | 场景 | 触发方式 | 输出示例 |
 |---|---|---|
 | 生成测试用例 | "我有一个用户登录功能需要测试" | 四阶段流程 + 完整用例 |
-| 评审已有用例 | "评审 docs/test-cases.md 的用例质量" | 9 维度评审报告 + 度量报告 |
+| 评审已有用例 | "评审 docs/test-cases.md 的用例质量" | 10 维度评审报告 + 度量报告 |
 | Bug 根因分析 | "线上重复扣款，帮我分析根因" | 五步定位法 + 根因报告 |
 | 性能瓶颈定位 | "支付接口 RT 飙升，帮我定位瓶颈" | USE 方法 + 瓶颈报告 |
 | 微信排版 | "用 tech-blog 风格排版这篇文章" | 格式化 Markdown + HTML |
