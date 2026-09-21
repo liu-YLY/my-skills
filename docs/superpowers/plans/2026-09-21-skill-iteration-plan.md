@@ -174,11 +174,11 @@ MCP 与微信排版测试按各自目录独立执行，避免 pytest 同名模�
 - state-machine-testing：68 passed。
 - wechat-formatter：54 passed。
 - 项目清单、版本同步、知识引用、Markdown 相对链接、Skill 一致性和 `git diff --check` 全部通过。
-- 结构优化均执行相同输入的改前/改后比较；最近的 performance-test-engineer 与 test-case-engineer 均获得 3:0 clear-margin 选择。
+- 结构优化执行了改前/改后比较；performance-test-engineer 与 test-case-engineer 的 6 份逐票结论已保存到 `docs/skill-evaluation/2026-09-21/paired-results.jsonl`，均为 3:0 clear-margin，但因历史执行未记录耗时和潜在退化场景，证据状态为 partial。
 
 ### 验证边界
 
-- `scripts/skill-evals.py` 已验证评测输入与结果契约，但仓库未保存可复现的外部模型批量运行结果；不能把样本校验等同于线上模型行为通过。
+- `scripts/skill-evals.py` 已验证评测输入与结果契约；仓库仅保存最近两个 Skill 的部分成对评测证据，其他 Skill 没有可复现的外部模型批量运行结果，不能把样本校验或 partial 记录等同于线上模型行为通过。
 - 本机未执行 PowerShell 安装器测试。
 - 未在 Claude/Cursor/Codex 等真实宿主中重新安装全部插件并逐一触发；静态路由和配套单测通过不等于所有宿主行为一致。
 - 未执行远程推送、PR、合并或发布。

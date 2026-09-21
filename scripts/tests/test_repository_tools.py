@@ -180,6 +180,31 @@ def test_model_results_report_partial_case_completion(tmp_path):
     assert variant["missing_cases"] == ["sample:task:task-2"]
 
 
+def test_paired_evaluation_records_expose_evidence_gaps():
+    path = ROOT / "docs/skill-evaluation/2026-09-21/paired-results.jsonl"
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    required = {
+        "evaluation_id", "skill", "baseline_ref", "candidate_ref", "prompt_ids",
+        "judge_id", "verdict", "margin", "reason", "regression_risk",
+        "duration_seconds", "output_path", "evidence_status", "evidence_gaps",
+    }
+    assert len(rows) == 6
+    assert all(required <= row.keys() for row in rows)
+    assert all(row["verdict"] in {"baseline", "candidate", "tie"} for row in rows)
+    assert all(row["margin"] in {"slight", "clear", "large"} for row in rows)
+    assert all(row["evidence_status"] in {"full", "partial"} for row in rows)
+    for row in rows:
+        if row["evidence_status"] == "full":
+            assert isinstance(row["duration_seconds"], (int, float))
+            assert row["duration_seconds"] >= 0
+            assert row["regression_risk"].strip()
+        else:
+            assert row["evidence_gaps"]
+    votes = Counter((row["evaluation_id"], row["verdict"]) for row in rows)
+    assert votes[("performance-structure-20260921", "candidate")] == 3
+    assert votes[("test-case-contract-20260921", "candidate")] == 3
+
+
 @pytest.mark.parametrize("field,value,message", [
     ("run", 0, "positive integer"),
     ("variant", "unknown", "invalid variant"),
