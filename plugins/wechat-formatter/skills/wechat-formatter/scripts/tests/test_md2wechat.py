@@ -803,3 +803,39 @@ def test_real_checklist_markers_are_not_duplicated_by_preview_css(status):
             if (specificity, order) > winning[:2]:
                 winning = (specificity, order, props.get('content'))
     assert winning[2] == 'none'
+
+
+@pytest.mark.parametrize('name,params,fence,code', [
+    ('split', '', '```', '---\n:::hero\ntitle: 示例  \n:::\n'),
+    ('columns', '{columns=2}', '~~~', '---\n:::hero\n:::\n'),
+    ('split', '', '`````', '```\n---\n:::hero\n:::\n```\n'),
+    ('columns', '{columns=2}', '~~~~~', '~~~\n---\n:::\n~~~\n'),
+])
+def test_layout_fences_keep_code_literal_through_complete_export(name, params, fence, code, tmp_path):
+    from bs4 import BeautifulSoup
+    source = tmp_path / 'fenced-layout.md'
+    source.write_text(':::' + name + params + '\n' + fence + 'text\n' + code + fence
+                      + '\n---\n右侧\n:::\n\n:::hero\neyebrow: 标签\ntitle: 正文\n:::\n')
+    output = md2wechat.convert(str(source), str(_write_style_file(tmp_path, 'tech-blog')))
+    soup = BeautifulSoup(Path(output).read_text(), 'html.parser')
+    content = soup.select_one('#content')
+    assert len(content.select('.module')) == 2
+    assert content.select_one('.' + name + ' pre code').get_text() == code
+    assert content.select_one('.split-right, .column:last-child').get_text().strip() == '右侧'
+    assert not content.select('script, iframe, svg')
+    assert all(not key.startswith('on') for node in content.find_all(True) for key in node.attrs)
+
+@pytest.mark.parametrize('fence', ['```', '~~~', '`````'])
+def test_invalid_module_fallback_preserves_fenced_source_without_reparsing(fence, tmp_path, capsys):
+    from bs4 import BeautifulSoup
+    literal = ':::unsupported\n' + fence + 'html\n<script>boom()</script>\n'
+    literal += '<img src="https://example.com/a" onerror="boom()">\n---\n:::hero\n:::\n'
+    literal += fence + '\n:::'
+    source = tmp_path / 'invalid-module.md'
+    source.write_text(literal + '\n\n:::hero\neyebrow: 标签\ntitle: 正文\n:::\n')
+    output = md2wechat.convert(str(source), str(_write_style_file(tmp_path, 'tech-blog')))
+    content = BeautifulSoup(Path(output).read_text(), 'html.parser').select_one('#content')
+    assert content.select_one('pre code').get_text() == literal
+    assert len(content.select('.module')) == 1
+    assert not content.select('script, img, iframe, svg')
+    assert 'unsupported' in capsys.readouterr().err
