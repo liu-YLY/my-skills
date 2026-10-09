@@ -154,9 +154,10 @@ def test_concurrency_generates_for_different_events() -> None:
 
 def test_explicit_synchronous_model_skips_message_reorder_and_reports_three_states():
     sm = _load_order_refund()
-    sm.scenario_applicability = {"message_reorder": {
+    data = sm.model_dump(by_alias=True)
+    data["scenario_applicability"] = {"message_reorder": {
         "status": "not_applicable", "reason": "本例明确同步且无消息通道", "source": "PRD §1"}}
-    sm = StateMachine.model_validate(sm.model_dump(by_alias=True))
+    sm = StateMachine.model_validate(data)
     result = generate_scenarios(sm)
     assert result.coverage_summary["message_reorder"] == 0
     assert result.scenario_applicability["message_reorder"].status == "not_applicable"
@@ -180,7 +181,19 @@ def test_explicit_async_capability_does_not_require_event_keywords():
     sm = _load_order_refund()
     for t in sm.transitions:
         t.event = "输入" + t.id
-    sm.scenario_applicability = {"message_reorder": {
+    data = sm.model_dump(by_alias=True)
+    data["scenario_applicability"] = {"message_reorder": {
         "status": "applicable", "reason": "输入来自队列", "source": "PRD §2"}}
-    sm = StateMachine.model_validate(sm.model_dump(by_alias=True))
+    sm = StateMachine.model_validate(data)
     assert generate_scenarios(sm, ["message_reorder"]).scenarios
+
+
+def test_explicit_retry_capability_works_without_timeout_keywords():
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["transitions"] = data["transitions"][:1]
+    data["transitions"][0]["event"] = "执行输入"
+    data["transitions"][0]["guards"] = []
+    data["scenario_applicability"] = {"timeout_retry": {
+        "status": "applicable", "reason": "需求规定输入可重试", "source": "PRD §重试"}}
+    result = generate_scenarios(StateMachine.model_validate(data), ["timeout_retry"])
+    assert result.scenarios

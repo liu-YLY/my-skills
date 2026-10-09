@@ -274,9 +274,8 @@ def _generate_timeout_retry(sm: StateMachine) -> list[Scenario]:
     base = 300
     idx = 0
     for t in sm.transitions:
-        if not _is_timeout_event(t.event) and not any(
-            "超时" in g or "retry" in g.lower() for g in t.guards
-        ):
+        if (not _is_timeout_event(t.event) and not _explicitly_applicable(sm, "timeout_retry")
+                and not any("超时" in g or "retry" in g.lower() for g in t.guards)):
             continue
         idx += 1
         scenarios.append(
