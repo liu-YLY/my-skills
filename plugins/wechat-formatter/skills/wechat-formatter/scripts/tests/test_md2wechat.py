@@ -569,3 +569,25 @@ def test_grouped_fields_are_semantic_and_static(name, body, selector, count):
     assert len(soup.select(selector)) == count
     assert not soup.select('input, button, script, form')
     assert '|' not in soup.get_text()
+
+
+
+@pytest.mark.parametrize('name,body,selector', [
+    ('toc', '01 | 问题 | 原因', '.toc-item .toc-number'),
+    ('metrics', '完读率 | 79% | 提升 | accent', '.metric.accent .metric-value'),
+    ('steps', '01 | 开始 | 操作', '.step .step-content .step-desc'),
+    ('timeline', '2026 | 发布 | 内容', '.timeline-item .timeline-date'),
+])
+def test_sequence_rows_keep_columns_and_title(name, body, selector):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.render_modules(':::' + name + '[标题]\n' + body + '\n:::\n'), 'html.parser')
+    assert soup.select_one(selector) is not None
+    assert soup.select_one('.' + name + '-title').get_text() == '标题'
+    assert '|' not in soup.get_text()
+
+@pytest.mark.parametrize('name,body', [('metrics', '名称 | 10 | 说明 | invalid'),
+    ('toc', '只一列'), ('steps', '1 | 两列')])
+def test_bad_rows_warn(name, body, capsys):
+    out = md2wechat.render_module_block(name, None, body)
+    assert 'warning' in capsys.readouterr().err
+    assert '<pre>' in out

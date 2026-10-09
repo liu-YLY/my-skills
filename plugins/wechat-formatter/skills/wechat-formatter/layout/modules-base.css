@@ -1502,3 +1502,10 @@
 .module .option { display: block; margin-bottom: 8px; }
 .module .option-radio { display: inline-block; }
 .module .fit-item::before, .module .avoid-item::before { content: none; }
+
+
+.module.metrics, .module .toc-item, .module .step { display: block; }
+.module .metric, .module .step-content { margin-bottom: 12px; }
+.module .step-number { display: inline-block; text-align: center; }
+.module.timeline { border-left: 2px solid #007bff; }
+.module.timeline::before, .module .timeline-item::before { content: none; }

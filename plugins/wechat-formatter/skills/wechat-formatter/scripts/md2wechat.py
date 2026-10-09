@@ -189,8 +189,50 @@ def module_group(name: str, key: str, value: str) -> str:
     return module_node(key + '-section', inner=module_node(key + '-label', labels[key]) + items)
 
 
+ROW_MODULES = {
+    'toc': ('toc-item', 'toc-number toc-name toc-desc', False),
+    'metrics': ('metric', 'metric-name metric-value metric-desc', True),
+    'steps': ('step', 'step-number step-name step-desc', False),
+    'timeline': ('timeline-item', 'timeline-date timeline-name timeline-desc', False),
+}
+
+
+def module_wrap(name: str, title: str | None, content: str, suffix: str = '') -> str:
+    header = module_node('module-header ' + name + '-title', title) if title else ''
+    return module_node('module module-' + name + ' ' + name + suffix,
+                       inner=header + module_node('module-body', inner=content))
+
+
+def module_rows(name: str, body: str) -> str:
+    item_cls, columns, accent = ROW_MODULES[name]
+    classes = columns.split()
+    result = ''
+    for line in body.strip().splitlines():
+        if not line.strip():
+            continue
+        values = [part.strip() for part in re.split(r'(?<!\\)\|', line)]
+        values = [part.replace('\\|', '|') for part in values]
+        if len(values) != len(classes) + int(accent):
+            raise ValueError('incorrect row columns')
+        suffix = ''
+        if accent:
+            color = values.pop()
+            if color not in {'accent', 'default'}:
+                raise ValueError('invalid accent')
+            suffix = ' accent' if color == 'accent' else ''
+        cells = [module_node(cls, value) for cls, value in zip(classes, values)]
+        if name == 'steps':
+            cells = [cells[0], module_node('step-content', inner=''.join(cells[1:]))]
+        result += module_node(item_cls + suffix, inner=''.join(cells))
+    if not result:
+        raise ValueError('empty rows')
+    return result
+
+
 def render_module_block(name: str, title: str | None, body: str, params: str = '') -> str:
     try:
+        if name in ROW_MODULES and not params:
+            return module_wrap(name, title, module_rows(name, body))
         if name not in FIELD_MODULES or params:
             raise ValueError('unsupported module or parameters')
         field_order, required = FIELD_MODULES[name]
@@ -213,9 +255,7 @@ def render_module_block(name: str, title: str | None, body: str, params: str = '
                 content += module_group(name, key, fields[key])
             else:
                 content += module_node(cls, fields[key])
-        header = module_node('module-header', title) if title else ''
-        return module_node('module module-' + name + ' ' + name + suffix,
-                           inner=header + module_node('module-body', inner=content))
+        return module_wrap(name, title, content, suffix)
     except ValueError:
         return module_fallback(name, title, body, params)
 
