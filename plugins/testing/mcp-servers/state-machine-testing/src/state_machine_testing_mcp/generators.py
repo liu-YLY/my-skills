@@ -119,21 +119,30 @@ def _generate_guard_violations(sm: StateMachine) -> list[Scenario]:
     for t in sm.transitions:
         if not t.guards:
             continue
+        siblings = [other for other in sm.transitions
+                    if other is not t and other.from_state == t.from_state and other.event == t.event]
         for guard in t.guards:
             idx += 1
             scenarios.append(
                 Scenario(
                     id=f"SM-{base + idx:03d}",
-                    title=f"{t.from_state} 收到 {t.event} 但 guard '{guard}' 不满足应被拒绝",
+                    title=f"{t.from_state} 收到 {t.event} 但 guard '{guard}' 不满足时该转换不执行",
                     current_state=t.from_state,
                     trigger_event=t.event,
-                    precondition=f"{t.from_state} 状态，{guard} 不满足",
-                    expected_target_state=t.from_state,
-                    forbidden_states=[t.to_state],
+                    precondition=f"{t.from_state} 状态，{guard} 不满足" + "".join(
+                        f"，{other} 满足" for other in t.guards if other != guard),
+                    transition_id=t.id,
+                    guard_conditions=list(t.guards),
+                    violated_guard=guard,
+                    expected_target_state="待确认" if siblings else t.from_state,
+                    expected_target_state_reason=(
+                        "同源同事件存在其他分支；字符串守卫不能确定输入匹配的目标" if siblings else None),
+                    forbidden_states=[],
                     risk_type="guard_violation",
                     related_objects=[],
-                    evidence_type=EvidenceType.INFERRED,
-                    source=f"状态机 transitions 中 guard '{guard}' 的反向",
+                    evidence_type=EvidenceType.PENDING if siblings else EvidenceType.INFERRED,
+                    source=f"状态机 transitions 中 guard '{guard}' 的反向；仅模型结构推断",
+                    notes="其余守卫满足的输入联合可满足性未验证；仅证明该转换不执行",
                 )
             )
     return scenarios

@@ -126,6 +126,7 @@ class Scenario(BaseModel):
     forbidden_id: str | None = None
     guard_conditions: list[str] = Field(default_factory=list)
     attempted_target_state: str | None = None
+    violated_guard: str | None = None
 
     @model_validator(mode="after")
     def require_reason_for_pending_target(self):

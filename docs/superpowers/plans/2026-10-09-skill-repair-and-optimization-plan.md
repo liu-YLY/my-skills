@@ -314,3 +314,4 @@ git diff --check
 - B06j 已验证：统一全部模块契约与导出验收；隔离副本红测 `2 failed, 126 passed in 0.53s`，共享项目 `128 passed`；既有测试保持，版本3.0.13和静态检查通过。
 - B06k 已验证：去除检查清单重复状态标记；隔离副本红测 `4 failed, 128 passed in 0.59s`，共享项目 `132 passed`；既有测试保持，版本3.0.14和静态检查通过。
 - B06l及阶段一已验证：复制返回false反例先1 failed/134 passed，修复后135 passed；ego-browser实测32模块、8图加载，1366px/390px无横向溢出，复制载荷含32模块/8图/339行内样式节点，成功/拒绝/异常反馈正确。证据在 `docs/skill-evaluation/2026-10-09/browser-results.json`；系统剪贴板实际写入及公众号粘贴未运行。
+- B07 已验证：修正守卫失败的分支目标语义；根项目 MCP 70 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.2.2、MCP 0.3.1，仓库工具与静态检查通过。
