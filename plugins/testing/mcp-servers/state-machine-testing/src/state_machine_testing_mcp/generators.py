@@ -9,6 +9,7 @@ from .schemas import (
     EvidenceType,
     Scenario,
     ScenarioList,
+    ScenarioApplicability,
     StateMachine,
 )
 
@@ -25,6 +26,36 @@ ALL_SCENARIO_TYPES = [
     "access_control",
     "failure_recovery",
 ]
+
+
+def assess_applicability(sm: StateMachine) -> dict[str, ScenarioApplicability]:
+    structural = {
+        "legal_transition": (bool(sm.transitions), "transitions[]"),
+        "illegal_transition": (bool(sm.forbidden), "forbidden[]"),
+        "guard_violation": (any(t.guards for t in sm.transitions), "transitions[].guards"),
+        "data_consistency": (any(t.side_effects for t in sm.transitions), "transitions[].side_effects"),
+    }
+    result = {}
+    for risk in ALL_SCENARIO_TYPES:
+        if risk in sm.scenario_applicability:
+            result[risk] = sm.scenario_applicability[risk]
+        elif risk in structural:
+            present, field = structural[risk]
+            result[risk] = ScenarioApplicability(
+                status="applicable" if present else "not_applicable",
+                reason="仅模型层结构判断，不证明业务需求完整性",
+                source=f"状态机 {field}", evidence_type=EvidenceType.INFERRED)
+        else:
+            result[risk] = ScenarioApplicability(
+                status="unknown", reason="模型未提供该类业务能力和适用范围依据",
+                source="状态机缺少 scenario_applicability 明确声明",
+                missing_information=[f"{risk} 的能力、范围及规则来源"])
+    return result
+
+
+def _explicitly_applicable(sm: StateMachine, risk: str) -> bool:
+    item = sm.scenario_applicability.get(risk)
+    return item is not None and item.status == "applicable"
 
 
 def _next_scenario_id(existing: list[str]) -> str:
