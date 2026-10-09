@@ -8,15 +8,16 @@ from collections import Counter
 from pathlib import Path
 
 
-RESULT_VARIANTS = {"with_skill", "baseline"}
+RESULT_VARIANTS = {"with_skill", "baseline", "old", "new", "no_skill"}
 TRIGGER_CATEGORIES = {"positive", "negative", "near_miss", "skill_conflict"}
 
 
 def read_cases(path: Path) -> list[dict]:
     data = json.loads(path.read_text(encoding="utf-8"))
     groups = [("task", data)] if isinstance(data, list) else [
-        ("task", data.get("evals", data.get("prompts", []))),
-        ("trigger", data.get("trigger_evals", [])),
+        ("task", data.get("evals", data.get("prompts", data.get("task_cases", [])))),
+        ("trigger", data.get("trigger_evals", [dict(row["original"], id=row["id"], skill=row["skill"])
+                                               for row in data.get("original_trigger_cases", [])])),
     ]
     cases = []
     seen = set()
@@ -133,23 +134,38 @@ def read_results(path: Path, cases: list[dict]) -> list[dict]:
     return results
 
 
-def summarize_results(results: list[dict], cases: list[dict]) -> dict:
+def summarize_results(results: list[dict], cases: list[dict], expected_runs: int = 1,
+                      variants: list[str] | None = None) -> dict:
     """Produce deterministic task and trigger metrics grouped by variant."""
+    if isinstance(expected_runs, bool) or not isinstance(expected_runs, int) or expected_runs < 1:
+        raise ValueError("expected_runs must be a positive integer")
+    variants = variants or (["old", "new", "no_skill"] if any(
+        row["variant"] in {"old", "new", "no_skill"} for row in results) else ["with_skill", "baseline"])
+    if len(set(variants)) != len(variants) or not set(variants) <= RESULT_VARIANTS:
+        raise ValueError("invalid or duplicate variants")
     case_map = {(case["skill"], case["id"], case["kind"]): case for case in cases}
     expected_keys = set(case_map)
+    expected_run_keys = {(*key, run) for key in expected_keys for run in range(1, expected_runs + 1)}
+    def run_key(row):
+        return (str(row["skill"]), str(row["id"]), row["kind"], row["run"])
+    valid_keys = {variant: {run_key(row) for row in results if row["variant"] == variant
+                           and row.get("artifact_verified", False)} & expected_run_keys
+                  for variant in variants}
+    paired_keys = expected_run_keys.intersection(*(valid_keys[variant] for variant in variants))
+    def labels(keys):
+        return [f"{skill}:{kind}:{case_id}:run-{run}" for skill, case_id, kind, run in sorted(keys)]
     summaries = {}
-    for variant in sorted(RESULT_VARIANTS):
+    for variant in sorted(variants):
         invalid_rows = [row for row in results if row["variant"] == variant
                         and not row.get("artifact_verified", False)]
         rows = [row for row in results if row["variant"] == variant
                 and row.get("artifact_verified", False)]
-        task_rows = [row for row in rows if row["kind"] == "task"]
-        trigger_rows = [row for row in rows if row["kind"] == "trigger"]
+        metric_rows = [row for row in rows if run_key(row) in paired_keys]
+        task_rows = [row for row in metric_rows if row["kind"] == "task"]
+        trigger_rows = [row for row in metric_rows if row["kind"] == "trigger"]
         check_values = [value for row in task_rows for value in row["check_results"]]
-        completed_keys = {
-            (str(row["skill"]), str(row["id"]), row["kind"])
-            for row in rows
-        }
+        completed_keys = {key for key in expected_keys if all(
+            (*key, run) in valid_keys[variant] for run in range(1, expected_runs + 1))}
         missing_keys = sorted(expected_keys - completed_keys)
         confusion = Counter()
         for row in trigger_rows:
@@ -165,7 +181,14 @@ def summarize_results(results: list[dict], cases: list[dict]) -> dict:
         expected_count = len(expected_keys)
         completed_count = len(completed_keys)
         summaries[variant] = {
-            "runs": len(rows),
+            "runs": len(valid_keys[variant]),
+            "expected_runs": len(expected_run_keys),
+            "repetitions_per_case": expected_runs,
+            "completed_runs": len(valid_keys[variant]),
+            "run_completion_rate": len(valid_keys[variant]) / len(expected_run_keys) if expected_run_keys else None,
+            "missing_runs": labels(expected_run_keys - valid_keys[variant]),
+            "unpaired_runs": labels(valid_keys[variant] - paired_keys),
+            "unexpected_runs": labels({run_key(row) for row in rows} - expected_run_keys),
             "invalid_runs": [{"id": row["id"], "kind": row["kind"], "run": row["run"],
                               "errors": row.get("evidence_errors", ["artifact not verified"])}
                              for row in invalid_rows],
@@ -187,14 +210,15 @@ def summarize_results(results: list[dict], cases: list[dict]) -> dict:
             "trigger_precision": precision,
             "trigger_recall": recall,
             "mean_duration_seconds": (
-                sum(row["duration_seconds"] for row in rows) / len(rows) if rows else None
+                sum(row["duration_seconds"] for row in metric_rows) / len(metric_rows) if metric_rows else None
             ),
             "mean_output_characters": (
-                sum(row["output_characters"] for row in rows) / len(rows) if rows else None
+                sum(row["output_characters"] for row in metric_rows) / len(metric_rows) if metric_rows else None
             ),
         }
     status = "evaluated" if all(
-        summary["completion_rate"] == 1.0 for summary in summaries.values()
+        summary["run_completion_rate"] == 1.0 and not summary["invalid_runs"]
+        and not summary["unexpected_runs"] for summary in summaries.values()
     ) else "partial"
     return {"status": status, "variants": summaries}
 
@@ -215,17 +239,25 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
     parser.add_argument("--skill")
+    parser.add_argument("--cases-file", type=Path, help="Use an explicitly frozen selected suite")
+    parser.add_argument("--expected-runs", type=int, default=1, help="Required repeats per case; formal evaluation uses 3")
+    parser.add_argument("--variants", nargs="+", choices=sorted(RESULT_VARIANTS))
     parser.add_argument("--json", action="store_true", help="Emit normalized cases for a model runner")
     parser.add_argument("--results", type=Path,
                         help="Validate JSONL model results and print a deterministic summary")
     args = parser.parse_args()
-    cases = load_cases(args.root, args.skill)
+    if args.expected_runs < 1:
+        parser.error("--expected-runs must be positive")
+    cases = read_cases(args.cases_file) if args.cases_file else load_cases(args.root, args.skill)
+    if args.cases_file and args.skill:
+        cases = [case for case in cases if case["skill"] == args.skill]
     if not cases:
         parser.error("No evaluation cases found")
-    validate_trigger_coverage(cases)
+    if not args.cases_file:
+        validate_trigger_coverage(cases)
     if args.results:
         results = read_results(args.results, cases)
-        print(json.dumps(summarize_results(results, cases), ensure_ascii=False, indent=2))
+        print(json.dumps(summarize_results(results, cases, args.expected_runs, args.variants), ensure_ascii=False, indent=2))
     elif args.json:
         print(json.dumps(cases, ensure_ascii=False, indent=2))
     else:
