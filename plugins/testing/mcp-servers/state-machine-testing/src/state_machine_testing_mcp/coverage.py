@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .generators import ALL_SCENARIO_TYPES
+from .generators import ALL_SCENARIO_TYPES, assess_applicability
 from .schemas import CoverageReport, ScenarioList, StateMachine
 
 
@@ -68,6 +68,11 @@ def check_coverage(state_machine: StateMachine, scenarios: ScenarioList) -> Cove
 
     missing_scenario_types = [t for t, count in type_coverage.items() if count == 0]
 
+    applicability = assess_applicability(state_machine)
+    for risk, item in scenarios.scenario_applicability.items():
+        if risk not in state_machine.scenario_applicability:
+            applicability[risk] = item
+
     # 4. evidence_distribution: 依据类型分布
     evidence_dist: dict[str, int] = {"需求明确": 0, "合理推理": 0, "待确认": 0}
     for s in scenarios.scenarios:
@@ -83,4 +88,10 @@ def check_coverage(state_machine: StateMachine, scenarios: ScenarioList) -> Cove
         uncovered_transitions=uncovered_transitions,
         missing_scenario_types=missing_scenario_types,
         unmatched_scenarios=unmatched,
+        scenario_applicability=applicability,
+        applicable_missing_scenario_types=[risk for risk, item in applicability.items()
+                                           if item.status == "applicable" and not type_coverage[risk]],
+        not_applicable_scenario_types=[risk for risk, item in applicability.items()
+                                      if item.status == "not_applicable"],
+        unknown_scenario_types=[risk for risk, item in applicability.items() if item.status == "unknown"],
     )

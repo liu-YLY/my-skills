@@ -319,3 +319,4 @@ git diff --check
 - B08b 已验证：校准四个行业模板的分支与引用契约；根项目 MCP 73 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.2.4、MCP 0.3.3，仓库工具与静态检查通过。
 - B09a 已验证：增加三态场景适用性契约；根项目 MCP 75 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.3.0、MCP 0.4.0，仓库工具与静态检查通过。
 - B09b 已验证：按适用性生成场景并保留未知业务目标；根项目 MCP 78 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.3.1、MCP 0.4.1，仓库工具与静态检查通过。
+- B09c 已验证：分开报告适用缺口排除项和未知项；根项目 MCP 80 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.3.2、MCP 0.4.2，仓库工具与静态检查通过。
