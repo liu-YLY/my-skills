@@ -723,3 +723,40 @@ def test_section_raw_html_is_inert():
     assert not soup.select('script, iframe')
     assert all(not key.startswith('on') for img in soup.select('img') for key in img.attrs)
     assert all('src' not in img.attrs for img in soup.select('img'))
+
+
+
+def test_all_declared_module_examples_export_with_semantic_structure(tmp_path, capsys):
+    from bs4 import BeautifulSoup
+    import re
+    spec = (SCRIPT_PATH.parent.parent / 'layout/layout-modules.md').read_text()
+    examples = []
+    for match in re.finditer(r'^#### ([a-z][\w-]*) —.*?\n(.*?)(?=^#### |^### |^## |\Z)', spec, re.M | re.S):
+        block = re.search(r'```markdown\n(.*?)\n```', match[2], re.S)
+        assert block is not None
+        examples.append((match[1], block[1]))
+    assert len(examples) == 32
+    source = tmp_path / 'all-modules.md'
+    source.write_text('\n\n'.join(block for name, block in examples))
+    html = Path(md2wechat.convert(str(source), str(_write_style_file(tmp_path, 'tech-blog')))).read_text()
+    soup = BeautifulSoup(html, 'html.parser')
+    content = soup.select_one('#content')
+    assert len(content.select('.module')) == 32
+    for name, _ in examples:
+        assert content.select_one('.module-' + name + '.' + name) is not None
+    assert len(content.select('img')) == 8
+    assert not content.select('.module-field-name, script, iframe, svg, form')
+    assert 'unsupported' not in capsys.readouterr().err
+    for node in content.select('[style]'):
+        assert 'linear-gradient' not in node['style']
+        assert 'grid' not in node['style'] and 'flex' not in node['style']
+
+
+def test_module_image_markdown_title_and_unsafe_url_diagnostic(capsys):
+    from bs4 import BeautifulSoup
+    out = md2wechat.render_module_block('image-steps', None,
+        'step: 打开\n![截图](https://example.com/a.png "截图标题 有空格")')
+    assert BeautifulSoup(out, 'html.parser').select_one('.step-image img')['alt'] == '截图'
+    out = md2wechat.render_module_block('image-text', None, 'image: https://example.com/a.png" onerror="x')
+    assert not BeautifulSoup(out, 'html.parser').select('img')
+    assert 'image URL' in capsys.readouterr().err
