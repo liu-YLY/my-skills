@@ -331,6 +331,7 @@ class ExecutionRecord(BaseModel):
     status: Literal["passed", "failed", "blocked", "not_run"]
     evidence_ref: str | None = None
     evidence_status: Literal["verified", "unknown", "unreachable", "missing"] = "unknown"
+    evidence_check_source: str | None = None
 
 
 class CoverageContext(BaseModel):
@@ -338,7 +339,7 @@ class CoverageContext(BaseModel):
     requirement_links: list[CoverageLink] = Field(default_factory=list)
     design_baseline: CoverageBaseline | None = None
     case_baseline: CoverageBaseline | None = None
-    execution_records: list[ExecutionRecord] = Field(default_factory=list)
+    execution_records: list[ExecutionRecord] | None = None
 
 
 class CoverageLayer(BaseModel):

@@ -130,13 +130,13 @@ def test_design_coverage_never_claims_execution_and_duplicate_evidence_counts_on
         "requirement_baseline": {"source": "PRD", "version": "1", "items": ["REQ-1"]},
         "requirement_links": [{"item_id": "REQ-1", "scenario_ref": ref, "confirmation": "confirmed"}],
         "design_baseline": {"source": "适用场景基线", "version": "1", "items": [ref]},
-        "case_baseline": {"source": "用例基线", "version": "1", "items": ["TC-1"]}})
+        "case_baseline": {"source": "用例基线", "version": "1", "items": ["TC-1"]}, "execution_records": []})
     designed = check_coverage(sm, scenarios, context)
     assert designed.layers["requirements"].ratio == designed.layers["scenario_design"].ratio == 1
     assert designed.layers["execution"].ratio == 0
     assert designed.layers["execution_pass"].status == "not_assessed"
     record = {"case_id": "TC-1", "baseline_version": "1", "run_id": "run-1",
-              "status": "passed", "evidence_ref": "output/run-1", "evidence_status": "verified"}
+              "status": "passed", "evidence_ref": "output/run-1", "evidence_status": "verified", "evidence_check_source": "原始报告核验"}
     data = context.model_dump()
     data["execution_records"] = [record, record]
     completed = check_coverage(sm, scenarios, CoverageContext.model_validate(data))
@@ -206,3 +206,51 @@ def test_unmatched_and_unknown_failure_scenarios_cannot_gain_requirement_coverag
         report = check_coverage(sm, ScenarioList.model_validate(data), context)
         assert report.layers["requirements"].numerator == 0, kind
         assert report.layers["requirements"].denominator == 1
+
+
+
+def test_pending_matched_legal_keeps_legacy_ratio_but_not_new_model_numerator():
+    sm = _load_order_refund()
+    raw = generate_scenarios(sm, ["legal_transition"]).model_dump(mode="json")
+    for case in raw["scenarios"]: case["evidence_type"] = "待确认"
+    from state_machine_testing_mcp.schemas import ScenarioList
+    report = check_coverage(sm, ScenarioList.model_validate(raw))
+    assert report.transition_coverage == 1
+    assert report.layers["model"].numerator == 0 and report.layers["model"].ratio == 0
+
+
+def test_execution_input_is_three_state_and_checked_basis_is_required():
+    from state_machine_testing_mcp.schemas import CoverageContext
+    sm = _load_order_refund()
+    scenarios = generate_scenarios(sm)
+    base = {"case_baseline": {"source": "用例基线", "version": "1", "items": ["TC"]}}
+    missing = check_coverage(sm, scenarios, CoverageContext.model_validate(base))
+    assert missing.layers["execution"].status == "not_assessed" and missing.layers["execution"].ratio is None
+    empty = check_coverage(sm, scenarios, CoverageContext.model_validate(dict(base, execution_records=[])))
+    assert empty.layers["execution"].status == "assessed" and empty.layers["execution"].ratio == 0
+    record = {"case_id": "TC", "baseline_version": "1", "run_id": "1", "status": "passed",
+              "evidence_ref": "run/output", "evidence_status": "verified"}
+    unknown = check_coverage(sm, scenarios, CoverageContext.model_validate(dict(base, execution_records=[record])))
+    assert unknown.layers["execution"].numerator == 0
+    record["evidence_check_source"] = "原始执行报告核验"
+    known = check_coverage(sm, scenarios, CoverageContext.model_validate(dict(base, execution_records=[record])))
+    assert known.layers["execution"].numerator == 1
+
+
+
+def test_pending_model_rule_cannot_be_promoted_by_an_explicit_scenario_label():
+    from state_machine_testing_mcp.schemas import ScenarioList, CoverageContext
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["transitions"][0]["evidence_type"] = "待确认"
+    data["forbidden"][0]["evidence_type"] = "待确认"
+    sm = StateMachine.model_validate(data)
+    for kind in ["legal_transition", "illegal_transition"]:
+        raw = generate_scenarios(sm, [kind]).model_dump(mode="json")
+        raw["scenarios"] = raw["scenarios"][:1]
+        raw["scenarios"][0]["evidence_type"] = "需求明确"
+        ref = raw["scenarios"][0]["stable_ref"]
+        context = CoverageContext.model_validate({"requirement_baseline": {"source": "PRD", "version": "1", "items": ["R"]},
+            "requirement_links": [{"item_id": "R", "scenario_ref": ref, "confirmation": "confirmed"}]})
+        report = check_coverage(sm, ScenarioList.model_validate(raw), context)
+        assert report.layers["requirements"].numerator == 0, kind
+        if kind == "legal_transition": assert report.layers["model"].numerator == 0

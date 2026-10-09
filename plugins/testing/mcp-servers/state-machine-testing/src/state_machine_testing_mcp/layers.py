@@ -36,9 +36,18 @@ def layered_coverage(sm, scenarios, context, covered_transitions, unmatched):
         "execution_pass": CoverageLayer(status="not_assessed"),
     }
     if context.case_baseline is None:
+        result["execution"].unassessed_items = sorted({record.case_id for record in context.execution_records or []})
         return result
     if not context.case_baseline.items:
         result["execution_pass"] = _metric(context.case_baseline, set())
+        return result
+    if context.execution_records is None:
+        result["execution"] = CoverageLayer(status="not_assessed", baseline_source=context.case_baseline.source,
+                                            baseline_version=context.case_baseline.version,
+                                            unassessed_items=sorted(set(context.case_baseline.items)))
+        result["execution_pass"].baseline_source = context.case_baseline.source
+        result["execution_pass"].baseline_version = context.case_baseline.version
+        result["execution_pass"].unassessed_items = sorted(set(context.case_baseline.items))
         return result
     cases, by_run, unassessed = set(context.case_baseline.items), {}, set()
     for record in context.execution_records:
@@ -46,7 +55,8 @@ def layered_coverage(sm, scenarios, context, covered_transitions, unmatched):
             unassessed.add(record.case_id)
             continue
         if (record.status not in {"passed", "failed"} or record.evidence_status != "verified"
-                or not record.evidence_ref or record.evidence_ref.strip().lower() in {"unknown", "待确认", "?"}):
+                or not record.evidence_ref or record.evidence_ref.strip().lower() in {"unknown", "待确认", "?"}
+                or not record.evidence_check_source or record.evidence_check_source.strip().lower() in {"unknown", "待确认", "?"}):
             unassessed.add(record.case_id)
             continue
         key = (record.case_id, record.run_id)
