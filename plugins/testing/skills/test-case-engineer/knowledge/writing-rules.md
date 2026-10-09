@@ -378,6 +378,13 @@ account-management, deletion, child-account
 
 ---
 
+## 覆盖报告的证据边界
+
+输出覆盖情况时区分需求条目、模型转换、适用场景设计和实际执行；每层注明分母来源/版本及未评估项，
+沿用策略的requirement_baseline/design_baseline/case_baseline与已有模型覆盖语义，不改变旧transition/forbidden分母。
+无需求基线不能计算需求覆盖；无真实执行记录不能计算执行通过率；候选关联和待确认场景不混入已验证结果。
+同一基线与run下去重稳定ID，空基线、不适用、缺输入分别表达；只有设计证据时明确「已设计，未执行」。
+
 ## 效率度量输出（AI 生成模式必做）
 
 阶段 4 自检完成后，输出效率报告：

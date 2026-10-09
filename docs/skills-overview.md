@@ -81,7 +81,7 @@ AI（testing-bundle）：
 
 ### 1a. 测试策略工程师 (test-strategy-engineer)
 
-**版本**：v1.2.1
+**版本**：v1.3.0
 **功能**：扮演资深测试架构师角色，专注项目级测试策略制定，输出风险矩阵 + 分层策略 + 范围优先级 + 准入准出。
 
 > testing-bundle v2.0.0 新增子 skill（v3.0.0 同步升级），与 test-case-engineer 的粒度边界：本 skill 是项目级（整体），test-case-engineer 是单功能级。
@@ -159,7 +159,7 @@ AI（test-strategy-engineer）：
 
 ### 1b. 测试用例工程师 (test-case-engineer)
 
-**版本**：v9.3.0
+**版本**：v9.4.0
 **功能**：扮演资深测试工程师角色，AI 赋能用例生成，深入理解需求与产品现状，精准提取测试点，输出完整全面可落地的测试用例。
 
 > v8.0.0 起由原 test-engineer v7.0.0 拆分而来，专注正向用例生成。Bug 根因分析能力已迁移至 bug-analyzer skill。

@@ -40,7 +40,7 @@ strategy skill 输出时按以下结构填充，每个 `{}` 必须替换为基�
 
 ## 6. 准出标准
 （引用 entry-exit-criteria.md）
-- 覆盖率准出：{}
+- 覆盖率准出：{需求条目/模型转换/适用场景设计/实际执行分别报告；分母来源、版本与未评估项可核对}
 - 缺陷收敛准出：{}
 - 性能达标准出：{}
 - 文档交付准出：{}
@@ -67,6 +67,21 @@ strategy skill 输出时按以下结构填充，每个 `{}` 必须替换为基�
 - 历史缺陷评分注明窗口及修复状态；历史已修复P0不自动阻断当前发布
 - 缺维度标待补，正式总分/等级未评估；完整5维才求和，临时优先级与代理指标另列
 - 已确认发布阻断单列规则、当前缺陷和复核证据，不能以低总分抵消
+
+### 覆盖情况报告（兼容可选输入）
+
+| 覆盖层 | 分母与依据 | 已覆盖/未覆盖/未评估边界 |
+|---|---|---|
+| 需求条目 | `requirement_baseline` 的source/version/items | 通过confirmed `requirement_links`（item_id/scenario_ref/confirmation）关联设计；无需求基线为未评估，不能用模型总数替代 |
+| 模型转换 | 当前模型版本与既有transition/forbidden清单 | 保留旧覆盖字段和forbidden规则级语义；结构覆盖不能证明业务需求全覆盖 |
+| 适用场景设计 | `design_baseline` 的source/version/items与适用性信息 | applicable缺设计为缺口；not_applicable单列；unknown为未评估，待确认设计不计为已验证 |
+| 实际执行 | `case_baseline` 的source/version/items与执行记录 | 未提供执行记录(None)时执行层和通过率未评估，明确空记录([])只说明未执行；设计完成不能写测试已通过 |
+
+- 执行记录消费 `case_id/baseline_version/run_id/status/evidence_ref/evidence_status/evidence_check_source`（verified/unknown/unreachable/missing）；报告绑定准确基线与运行，verified仍需记录核验来源evidence_check_source；缺证据、核验依据或版本不匹配单列未评估。
+- 覆盖关联使用显式版本化产物ID/trace_refs；Scenario.stable_ref仅作内容标识，不拿SM展示编号或列表位置代替；候选关系不能计作confirmed覆盖。
+- 各层报告分子、分母、来源/版本、缺口和未评估项；空集合、无适用项、输入缺失分别写空基线/不适用/未评估，不能统一返回0%或100%。
+- 同一基线项、用例或执行记录按稳定ID和run去重；不同run分别报告，未知证据不混入已验证通过，聚合规则缺失时不自行选择最佳结果。
+- 四层输入均可选；独立策略任务仍可交付已有证据的范围，无法计算的层明确标未评估，不要求额外造完整追溯图或执行结果。
 
 ## 3. 分层策略模板
 
