@@ -26,7 +26,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | test-strategy-engineer | v1.0.2 | 项目级测试策略（风险矩阵/分层/准入准出） | - |
 | test-case-engineer | v9.0.2 | 功能用例生成 + 10 维度评审模式 | review-checker v0.4.6（可选） |
 | performance-test-engineer | v1.1.1 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
-| bug-analyzer | v1.2.0 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
+| bug-analyzer | v1.2.1 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
 | state-machine-test-engineer | v1.3.6 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.4.6（可选） |
 | change-impact-analyzer | v1.2.2 | 变更影响分析（协同 skill，链 6 协同使用亦可单独使用） | - |
 
