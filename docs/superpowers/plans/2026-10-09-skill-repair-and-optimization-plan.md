@@ -298,3 +298,4 @@ git diff --check
 - 2026年10月9日：用户批准实施。已fetch并同步main，创建 `fix/skill-repair-20261009` 与 `backup/pre-skill-repair-20261009`；旧版快照保存在 `/tmp/my-skills-repair-20261009/baseline`。B01进行中，B02至B20未开始；远程未推送。
 
 - B01 已验证：校准strategy id5及四项禁止/期望断言；`skill-evals.py`输入检查通过，仓库工具22 passed、3 skipped，版本同步通过。代码反例按所属批次先失败后修复。
+- B02 已验证：六种文档diff模式反例先6 failed，补参数后仓库工具28 passed、3 skipped；textconv未执行且diff范围正确，版本与结构检查通过。
