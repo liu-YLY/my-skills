@@ -1,6 +1,6 @@
 ---
 name: state-machine-test-engineer
-version: 1.3.4
+version: 1.3.5
 description: >-
   Use when user needs state-machine-driven testing for stateful business objects
   (orders, approvals, tickets, membership, etc.). Triggers on: 状态机、状态流转、状态转换、
