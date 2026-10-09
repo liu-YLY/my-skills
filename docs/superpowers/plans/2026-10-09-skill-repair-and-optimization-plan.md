@@ -347,3 +347,4 @@ git diff --check
 - B20b 汇总器已验证：每case/variant/run齐全才完成，完整配对才计指标，未配对/缺run/异常产物单列；4 failed→44 passed。支持冻结选定套件与old/new/no_skill，73项输入归一化通过；正式模型与独立评审未执行。
 - B20c 汇总器已验证：任务重复3次与原触发样本1次分别核对；1 failed→45 passed。冻结套件73项、SHA未变；实际调用与评审仍待B18/B19独立反例修复后开始。
 - B19e 已验证：禁止撤去失败运行证据后提升已确认通过率；根项目 MCP 111 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.7.3、MCP 0.8.3，仓库工具与静态检查通过。
+- B18c 已验证：沿映射依据来源传播需复核结论；根项目 MCP 112 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.7.4、MCP 0.8.4，仓库工具与静态检查通过。

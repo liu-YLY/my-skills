@@ -265,3 +265,5 @@ forbidden:
 来源 `availability` 未核实时为 `unknown`；只有明确检查依据才填 available，不能由一个位置字符串证明来源可访问。
 
 追溯边可选 `source_refs` 关联来源 ID。confirmed 标签还需关联依据 source、来源 available 和明确版本；缺失或不可达只输出 candidate_impacts，并在 uncorroborated_links 列依据缺口，不把输入标签当作已确认事实。
+
+映射依据来源 `source_refs` 也是依赖边：该来源变更会要求对应 downstream 及其后继复核，不能只在来源等于 upstream 时传播。来源或关联依据不足时只传播 candidate 影响；历史内容与无关用例保持不变。
