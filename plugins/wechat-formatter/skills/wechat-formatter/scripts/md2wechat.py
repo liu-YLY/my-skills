@@ -19,6 +19,7 @@ from html import escape
 import re
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import markdown
 import nh3
@@ -274,8 +275,41 @@ def module_labeled(name: str, body: str) -> str:
     return result
 
 
+IMAGE_MODULES = {
+    'image-compare': 'eyebrow title left_title left_image right_title right_image',
+    'image-text': 'layout eyebrow title body image alt',
+}
+
+
+def module_image(url: str, alt: str = '', cls: str = '') -> str:
+    parsed = urlsplit(url)
+    if parsed.scheme.lower() not in {'http', 'https'} or not parsed.hostname:
+        raise ValueError('image URL must be HTTP(S)')
+    return f'<img src="{escape(url, quote=True)}" alt="{escape(alt, quote=True)}" class="{cls}">'
+
+
+def module_images(name: str, body: str) -> tuple[str, str]:
+    fields = module_fields(body, set(IMAGE_MODULES[name].split()))
+    heading = ''.join(module_node(key, fields[key]) for key in ('eyebrow', 'title') if key in fields)
+    if name == 'image-compare':
+        sides = ''
+        for side in ('left', 'right'):
+            sides += module_node('compare-side', inner=module_node('compare-side-title', fields.get(side + '_title', ''))
+                                 + module_image(fields.get(side + '_image', ''), fields.get(side + '_title', '')))
+        return heading + module_node('compare-container', inner=sides), ''
+    layout = fields.get('layout', 'left')
+    if layout not in {'left', 'right'}:
+        raise ValueError('invalid image layout')
+    content = module_node('image-text-content', inner=heading + module_node('body', fields.get('body', '')))
+    image = module_node('image-container', inner=module_image(fields.get('image', ''), fields.get('alt', '')))
+    return (content + image if layout == 'right' else image + content), ' layout-' + layout
+
+
 def render_module_block(name: str, title: str | None, body: str, params: str = '') -> str:
     try:
+        if name in IMAGE_MODULES and not params:
+            content, suffix = module_images(name, body)
+            return module_wrap(name, title, content, suffix)
         if name in LABELED_MODULES and not params:
             return module_wrap(name, title, module_labeled(name, body))
         if name in ROW_MODULES and not params:

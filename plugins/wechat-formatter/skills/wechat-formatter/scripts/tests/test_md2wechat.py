@@ -624,3 +624,26 @@ def test_labeled_rows_emit_real_labels(name, body, selector, text):
 def test_labeled_invalid_rows_are_reported(name, body, capsys):
     out = md2wechat.render_module_block(name, None, body)
     assert 'warning' in capsys.readouterr().err and '<pre>' in out
+
+
+
+@pytest.mark.parametrize('name,body,images,selector', [
+    ('image-compare', 'title: 对比\nleft_title: 之前\nleft_image: https://example.com/a.png\nright_title: 之后\nright_image: https://example.com/b.png', 2, '.compare-side-title'),
+    ('image-text', 'layout: right\ntitle: 图文\nbody: 说明\nimage: https://example.com/a.png\nalt: 示例', 1, '.layout-right .image-text-content'),
+])
+def test_image_fields_produce_safe_semantic_img(name, body, images, selector):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.sanitize_content(md2wechat.render_module_block(name, None, body)), 'html.parser')
+    assert len(soup.select('img')) == images
+    assert soup.select_one(selector) is not None
+    assert all(img['src'].startswith('https://') for img in soup.select('img'))
+    if name == 'image-text':
+        assert soup.select_one('img')['alt'] == '示例'
+        assert soup.select_one('.module-body').contents[0].get('class') == ['image-text-content']
+
+@pytest.mark.parametrize('url', ['javascript:alert(1)', 'data:text/html,x', 'mailto:user@example.com', 'https://'])
+def test_module_image_urls_reject_active_or_invalid_sources(url, capsys):
+    from bs4 import BeautifulSoup
+    out = md2wechat.sanitize_content(md2wechat.render_module_block('image-text', None, 'image: ' + url))
+    assert 'warning' in capsys.readouterr().err
+    assert not BeautifulSoup(out, 'html.parser').select('img, script')
