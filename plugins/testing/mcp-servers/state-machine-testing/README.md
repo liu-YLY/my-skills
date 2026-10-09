@@ -1,6 +1,6 @@
 # State Machine Testing MCP Server
 
-> 配套 state-machine-test-engineer skill 的 Python MCP Server v0.4.5：提供状态机建模/校验/穷举/导出/覆盖度 5 个工具，作为 skill 的可选增强引擎。
+> 配套 state-machine-test-engineer skill 的 Python MCP Server v0.4.6：提供状态机建模/校验/穷举/导出/覆盖度 5 个工具，作为 skill 的可选增强引擎。
 
 > **实现状态**：已实现 pydantic Schema、5 个工具及 stdio / streamable-http 传输。当前版本校验结果区分机器检查与待人工核实项，测试记录见本次交付报告。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM；自由文本建模由调用方 skill 的 LLM 完成）。skill 安装本 Server 后进入增强模式，未安装时降级为独立模式。
 
@@ -165,7 +165,7 @@ uv pip install -e .
 ```toml
 [project]
 name = "state-machine-testing-mcp"
-version = "0.4.5"
+version = "0.4.6"
 requires-python = ">=3.11"
 dependencies = [
     "mcp>=0.9.0,<2.0.0",  # 2.0.0 移除了 mcp.server.fastmcp 模块
@@ -324,6 +324,7 @@ ruff check src/ tests/
 
 ## 版本历史
 
+- v0.4.6: 排除错误匹配和待确认场景的适用性完成计数
 - v0.4.5: 去除知识示例对未知权限和超时规则的断言
 - v0.4.4: 根据显式重试能力生成场景
 - v0.4.3: 按宿主工具能力探测并区分业务与连接错误

@@ -323,3 +323,4 @@ git diff --check
 - B10 已验证：按宿主工具能力探测并区分业务与连接错误；根项目 MCP 81 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.3.3、MCP 0.4.3，仓库工具与静态检查通过。
 - B09d 已验证：根据显式重试能力生成场景；根项目 MCP 82 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.3.4、MCP 0.4.4，仓库工具与静态检查通过。
 - B09e 已验证：去除知识示例对未知权限和超时规则的断言；根项目 MCP 83 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.3.5、MCP 0.4.5，仓库工具与静态检查通过。
+- B09f 已验证：排除错误匹配和待确认场景的适用性完成计数；根项目 MCP 84 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.3.6、MCP 0.4.6，仓库工具与静态检查通过。

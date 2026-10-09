@@ -350,3 +350,5 @@ state_machine:
 
 
 覆盖报告保留 `scenario_type_coverage`（类型条数）和 `missing_scenario_types`（零计数类型）的旧描述性含义；新增 `applicable_missing_scenario_types / not_applicable_scenario_types / unknown_scenario_types` 分别表示适用但缺场景、不适用、尚未确定适用性。完成判断使用新三态信息，不能把待确认候选算成已验证业务行为。
+
+`applicable_missing_scenario_types` 只认可结构匹配、目标已明确且依据非待确认的场景；错误 legal/illegal 目标与 pending 候选不代表已处理。旧类型计数保留所有输入场景的描述性含义。
