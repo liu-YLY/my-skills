@@ -2,7 +2,7 @@
 
 > 本文档说明如何配置 `state-machine-testing-mcp` Server，让 state-machine-test-engineer skill 进入增强模式。
 
-> ✅ **当前 MCP Server 状态（v0.6.0）**：MCP 协议层（stdio + streamable-http 传输）和真实工具调用已通过端到端测试。按本文档完成配置后，**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 自动降级为独立模式。
+> ✅ **当前 MCP Server 状态（v0.7.0）**：MCP 协议层（stdio + streamable-http 传输）和真实工具调用已通过端到端测试。按本文档完成配置后，**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 自动降级为独立模式。
 
 ## 三种运行模式回顾
 
@@ -241,7 +241,7 @@ pip uninstall state-machine-testing-mcp
 ## 隐私与安全
 
 - MCP Server 本地运行，不外发数据
-- 全部 5 个工具均为确定性计算（v0.6.0 起 `build_state_machine` 为行业模板加载，不内置 LLM），不发任何数据出本机
+- 全部 5 个工具均为确定性计算（v0.7.0 起 `build_state_machine` 为行业模板加载，不内置 LLM），不发任何数据出本机
 - HTTP 传输模式（`--transport http`）默认仅监听 127.0.0.1，仅本机可访问
 
 ---

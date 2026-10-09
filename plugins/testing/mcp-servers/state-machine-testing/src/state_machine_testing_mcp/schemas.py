@@ -140,6 +140,47 @@ class SafetyProperty(BaseModel):
     evidence_type: EvidenceType = EvidenceType.PENDING
 
 
+class TraceSource(BaseModel):
+    id: str
+    location: str
+    version: str | None = None
+    availability: Literal["available", "unreachable", "missing", "unknown"] = "unknown"
+
+
+class TraceArtifact(BaseModel):
+    id: str
+    kind: Literal["requirement", "risk", "model", "transition", "scenario", "case", "execution"]
+    version: str | None = None
+
+
+class TraceLink(BaseModel):
+    upstream: str
+    downstream: str
+    confirmation: Literal["confirmed", "candidate"] = "candidate"
+    source: str = ""
+    source_refs: list[str] = Field(default_factory=list)
+
+
+class TraceabilityContext(BaseModel):
+    sources: list[TraceSource] = Field(default_factory=list)
+    artifacts: list[TraceArtifact] = Field(default_factory=list)
+    links: list[TraceLink] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def reject_duplicate_identity(self):
+        ids = [item.id for item in self.sources + self.artifacts]
+        if len(set(ids)) != len(ids) or any(not item.strip() for item in ids):
+            raise ValueError("追溯实体 ID 必须唯一且非空；使用对象命名空间")
+        return self
+
+
+class InvalidationReport(BaseModel):
+    affected: list[str] = Field(default_factory=list)
+    candidate_impacts: list[str] = Field(default_factory=list)
+    unmatched_refs: list[str] = Field(default_factory=list)
+    uncorroborated_links: list[str] = Field(default_factory=list)
+
+
 class StateMachine(BaseModel):
     """状态机模型。"""
 
@@ -150,6 +191,7 @@ class StateMachine(BaseModel):
     scenario_applicability: dict[RiskType, ScenarioApplicability] = Field(default_factory=dict)
     progress_requirement: ProgressRequirement | None = None
     safety_properties: list[SafetyProperty] = Field(default_factory=list)
+    traceability: TraceabilityContext | None = None
 
 
 
@@ -177,6 +219,8 @@ class Scenario(BaseModel):
     attempted_target_state: str | None = None
     violated_guard: str | None = None
     failure_semantics: FailureSemantics | None = None
+    stable_ref: str | None = None
+    trace_refs: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def require_reason_for_pending_target(self):
