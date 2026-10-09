@@ -190,6 +190,9 @@ def module_group(name: str, key: str, value: str) -> str:
 
 
 ROW_MODULES = {
+    'cards': ('card', 'card-title card-subtitle card-desc', True),
+    'compare': ('compare-row', 'compare-cell compare-cell compare-cell', True),
+    'cases': ('case', 'case-title case-industry case-result', False),
     'toc': ('toc-item', 'toc-number toc-name toc-desc', False),
     'metrics': ('metric', 'metric-name metric-value metric-desc', True),
     'steps': ('step', 'step-number step-name step-desc', False),
@@ -220,7 +223,8 @@ def module_rows(name: str, body: str) -> str:
             if color not in {'accent', 'default'}:
                 raise ValueError('invalid accent')
             suffix = ' accent' if color == 'accent' else ''
-        cells = [module_node(cls, value) for cls, value in zip(classes, values)]
+        cells = [module_node(cls + (suffix if name == 'compare' else ''), value)
+                 for cls, value in zip(classes, values)]
         if name == 'steps':
             cells = [cells[0], module_node('step-content', inner=''.join(cells[1:]))]
         result += module_node(item_cls + suffix, inner=''.join(cells))

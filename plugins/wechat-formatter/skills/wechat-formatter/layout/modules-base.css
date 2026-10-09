@@ -1509,3 +1509,7 @@
 .module .step-number { display: inline-block; text-align: center; }
 .module.timeline { border-left: 2px solid #007bff; }
 .module.timeline::before, .module .timeline-item::before { content: none; }
+
+
+.module.cards, .module.cases, .module .compare-row { display: block; }
+.module .card, .module .case { margin-bottom: 12px; }

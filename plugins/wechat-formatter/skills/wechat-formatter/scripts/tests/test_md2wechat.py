@@ -591,3 +591,16 @@ def test_bad_rows_warn(name, body, capsys):
     out = md2wechat.render_module_block(name, None, body)
     assert 'warning' in capsys.readouterr().err
     assert '<pre>' in out
+
+
+
+@pytest.mark.parametrize('name,body,selector,text', [
+    ('cards', 'PART 01 | 问题 | 原因 | accent', '.card.accent .card-desc', '原因'),
+    ('compare', '耗时 | 旧2小时 | 新1小时 | accent', '.compare-row .compare-cell.accent', '耗时'),
+    ('cases', '客户 | 科技 | 提升', '.case .case-result', '提升'),
+])
+def test_matrix_rows_bind_content(name, body, selector, text):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.render_module_block(name, '标题', body), 'html.parser')
+    assert soup.select_one(selector).get_text() == text
+    assert '|' not in soup.get_text()
