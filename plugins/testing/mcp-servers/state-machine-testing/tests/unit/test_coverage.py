@@ -254,3 +254,29 @@ def test_pending_model_rule_cannot_be_promoted_by_an_explicit_scenario_label():
         report = check_coverage(sm, ScenarioList.model_validate(raw), context)
         assert report.layers["requirements"].numerator == 0, kind
         if kind == "legal_transition": assert report.layers["model"].numerator == 0
+
+
+
+def test_withdrawing_a_failed_runs_evidence_cannot_raise_confirmed_pass_count():
+    from state_machine_testing_mcp.schemas import CoverageContext
+    sm = _load_order_refund()
+    scenarios = generate_scenarios(sm, ["legal_transition"])
+    def report(second):
+        return check_coverage(sm, scenarios, CoverageContext.model_validate({
+            "case_baseline": {"source": "cases", "version": "v1", "items": ["C"]},
+            "execution_records": [dict(case_id="C", baseline_version="v1", run_id="r1", status="passed",
+                evidence_status="verified", evidence_ref="r1", evidence_check_source="read r1"), second]}))
+    failed = dict(case_id="C", baseline_version="v1", run_id="r2", status="failed",
+                  evidence_status="verified", evidence_ref="r2", evidence_check_source="read r2")
+    known = report(failed)
+    for update in [{"evidence_status": "unknown"}, {"evidence_status": "unreachable"},
+                   {"evidence_ref": None}, {"evidence_check_source": None}]:
+        after = report(dict(failed, **update))
+        assert after.transition_coverage == known.transition_coverage == 1
+        assert after.layers["execution"].numerator == after.layers["execution"].denominator == 1
+        assert after.layers["execution_pass"].numerator == known.layers["execution_pass"].numerator == 0
+        assert after.layers["execution_pass"].denominator == 1
+        assert after.layers["execution_pass"].unassessed_items == ["C"]
+    other_version = report(dict(failed, baseline_version="old", evidence_status="unknown"))
+    assert other_version.layers["execution_pass"].ratio == 1
+    assert other_version.layers["execution_pass"].unassessed_items == []

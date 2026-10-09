@@ -49,22 +49,26 @@ def layered_coverage(sm, scenarios, context, covered_transitions, unmatched):
         result["execution_pass"].baseline_version = context.case_baseline.version
         result["execution_pass"].unassessed_items = sorted(set(context.case_baseline.items))
         return result
-    cases, by_run, unassessed = set(context.case_baseline.items), {}, set()
+    cases, by_run, unassessed, uncertain = set(context.case_baseline.items), {}, set(), set()
     for record in context.execution_records:
-        if record.case_id not in cases or record.baseline_version != context.case_baseline.version:
+        if record.baseline_version != context.case_baseline.version:
+            continue
+        if record.case_id not in cases:
             unassessed.add(record.case_id)
             continue
         if (record.status not in {"passed", "failed"} or record.evidence_status != "verified"
                 or not record.evidence_ref or record.evidence_ref.strip().lower() in {"unknown", "待确认", "?"}
                 or not record.evidence_check_source or record.evidence_check_source.strip().lower() in {"unknown", "待确认", "?"}):
             unassessed.add(record.case_id)
+            if record.status in {"passed", "failed"}:
+                uncertain.add(record.case_id)
             continue
         key = (record.case_id, record.run_id)
         by_run.setdefault(key, set()).add(record.status)
     conflicts = {case for (case, run), statuses in by_run.items() if len(statuses) != 1}
     unassessed.update(conflicts)
     completed = {case for case, run in by_run if case not in conflicts}
-    passed = {case for case in completed if all(statuses == {"passed"}
+    passed = {case for case in completed - uncertain if all(statuses == {"passed"}
                                                for (item, run), statuses in by_run.items() if item == case)}
     result["execution"] = _metric(context.case_baseline, completed, unassessed)
     if completed:
