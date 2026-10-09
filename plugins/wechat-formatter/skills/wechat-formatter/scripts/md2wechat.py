@@ -116,37 +116,84 @@ def parse_css_rules(css_text: str) -> list[tuple[str, dict[str, str]]]:
 # ─── Step 3: Markdown → HTML ──────────────────────────────────────────────
 
 MODULE_BLOCK_RE = re.compile(
-    r'(?ms)^:::(module|[a-zA-Z][\w-]*)(?:\s*\[([^\]]*)\])?(?:\s*\{[^}]*\})?\s*\n(.*?)^:::+\s*(?:\n|$)'
+    r'(?ms)^:::(module|[a-zA-Z][\w-]*)(?:\s*\[([^\]]*)\])?(?:\s*\{([^}]*)\})?\s*\n(.*?)^:::+\s*(?:\n|$)'
 )
 
 
-def render_module_block(name: str, title: str | None, body: str) -> str:
-    """将单个 :::module 块渲染为带模块类名的 HTML 片段。
+FIELD_MODULES = {
+    'hero': ('eyebrow title subtitle kicker', 'eyebrow title'),
+    'part': ('index title subtitle', ''),
+    'label-title': ('label title', ''),
+    'infographic': ('eyebrow title subtitle', ''),
+    'verdict': ('eyebrow title body note', ''),
+    'bridge': ('label title body next', ''),
+    'cta': ('title note', ''),
+    'highlight': ('eyebrow title body', ''),
+    'quote': ('eyebrow quote source', 'quote'),
+}
+MODULE_ENUMS = {
+    'hero': {'variant': {'editorial'}},
+    'quote': {'variant': {'light'}},
+    'infographic': {'type': {'thesis', 'number', 'contrast', 'formula'}},
+}
 
-    body 按行解析：`key: value` 字段转为 .module-field，其余文本原样保留。
-    """
-    header = f'<div class="module-header">{escape(title)}</div>' if title else ''
-    fields: list[str] = []
-    paragraphs: list[str] = []
-    for line in body.strip().split('\n'):
-        stripped = line.strip()
-        if not stripped:
+
+def module_node(cls: str, text: str = '', inner: str | None = None) -> str:
+    return f'<div class="{cls}">{escape(text) if inner is None else inner}</div>'
+
+
+def module_fields(body: str, allowed: set[str], repeated: set[str] | None = None) -> dict:
+    result = {}
+    for line in body.strip().splitlines():
+        if not line.strip():
             continue
-        m = re.match(r'^([^:|：]{1,20}?)[:：]\s*(.+)$', stripped)
-        if m and '|' not in stripped:
-            fields.append(
-                f'<div class="module-field"><span class="module-field-name">'
-                f'{escape(m.group(1))}</span>'
-                f'<span class="module-field-value">{escape(m.group(2))}</span></div>'
-            )
+        match = re.match(r'^([^:：]+)[:：]\s*(.*)$', line.strip())
+        if not match or match[1] not in allowed:
+            raise ValueError('unknown field or malformed content')
+        key, value = match[1], match[2]
+        if repeated and key in repeated:
+            result.setdefault(key, []).append(value)
+        elif key in result:
+            raise ValueError('duplicate field: ' + key)
         else:
-            paragraphs.append(f'<p>{escape(stripped)}</p>')
-    field_html = '\n'.join(fields)
-    para_html = '\n'.join(paragraphs)
-    module_body = f'<div class="module-body">\n{field_html}\n{para_html}\n</div>'
-    return (
-        f'<div class="module module-{escape(name)}">\n{header}\n{module_body}\n</div>'
-    )
+            result[key] = value
+    return result
+
+
+def module_fallback(name: str, title: str | None, body: str, params: str = '') -> str:
+    print('warning: unsupported or invalid module ' + name, file=sys.stderr)
+    header = ':::' + name + ('[' + title + ']' if title else '')
+    header += '{' + params + '}' if params else ''
+    literal = '<pre><code>' + escape(header + '\n' + body.rstrip() + '\n:::') + '</code></pre>'
+    return module_node('module-' + name, inner=literal) if name in FIELD_MODULES else literal
+
+
+def render_module_block(name: str, title: str | None, body: str, params: str = '') -> str:
+    try:
+        if name not in FIELD_MODULES or params:
+            raise ValueError('unsupported module or parameters')
+        field_order, required = FIELD_MODULES[name]
+        enums = MODULE_ENUMS.get(name, {})
+        fields = module_fields(body, set(field_order.split()) | set(enums))
+        if any(not fields.get(key) for key in required.split()):
+            raise ValueError('missing required fields')
+        suffix = ''
+        for key, values in enums.items():
+            if key in fields:
+                if fields[key] not in values:
+                    raise ValueError('invalid enum: ' + key)
+                suffix += ' ' + key + '-' + fields[key]
+        content = ''
+        for key in field_order.split():
+            if key not in fields:
+                continue
+            cls = 'part-' + key if name == 'part' else 'quote-text' if key == 'quote' else key
+            content += module_node(cls, fields[key])
+        header = module_node('module-header', title) if title else ''
+        return module_node('module module-' + name + ' ' + name + suffix,
+                           inner=header + module_node('module-body', inner=content))
+    except ValueError:
+        return module_fallback(name, title, body, params)
 
 
 def render_modules(md_text: str) -> str:
@@ -161,7 +208,7 @@ def render_modules(md_text: str) -> str:
 
     def flush_plain():
         parts.append(MODULE_BLOCK_RE.sub(
-            lambda m: '\n' + render_module_block(m.group(1), m.group(2), m.group(3)) + '\n',
+            lambda m: '\n' + render_module_block(m.group(1), m.group(2), m.group(4), m.group(3) or '') + '\n',
             ''.join(plain),
         ))
         plain.clear()
@@ -393,7 +440,7 @@ def convert(md_path: str, style_path: str, size: str = 'medium') -> str:
     rules = parse_css_rules(css_text)
     module_css = load_modules_css()
     if module_css:
-        rules = rules + parse_css_rules(module_css)
+        rules = parse_css_rules(module_css) + rules
     title = extract_title(md_text)
     style_name = detect_style_name(style_path)
 

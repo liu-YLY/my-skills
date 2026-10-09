@@ -506,3 +506,50 @@ class TestCliInvalidPaths:
         assert code == 1
         err = capsys.readouterr().err
         assert '未能提取到 CSS' in err
+
+
+@pytest.mark.parametrize('name,body,selector', [
+    ('hero', 'eyebrow: 观察\ntitle: 判断\nvariant: editorial', '.hero .title'),
+    ('part', 'index: 02\ntitle: 章节', '.part .part-title'),
+    ('label-title', 'label: 标签\ntitle: 判断', '.label-title .title'),
+    ('infographic', 'type: number\ntitle: 23%', '.infographic .title'),
+    ('verdict', 'title: 判断\nbody: 依据', '.verdict .body'),
+    ('bridge', 'title: 转场\nnext: 下一步', '.bridge .next'),
+    ('cta', 'title: 行动\nnote: 联系', '.cta .note'),
+    ('highlight', 'title: 重点\nbody: 内容', '.highlight .body'),
+    ('quote', 'variant: light\nquote: 引文\nsource: 来源', '.quote.variant-light .quote-text'),
+])
+def test_semantic_field_cards(name, body, selector):
+    from bs4 import BeautifulSoup
+    out = md2wechat.render_module_block(name, None, body)
+    node = BeautifulSoup(out, 'html.parser').select_one(selector)
+    assert node is not None and node.get_text()
+    assert 'module-field-name' not in out
+
+@pytest.mark.parametrize('name', ['definition', 'tweet', 'stat-row', 'resource-list',
+    'gallery-grid', 'svg-swipe-gallery', 'figure-caption', 'flow', 'dialogue-pair'])
+def test_undefined_modules_are_explicitly_unsupported(name, capsys):
+    out = md2wechat.render_modules(':::' + name + '\n<script>alert(1)</script>\n:::\n')
+    assert 'unsupported' in capsys.readouterr().err
+    assert '<script>' not in out and '&lt;script&gt;' in out
+
+@pytest.mark.parametrize('body', ['title: 缺少标签', 'eyebrow: 标签\ntitle: 标题\nevil: 值',
+    'eyebrow: 标签\ntitle: A\ntitle: B', 'eyebrow: 标签\ntitle: 标题\nvariant: unknown'])
+def test_invalid_fields_warn_and_preserve(body, capsys):
+    out = md2wechat.render_module_block('hero', None, body)
+    assert 'warning' in capsys.readouterr().err.lower()
+    assert '<pre>' in out
+
+def test_solid_module_background_and_theme_precedence(tmp_path):
+    from bs4 import BeautifulSoup
+    source = tmp_path / 'hero.md'
+    source.write_text(':::hero\neyebrow: 标签\ntitle: 标题\n:::')
+    style = _write_style_file(tmp_path, 'tech-blog')
+    style.write_text(style.read_text() + '\n')
+    out = Path(md2wechat.convert(str(source), str(style))).read_text()
+    hero = BeautifulSoup(out, 'html.parser').select_one('#content .hero')
+    assert 'background-color' in hero['style']
+    assert 'linear-gradient' not in hero['style']
+    style.write_text('```css\n#nice .hero { background-color: #112233; }\n```')
+    out = Path(md2wechat.convert(str(source), str(style))).read_text()
+    assert '#112233' in BeautifulSoup(out, 'html.parser').select_one('#content .hero')['style']
