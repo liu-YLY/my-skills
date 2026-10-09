@@ -1525,3 +1525,9 @@
 .module .compare-side { margin-bottom: 16px; }
 .module img { max-width: 100%; height: auto; }
 .module.image-text.layout-right, .module.image-text.layout-right > * { direction: ltr; }
+
+
+.module .points, .module .point { display: block; }
+.module .point-number { display: inline-block; text-align: center; }
+.module .point-content { margin-top: 8px; }
+.module.image-steps .step { display: block; }

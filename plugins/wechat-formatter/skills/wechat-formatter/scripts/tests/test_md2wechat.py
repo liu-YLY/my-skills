@@ -647,3 +647,32 @@ def test_module_image_urls_reject_active_or_invalid_sources(url, capsys):
     out = md2wechat.sanitize_content(md2wechat.render_module_block('image-text', None, 'image: ' + url))
     assert 'warning' in capsys.readouterr().err
     assert not BeautifulSoup(out, 'html.parser').select('img, script')
+
+
+
+def test_repeated_annotate_points_and_step_images_are_ordered():
+    from bs4 import BeautifulSoup
+    annotate = 'title: 解读\nimage: https://example.com/a.png\npoint: 01 | 标题 | 描述\npoint: 02 | 次项'
+    soup = BeautifulSoup(md2wechat.render_module_block('image-annotate', None, annotate), 'html.parser')
+    assert [n.get_text() for n in soup.select('.point-number')] == ['01', '02']
+    assert soup.select_one('.point-desc').get_text() == '描述'
+    steps = 'step: 打开\n![截图](https://example.com/a.png)\ndesc: 选择\nnote: 提示\nstep: 复制\n![完成](https://example.com/b.png)\ndesc: 完成'
+    soup = BeautifulSoup(md2wechat.render_modules(':::image-steps{columns=2 caption_style=numbered}\n' + steps + '\n:::\n'), 'html.parser')
+    assert len(soup.select('.image-steps.columns-2.caption-numbered .step')) == 2
+    assert [n.get_text() for n in soup.select('.step-name')] == ['01 打开', '02 复制']
+    assert [n['alt'] for n in soup.select('.step-image img')] == ['截图', '完成']
+    assert soup.select_one('.step-note').get_text() == '提示'
+
+@pytest.mark.parametrize('params,body', [
+    ('columns=99', 'step: 开始\ndesc: 描述'),
+    ('caption_style=evil', 'step: 开始\ndesc: 描述'),
+    ('columns=2 columns=3', 'step: 开始\ndesc: 描述'),
+    ('', '![截图](https://example.com/a.png)\nstep: 开始'),
+    ('', 'step: 开始\n![截图](javascript:alert(1))'),
+    ('', 'step: 开始\n<img src="https://example.com/a.png" onerror="alert(1)">'),
+])
+def test_invalid_image_step_groups_and_parameters_warn(params, body, capsys):
+    from bs4 import BeautifulSoup
+    out = md2wechat.render_modules(':::image-steps{' + params + '}\n' + body + '\n:::\n')
+    assert 'warning' in capsys.readouterr().err
+    assert not BeautifulSoup(out, 'html.parser').select('img, script')

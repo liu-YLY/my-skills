@@ -305,8 +305,77 @@ def module_images(name: str, body: str) -> tuple[str, str]:
     return (content + image if layout == 'right' else image + content), ' layout-' + layout
 
 
+def module_params(raw: str, allowed: dict[str, set[str]]) -> dict[str, str]:
+    result = {}
+    for token in raw.split():
+        key, separator, value = token.partition('=')
+        if not separator or key not in allowed or value not in allowed[key] or key in result:
+            raise ValueError('unsupported or duplicate module parameter')
+        result[key] = value
+    return result
+
+
+def module_annotate(body: str) -> str:
+    fields = module_fields(body, {'eyebrow', 'title', 'image', 'alt', 'point'}, {'point'})
+    points = fields.get('point', [])
+    if not 1 <= len(points) <= 3:
+        raise ValueError('annotation needs 1..3 points')
+    content = ''.join(module_node(key, fields[key]) for key in ('eyebrow', 'title') if key in fields)
+    content += module_node('image-container', inner=module_image(fields.get('image', ''), fields.get('alt', '')))
+    rendered = ''
+    for point in points:
+        values = [item.strip() for item in point.split('|')]
+        if len(values) not in {2, 3}:
+            raise ValueError('invalid annotation point')
+        rendered += module_node('point', inner=module_node('point-number', values[0])
+                                + module_node('point-content', inner=module_node('point-title', values[1])
+                                              + module_node('point-desc', values[2] if len(values) == 3 else '')))
+    return content + module_node('points', inner=rendered)
+
+
+def module_image_steps(body: str, params: str) -> tuple[str, str]:
+    attributes = module_params(params, {'columns': {'2', '3', '4'}, 'caption_style': {'numbered'}})
+    groups = []
+    for line in body.strip().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith('step:'):
+            groups.append({'step': line.split(':', 1)[1].strip()})
+        elif not groups:
+            raise ValueError('image step must start with step')
+        elif line.startswith('!['):
+            image = re.fullmatch(r'!\[([^\]]*)\]\(([^\s]+)(?:\s+"[^" ]*")?\)', line)
+            if not image or 'image' in groups[-1]:
+                raise ValueError('invalid or duplicate step image')
+            groups[-1]['image'] = module_image(image[2], image[1])
+        else:
+            fields = module_fields(line, {'desc', 'note'})
+            if set(fields) & set(groups[-1]):
+                raise ValueError('duplicate step field')
+            groups[-1].update(fields)
+    if not groups or any(not group['step'] for group in groups):
+        raise ValueError('missing step title')
+    content = ''
+    for index, group in enumerate(groups, 1):
+        number = f'{index:02d} ' if attributes.get('caption_style') == 'numbered' else ''
+        cells = module_node('step-name', number + group['step'])
+        if 'image' in group:
+            cells += module_node('step-image', inner=group['image'])
+        cells += ''.join(module_node('step-' + key, group[key]) for key in ('desc', 'note') if key in group)
+        content += module_node('step', inner=cells)
+    suffix = ' columns-' + attributes['columns'] if 'columns' in attributes else ''
+    suffix += ' caption-numbered' if 'caption_style' in attributes else ''
+    return content, suffix
+
+
 def render_module_block(name: str, title: str | None, body: str, params: str = '') -> str:
     try:
+        if name == 'image-annotate' and not params:
+            return module_wrap(name, title, module_annotate(body))
+        if name == 'image-steps':
+            content, suffix = module_image_steps(body, params)
+            return module_wrap(name, title, content, suffix)
         if name in IMAGE_MODULES and not params:
             content, suffix = module_images(name, body)
             return module_wrap(name, title, content, suffix)
