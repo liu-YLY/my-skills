@@ -118,3 +118,25 @@ def test_forbidden_source_survives_validation_and_export():
     item = ForbiddenTransition.model_validate({"from": "A", "to": "B", "reason": "禁止",
                                               "source": "PRD §1", "evidence_type": "需求明确"})
     assert item.model_dump()["source"] == "PRD §1"
+
+
+
+def test_industry_scenario_examples_use_the_same_complete_contract():
+    import re
+    import yaml
+    from state_machine_testing_mcp.builders import AVAILABLE_TEMPLATES, _build_industry_template
+    from state_machine_testing_mcp.schemas import ScenarioList
+    from state_machine_testing_mcp.coverage import check_coverage
+    base = Path(__file__).resolve().parents[4] / "skills/state-machine-test-engineer/knowledge/industry-templates"
+    for name in AVAILABLE_TEMPLATES:
+        sm = _build_industry_template(name)
+        for block in re.findall(r"```yaml\n(.*?)```", (base / (name + ".md")).read_text(), re.S):
+            data = yaml.safe_load(block)
+            if not isinstance(data, dict) or "scenarios" not in data:
+                continue
+            scenarios = ScenarioList.model_validate(data)
+            assert len(scenarios.scenarios) == 10
+            for s in scenarios.scenarios:
+                assert s.expected_target_state == "待确认" or s.expected_target_state in {x.name for x in sm.states}
+                assert s.source
+            assert check_coverage(sm, scenarios).unmatched_scenarios == [], name

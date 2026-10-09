@@ -181,6 +181,8 @@ scenarios:
     expected_target_state: 处理中
     forbidden_states: [已关闭]
     risk_type: legal_transition
+    transition_id: T-0b4f5de213be84db
+    guard_conditions: []
     related_objects: [工单, 客服, SLA 记录]
     evidence_type: 需求明确
     source: PRD §2.1
@@ -190,9 +192,11 @@ scenarios:
     current_state: 已关闭
     trigger_event: 用户拒绝解决
     precondition: 工单已关闭
-    expected_target_state: 已关闭（保持不变）
+    expected_target_state: 已关闭
     forbidden_states: [已重开]
     risk_type: illegal_transition
+    forbidden_id: F-355d2aa8769d90fe
+    attempted_target_state: 已重开
     related_objects: [工单, 操作日志]
     evidence_type: 需求明确
     source: 状态机 forbidden 规则（终态吸收）
@@ -202,9 +206,12 @@ scenarios:
     current_state: 处理中
     trigger_event: 客服标记解决
     precondition: 解决方案未填写
-    expected_target_state: 处理中（保持不变）
+    expected_target_state: 处理中
     forbidden_states: [已解决]
     risk_type: guard_violation
+    transition_id: T-b94cb43f69b35aed
+    guard_conditions: [解决方案已填写]
+    violated_guard: 解决方案已填写
     related_objects: [工单, 解决方案记录]
     evidence_type: 合理推理
     source: 状态机 transitions 中 guard "解决方案已填写" 的反向
@@ -214,7 +221,7 @@ scenarios:
     current_state: 已解决
     trigger_event: 用户确认解决（重复）
     precondition: 工单已是已解决状态，收到第二次确认
-    expected_target_state: 已解决（保持不变，等待自动关闭或首次确认）
+    expected_target_state: 已解决
     forbidden_states: [重复归档]
     risk_type: idempotency
     related_objects: [工单, 归档记录]
@@ -227,6 +234,7 @@ scenarios:
     trigger_event: 用户确认解决 + 用户拒绝解决（同时到达）
     precondition: 已解决状态，用户同时点击确认和拒绝
     expected_target_state: 待确认
+    expected_target_state_reason: 示例未定义该异常输入的业务目标
     forbidden_states: []
     risk_type: concurrency
     related_objects: [工单, 锁机制, 操作日志]
@@ -239,6 +247,7 @@ scenarios:
     trigger_event: 用户补充信息 + 客服标记解决（乱序）
     precondition: 待回复状态，用户补充与客服解决消息乱序
     expected_target_state: 待确认
+    expected_target_state_reason: 示例未定义该异常输入的业务目标
     forbidden_states: []
     risk_type: message_reorder
     related_objects: [消息队列, 工单日志]
@@ -274,7 +283,7 @@ scenarios:
     current_state: 处理中
     trigger_event: 客服标记解决（非分配客服操作）
     precondition: 操作者为非分配客服
-    expected_target_state: 处理中（保持不变）
+    expected_target_state: 处理中
     forbidden_states: [已解决]
     risk_type: access_control
     related_objects: [权限系统, 工单, 操作日志]
@@ -286,7 +295,7 @@ scenarios:
     current_state: 处理中
     trigger_event: 系统故障恢复
     precondition: 处理中状态时系统故障
-    expected_target_state: 处理中（应保持不变）
+    expected_target_state: 处理中
     forbidden_states: []
     risk_type: failure_recovery
     related_objects: [工单, 系统日志, 数据库]

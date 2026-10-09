@@ -316,3 +316,4 @@ git diff --check
 - B06l及阶段一已验证：复制返回false反例先1 failed/134 passed，修复后135 passed；ego-browser实测32模块、8图加载，1366px/390px无横向溢出，复制载荷含32模块/8图/339行内样式节点，成功/拒绝/异常反馈正确。证据在 `docs/skill-evaluation/2026-10-09/browser-results.json`；系统剪贴板实际写入及公众号粘贴未运行。
 - B07 已验证：修正守卫失败的分支目标语义；根项目 MCP 70 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.2.2、MCP 0.3.1，仓库工具与静态检查通过。
 - B08a 已验证：统一模型和场景规范并校验示例；根项目 MCP 72 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.2.3、MCP 0.3.2，仓库工具与静态检查通过。
+- B08b 已验证：校准四个行业模板的分支与引用契约；根项目 MCP 73 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.2.4、MCP 0.3.3，仓库工具与静态检查通过。

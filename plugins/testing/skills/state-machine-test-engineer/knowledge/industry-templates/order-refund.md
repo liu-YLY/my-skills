@@ -181,6 +181,8 @@ scenarios:
     expected_target_state: 已支付
     forbidden_states: [已取消, 退款成功]
     risk_type: legal_transition
+    transition_id: T-1fb46fee4e8ed40f
+    guard_conditions: [订单有效, 金额一致, 回调可信]
     related_objects: [支付记录, 订单日志]
     evidence_type: 需求明确
     source: PRD §3.2 + 状态机 transitions
@@ -190,9 +192,11 @@ scenarios:
     current_state: 已取消
     trigger_event: 支付成功回调
     precondition: 订单已取消
-    expected_target_state: 已取消（保持不变）
+    expected_target_state: 已取消
     forbidden_states: [已支付]
     risk_type: illegal_transition
+    forbidden_id: F-b83a8e04e5e257be
+    attempted_target_state: 已支付
     related_objects: [支付记录, 订单日志]
     evidence_type: 需求明确
     source: PRD §3.1 + 状态机 forbidden 规则
@@ -202,9 +206,12 @@ scenarios:
     current_state: 待支付
     trigger_event: 支付成功回调
     precondition: 订单处于待支付状态，但回调金额 ≠ 订单金额
-    expected_target_state: 待支付（保持不变）
+    expected_target_state: 待支付
     forbidden_states: [已支付]
     risk_type: guard_violation
+    transition_id: T-1fb46fee4e8ed40f
+    guard_conditions: [订单有效, 金额一致, 回调可信]
+    violated_guard: 订单有效
     related_objects: [支付记录, 风控日志]
     evidence_type: 合理推理
     source: 状态机 transitions 中 guard "金额一致" 的反向
@@ -214,7 +221,7 @@ scenarios:
     current_state: 已支付
     trigger_event: 支付成功回调（重复）
     precondition: 订单已是已支付状态，收到第二次支付成功回调
-    expected_target_state: 已支付（保持不变）
+    expected_target_state: 已支付
     forbidden_states: [重复生成支付记录]
     risk_type: idempotency
     related_objects: [支付记录, 订单日志, 消息队列]
@@ -227,6 +234,7 @@ scenarios:
     trigger_event: 用户取消 + 支付成功回调（同时到达）
     precondition: 订单处于待支付状态，用户点取消的同时收到支付成功回调
     expected_target_state: 待确认
+    expected_target_state_reason: 示例未定义该异常输入的业务目标
     forbidden_states: []
     risk_type: concurrency
     related_objects: [订单日志, 支付记录, 锁机制]
@@ -239,6 +247,7 @@ scenarios:
     trigger_event: 退款失败回调 + 退款成功回调（乱序到达）
     precondition: 退款处理中，两条回调消息乱序到达
     expected_target_state: 待确认
+    expected_target_state_reason: 示例未定义该异常输入的业务目标
     forbidden_states: []
     risk_type: message_reorder
     related_objects: [消息队列, 退款记录, 订单日志]
@@ -274,7 +283,7 @@ scenarios:
     current_state: 已支付
     trigger_event: 管理员发起退款（普通用户冒充）
     precondition: 用户为普通用户，无管理员权限
-    expected_target_state: 已支付（保持不变）
+    expected_target_state: 已支付
     forbidden_states: [退款中]
     risk_type: access_control
     related_objects: [权限系统, 操作日志]
