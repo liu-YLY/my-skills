@@ -133,6 +133,7 @@
 | **类型** | 是 | functional / ui / security / performance / compatibility / usability / accessibility / observability；描述「主要验证目标」而非技术实现 |
 | **需求追溯** | 否 | 需求 ID（Story ID）、测试点编号（TP 编号）、接口契约、设计稿或已关联缺陷 |
 | **来源** | 否 | 用例来源：ai-generated / manual；历史 ai-reviewed 保留但不作为人工审核证明 |
+| **追溯引用** | 否 | 可选 `trace_refs` 指向追溯图稳定产物ID；`stable_ref` 是当前输入/断言内容标识；长期身份使用显式版本化产物ID，不用列表位置或SM展示编号代替 |
 | **人工审核状态** | 否 | not-reviewed / reviewed，独立于来源；reviewed 需记录真实审核依据，AI 自检不等于人工审核 |
 | **业务背景** | 否 | 以「验证」开头描述条件、对象、动作和结果方向；不复述步骤 |
 | **前置条件** | 否 | 陈述句列表，覆盖角色/权限、页面或调用条件、数据状态；不写「已准备相关数据」「账号正常」「环境正常」 |
@@ -190,6 +191,10 @@
 
 **需求追溯与业务背景规范**：
 - 需求追溯记录：需求 ID / Jira / 测试点编号 / 接口契约 / 设计稿 / 已关联缺陷
+- 可选 `traceability` 原样消费：`sources` 为 `id/location/version/availability`（available/unreachable/missing/unknown），`artifacts` 为 `id/kind/version`，`links` 为 `upstream/downstream/confirmation/source/source_refs`（confirmed/candidate）。
+- 需求→风险→模型/场景→用例→执行证据以显式产物ID和版本关联；结构化映射仍需关联依据及可达来源版本才标confirmed，缺依据或自然语言相似仅作candidate。
+- 来源不可达与业务结果未知分列；未读到来源不补造版本/确认关系，独立Skill无完整图仍可输出并注明追溯未评估。
+- 来源/需求变化只标记有已确认关联的受影响结论需复核，候选关联单列待核实；保留旧证据与版本，不覆盖旧执行结果或重跑无关流程。
 - 业务背景以「验证」开头，描述条件、对象、动作和结果方向
 - 不复述步骤；不写「验证功能正常」「验证符合预期」
 
