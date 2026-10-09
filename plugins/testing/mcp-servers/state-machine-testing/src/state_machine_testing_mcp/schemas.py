@@ -64,6 +64,22 @@ class State(BaseModel):
     invariants: list[str] = Field(default_factory=list)
 
 
+class FailureSemantics(BaseModel):
+    phase: Literal["pre_execution_rejected", "pre_commit_failed", "committed_response_lost", "partial_success", "unknown"]
+    allowed_states: list[str] = Field(default_factory=list)
+    forbidden_side_effects: list[str] = Field(default_factory=list)
+    observations: list[str] = Field(default_factory=list)
+    recovery_conditions: list[str] = Field(default_factory=list)
+    source: str = ""
+    evidence_type: EvidenceType = EvidenceType.PENDING
+
+    @model_validator(mode="after")
+    def require_source_for_known_phase(self):
+        if self.phase != "unknown" and not self.source.strip():
+            raise ValueError("已确定失败阶段需要来源；提交边界未知使用 unknown")
+        return self
+
+
 class Transition(BaseModel):
     """转换定义。evidence_type 必填，保证依据标签存在；标签不能证明业务事实已核实。"""
 
@@ -72,6 +88,7 @@ class Transition(BaseModel):
     event: str
     guards: list[str] = Field(default_factory=list)
     side_effects: list[str] = Field(default_factory=list)
+    failure_outcomes: list[FailureSemantics] = Field(default_factory=list)
     evidence_type: EvidenceType
     source: str = ""
     id: str | None = None
@@ -140,6 +157,7 @@ class Scenario(BaseModel):
     guard_conditions: list[str] = Field(default_factory=list)
     attempted_target_state: str | None = None
     violated_guard: str | None = None
+    failure_semantics: FailureSemantics | None = None
 
     @model_validator(mode="after")
     def require_reason_for_pending_target(self):

@@ -247,6 +247,9 @@ def check_structure(sm: StateMachine) -> CheckItem:
             if rule.from_state not in names or not allowed_target:
                 errors.append(f"{label} 端点不存在: {rule.from_state} → {rule.to_state}")
     for transition in sm.transitions:
+        for outcome in transition.failure_outcomes:
+            if any(state not in names for state in outcome.allowed_states):
+                errors.append(f"失败允许状态不存在: {transition.id}")
         for forbidden in sm.forbidden:
             if transition.from_state == forbidden.from_state and forbidden.to_state in {"*", transition.to_state}:
                 errors.append(f"合法与禁止转换矛盾: {transition.id} / {forbidden.id}")

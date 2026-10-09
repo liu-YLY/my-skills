@@ -1,6 +1,6 @@
 # State Machine Test Engineer Skill
 
-> 状态机驱动的状态型需求测试 skill v1.3.8：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
+> 状态机驱动的状态型需求测试 skill v1.4.0：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
 
 ## 简介
 
@@ -57,7 +57,7 @@ State Machine Test Engineer 是 testing-bundle v3.0.0 新增的子 skill，专�
 
 ## 三种运行模式
 
-> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.4.6**，MCP 协议层（stdio + streamable-http）和真实工具调用已通过端到端测试，按 [quickstart.md](integrations/quickstart.md) 配置后**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载）。未安装或调用失败时 skill 自动降级为独立模式。
+> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.5.0**，MCP 协议层（stdio + streamable-http）和真实工具调用已通过端到端测试，按 [quickstart.md](integrations/quickstart.md) 配置后**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载）。未安装或调用失败时 skill 自动降级为独立模式。
 
 | 模式 | 触发条件 | 行为 | 输出标记 |
 |---|---|---|---|
@@ -164,6 +164,7 @@ state-machine-test-engineer/
 
 ## 版本历史
 
+- v1.4.0: 增加失败阶段并保留未知和条件目标的待确认状态
 - v1.3.8: 统一状态机演示的授权适用性与宿主可用性边界
 - v1.3.7: 使复制安装后的源码引用和契约检查可解释
 - v1.3.6: 排除错误匹配和待确认场景的适用性完成计数
