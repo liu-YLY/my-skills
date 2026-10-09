@@ -380,8 +380,27 @@ def module_image_steps(body: str, params: str) -> tuple[str, str]:
     return content, suffix
 
 
+def module_sections(name: str, body: str, params: str) -> tuple[str, str]:
+    attributes = module_params(params, {'columns': {'2', '3', '4'}} if name == 'columns' else {})
+    if re.search(r'^:::', body, re.MULTILINE):
+        raise ValueError('nested modules are unsupported')
+    sections = re.split(r'^---\s*$', body.strip(), flags=re.MULTILINE)
+    count = int(attributes.get('columns', '2'))
+    if len(sections) != count or any(not section.strip() for section in sections):
+        raise ValueError('section count does not match layout')
+    content = ''
+    for index, section in enumerate(sections):
+        cls = 'column' if name == 'columns' else ('split-left' if index == 0 else 'split-right')
+        html = sanitize_content(markdown.markdown(section.strip(), extensions=['fenced_code', 'tables']))
+        content += module_node(cls, inner=html)
+    return content, ' columns-' + str(count) if name == 'columns' else ''
+
+
 def render_module_block(name: str, title: str | None, body: str, params: str = '') -> str:
     try:
+        if name in {'split', 'columns'}:
+            content, suffix = module_sections(name, body, params)
+            return module_wrap(name, title, content, suffix)
         if name == 'image-annotate' and not params:
             return module_wrap(name, title, module_annotate(body))
         if name == 'image-steps':

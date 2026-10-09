@@ -695,3 +695,31 @@ def test_author_without_optional_avatar_is_supported():
     soup = BeautifulSoup(md2wechat.render_module_block('author-card', None, 'name: 作者\nbio: 写作'), 'html.parser')
     assert not soup.select('img')
     assert soup.select_one('.author-bio').get_text() == '写作'
+
+
+
+@pytest.mark.parametrize('name,params,body,selector,count', [
+    ('split', '', '**左侧**\n---\n右侧', '.split-left strong', 2),
+    ('columns', 'columns=3', '一\n---\n二\n---\n三', '.columns-3 .column', 3),
+])
+def test_free_layout_has_decisive_structure_and_markdown(name, params, body, selector, count):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.render_modules(':::' + name + '{' + params + '}\n' + body + '\n:::'), 'html.parser')
+    assert soup.select_one(selector) is not None
+    assert len(soup.select('.split-left, .split-right, .column')) == count
+    assert '---' not in soup.get_text()
+
+@pytest.mark.parametrize('name,params,body', [('columns', 'columns=9', '一\n---\n二'),
+    ('columns', 'columns=3', '一\n---\n二'), ('split', '', '只有一段'),
+    ('split', '', '一\n:::hero\ntitle: 嵌套\n---\n二')])
+def test_invalid_sections_warn(name, params, body, capsys):
+    out = md2wechat.render_module_block(name, None, body, params)
+    assert 'warning' in capsys.readouterr().err and '<pre>' in out
+
+def test_section_raw_html_is_inert():
+    from bs4 import BeautifulSoup
+    body = '<script>alert(1)</script><img src="javascript:x" onerror="alert(1)">\n---\n右侧'
+    soup = BeautifulSoup(md2wechat.render_module_block('split', None, body), 'html.parser')
+    assert not soup.select('script, iframe')
+    assert all(not key.startswith('on') for img in soup.select('img') for key in img.attrs)
+    assert all('src' not in img.attrs for img in soup.select('img'))

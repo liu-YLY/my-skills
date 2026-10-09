@@ -1535,3 +1535,7 @@
 
 .module.author-card, .module.brand-banner { display: block; }
 .module .author-info, .module .brand-info { margin-top: 12px; }
+
+
+.module.split, .module.columns { display: block; }
+.module .column, .module .split-left, .module .split-right { margin-bottom: 12px; }
