@@ -1,6 +1,6 @@
 ---
 name: state-machine-test-engineer
-version: 1.3.6
+version: 1.3.7
 description: >-
   Use when user needs state-machine-driven testing for stateful business objects
   (orders, approvals, tickets, membership, etc.). Triggers on: 状态机、状态流转、状态转换、
@@ -166,4 +166,4 @@ MCP 配置方式见 [integrations/quickstart.md](integrations/quickstart.md)。
 
 ---
 
-版本和人类使用说明见 [README.md](README.md)；MCP 实现边界见 [state-machine-testing-mcp](../../mcp-servers/state-machine-testing/README.md)。
+版本和人类使用说明见 [README.md](README.md)；MCP 实现边界见 [state-machine-testing-mcp](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/mcp-servers/state-machine-testing/README.md)。

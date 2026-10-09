@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: python -m pip install pytest python-docx
+      - run: python -m pip install pytest python-docx -r plugins/wechat-formatter/skills/wechat-formatter/scripts/requirements.txt
       - run: python -m pytest scripts/tests
       - run: python scripts/skill-evals.py
       - run: python scripts/check-project-inventory.py

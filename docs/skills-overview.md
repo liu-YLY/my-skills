@@ -4,7 +4,7 @@
 
 ### 1. Testing Bundle (testing-bundle)
 
-**版本**：v3.2.1
+**版本**：v3.2.2
 **功能**：测试能力 bundle 入口，统一路由到 6 个子 skill（5 核心 + 1 协同）：test-strategy-engineer（项目级策略）/ test-case-engineer（功能用例生成）/ performance-test-engineer（性能测试）/ bug-analyzer（Bug 根因分析）/ state-machine-test-engineer（状态机测试）/ change-impact-analyzer（变更影响分析，协同）。
 
 > Bundle 是元 skill，本身不实现具体能力，而是根据用户意图自动路由到对应子 skill。
@@ -159,7 +159,7 @@ AI（test-strategy-engineer）：
 
 ### 1b. 测试用例工程师 (test-case-engineer)
 
-**版本**：v9.0.3
+**版本**：v9.0.4
 **功能**：扮演资深测试工程师角色，AI 赋能用例生成，深入理解需求与产品现状，精准提取测试点，输出完整全面可落地的测试用例。
 
 > v8.0.0 起由原 test-engineer v7.0.0 拆分而来，专注正向用例生成。Bug 根因分析能力已迁移至 bug-analyzer skill。
@@ -379,7 +379,7 @@ AI（bug-analyzer）：
 
 ### 1e. 状态机测试工程师 (state-machine-test-engineer)
 
-**版本**：v1.3.6
+**版本**：v1.3.7
 **功能**：扮演资深测试工程师角色，基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
 
 > testing-bundle v3.0.0 新增子 skill，专注状态型需求测试。与 test-case-engineer 的粒度边界：本 skill 输出场景级清单（含依据类型标注），test-case-engineer 基于清单落地用例步骤级（链 5 协同）。

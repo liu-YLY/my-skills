@@ -1,6 +1,6 @@
 ---
 name: testing-bundle
-version: 3.2.1
+version: 3.2.2
 description: >-
   Use when user has mixed, ambiguous, or explicitly routing-required testing requests —
   e.g. "analyze bug AND generate test cases", "design strategy AND generate layered cases",
@@ -85,7 +85,7 @@ keywords:
 - [state-machine-test-engineer](../state-machine-test-engineer/SKILL.md)：状态建模与场景穷举；state-machine-testing MCP v0.4.6 为可选增强。
 - [change-impact-analyzer](../change-impact-analyzer/SKILL.md)：代码变更 × 用例的影响与覆盖缺口。
 
-安装方式、依赖关系和 MCP 配置属于部署文档，见 [../../README.md](../../README.md)，不参与运行时路由判断。
+安装方式、依赖关系和 MCP 配置属于部署文档，见 [../../README.md](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/README.md)，不参与运行时路由判断。复制安装只交付 Skill 资源，不安装 MCP 服务；缺 MCP 时由专业 Skill 进入独立模式并如实标记。
 
 ## 失败模式与 Fallback
 

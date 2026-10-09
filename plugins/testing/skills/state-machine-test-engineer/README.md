@@ -1,6 +1,6 @@
 # State Machine Test Engineer Skill
 
-> 状态机驱动的状态型需求测试 skill v1.3.6：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
+> 状态机驱动的状态型需求测试 skill v1.3.7：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
 
 ## 简介
 
@@ -164,6 +164,7 @@ state-machine-test-engineer/
 
 ## 版本历史
 
+- v1.3.7: 使复制安装后的源码引用和契约检查可解释
 - v1.3.6: 排除错误匹配和待确认场景的适用性完成计数
 - v1.3.5: 去除知识示例对未知权限和超时规则的断言
 - v1.3.4: 根据显式重试能力生成场景
@@ -185,7 +186,7 @@ state-machine-test-engineer/
 - [SKILL.md](SKILL.md) - 完整方法论与工作流
 - [state-machine-core.md](state-machine-core.md) - 核心流程详述
 - [integrations/quickstart.md](integrations/quickstart.md) - MCP 配置说明
-- [设计文档](../../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
+- [设计文档](https://github.com/liu-YLY/my-skills/blob/main/docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
 - [testing-bundle](../testing-bundle/SKILL.md) - bundle 入口（6-way 路由：5 核心 + 1 协同）
 - [test-case-engineer](../test-case-engineer/SKILL.md) - 下游协同（链 5）
-- [state-machine-testing-mcp](../../mcp-servers/state-machine-testing/README.md) - 配套 MCP Server
+- [state-machine-testing-mcp](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/mcp-servers/state-machine-testing/README.md) - 配套 MCP Server
