@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 from .generators import ALL_SCENARIO_TYPES, assess_applicability
-from .schemas import CoverageReport, ScenarioList, StateMachine
+from .schemas import CoverageReport, ScenarioList, StateMachine, CoverageContext
+from .layers import layered_coverage
 
 
-def check_coverage(state_machine: StateMachine, scenarios: ScenarioList) -> CoverageReport:
+def check_coverage(state_machine: StateMachine, scenarios: ScenarioList, context: CoverageContext | None = None) -> CoverageReport:
     """覆盖度检查。
 
     Args:
@@ -90,6 +91,7 @@ def check_coverage(state_machine: StateMachine, scenarios: ScenarioList) -> Cove
 
     return CoverageReport(
         transition_coverage=round(transition_coverage, 3),
+        layers=layered_coverage(state_machine, scenarios, context, covered_transitions, unmatched),
         forbidden_coverage=round(forbidden_coverage, 3),
         scenario_type_coverage=type_coverage,
         evidence_distribution=evidence_dist,

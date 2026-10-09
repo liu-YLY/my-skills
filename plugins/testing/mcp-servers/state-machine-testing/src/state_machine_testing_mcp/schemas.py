@@ -312,10 +312,50 @@ class ValidationReport(BaseModel):
     manual_review_required: bool = False
 
 
+class CoverageBaseline(BaseModel):
+    source: str = Field(min_length=1)
+    version: str = Field(min_length=1)
+    items: list[str]
+
+
+class CoverageLink(BaseModel):
+    item_id: str
+    scenario_ref: str
+    confirmation: Literal["confirmed", "candidate"] = "candidate"
+
+
+class ExecutionRecord(BaseModel):
+    case_id: str
+    baseline_version: str
+    run_id: str = Field(min_length=1)
+    status: Literal["passed", "failed", "blocked", "not_run"]
+    evidence_ref: str | None = None
+    evidence_status: Literal["verified", "unknown", "unreachable", "missing"] = "unknown"
+
+
+class CoverageContext(BaseModel):
+    requirement_baseline: CoverageBaseline | None = None
+    requirement_links: list[CoverageLink] = Field(default_factory=list)
+    design_baseline: CoverageBaseline | None = None
+    case_baseline: CoverageBaseline | None = None
+    execution_records: list[ExecutionRecord] = Field(default_factory=list)
+
+
+class CoverageLayer(BaseModel):
+    status: Literal["assessed", "not_assessed", "not_applicable"]
+    numerator: int | None = None
+    denominator: int | None = None
+    ratio: float | None = None
+    baseline_source: str | None = None
+    baseline_version: str | None = None
+    unassessed_items: list[str] = Field(default_factory=list)
+
+
 class CoverageReport(BaseModel):
     """check_coverage 返回结构。"""
 
     transition_coverage: float
+    layers: dict[str, CoverageLayer] = Field(default_factory=dict)
     forbidden_coverage: float
     scenario_type_coverage: dict[str, int]
     evidence_distribution: dict[str, int]

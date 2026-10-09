@@ -103,3 +103,106 @@ def test_applicable_missing_ignores_wrong_structural_match_and_pending_candidate
     assert report.scenario_type_coverage["idempotency"] > 0
     assert "legal_transition" in report.applicable_missing_scenario_types
     assert "idempotency" in report.applicable_missing_scenario_types
+
+
+def test_layered_coverage_distinguishes_missing_and_explicit_empty_baselines():
+    from state_machine_testing_mcp.schemas import CoverageContext, CoverageBaseline
+    sm = _load_order_refund()
+    scenarios = generate_scenarios(sm)
+    missing = check_coverage(sm, scenarios)
+    assert missing.transition_coverage == 1
+    assert missing.layers["requirements"].status == "not_assessed"
+    assert missing.layers["execution"].ratio is None
+    context = CoverageContext(requirement_baseline=CoverageBaseline(
+        source="PRD", version="1", items=[]))
+    empty = check_coverage(sm, scenarios, context)
+    assert empty.layers["requirements"].status == "not_applicable"
+    assert empty.layers["requirements"].denominator == 0
+    assert empty.layers["requirements"].ratio is None
+
+
+def test_design_coverage_never_claims_execution_and_duplicate_evidence_counts_once():
+    from state_machine_testing_mcp.schemas import CoverageContext
+    sm = _load_order_refund()
+    scenarios = generate_scenarios(sm, ["legal_transition"])
+    ref = scenarios.scenarios[0].stable_ref
+    context = CoverageContext.model_validate({
+        "requirement_baseline": {"source": "PRD", "version": "1", "items": ["REQ-1"]},
+        "requirement_links": [{"item_id": "REQ-1", "scenario_ref": ref, "confirmation": "confirmed"}],
+        "design_baseline": {"source": "适用场景基线", "version": "1", "items": [ref]},
+        "case_baseline": {"source": "用例基线", "version": "1", "items": ["TC-1"]}})
+    designed = check_coverage(sm, scenarios, context)
+    assert designed.layers["requirements"].ratio == designed.layers["scenario_design"].ratio == 1
+    assert designed.layers["execution"].ratio == 0
+    assert designed.layers["execution_pass"].status == "not_assessed"
+    record = {"case_id": "TC-1", "baseline_version": "1", "run_id": "run-1",
+              "status": "passed", "evidence_ref": "output/run-1", "evidence_status": "verified"}
+    data = context.model_dump()
+    data["execution_records"] = [record, record]
+    completed = check_coverage(sm, scenarios, CoverageContext.model_validate(data))
+    assert completed.layers["execution"].numerator == 1
+    assert completed.layers["execution_pass"].ratio == 1
+    data["execution_records"] = [record, dict(record, status="failed")]
+    conflicting = check_coverage(sm, scenarios, CoverageContext.model_validate(data))
+    assert conflicting.layers["execution_pass"].ratio is None
+    assert conflicting.layers["execution"].unassessed_items == ["TC-1"]
+
+
+def test_empty_execution_scope_is_distinct_from_missing_execution():
+    from state_machine_testing_mcp.schemas import CoverageContext
+    sm = _load_order_refund()
+    context = CoverageContext.model_validate({"case_baseline": {"source": "本批无可执行用例", "version": "1", "items": []}})
+    report = check_coverage(sm, generate_scenarios(sm), context)
+    assert report.layers["execution_pass"].status == "not_applicable"
+    assert report.layers["execution_pass"].denominator == 0
+
+
+def test_retracting_evidence_cannot_increase_confirmed_requirement_coverage():
+    from state_machine_testing_mcp.schemas import CoverageContext
+    sm = _load_order_refund()
+    scenarios = generate_scenarios(sm, ["legal_transition"])
+    ref = scenarios.scenarios[0].stable_ref
+    context = CoverageContext.model_validate({"requirement_baseline": {"source": "PRD", "version": "1", "items": ["R"]},
+        "requirement_links": [{"item_id": "R", "scenario_ref": ref, "confirmation": "confirmed"}]})
+    assert check_coverage(sm, scenarios, context).layers["requirements"].ratio == 1
+    data = sm.model_dump(by_alias=True)
+    data["transitions"][0]["evidence_type"] = "待确认"
+    sm = StateMachine.model_validate(data)
+    changed = generate_scenarios(sm, ["legal_transition"])
+    assert check_coverage(sm, changed, context).layers["requirements"].ratio == 0
+
+
+def test_unknown_or_stale_execution_evidence_never_counts_as_executed():
+    from state_machine_testing_mcp.schemas import CoverageContext
+    sm = _load_order_refund()
+    base = {"case_baseline": {"source": "用例基线", "version": "2", "items": ["TC", "TC"]}}
+    record = {"case_id": "TC", "baseline_version": "2", "run_id": "1", "status": "passed", "evidence_ref": "raw/result"}
+    for change in [{}, {"evidence_status": "unreachable"}, {"evidence_status": "verified", "baseline_version": "1"},
+                   {"evidence_status": "verified", "evidence_ref": "待确认"}]:
+        report = check_coverage(sm, generate_scenarios(sm), CoverageContext.model_validate(
+            dict(base, execution_records=[dict(record, **change)])))
+        assert report.layers["execution"].numerator == 0
+        assert report.layers["execution"].denominator == 1
+        assert report.layers["execution_pass"].ratio is None
+
+
+def test_unmatched_and_unknown_failure_scenarios_cannot_gain_requirement_coverage():
+    from state_machine_testing_mcp.schemas import CoverageContext, ScenarioList
+    sm = _load_order_refund()
+    for kind in ["legal_transition", "illegal_transition", "failure_recovery"]:
+        data = generate_scenarios(sm, [kind]).model_dump(mode="json")
+        item = data["scenarios"][0]
+        item["evidence_type"] = "需求明确"
+        if kind == "legal_transition":
+            item["guard_conditions"] = ["错误守卫"]
+        elif kind == "illegal_transition":
+            item["attempted_target_state"] = "不存在"
+        else:
+            item["expected_target_state"] = "待支付"
+        ref = item["stable_ref"]
+        context = CoverageContext.model_validate({
+            "requirement_baseline": {"source": "PRD", "version": "1", "items": ["R", "R"]},
+            "requirement_links": [{"item_id": "R", "scenario_ref": ref, "confirmation": "confirmed"}]})
+        report = check_coverage(sm, ScenarioList.model_validate(data), context)
+        assert report.layers["requirements"].numerator == 0, kind
+        assert report.layers["requirements"].denominator == 1
