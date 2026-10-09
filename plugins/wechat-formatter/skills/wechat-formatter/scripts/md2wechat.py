@@ -276,6 +276,8 @@ def module_labeled(name: str, body: str) -> str:
 
 
 IMAGE_MODULES = {
+    'author-card': 'name title bio avatar wechat',
+    'brand-banner': 'logo name slogan',
     'image-compare': 'eyebrow title left_title left_image right_title right_image',
     'image-text': 'layout eyebrow title body image alt',
 }
@@ -290,6 +292,15 @@ def module_image(url: str, alt: str = '', cls: str = '') -> str:
 
 def module_images(name: str, body: str) -> tuple[str, str]:
     fields = module_fields(body, set(IMAGE_MODULES[name].split()))
+    if name in {'author-card', 'brand-banner'}:
+        author = name == 'author-card'
+        image_key, image_cls = ('avatar', 'avatar') if author else ('logo', 'logo')
+        content = module_image(fields[image_key], fields.get('name', ''), image_cls) if image_key in fields else ''
+        prefix = 'author-' if author else 'brand-'
+        order = ('name', 'title', 'bio', 'wechat') if author else ('name', 'slogan')
+        content += module_node(prefix + 'info', inner=''.join(module_node(prefix + key, fields[key])
+                                                             for key in order if key in fields))
+        return content, ''
     heading = ''.join(module_node(key, fields[key]) for key in ('eyebrow', 'title') if key in fields)
     if name == 'image-compare':
         sides = ''

@@ -676,3 +676,22 @@ def test_invalid_image_step_groups_and_parameters_warn(params, body, capsys):
     out = md2wechat.render_modules(':::image-steps{' + params + '}\n' + body + '\n:::\n')
     assert 'warning' in capsys.readouterr().err
     assert not BeautifulSoup(out, 'html.parser').select('img, script')
+
+
+
+@pytest.mark.parametrize('name,body,selector,alt', [
+    ('author-card', 'name: 作者\ntitle: 编辑\nbio: 写作\navatar: https://example.com/a.png\nwechat: wx', '.avatar', '作者'),
+    ('brand-banner', 'name: 品牌\nslogan: 易读\nlogo: https://example.com/a.png', '.logo', '品牌'),
+])
+def test_brand_images_and_semantic_identity(name, body, selector, alt):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.sanitize_content(md2wechat.render_module_block(name, None, body)), 'html.parser')
+    assert soup.select_one(selector)['alt'] == alt
+    assert soup.select_one('.author-name' if name == 'author-card' else '.brand-name').get_text() == alt
+    assert 'name:' not in soup.get_text()
+
+def test_author_without_optional_avatar_is_supported():
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.render_module_block('author-card', None, 'name: 作者\nbio: 写作'), 'html.parser')
+    assert not soup.select('img')
+    assert soup.select_one('.author-bio').get_text() == '写作'

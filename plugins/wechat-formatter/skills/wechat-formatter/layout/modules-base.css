@@ -1531,3 +1531,7 @@
 .module .point-number { display: inline-block; text-align: center; }
 .module .point-content { margin-top: 8px; }
 .module.image-steps .step { display: block; }
+
+
+.module.author-card, .module.brand-banner { display: block; }
+.module .author-info, .module .brand-info { margin-top: 12px; }
