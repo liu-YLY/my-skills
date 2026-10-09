@@ -184,6 +184,14 @@ def test_case_review_respects_existing_revision_authority_and_risk_evidence():
     assert "优先级比例严重偏离" not in core
 
 
+def write_model_output_fixtures(path, rows):
+    for row in rows:
+        if row.get("output_path"):
+            output = path.parent / row["output_path"]
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text("x" * row["output_characters"])
+
+
 def test_model_results_are_validated_and_summarized(tmp_path):
     cases = [
         dict(skill="sample", id="task-1", kind="task", prompt="do it",
@@ -206,6 +214,7 @@ def test_model_results_are_validated_and_summarized(tmp_path):
     ]
     path = tmp_path / "results.jsonl"
     path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+    write_model_output_fixtures(path, rows)
     results = evals.read_results(path, cases)
     result_summary = evals.summarize_results(results, cases)
     summary = result_summary["variants"]["with_skill"]
@@ -234,6 +243,7 @@ def test_model_results_report_partial_case_completion(tmp_path):
                check_results=[True])
     path = tmp_path / "results.jsonl"
     path.write_text(json.dumps(row), encoding="utf-8")
+    write_model_output_fixtures(path, [row])
     summary = evals.summarize_results(evals.read_results(path, cases), cases)
     variant = summary["variants"]["with_skill"]
     assert variant["completed_cases"] == 1
@@ -284,3 +294,30 @@ def test_model_results_reject_invalid_contract(tmp_path, field, value, message):
     path.write_text(json.dumps(row), encoding="utf-8")
     with pytest.raises(ValueError, match=message):
         evals.read_results(path, cases)
+
+
+@pytest.mark.parametrize("defect", ["missing", "hash", "length", "nan", "infinity"])
+def test_model_artifact_failures_are_partial_and_excluded(tmp_path, defect):
+    import hashlib
+
+    output = tmp_path / "output.md"
+    output.write_text("report")
+    case = dict(skill="sample", id="1", kind="task", prompt="task", checks=["done"])
+    row = dict(skill="sample", id="1", kind="task", run=1, duration_seconds=1.0,
+               output_characters=6, output_path="output.md", check_results=[True],
+               output_sha256=hashlib.sha256(output.read_bytes()).hexdigest())
+    if defect == "missing":
+        output.unlink()
+    elif defect == "hash":
+        row["output_sha256"] = "0" * 64
+    elif defect == "length":
+        row["output_characters"] = 7
+    else:
+        row["duration_seconds"] = float("nan" if defect == "nan" else "inf")
+    path = tmp_path / "results.jsonl"
+    path.write_text("\n".join(json.dumps(dict(row, variant=variant))
+                              for variant in ("with_skill", "baseline")))
+    summary = evals.summarize_results(evals.read_results(path, [case]), [case])
+    assert summary["status"] == "partial"
+    assert summary["variants"]["with_skill"]["checks_total"] == 0
+    assert summary["variants"]["with_skill"]["mean_duration_seconds"] is None

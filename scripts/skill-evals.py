@@ -1,6 +1,8 @@
 """Validate evaluation cases and summarize externally produced model results."""
 
 import argparse
+import hashlib
+import math
 import json
 from collections import Counter
 from pathlib import Path
@@ -97,6 +99,23 @@ def read_results(path: Path, cases: list[dict]) -> list[dict]:
             raise ValueError(f"{path}:{line_number}: invalid output_characters")
         if not isinstance(output_path, str) or not output_path.strip():
             raise ValueError(f"{path}:{line_number}: output_path must be a non-empty string")
+        errors = []
+        if not math.isfinite(duration):
+            errors.append("duration_seconds is not finite")
+        output = Path(output_path)
+        if not output.is_absolute():
+            output = path.parent / output
+        try:
+            content = output.read_bytes()
+            if len(content.decode("utf-8")) != output_chars:
+                errors.append("output_characters does not match artifact")
+            actual_hash = hashlib.sha256(content).hexdigest()
+            if row.get("output_sha256", actual_hash) != actual_hash:
+                errors.append("output_sha256 does not match artifact")
+        except (OSError, UnicodeError) as error:
+            errors.append(f"output artifact unavailable: {error}")
+        row["evidence_errors"] = errors
+        row["artifact_verified"] = not errors
         case = case_map[key]
         if key[2] == "task":
             checks = row.get("check_results")
@@ -111,8 +130,6 @@ def read_results(path: Path, cases: list[dict]) -> list[dict]:
             if not isinstance(row.get("predicted_trigger"), bool):
                 raise ValueError(f"{path}:{line_number}: predicted_trigger must be boolean")
         results.append(row)
-    if not results:
-        raise ValueError(f"{path}: no model results found")
     return results
 
 
@@ -122,7 +139,10 @@ def summarize_results(results: list[dict], cases: list[dict]) -> dict:
     expected_keys = set(case_map)
     summaries = {}
     for variant in sorted(RESULT_VARIANTS):
-        rows = [row for row in results if row["variant"] == variant]
+        invalid_rows = [row for row in results if row["variant"] == variant
+                        and not row.get("artifact_verified", False)]
+        rows = [row for row in results if row["variant"] == variant
+                and row.get("artifact_verified", False)]
         task_rows = [row for row in rows if row["kind"] == "task"]
         trigger_rows = [row for row in rows if row["kind"] == "trigger"]
         check_values = [value for row in task_rows for value in row["check_results"]]
@@ -146,6 +166,9 @@ def summarize_results(results: list[dict], cases: list[dict]) -> dict:
         completed_count = len(completed_keys)
         summaries[variant] = {
             "runs": len(rows),
+            "invalid_runs": [{"id": row["id"], "kind": row["kind"], "run": row["run"],
+                              "errors": row.get("evidence_errors", ["artifact not verified"])}
+                             for row in invalid_rows],
             "expected_cases": expected_count,
             "completed_cases": completed_count,
             "completion_rate": completed_count / expected_count if expected_count else None,
