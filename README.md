@@ -43,7 +43,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 
 | Skill | 版本 | 功能 |
 |---|---|---|
-| **wechat-formatter** | v3.0.13 | 6 种排版风格 + 高级排版模块（:::module）+ 品牌配置 + HTML 生成 |
+| **wechat-formatter** | v3.0.14 | 6 种排版风格 + 高级排版模块（:::module）+ 品牌配置 + HTML 生成 |
 
 > 各 skill 的详细能力、工作流程、使用示例见 [docs/skills-overview.md](docs/skills-overview.md)。
 

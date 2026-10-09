@@ -1539,3 +1539,9 @@
 
 .module.split, .module.columns { display: block; }
 .module .column, .module .split-left, .module .split-right { margin-bottom: 12px; }
+
+
+.module .checklist-status.done::after,
+.module .checklist-status.pending::after,
+.module .checklist-status.warn::after,
+.module .checklist-status.todo::after { content: none; }

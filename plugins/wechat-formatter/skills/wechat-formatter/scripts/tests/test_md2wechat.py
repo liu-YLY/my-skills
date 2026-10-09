@@ -760,3 +760,18 @@ def test_module_image_markdown_title_and_unsafe_url_diagnostic(capsys):
     out = md2wechat.render_module_block('image-text', None, 'image: https://example.com/a.png" onerror="x')
     assert not BeautifulSoup(out, 'html.parser').select('img')
     assert 'image URL' in capsys.readouterr().err
+
+
+
+@pytest.mark.parametrize('status', ['done', 'pending', 'warn', 'todo'])
+def test_real_checklist_markers_are_not_duplicated_by_preview_css(status):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.render_module_block('checklist', None, status + ' | 描述 | 说明'), 'html.parser')
+    marker = soup.select_one('.checklist-status')
+    winning = (-1, -1, None)
+    for order, (selector, props) in enumerate(md2wechat.parse_css_rules(md2wechat.load_modules_css())):
+        if selector.endswith('::after') and marker in soup.select(selector[:-7]):
+            specificity = selector.count('.') + selector.count(':') - 2
+            if (specificity, order) > winning[:2]:
+                winning = (specificity, order, props.get('content'))
+    assert winning[2] == 'none'
