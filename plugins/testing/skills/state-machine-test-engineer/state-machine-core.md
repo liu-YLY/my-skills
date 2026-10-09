@@ -240,14 +240,21 @@ completeness_report:
 
 ### 5.1 探测 MCP 可用性
 
-按以下顺序探测，任一失败则降级：
+先遵守用户显式禁用，再检查当前宿主已暴露的 `validate_state_machine/generate_scenarios/check_coverage` 工具；使用宿主工具清单，不将 Trae 配置或环境变量作为跨宿主前置。无工具时独立模式；已有工具可直接增强。
 
-1. 检查环境变量 `STATE_MACHINE_MCP_ENABLED=true`
-2. 检查配置文件 `~/.trae/state-machine-mcp.json` 存在且 `enabled=true`
-3. 检查 Trae 已注册 `state-machine-testing` MCP Server
-4. 尝试调用 `validate_state_machine` 做空载测试
+工具清单能证明可用时不额外探测；需要健康调用时使用下面的最小合法模型，不能空载调用。返回业务 pass/warn/fail 都证明服务响应；参数错误记为参数错误，先修正输入，不能冒充离线。连接失败、超时和工具不存在分别记录。健康检查只读，不调用写文件的 export。
 
-**探测不阻塞主流程**，超时 3s 即降级。
+```yaml
+state_machine:
+  meta: {object: HealthProbe, source: 健康检查示例}
+  states:
+    - {name: A, meaning: 初始态, is_initial: true}
+    - {name: B, meaning: 完成态, is_terminal: true}
+  transitions:
+    - {from: A, to: B, event: 完成, side_effects: [记录结果], evidence_type: 合理推理}
+```
+
+工具清单探测超时 3s；只读业务调用超时 10s 可重试一次，仍失败降级并保留具体原因。正常业务校验不通过不触发连接降级。
 
 ### 5.2 增强模式（MCP 可用）
 

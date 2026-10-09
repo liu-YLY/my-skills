@@ -2,13 +2,13 @@
 
 > 本文档说明如何配置 `state-machine-testing-mcp` Server，让 state-machine-test-engineer skill 进入增强模式。
 
-> ✅ **当前 MCP Server 状态（v0.4.2）**：MCP 协议层（stdio + streamable-http 传输）和真实工具调用已通过端到端测试。按本文档完成配置后，**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 自动降级为独立模式。
+> ✅ **当前 MCP Server 状态（v0.4.3）**：MCP 协议层（stdio + streamable-http 传输）和真实工具调用已通过端到端测试。按本文档完成配置后，**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 自动降级为独立模式。
 
 ## 三种运行模式回顾
 
 | 模式 | 触发条件 | 行为 |
 |---|---|---|
-| **增强模式** | MCP 可用（v0.4.2+，已联调验证） | skill 自身推理 + MCP 做校验/穷举/可视化复核 |
+| **增强模式** | MCP 可用（v0.4.3+，已联调验证） | skill 自身推理 + MCP 做校验/穷举/可视化复核 |
 | **独立模式** | MCP 未安装 | skill 纯 LLM 推理执行全流程 |
 | **降级模式** | MCP 调用失败 | 自动回退到独立模式 |
 
@@ -73,7 +73,7 @@ python -m state_machine_testing_mcp.server --help
 > - `~/.trae/state-machine-mcp.json`（步骤 5）：控制 skill 自身的 MCP 探测开关（`enabled`）、fallback 策略、日志级别。
 > - 环境变量 `STATE_MACHINE_MCP_ENABLED`（方式 B）：轻量启用信号，skill 探测时优先检查。
 >
-> 三者共同构成 skill 阶段 5 的 MCP 探测链（详见 [state-machine-core.md §5.1](../state-machine-core.md)）：环境变量 → 配置文件 → Trae 注册 → 空载调用，**任一环节失败即降级到独立模式**。生产环境建议三者全部配置以确保增强模式稳定生效。
+宿主工具清单是跨宿主能力依据。Trae 文件和环境变量仅是 Trae 的配置示例，均非其他宿主前置；用户显式禁用优先。已有工具即可增强，不要求三者同时存在。详见 [state-machine-core.md §5.1](../state-machine-core.md)。
 
 #### 方式 A：通过 Trae 配置文件（推荐）
 
@@ -108,7 +108,7 @@ python -m state_machine_testing_mcp.server --help
 
 #### 方式 B：通过环境变量（轻量启用）
 
-> **方式 A / B 关系**：方式 A（`mcp_servers.json`）注册 MCP Server 通道，方式 B（环境变量）是 skill 探测链的第一步信号。两者**不是二选一**，而是探测链的不同环节——方式 B 仅声明"用户希望启用 MCP"，实际 MCP 调用仍需方式 A 注册的 Server 通道。若仅设环境变量而未配置方式 A，skill 探测到 Server 不可用会自动降级到独立模式。
+环境变量仅表示显式偏好；未设置不阻止使用已暴露工具，设置为 false 表示禁用。实际服务注册沿用当前宿主配置，环境变量不创建 MCP 通道。
 
 在 shell 配置文件（`~/.bashrc` / `~/.zshrc`）中加入：
 
@@ -116,7 +116,7 @@ python -m state_machine_testing_mcp.server --help
 export STATE_MACHINE_MCP_ENABLED=true
 ```
 
-skill 会探测此环境变量并尝试调用 MCP。若 Trae 未注册该 Server，会自动降级到独立模式。
+skill 优先检查当前宿主工具；无工具时进入独立模式。其他宿主使用其自身的 MCP 注册方式。
 
 ### 步骤 5：配置 skill 可选参数（可选）
 
@@ -145,6 +145,8 @@ skill 会探测此环境变量并尝试调用 MCP。若 Trae 未注册该 Server
 | `log_level` | "debug" \| "info" \| "warn" \| "error" | "warn" | 日志级别 |
 
 ### 步骤 6：验证配置
+
+先查看当前宿主 tools/list；需要真实健康调用时使用 core §5.1 的合法模型。JSON Schema 参数错误先修正输入，不能当连接失败。业务校验 pass/warn/fail 均是有效响应。工具列表探测最多等待 3s；只读调用 10s 超时可重试一次，之后降级。
 
 在 Trae 中调用 state-machine-test-engineer skill，输入测试需求：
 
@@ -197,9 +199,9 @@ python -m state_machine_testing_mcp.server
 
 ### 问题 3：skill 仍显示"独立模式"
 
-- 检查 `STATE_MACHINE_MCP_ENABLED` 环境变量是否生效
-- 检查 `~/.trae/state-machine-mcp.json` 的 `enabled` 字段是否为 true
-- skill 探测失败会静默降级，可临时把 `log_level` 改为 `debug` 查看详细日志
+- 检查用户是否显式禁用 MCP，再查看宿主工具清单
+- 工具不存在、连接失败、超时和参数错误分别报告；缺少 Trae 文件不证明服务不可用
+- 若返回业务 warn/fail，服务已响应，按业务结果处理，不判离线
 
 ### 问题 4：MCP 调用超时
 
@@ -237,7 +239,7 @@ pip uninstall state-machine-testing-mcp
 ## 隐私与安全
 
 - MCP Server 本地运行，不外发数据
-- 全部 5 个工具均为确定性计算（v0.4.2 起 `build_state_machine` 为行业模板加载，不内置 LLM），不发任何数据出本机
+- 全部 5 个工具均为确定性计算（v0.4.3 起 `build_state_machine` 为行业模板加载，不内置 LLM），不发任何数据出本机
 - HTTP 传输模式（`--transport http`）默认仅监听 127.0.0.1，仅本机可访问
 
 ---
