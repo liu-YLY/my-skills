@@ -604,3 +604,23 @@ def test_matrix_rows_bind_content(name, body, selector, text):
     soup = BeautifulSoup(md2wechat.render_module_block(name, '标题', body), 'html.parser')
     assert soup.select_one(selector).get_text() == text
     assert '|' not in soup.get_text()
+
+
+
+@pytest.mark.parametrize('name,body,selector,text', [
+    ('faq', '能用吗 | 可以', '.faq-answer', '可以'),
+    ('myth-fact', 'myth | 堆砌\nfact | 适用', '.myth-fact-pair .fact-text', '适用'),
+    ('checklist', 'done | 检查 | 完成', '.checklist-status.done', '✓'),
+    ('callout', 'warning | 风险', '.callout.warning .callout-content', '风险'),
+])
+def test_labeled_rows_emit_real_labels(name, body, selector, text):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.sanitize_content(md2wechat.render_module_block(name, None, body)), 'html.parser')
+    assert soup.select_one(selector).get_text() == text
+    assert '|' not in soup.get_text()
+
+@pytest.mark.parametrize('name,body', [('myth-fact', 'fact | 真相'),
+    ('myth-fact', 'myth | 误区'), ('checklist', 'bad | 项 | 描述'), ('callout', 'bad | 提示')])
+def test_labeled_invalid_rows_are_reported(name, body, capsys):
+    out = md2wechat.render_module_block(name, None, body)
+    assert 'warning' in capsys.readouterr().err and '<pre>' in out

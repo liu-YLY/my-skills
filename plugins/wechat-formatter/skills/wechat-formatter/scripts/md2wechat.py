@@ -190,6 +190,7 @@ def module_group(name: str, key: str, value: str) -> str:
 
 
 ROW_MODULES = {
+    'faq': ('faq-item', 'faq-question faq-answer', False),
     'cards': ('card', 'card-title card-subtitle card-desc', True),
     'compare': ('compare-row', 'compare-cell compare-cell compare-cell', True),
     'cases': ('case', 'case-title case-industry case-result', False),
@@ -233,8 +234,50 @@ def module_rows(name: str, body: str) -> str:
     return result
 
 
+LABELED_MODULES = {'myth-fact', 'checklist', 'callout'}
+
+
+def module_labeled(name: str, body: str) -> str:
+    result, pair = '', ''
+    for line in body.strip().splitlines():
+        if not line.strip():
+            continue
+        parts = [part.strip() for part in line.split('|')]
+        if len(parts) != (3 if name == 'checklist' else 2):
+            raise ValueError('incorrect labeled row')
+        kind, value = parts[:2]
+        if name == 'myth-fact':
+            if kind not in {'myth', 'fact'} or (kind == 'fact') != bool(pair):
+                raise ValueError('expected myth/fact pair')
+            cell = module_node(kind, inner=module_node(kind + '-label', '误区' if kind == 'myth' else '事实')
+                               + module_node(kind + '-text', value))
+            if kind == 'myth':
+                pair = cell
+            else:
+                result += module_node('myth-fact-pair', inner=pair + cell)
+                pair = ''
+        elif name == 'checklist':
+            glyphs = {'done': '✓', 'pending': '⏳', 'warn': '⚠', 'todo': '○'}
+            if kind not in glyphs:
+                raise ValueError('invalid status')
+            result += module_node('checklist-item', inner=module_node('checklist-status ' + kind, glyphs[kind])
+                                  + module_node('checklist-content', inner=module_node('checklist-desc', value)
+                                                + module_node('checklist-note', parts[2])))
+        else:
+            labels = {'tip': '💡 提示', 'warning': '⚠ 警告', 'note': '📝 注意', 'important': '❗ 重要'}
+            if kind not in labels:
+                raise ValueError('invalid callout type')
+            result += module_node('callout ' + kind, inner=module_node('callout-label', labels[kind])
+                                  + module_node('callout-content', value))
+    if pair or not result:
+        raise ValueError('incomplete labeled rows')
+    return result
+
+
 def render_module_block(name: str, title: str | None, body: str, params: str = '') -> str:
     try:
+        if name in LABELED_MODULES and not params:
+            return module_wrap(name, title, module_labeled(name, body))
         if name in ROW_MODULES and not params:
             return module_wrap(name, title, module_rows(name, body))
         if name not in FIELD_MODULES or params:

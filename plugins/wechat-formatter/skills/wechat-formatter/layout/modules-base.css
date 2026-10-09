@@ -1513,3 +1513,9 @@
 
 .module.cards, .module.cases, .module .compare-row { display: block; }
 .module .card, .module .case { margin-bottom: 12px; }
+
+
+.module .myth-fact-pair, .module .checklist-item { display: block; }
+.module .checklist-status { display: inline-block; text-align: center; }
+.module .callout-label { font-weight: 600; margin-bottom: 8px; }
+.module .callout::before, .module .checklist-status::after { content: none; }
