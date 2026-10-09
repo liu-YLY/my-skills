@@ -91,3 +91,30 @@ def test_skill_model_example_parses_and_passes_structure():
     report = validate_state_machine(sm)
     assert report.overall_status == "pass"
     assert report.manual_review_required
+
+
+
+def test_all_scenario_knowledge_examples_validate_and_match_references():
+    import re
+    import yaml
+    from state_machine_testing_mcp.schemas import Scenario, StateMachine, ScenarioList
+    from state_machine_testing_mcp.coverage import check_coverage
+    knowledge = (Path(__file__).resolve().parents[4] /
+                 "skills/state-machine-test-engineer/knowledge/scenario-types.md").read_text()
+    blocks = [yaml.safe_load(block) for block in re.findall(r"```yaml\n(.*?)```", knowledge, re.S)]
+    sm = StateMachine.model_validate(next(b["state_machine"] for b in blocks if isinstance(b, dict)))
+    scenarios = [Scenario.model_validate(item) for block in blocks if isinstance(block, list) for item in block]
+    assert len(scenarios) == 10
+    assert all(s.expected_target_state == "待确认" or s.expected_target_state in {x.name for x in sm.states}
+               for s in scenarios)
+    assert all(s.source for s in scenarios)
+    report = check_coverage(sm, ScenarioList(scenarios=scenarios))
+    assert report.unmatched_scenarios == []
+    assert report.transition_coverage == report.forbidden_coverage == 1
+
+
+def test_forbidden_source_survives_validation_and_export():
+    from state_machine_testing_mcp.schemas import ForbiddenTransition
+    item = ForbiddenTransition.model_validate({"from": "A", "to": "B", "reason": "禁止",
+                                              "source": "PRD §1", "evidence_type": "需求明确"})
+    assert item.model_dump()["source"] == "PRD §1"

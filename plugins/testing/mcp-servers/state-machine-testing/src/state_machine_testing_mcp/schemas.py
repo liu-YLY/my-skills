@@ -71,6 +71,7 @@ class ForbiddenTransition(BaseModel):
     to_state: str | Literal["*"] = Field(alias="to")
     reason: str
     evidence_type: EvidenceType
+    source: str = ""
     id: str | None = None
 
     @model_validator(mode="after")

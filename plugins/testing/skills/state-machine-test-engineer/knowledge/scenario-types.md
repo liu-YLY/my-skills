@@ -3,6 +3,41 @@
 > **何时阅读**：阶段 4（10 类场景穷举）执行时查阅。定义每类场景的生成规则、生成条件、示例。
 > **覆盖范围**：10 类 risk_type 的生成规则 / 何时生成 / 何时跳过 / 示例 schema。
 
+## 场景完整契约
+
+每条场景必填 `id/title/current_state/trigger_event/precondition/expected_target_state/risk_type/evidence_type`；`source` 记录需求位置或推理依据。可选字段为 `expected_target_state_reason/forbidden_states/related_objects/notes/transition_id/forbidden_id/guard_conditions/attempted_target_state/violated_guard`。
+
+确定目标只填已定义状态名；未知目标统一填 `待确认` 并提供 `expected_target_state_reason`。合法场景携带完整 `guard_conditions` 与 `transition_id`；非法场景携带 `forbidden_id` 与具体 `attempted_target_state`。引用仅缩小匹配范围，不能绕过目标与守卫匹配。守卫场景保留原转换的完整条件，并在 `violated_guard` 标出本次违反的一个条件。
+
+以下模型是本文件十个场景示例的共同结构基线；示例中的业务时间、权限和恢复规则未确认，不充当真实产品需求。
+
+```yaml
+state_machine:
+  meta: {object: Order, source: 示例基线}
+  states:
+    - {name: 待支付, meaning: 等待支付, is_initial: true}
+    - {name: 已支付, meaning: 已收到支付结果}
+    - {name: 已取消, meaning: 订单已取消, is_terminal: true}
+    - {name: 退款中, meaning: 退款处理中}
+    - {name: 退款成功, meaning: 退款完成, is_terminal: true}
+  transitions:
+    - id: T-PAY
+      from: 待支付
+      to: 已支付
+      event: 支付成功回调
+      guards: [订单有效, 金额一致, 回调可信]
+      side_effects: [生成支付记录, 触发履约]
+      evidence_type: 需求明确
+      source: 示例 PRD §3.2
+  forbidden:
+    - id: F-CANCEL
+      from: 已取消
+      to: 已支付
+      reason: 已取消订单不可支付
+      evidence_type: 需求明确
+      source: 示例 PRD §3.1
+```
+
 ## 1. 10 类场景总览
 
 | risk_type | 中文名 | 生成依据 | 默认证据类型 |
@@ -37,6 +72,8 @@
   expected_target_state: 已支付
   forbidden_states: [已取消, 退款成功]
   risk_type: legal_transition
+  transition_id: T-PAY
+  guard_conditions: [订单有效, 金额一致, 回调可信]
   related_objects: [支付记录, 订单日志]
   evidence_type: 需求明确
   source: PRD §3.2 + 状态机 transitions
@@ -57,9 +94,11 @@
   current_state: 已取消
   trigger_event: 支付成功回调
   precondition: 订单已取消
-  expected_target_state: 已取消（保持不变）
+  expected_target_state: 已取消
   forbidden_states: [已支付]
   risk_type: illegal_transition
+  forbidden_id: F-CANCEL
+  attempted_target_state: 已支付
   related_objects: [支付记录, 订单日志]
   evidence_type: 需求明确
   source: PRD §3.1 + 状态机 forbidden 规则
@@ -80,9 +119,12 @@
   current_state: 待支付
   trigger_event: 支付成功回调
   precondition: 订单处于待支付状态，但回调金额 ≠ 订单金额
-  expected_target_state: 待支付（保持不变）
+  expected_target_state: 待支付
   forbidden_states: [已支付]
   risk_type: guard_violation
+  transition_id: T-PAY
+  guard_conditions: [订单有效, 金额一致, 回调可信]
+  violated_guard: 金额一致
   related_objects: [支付记录, 风控日志]
   evidence_type: 合理推理
   source: 状态机 transitions 中 guard "金额一致" 的反向
@@ -103,7 +145,7 @@
   current_state: 已支付
   trigger_event: 支付成功回调（重复）
   precondition: 订单已是已支付状态，收到第二次支付成功回调
-  expected_target_state: 已支付（保持不变）
+  expected_target_state: 已支付
   forbidden_states: [重复生成支付记录]
   risk_type: idempotency
   related_objects: [支付记录, 订单日志, 消息队列]
@@ -126,7 +168,8 @@
   current_state: 待支付
   trigger_event: 用户取消 + 支付成功回调（同时到达）
   precondition: 订单处于待支付状态，用户点取消的同时收到支付成功回调
-  expected_target_state: 待确认（取决于业务规则：先到先得/取消优先/支付优先）
+  expected_target_state: 待确认
+  expected_target_state_reason: 并发处理优先级未定义
   forbidden_states: []
   risk_type: concurrency
   related_objects: [订单日志, 支付记录, 锁机制]
@@ -149,7 +192,8 @@
   current_state: 退款中
   trigger_event: 退款失败回调 + 退款成功回调（乱序到达）
   precondition: 退款处理中，两条回调消息乱序到达
-  expected_target_state: 待确认（取决于业务规则：最后一条为准/失败优先）
+  expected_target_state: 待确认
+  expected_target_state_reason: 乱序处理规则未定义
   forbidden_states: []
   risk_type: message_reorder
   related_objects: [消息队列, 退款记录, 订单日志]
@@ -218,7 +262,7 @@
   current_state: 已支付
   trigger_event: 管理员发起退款（普通用户冒充）
   precondition: 用户为普通用户，无管理员权限
-  expected_target_state: 已支付（保持不变）
+  expected_target_state: 已支付
   forbidden_states: [退款中]
   risk_type: access_control
   related_objects: [权限系统, 操作日志]
@@ -241,7 +285,8 @@
   current_state: 退款中
   trigger_event: 退款失败回调
   precondition: 订单处于退款中状态，收到退款失败回调
-  expected_target_state: 待确认（PRD 未说明失败后是回退到已支付还是进入退款失败）
+  expected_target_state: 待确认
+  expected_target_state_reason: 失败后的恢复状态未定义
   forbidden_states: []
   risk_type: failure_recovery
   related_objects: [退款记录, 订单日志, 通知系统]
@@ -269,7 +314,7 @@
 
 若同一对 (current_state, trigger_event) 在多类场景中出现，按以下规则去重：
 
-1. **同 risk_type 同 (state, event)**：合并为 1 个场景，precondition 描述差异
+1. **同 risk_type 同 (state, event)**：只有转换/禁止引用、完整守卫、违反守卫、前置输入、尝试目标和所有断言都等价时才可合并；不能把不同 guard 或目标压成一条。来源不同的依据分别保留。
 2. **不同 risk_type 同 (state, event)**：保留为多个场景，title 区分（如"已取消订单尝试支付"vs"已取消订单支付回调重复到达"）
 
 ## 5. 场景编号规则

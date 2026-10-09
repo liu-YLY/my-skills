@@ -222,7 +222,7 @@ completeness_report:
 
 ### 4.3 输出格式
 
-见 SKILL.md "场景清单 Schema"。每条场景必须包含：
+完整场景 Schema 和可校验示例见 [knowledge/scenario-types.md](knowledge/scenario-types.md)。每条场景必须包含：
 - `id`（SM-001 起编）
 - `risk_type`（10 类枚举之一）
 - `evidence_type`（需求明确/合理推理/待确认）

@@ -1,6 +1,6 @@
 # State Machine Test Engineer Skill
 
-> 状态机驱动的状态型需求测试 skill v1.2.2：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
+> 状态机驱动的状态型需求测试 skill v1.2.3：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
 
 ## 简介
 
@@ -57,11 +57,11 @@ State Machine Test Engineer 是 testing-bundle v3.0.0 新增的子 skill，专�
 
 ## 三种运行模式
 
-> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.3.1**，MCP 协议层（stdio + streamable-http）和真实工具调用已通过端到端测试，按 [quickstart.md](integrations/quickstart.md) 配置后**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载）。未安装或调用失败时 skill 自动降级为独立模式。
+> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.3.2**，MCP 协议层（stdio + streamable-http）和真实工具调用已通过端到端测试，按 [quickstart.md](integrations/quickstart.md) 配置后**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载）。未安装或调用失败时 skill 自动降级为独立模式。
 
 | 模式 | 触发条件 | 行为 | 输出标记 |
 |---|---|---|---|
-| 增强模式 | MCP 可用（v0.3.1+，已联调验证） | skill 自身推理 + MCP 做校验/穷举/可视化复核 | `✓ MCP 增强模式` |
+| 增强模式 | MCP 可用（v0.3.2+，已联调验证） | skill 自身推理 + MCP 做校验/穷举/可视化复核 | `✓ MCP 增强模式` |
 | 独立模式 | MCP 未安装 | skill 纯 LLM 推理执行全流程 | `⚠ 独立模式（未校验）` |
 | 降级模式 | MCP 调用失败 | 自动回退到独立模式 | `⚠ 降级模式` |
 
@@ -164,6 +164,7 @@ state-machine-test-engineer/
 
 ## 版本历史
 
+- v1.2.3: 统一模型和场景规范并校验示例
 - v1.2.2: 修正守卫失败的分支目标语义
 - v1.2.1: 移除易漂移的测试总数声明；将重复流程与 Schema 下沉到 core，入口保留稳定契约和阶段加载门禁
 - v1.2.0: 配套 MCP Server 升级 v0.3.0（结构校验与覆盖统计按转换目标/守卫/规则引用匹配计算）
