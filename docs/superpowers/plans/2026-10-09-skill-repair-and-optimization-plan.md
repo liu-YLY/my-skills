@@ -299,3 +299,4 @@ git diff --check
 
 - B01 已验证：校准strategy id5及四项禁止/期望断言；`skill-evals.py`输入检查通过，仓库工具22 passed、3 skipped，版本同步通过。代码反例按所属批次先失败后修复。
 - B02 已验证：六种文档diff模式反例先6 failed，补参数后仓库工具28 passed、3 skipped；textconv未执行且diff范围正确，版本与结构检查通过。
+- B03 已验证：共享入口与跨边反例先2 failed；完整循环成员检测后review-checker 104 passed，含2000节点无环链。版本0.3.1，链接与版本检查通过。

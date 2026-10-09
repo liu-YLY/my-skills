@@ -1,6 +1,6 @@
 # Review Checker MCP Server
 
-> 配套 test-case-engineer 评审模式的 Python MCP Server v0.3.0：提供 10 维度确定性校验与度量报告（9 用例级 + 1 语义一致性），作为 skill 的可选增强引擎。
+> 配套 test-case-engineer 评审模式的 Python MCP Server v0.3.1：提供 10 维度确定性校验与度量报告（9 用例级 + 1 语义一致性），作为 skill 的可选增强引擎。
 
 > **实现状态**：已实现 3 个工具及 stdio 协议；当前报告区分确定问题、候选线索及未评估范围。
 
@@ -110,6 +110,7 @@ Host 侧配置 MCP 客户端指向本 Server 后，可通过 MCP 协议调用 `r
 
 ## 版本历史
 
+- v0.3.1: 修复共享入口和跨边闭环漏报，报告全部循环依赖成员
 - v0.3.0: 业务结果与关键检查点输入、候选问题分离、P0 评级否决及评审范围披露
 
 - v0.1.0: 首版，9 维度确定性校验逻辑（validators）+ pydantic Schema + 单元测试

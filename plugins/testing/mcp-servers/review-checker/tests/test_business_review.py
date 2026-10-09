@@ -107,3 +107,27 @@ def test_same_subject_different_states_are_not_opposite_claims():
     sample.preconditions.append(sample.preconditions[0].model_copy(
         update={"state": "被冻结", "polarity": "negation"}))
     assert not check_semantic_conflicts([sample])
+
+
+def test_shared_entry_reports_all_cyclic_cases():
+    facts = [SemanticFacts(case_id=k, dependencies=v) for k, v in {
+        "A": ["B", "C"], "B": ["B"], "C": ["A"], "outside": ["A"],
+    }.items()]
+    issues = check_semantic_conflicts(facts)
+    reported = {case_id for issue in issues for case_id in issue.case_id.split(",")}
+    assert reported == {"A", "B", "C"}
+    assert all(issue.confirmation == "confirmed" for issue in issues)
+
+
+def test_cross_edges_do_not_hide_members_of_a_cycle():
+    facts = [SemanticFacts(case_id=k, dependencies=v) for k, v in {
+        "A": ["B"], "B": ["C", "D"], "C": ["A"], "D": ["C"],
+    }.items()]
+    for ordered in (facts, list(reversed(facts))):
+        issues = check_semantic_conflicts(ordered)
+        assert {cid for issue in issues for cid in issue.case_id.split(",")} == {"A", "B", "C", "D"}
+
+
+def test_long_acyclic_dependency_chain_is_safe():
+    facts = [SemanticFacts(case_id=str(i), dependencies=[str(i + 1)]) for i in range(2000)]
+    assert check_semantic_conflicts(facts) == []
