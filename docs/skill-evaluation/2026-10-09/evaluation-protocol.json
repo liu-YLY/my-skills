@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "final_source_collection_and_v2_independent_grading_running",
+  "status": "completed_with_primary_evidence_review",
   "source_commit": "8e55998ab7622c9bd3e3f95a6e8ef931f0359a6f",
   "baseline_commit": "a3dad4e7b3e318e652f7b37aeb5e1e096608b211",
   "suite_original_sha256": "8e1dc2c5db0d1c2f07cad1b288a0589c06b1f58f2f3cc15d7042b99fac809993",
@@ -29,8 +29,8 @@
   "independent_judge_model": "gpt-6-astra",
   "judge_effort": "high",
   "runtime_hashes": {
-    "status": "final ready before formal model evaluation",
-    "formal_model_runs_started": false,
+    "status": "frozen preflight receipt retained; formal execution completed",
+    "formal_model_runs_started": true,
     "files": {
       "run_evals.py": {
         "path": "/tmp/my-skills-repair-20261009/run_evals.py",
@@ -66,7 +66,6 @@
     "Trigger testing is controlled metadata classification, not native host triggering",
     "No real MCP services in model runtime; MCP transports are separately tested",
     "Three independent paired votes do not prove statistical significance",
-    "No final behavior acceptance before all required actual runs and evidence review",
     "Timings are observed under shared backend load and caching, with overlapping collection and grading; they do not establish a causal efficiency improvement."
   ],
   "hard_failure_flags": [
@@ -85,9 +84,9 @@
     "expectations_changed": false,
     "v1_grader_sha256": "17657fecde963ab17921f34eef52b94dc8b0f7b4dc9713e2f6a1cd1d99089eab",
     "v2_grader_sha256": "52452515536e60601a77d6b47b0d25c1c23d321cff78b66504ad32808d7adbc8",
-    "new_grader_path": "/tmp/my-skills-repair-20261009/judge_evals_v2.py",
-    "original_judge_output": "/tmp/my-skills-repair-20261009/judge-runs",
-    "new_judge_output": "/tmp/my-skills-repair-20261009/judge-runs-v2",
+    "new_grader_path": "/Users/lyle/.codex/artifacts/skill-repair-20261009/judge_evals_v2.py",
+    "original_judge_output": "/Users/lyle/.codex/artifacts/skill-repair-20261009/judge-runs",
+    "new_judge_output": "/Users/lyle/.codex/artifacts/skill-repair-20261009/judge-runs-v2",
     "v2_changes": "材料完整性只针对冻结检查项和四类硬否决能否从给定输出、工具事件及结果判断，不评分完整Skill遵循。为保持盲态而主动隐藏的Skill资源正文是已定义的未评分范围，不据此标partial；用户明确缺业务规则或要求待确认也不是评测材料缺失。material_status=complete不表示需求充足、执行通过或检查项passed；可判定的错误和不足必须保留false。实际输出/轨迹缺失、与判定相关的截断或无法判断的证据缺口仍须partial，不能推断补齐。",
     "adjudication_policy": "No relabelling original partial as valid; all required independent calls run again under v2"
   },
@@ -98,5 +97,10 @@
     "judge_workers": 2,
     "trigger_output": "/tmp/my-skills-repair-20261009/trigger-runs",
     "trigger_note": "Independent frozen classification inputs run in parallel; completed unchanged receipts are copied to final collector output so later identical signatures resume rather than duplicate. No input, expectation, model, permission, or runtime-source changes."
-  }
+  },
+  "final_evidence": "behavior-validation.json",
+  "final_validated_records": 411,
+  "final_valid_required_judge_calls": 128,
+  "candidate_acceptance_gate": "passed_after_recorded_agent_primary_evidence_review",
+  "supplementary_v3_smoke": "Four valid actual calls; separate artifacts and no v2 relabelling"
 }
