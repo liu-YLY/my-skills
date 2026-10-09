@@ -230,7 +230,7 @@ completeness_report:
 
 ### 4.4 退出条件
 
-- 至少生成 10 条场景（每类至少 1 条）
+- 十类均记录 `applicable / not_applicable / unknown`、理由、来源及缺失信息；全部适用类型已处理，未知项附待确认说明，不强行每类一条
 - 所有场景都有 `evidence_type` 标注
 - 所有"PRD 未说明"的场景都标 `evidence_type: 待确认`
 
@@ -273,7 +273,7 @@ completeness_report:
 
 - 完整执行阶段 1-4，输出首行标 `⚠ 独立模式（未校验）`
 - skill 手写 Mermaid 状态图（样式可能略差）
-- skill 简单统计覆盖度（10 类是否齐全）
+- skill 统计适用类型已处理情况，单列不适用和未知项；零计数不自动等于业务缺口
 
 ### 5.4 降级模式（MCP 调用失败）
 

@@ -149,3 +149,38 @@ def test_concurrency_generates_for_different_events() -> None:
     for s in result.scenarios:
         assert "+" in s.trigger_event
         assert s.evidence_type.value == "待确认"
+
+
+
+def test_explicit_synchronous_model_skips_message_reorder_and_reports_three_states():
+    sm = _load_order_refund()
+    sm.scenario_applicability = {"message_reorder": {
+        "status": "not_applicable", "reason": "本例明确同步且无消息通道", "source": "PRD §1"}}
+    sm = StateMachine.model_validate(sm.model_dump(by_alias=True))
+    result = generate_scenarios(sm)
+    assert result.coverage_summary["message_reorder"] == 0
+    assert result.scenario_applicability["message_reorder"].status == "not_applicable"
+    assert result.scenario_applicability["access_control"].status == "unknown"
+    candidates = [s for s in result.scenarios if s.risk_type == "access_control"]
+    assert candidates and all(s.expected_target_state == "待确认" for s in candidates)
+    assert all(s.forbidden_states == [] and "应被拒绝" not in s.title for s in candidates)
+
+
+def test_concurrency_candidates_only_share_an_initial_object_state():
+    sm = _load_order_refund()
+    result = generate_scenarios(sm, ["concurrency"])
+    assert result.scenarios
+    for scenario in result.scenarios:
+        events = scenario.trigger_event.replace("（并发）", "").split(" + ")
+        assert all(any(t.event == event and t.from_state == scenario.current_state
+                       for t in sm.transitions) for event in events)
+
+
+def test_explicit_async_capability_does_not_require_event_keywords():
+    sm = _load_order_refund()
+    for t in sm.transitions:
+        t.event = "输入" + t.id
+    sm.scenario_applicability = {"message_reorder": {
+        "status": "applicable", "reason": "输入来自队列", "source": "PRD §2"}}
+    sm = StateMachine.model_validate(sm.model_dump(by_alias=True))
+    assert generate_scenarios(sm, ["message_reorder"]).scenarios
