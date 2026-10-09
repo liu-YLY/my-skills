@@ -553,3 +553,19 @@ def test_solid_module_background_and_theme_precedence(tmp_path):
     style.write_text('```css\n#nice .hero { background-color: #112233; }\n```')
     out = Path(md2wechat.convert(str(source), str(style))).read_text()
     assert '#112233' in BeautifulSoup(out, 'html.parser').select_one('#content .hero')['style']
+
+
+
+@pytest.mark.parametrize('name,body,selector,count', [
+    ('audience-fit', 'title: 读者\nfit: 写作者 | 编辑\navoid: 广告', '.fit-item', 2),
+    ('manifesto', 'title: 理念\nbelieve: 结构 | 阅读\nagainst: 堆砌', '.believe-item', 2),
+    ('question', 'title: 问题\noptions: 结构 | 视觉', '.option', 2),
+    ('poll', 'title: 投票\noptions: A | B', '.option-text', 2),
+])
+def test_grouped_fields_are_semantic_and_static(name, body, selector, count):
+    from bs4 import BeautifulSoup
+    html = md2wechat.sanitize_content(md2wechat.render_module_block(name, None, body))
+    soup = BeautifulSoup(html, 'html.parser')
+    assert len(soup.select(selector)) == count
+    assert not soup.select('input, button, script, form')
+    assert '|' not in soup.get_text()

@@ -121,6 +121,10 @@ MODULE_BLOCK_RE = re.compile(
 
 
 FIELD_MODULES = {
+    'audience-fit': ('title subtitle fit avoid', 'title'),
+    'manifesto': ('label title body believe against', ''),
+    'question': ('title options', ''),
+    'poll': ('title options', ''),
     'hero': ('eyebrow title subtitle kicker', 'eyebrow title'),
     'part': ('index title subtitle', ''),
     'label-title': ('label title', ''),
@@ -168,6 +172,23 @@ def module_fallback(name: str, title: str | None, body: str, params: str = '') -
     return module_node('module-' + name, inner=literal) if name in FIELD_MODULES else literal
 
 
+def module_group(name: str, key: str, value: str) -> str:
+    values = [item.strip() for item in value.split('|')]
+    if any(not item for item in values):
+        raise ValueError('empty list item')
+    if key == 'options':
+        if name == 'poll':
+            items = ''.join(module_node('option', inner=module_node('option-radio', '○')
+                                       + module_node('option-text', item)) for item in values)
+        else:
+            items = ''.join(module_node('option', item) for item in values)
+        return module_node('options', inner=items)
+    labels = {'fit': '适合', 'avoid': '不适合', 'believe': '相信', 'against': '反对'}
+    glyph = '✓ ' if key == 'fit' else '✗ ' if key == 'avoid' else ''
+    items = ''.join(module_node(key + '-item', glyph + item) for item in values)
+    return module_node(key + '-section', inner=module_node(key + '-label', labels[key]) + items)
+
+
 def render_module_block(name: str, title: str | None, body: str, params: str = '') -> str:
     try:
         if name not in FIELD_MODULES or params:
@@ -188,7 +209,10 @@ def render_module_block(name: str, title: str | None, body: str, params: str = '
             if key not in fields:
                 continue
             cls = 'part-' + key if name == 'part' else 'quote-text' if key == 'quote' else key
-            content += module_node(cls, fields[key])
+            if key in {'fit', 'avoid', 'believe', 'against', 'options'}:
+                content += module_group(name, key, fields[key])
+            else:
+                content += module_node(cls, fields[key])
         header = module_node('module-header', title) if title else ''
         return module_node('module module-' + name + ' ' + name + suffix,
                            inner=header + module_node('module-body', inner=content))

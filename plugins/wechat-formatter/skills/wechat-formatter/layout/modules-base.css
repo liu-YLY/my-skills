@@ -1496,3 +1496,9 @@
 .infographic { background-color: #e2e8f0; }
 .highlight { background-color: #fef3c7; }
 .module { display: block; }
+
+
+.module .options, .module .fit-section, .module .avoid-section { display: block; }
+.module .option { display: block; margin-bottom: 8px; }
+.module .option-radio { display: inline-block; }
+.module .fit-item::before, .module .avoid-item::before { content: none; }
