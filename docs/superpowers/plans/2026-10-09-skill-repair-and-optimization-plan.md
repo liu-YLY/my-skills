@@ -301,3 +301,4 @@ git diff --check
 - B02 已验证：六种文档diff模式反例先6 failed，补参数后仓库工具28 passed、3 skipped；textconv未执行且diff范围正确，版本与结构检查通过。
 - B03 已验证：共享入口与跨边反例先2 failed；完整循环成员检测后review-checker 104 passed，含2000节点无环链。版本0.3.1，链接与版本检查通过。
 - B04 已验证：两项章节顺序反例先2 failed；按原始块顺序转换后仓库工具30 passed、3 skipped，表格转义和连续表格保留。CI补齐既有python-docx测试依赖，版本及链接检查通过。
+- B05 已验证：三种围栏反例先3 failed；保护代码区域后wechat 58 passed，缩进示例与正文模块均保留，版本3.0.3及三类插件清单同步。
