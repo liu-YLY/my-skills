@@ -11,7 +11,7 @@ USE 方法（Utilization / Saturation / Errors）由 Brendan Gregg 提出，用�
 - **Saturation（饱和度）**：资源排队/等待程度（如 runqueue 长度、IO 队列深度）
 - **Errors（错误）**：错误计数（如网络重传、磁盘错误、OOM）
 
-**核心原则**：三者都要查，不能只看利用率。利用率高不一定饱和，饱和不一定有错误，但有错误一定有问题。
+**核心原则**：三者都要查，不能只看利用率。利用率高不一定饱和，饱和不一定有错误，错误计数需核对时间窗、错误定义与是否为预期注入，不能单独证明容量不足。
 
 ## 2. 资源三角：四类资源的 USE 检查项
 
@@ -31,7 +31,7 @@ USE 方法（Utilization / Saturation / Errors）由 Brendan Gregg 提出，用�
 | 磁盘 | `iostat -x 1`、`sar -d 1`、`iotop` |
 | 网络 | `sar -n DEV 1`、`netstat -s`、`ifconfig`、`ethtool -S <iface>` |
 
-**关键指标阈值参考**（阈值分档以 [metrics-framework.md](metrics-framework.md) 阈值表为权威源，本表为通用告警参考）：
+**关键指标阈值参考**（按 [metrics-framework.md](metrics-framework.md) 记录来源；本表仅为工具排查示例，不能替代已确认业务SLA或单独证明瓶颈）：
 
 | 指标 | 命令 | 告警阈值 |
 |------|------|----------|
