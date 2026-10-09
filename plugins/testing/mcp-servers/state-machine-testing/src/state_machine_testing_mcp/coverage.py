@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from .generators import ALL_SCENARIO_TYPES, assess_applicability
-from .schemas import CoverageReport, ScenarioList, StateMachine, CoverageContext
+from .schemas import CoverageReport, ScenarioList, StateMachine, CoverageContext, failure_target_is_consistent
 from .layers import layered_coverage
 
 
@@ -77,10 +77,9 @@ def check_coverage(state_machine: StateMachine, scenarios: ScenarioList, context
     qualified_types, qualified_covered = set(), set()
     unconfirmed = []
     for scenario in scenarios.scenarios:
-        failure = getattr(scenario, "failure_semantics", None)
         qualified = (scenario.id not in unmatched and scenario.evidence_type.value != "待确认"
                      and scenario.expected_target_state in {state.name for state in state_machine.states}
-                     and (failure is None or (failure.phase != "unknown" and failure.evidence_type.value != "待确认")))
+                     and failure_target_is_consistent(state_machine, scenario))
         if qualified and scenario.risk_type == "legal_transition":
             matches = [index for index, transition in enumerate(state_machine.transitions)
                        if (not scenario.transition_id or scenario.transition_id == transition.id)

@@ -1,6 +1,6 @@
 """覆盖分层只使用输入的基线、确认关联和实际执行证据。"""
 
-from .schemas import CoverageContext, CoverageLayer
+from .schemas import CoverageContext, CoverageLayer, failure_target_is_consistent
 
 
 def _metric(baseline, covered, unassessed=()):
@@ -19,8 +19,7 @@ def layered_coverage(sm, scenarios, context, covered_transitions, unmatched):
     resolved = {s.stable_ref or s.id for s in scenarios.scenarios
                 if s.id not in unmatched and s.evidence_type.value != "待确认"
                 and s.expected_target_state in {state.name for state in sm.states}
-                and (s.failure_semantics is None or (
-                    s.failure_semantics.phase != "unknown" and s.failure_semantics.evidence_type.value != "待确认"))}
+                and failure_target_is_consistent(sm, s)}
     requirements = {link.item_id for link in context.requirement_links
                     if link.confirmation == "confirmed" and link.scenario_ref in resolved}
     result = {
