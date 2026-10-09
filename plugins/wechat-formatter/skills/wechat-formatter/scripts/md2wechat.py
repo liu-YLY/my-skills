@@ -635,7 +635,9 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             selection.removeAllRanges();
             selection.addRange(range);
             try {{
-                document.execCommand('copy');
+                if (!document.execCommand('copy')) {{
+                    throw new Error('clipboard copy was rejected');
+                }}
                 alert('已复制！请打开微信公众号编辑器，Ctrl+V 粘贴');
             }} catch(e) {{
                 alert('复制失败，请手动选中内容后 Ctrl+C 复制');

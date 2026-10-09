@@ -18,6 +18,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -29,6 +32,31 @@ spec = importlib.util.spec_from_file_location('md2wechat', SCRIPT_PATH)
 assert spec is not None and spec.loader is not None
 md2wechat = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(md2wechat)
+
+
+@pytest.mark.parametrize('outcome', ['false', 'throw', 'true'])
+def test_copy_button_reports_actual_clipboard_result(tmp_path, outcome):
+    from bs4 import BeautifulSoup
+
+    node = shutil.which('node')
+    if not node:
+        pytest.skip('Node.js unavailable for browser script boundary test')
+    output = md2wechat.convert(str(_write_markdown(tmp_path)), str(_write_style_file(tmp_path, 'tech-blog')))
+    script = BeautifulSoup(Path(output).read_text(), 'html.parser').find('script').string
+    harness = '''const fs = require('node:fs'), vm = require('node:vm');
+const input = JSON.parse(fs.readFileSync(0, 'utf8'));
+const messages = [], selection = {count:0,removeAllRanges(){this.count=0;},addRange(){this.count++;}};
+const context = {document:{getElementById(){return {};},createRange(){return {selectNodeContents(){}};},
+execCommand(){if(input.outcome==='throw')throw new Error('clipboard denied');return input.outcome==='true';}},
+window:{getSelection(){return selection;}},alert(message){messages.push(message);}};
+vm.createContext(context);vm.runInContext(input.script,context);context.copyContent();
+process.stdout.write(JSON.stringify({messages,selectionCleared:selection.count===0}));'''
+    result = subprocess.run([node, '-e', harness], input=json.dumps({'script': script, 'outcome': outcome}),
+                            text=True, capture_output=True, check=True)
+    observed = json.loads(result.stdout)
+    expected = '已复制' if outcome == 'true' else '复制失败'
+    assert observed['messages'][0].startswith(expected)
+    assert observed['selectionCleared']
 
 
 # ─── 公共 fixture ───────────────────────────────────────────────────────────

@@ -1,0 +1,34 @@
+{
+  "fixture": "b06-all-modules.md",
+  "viewport_checks": [
+    {
+      "width": 1366,
+      "document_scroll_width": 1366
+    },
+    {
+      "width": 390,
+      "document_scroll_width": 390,
+      "content_width": 358,
+      "overflow_modules": []
+    }
+  ],
+  "modules": 32,
+  "loaded_images": 8,
+  "copy_boundary": {
+    "false": "复制失败",
+    "exception": "复制失败",
+    "true": "已复制",
+    "copied_modules": 32,
+    "copied_images": 8,
+    "inline_style_nodes": 339,
+    "selection_cleared": true,
+    "native_clipboard_write": "not_run",
+    "wechat_editor_paste": "not_run"
+  },
+  "screenshots": [
+    "B06-desktop.png",
+    "B06-mobile.png",
+    "B06-mobile-image-steps.png",
+    "B06-mobile-metrics.png"
+  ]
+}
