@@ -1,6 +1,6 @@
 ---
 name: test-case-engineer
-version: 9.0.2
+version: 9.0.3
 description: >-
   Use when generating, reviewing, or designing test cases and single-feature
   test strategies.
