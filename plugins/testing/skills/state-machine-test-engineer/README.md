@@ -1,6 +1,6 @@
 # State Machine Test Engineer Skill
 
-> 状态机驱动的状态型需求测试 skill v1.7.1：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
+> 状态机驱动的状态型需求测试 skill v1.7.2：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
 
 ## 简介
 
@@ -57,7 +57,7 @@ State Machine Test Engineer 是 testing-bundle v3.0.0 新增的子 skill，专�
 
 ## 三种运行模式
 
-> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.8.1**，MCP 协议层（stdio + streamable-http）和真实工具调用已通过端到端测试，按 [quickstart.md](integrations/quickstart.md) 配置后**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载）。未安装或调用失败时 skill 自动降级为独立模式。
+> ✅ **MCP Server 状态说明**：配套的 `state-machine-testing-mcp` 已升级至 **v0.8.2**，MCP 协议层（stdio + streamable-http）和真实工具调用已通过端到端测试，按 [quickstart.md](integrations/quickstart.md) 配置后**增强模式可用**。`build_state_machine` 为确定性实现（行业模板加载）。未安装或调用失败时 skill 自动降级为独立模式。
 
 | 模式 | 触发条件 | 行为 | 输出标记 |
 |---|---|---|---|
@@ -164,6 +164,7 @@ state-machine-test-engineer/
 
 ## 版本历史
 
+- v1.7.2: 通过真实协议保留分层覆盖及导出基线信息
 - v1.7.1: 单独核算已确定模型覆盖并区分缺失执行输入
 - v1.7.0: 增加需求模型场景设计与执行的分层覆盖契约
 - v1.6.0: 增加有来源依据的稳定追溯与定向失效传播

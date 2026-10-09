@@ -133,6 +133,13 @@ async def test_http_transport_tool_list() -> None:
                     "state_machine": _load_fixture("order_refund_state_machine"), "strict": False})
                 assert not result.isError
                 assert json.loads(result.content[0].text)["overall_status"] in {"pass", "warn"}
+                sm = _load_fixture("order_refund_state_machine")
+                generated = await session.call_tool("generate_scenarios", {"state_machine": sm})
+                coverage = await session.call_tool("check_coverage", {
+                    "state_machine": sm, "scenarios": json.loads(generated.content[0].text),
+                    "context": {"case_baseline": {"source": "用例基线", "version": "1", "items": []}}})
+                assert not coverage.isError
+                assert json.loads(coverage.content[0].text)["layers"]["execution"]["status"] == "not_applicable"
     finally:
         proc.terminate()
         proc.wait(timeout=10)
@@ -157,3 +164,20 @@ async def test_capability_probe_accepts_business_failure_and_preserves_parameter
             assert invalid.isError
             assert classify_probe(names, parameter_error=invalid.isError) == "parameter_error"
             assert classify_probe([], transport_error="connection_refused") == "connection_failed"
+
+
+
+async def test_stdio_layered_coverage_context_is_optional_and_roundtrips():
+    sm = _load_fixture("order_refund_state_machine")
+    async with stdio_client(_server_params()) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            generated = await session.call_tool("generate_scenarios", {"state_machine": sm})
+            scenarios = json.loads(generated.content[0].text)
+            result = await session.call_tool("check_coverage", {"state_machine": sm, "scenarios": scenarios,
+                "context": {"requirement_baseline": {"source": "PRD", "version": "1", "items": []}}})
+            assert not result.isError
+            report = json.loads(result.content[0].text)
+            assert report["layers"]["requirements"]["status"] == "not_applicable"
+            assert report["layers"]["execution"]["ratio"] is None
+            assert report["transition_coverage"] == 1
