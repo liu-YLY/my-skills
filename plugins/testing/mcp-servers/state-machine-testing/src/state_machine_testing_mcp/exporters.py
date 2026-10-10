@@ -6,10 +6,10 @@ import json
 from pathlib import Path
 from typing import Literal
 
-from .schemas import ExportResult, ScenarioList, StateMachine
+from .schemas import ExportResult, ScenarioList, StateMachine, CoverageReport
 
 
-def export_to_markdown(sm: StateMachine, scenarios: ScenarioList | None = None) -> str:
+def export_to_markdown(sm: StateMachine, scenarios: ScenarioList | None = None, coverage_report: CoverageReport | None = None) -> str:
     """导出为 Markdown。"""
     lines: list[str] = []
     lines.append(f"# 状态机模型: {sm.meta.object}")
@@ -87,15 +87,23 @@ def export_to_markdown(sm: StateMachine, scenarios: ScenarioList | None = None) 
             lines.append(f"| {risk} | {item.status} | {item.reason} ({item.source}) | "
                          f"{'; '.join(item.missing_information)} |")
 
+    if coverage_report:
+        lines.extend(["", "## 分层覆盖", "", "| 层级 | 状态 | 分子/分母 | 比例 | 基线 | 未评估项 |", "|---|---|---|---|---|---|"])
+        for name, layer in coverage_report.layers.items():
+            lines.append(f"| {name} | {layer.status} | {layer.numerator}/{layer.denominator} | "
+                         f"{layer.ratio} | {layer.baseline_source} ({layer.baseline_version}) | {layer.unassessed_items} |")
+
     return "\n".join(lines)
 
 
-def export_to_json(sm: StateMachine, scenarios: ScenarioList | None = None) -> str:
+def export_to_json(sm: StateMachine, scenarios: ScenarioList | None = None, coverage_report: CoverageReport | None = None) -> str:
     """导出为 JSON。"""
     data = {
         "state_machine": sm.model_dump(by_alias=True, mode="json"),
         "scenarios": scenarios.model_dump(mode="json") if scenarios else None,
     }
+    if coverage_report:
+        data["coverage_report"] = coverage_report.model_dump(mode="json")
     return json.dumps(data, ensure_ascii=False, indent=2)
 
 
@@ -125,6 +133,7 @@ def export_artifacts(
     scenarios: ScenarioList | None = None,
     formats: list[Literal["markdown", "json", "mermaid"]] | None = None,
     output_dir: str = "./state-machine-outputs",
+    coverage_report: CoverageReport | None = None,
 ) -> ExportResult:
     """导出状态机模型与场景清单为多种格式。
 
@@ -148,12 +157,12 @@ def export_artifacts(
 
     if "markdown" in formats:
         md_path = out_path / f"{obj_name}.md"
-        md_path.write_text(export_to_markdown(state_machine, scenarios), encoding="utf-8")
+        md_path.write_text(export_to_markdown(state_machine, scenarios, coverage_report), encoding="utf-8")
         files.append(str(md_path))
 
     if "json" in formats:
         json_path = out_path / f"{obj_name}.json"
-        json_path.write_text(export_to_json(state_machine, scenarios), encoding="utf-8")
+        json_path.write_text(export_to_json(state_machine, scenarios, coverage_report), encoding="utf-8")
         files.append(str(json_path))
 
     if "mermaid" in formats:

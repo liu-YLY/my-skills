@@ -71,3 +71,16 @@ def test_export_artifacts_creates_files(tmp_path: Path) -> None:
     assert len(result.files) == 3
     for f in result.files:
         assert Path(f).exists()
+
+
+
+def test_exports_preserve_layer_baselines_and_unassessed_execution(tmp_path):
+    from state_machine_testing_mcp.coverage import check_coverage
+    sm = _load_order_refund()
+    scenarios = generate_scenarios(sm)
+    coverage = check_coverage(sm, scenarios)
+    result = export_artifacts(sm, scenarios, output_dir=str(tmp_path), coverage_report=coverage)
+    markdown = next(Path(p).read_text() for p in result.files if p.endswith(".md"))
+    data = json.loads(next(Path(p).read_text() for p in result.files if p.endswith(".json")))
+    assert "分层覆盖" in markdown and "execution | not_assessed" in markdown
+    assert data["coverage_report"]["layers"]["requirements"]["ratio"] is None

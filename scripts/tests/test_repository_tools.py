@@ -184,6 +184,14 @@ def test_case_review_respects_existing_revision_authority_and_risk_evidence():
     assert "优先级比例严重偏离" not in core
 
 
+def write_model_output_fixtures(path, rows):
+    for row in rows:
+        if row.get("output_path"):
+            output = path.parent / row["output_path"]
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text("x" * row["output_characters"])
+
+
 def test_model_results_are_validated_and_summarized(tmp_path):
     cases = [
         dict(skill="sample", id="task-1", kind="task", prompt="do it",
@@ -206,14 +214,14 @@ def test_model_results_are_validated_and_summarized(tmp_path):
     ]
     path = tmp_path / "results.jsonl"
     path.write_text("\n".join(json.dumps(row) for row in rows), encoding="utf-8")
+    write_model_output_fixtures(path, rows)
     results = evals.read_results(path, cases)
     result_summary = evals.summarize_results(results, cases)
     summary = result_summary["variants"]["with_skill"]
-    assert summary["checks_passed"] == 1
-    assert summary["checks_total"] == 2
-    assert summary["trigger_precision"] == 1.0
-    assert summary["trigger_recall"] == 1.0
-    assert summary["mean_duration_seconds"] == pytest.approx(4 / 3)
+    assert summary["checks_passed"] == summary["checks_total"] == 0
+    assert summary["trigger_precision"] is summary["trigger_recall"] is None
+    assert summary["mean_duration_seconds"] is None
+    assert len(summary["unpaired_runs"]) == 3
     assert summary["completion_rate"] == 1.0
     assert summary["missing_cases"] == []
     baseline = evals.summarize_results(results, cases)["variants"]["baseline"]
@@ -234,6 +242,7 @@ def test_model_results_report_partial_case_completion(tmp_path):
                check_results=[True])
     path = tmp_path / "results.jsonl"
     path.write_text(json.dumps(row), encoding="utf-8")
+    write_model_output_fixtures(path, [row])
     summary = evals.summarize_results(evals.read_results(path, cases), cases)
     variant = summary["variants"]["with_skill"]
     assert variant["completed_cases"] == 1
@@ -284,3 +293,91 @@ def test_model_results_reject_invalid_contract(tmp_path, field, value, message):
     path.write_text(json.dumps(row), encoding="utf-8")
     with pytest.raises(ValueError, match=message):
         evals.read_results(path, cases)
+
+
+@pytest.mark.parametrize("defect", ["missing", "hash", "length", "nan", "infinity"])
+def test_model_artifact_failures_are_partial_and_excluded(tmp_path, defect):
+    import hashlib
+
+    output = tmp_path / "output.md"
+    output.write_text("report")
+    case = dict(skill="sample", id="1", kind="task", prompt="task", checks=["done"])
+    row = dict(skill="sample", id="1", kind="task", run=1, duration_seconds=1.0,
+               output_characters=6, output_path="output.md", check_results=[True],
+               output_sha256=hashlib.sha256(output.read_bytes()).hexdigest())
+    if defect == "missing":
+        output.unlink()
+    elif defect == "hash":
+        row["output_sha256"] = "0" * 64
+    elif defect == "length":
+        row["output_characters"] = 7
+    else:
+        row["duration_seconds"] = float("nan" if defect == "nan" else "inf")
+    path = tmp_path / "results.jsonl"
+    path.write_text("\n".join(json.dumps(dict(row, variant=variant))
+                              for variant in ("with_skill", "baseline")))
+    summary = evals.summarize_results(evals.read_results(path, [case]), [case])
+    assert summary["status"] == "partial"
+    assert summary["variants"]["with_skill"]["checks_total"] == 0
+    assert summary["variants"]["with_skill"]["mean_duration_seconds"] is None
+
+
+def test_model_repetitions_require_each_expected_run_and_pair(tmp_path):
+    case = dict(skill="sample", id="1", kind="task", prompt="task", checks=["done"])
+    rows = [dict(skill="sample", id="1", kind="task", variant=variant, run=run,
+                 duration_seconds=1.0, output_characters=4, output_path=f"{variant}-{run}.md",
+                 check_results=[True])
+            for variant in ("with_skill", "baseline") for run in (1, 2)]
+    rows.append(dict(rows[0], run=3, output_path="candidate-3.md"))
+    path = tmp_path / "results.jsonl"
+    path.write_text("\n".join(json.dumps(row) for row in rows))
+    write_model_output_fixtures(path, rows)
+    summary = evals.summarize_results(evals.read_results(path, [case]), [case], expected_runs=3)
+    assert summary["status"] == "partial"
+    baseline = summary["variants"]["baseline"]
+    candidate = summary["variants"]["with_skill"]
+    assert baseline["completed_cases"] == 0 and baseline["completed_runs"] == 2
+    assert candidate["completed_cases"] == 1 and candidate["completed_runs"] == 3
+    assert candidate["checks_total"] == baseline["checks_total"] == 2
+    assert candidate["unpaired_runs"] == ["sample:task:1:run-3"]
+    assert baseline["missing_runs"] == ["sample:task:1:run-3"]
+    rows.append(dict(rows[-1], variant="baseline", output_path="baseline-3.md"))
+    write_model_output_fixtures(path, rows)
+    path.write_text("\n".join(json.dumps(row) for row in rows))
+    complete = evals.summarize_results(evals.read_results(path, [case]), [case], expected_runs=3)
+    assert complete["status"] == "evaluated"
+    assert complete["variants"]["baseline"]["checks_total"] == 3
+
+
+def test_selected_frozen_suite_is_independent_from_repository_cases(tmp_path):
+    import subprocess
+    import sys
+
+    path = tmp_path / "frozen.json"
+    path.write_text(json.dumps({"task_cases": [{"id": "one", "skill": "sample", "prompt": "task",
+                                              "expectations": ["done"]}],
+                               "original_trigger_cases": [{"id": "route", "skill": "sample",
+                                  "original": {"query": "route", "should_trigger": False,
+                                               "category": "negative"}}]}))
+    result = subprocess.run([sys.executable, str(ROOT / "scripts/skill-evals.py"),
+                             "--cases-file", str(path), "--json"], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    cases = json.loads(result.stdout)
+    assert len(cases) == 2 and cases[0]["id"] == "one"
+    assert cases[1]["should_trigger"] is False
+
+
+def test_model_pair_metrics_exclude_a_valid_but_unpaired_artifact(tmp_path):
+    case = dict(skill="sample", id="1", kind="task", prompt="task", checks=["done"])
+    rows = [dict(skill="sample", id="1", kind="task", variant=variant, run=1,
+                 duration_seconds=1.0, output_characters=4, output_path=f"{variant}.md",
+                 check_results=[True]) for variant in ("with_skill", "baseline")]
+    path = tmp_path / "results.jsonl"
+    write_model_output_fixtures(path, rows)
+    (tmp_path / "baseline.md").unlink()
+    path.write_text("\n".join(json.dumps(row) for row in rows))
+    summary = evals.summarize_results(evals.read_results(path, [case]), [case])
+    assert summary["status"] == "partial"
+    assert summary["variants"]["with_skill"]["completed_runs"] == 1
+    assert summary["variants"]["with_skill"]["checks_total"] == 0
+    assert summary["variants"]["baseline"]["invalid_runs"]
