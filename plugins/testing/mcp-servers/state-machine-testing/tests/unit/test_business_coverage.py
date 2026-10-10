@@ -144,3 +144,66 @@ def test_individual_guard_failure_keeps_other_conditions_explicit():
         other = next(g for g in sm.transitions[0].guards if g != scenario.violated_guard)
         assert other + " 满足" in scenario.precondition
         assert "联合可满足性未验证" in scenario.notes
+
+
+
+def test_stable_scenario_refs_survive_reordering_filtering_and_id_only_changes():
+    sm = model()
+    before = generate_scenarios(sm, ["legal_transition"])
+    refs = {s.expected_target_state: s.stable_ref for s in before.scenarios}
+    sm.transitions.reverse()
+    for t in sm.transitions:
+        t.id = "RENAMED-" + t.id
+    after = generate_scenarios(sm, ["legal_transition"], "需求明确")
+    assert {s.expected_target_state: s.stable_ref for s in after.scenarios} == refs
+    assert all(s.id.startswith("SM-") for s in after.scenarios)
+
+
+def test_source_changes_invalidate_only_confirmed_descendants_and_keep_candidates_separate():
+    from state_machine_testing_mcp.schemas import TraceabilityContext
+    from state_machine_testing_mcp.provenance import affected_by_change
+    context = TraceabilityContext.model_validate({
+        "sources": [{"id": "SRC-OFFER", "location": "PRD", "version": "1", "availability": "available"}],
+        "artifacts": [{"id": x, "kind": k} for x,k in [
+            ("REQ-LIMIT", "requirement"), ("RISK-LIMIT", "risk"),
+            ("SC-LIMIT", "scenario"), ("TC-LIMIT", "case"), ("TC-LOGIN", "case")]],
+        "links": [{"upstream": a, "downstream": b, "confirmation": c,
+                   "source": "PRD §优惠上限关联", "source_refs": ["SRC-OFFER"]} for a,b,c in [
+            ("SRC-OFFER", "REQ-LIMIT", "confirmed"), ("REQ-LIMIT", "RISK-LIMIT", "confirmed"),
+            ("RISK-LIMIT", "SC-LIMIT", "confirmed"), ("SC-LIMIT", "TC-LIMIT", "confirmed"),
+            ("REQ-LIMIT", "TC-LOGIN", "candidate"), ("TC-LIMIT", "SC-LIMIT", "confirmed")]]})
+    report = affected_by_change(context, ["SRC-OFFER"])
+    assert set(report.affected) == {"REQ-LIMIT", "RISK-LIMIT", "SC-LIMIT", "TC-LIMIT"}
+    assert report.candidate_impacts == ["TC-LOGIN"]
+    context.links.reverse()
+    assert affected_by_change(context, ["SRC-OFFER", "SRC-OFFER"]) == report
+    assert affected_by_change(context, ["MISSING"]).unmatched_refs == ["MISSING"]
+
+
+def test_deduplication_keeps_distinct_guards_and_targets():
+    from state_machine_testing_mcp.provenance import deduplicate_scenarios
+    scenarios = generate_scenarios(model(), ["guard_violation"]).scenarios
+    duplicate = scenarios[0].model_copy(update={"id": "other"})
+    assert len(deduplicate_scenarios(scenarios + [duplicate])) == 2
+
+
+
+def test_unsubstantiated_or_unreachable_trace_links_are_only_candidate_impacts():
+    from state_machine_testing_mcp.schemas import TraceabilityContext
+    from state_machine_testing_mcp.provenance import affected_by_change
+    base = {"sources": [{"id": "S", "location": "PRD", "version": "1", "availability": "available"}],
+        "artifacts": [{"id": "R", "kind": "requirement"}],
+        "links": [{"upstream": "S", "downstream": "R", "confirmation": "confirmed",
+                   "source": "PRD §1明确关联", "source_refs": ["S"]}]}
+    assert affected_by_change(TraceabilityContext.model_validate(base), ["S"]).affected == ["R"]
+    for missing in ["basis", "unreachable", "refs", "version", "location"]:
+        import copy
+        data = copy.deepcopy(base)
+        if missing == "basis": data["links"][0]["source"] = ""
+        elif missing == "unreachable": data["sources"][0]["availability"] = "unreachable"
+        elif missing == "version": data["sources"][0]["version"] = ""
+        elif missing == "location": data["sources"][0]["location"] = ""
+        else: data["links"][0]["source_refs"] = []
+        report = affected_by_change(TraceabilityContext.model_validate(data), ["S"])
+        assert report.affected == [] and report.candidate_impacts == ["R"]
+        assert report.uncorroborated_links

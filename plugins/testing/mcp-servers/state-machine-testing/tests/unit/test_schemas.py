@@ -130,3 +130,12 @@ def test_role_keyword_is_only_a_candidate_not_business_applicability():
     result = assess_applicability(sm)
     assert result["access_control"].status == result["message_reorder"].status == "unknown"
     assert result["access_control"].missing_information
+
+
+def test_trace_source_availability_is_unknown_until_explicitly_checked():
+    from state_machine_testing_mcp.schemas import TraceSource
+    source = TraceSource(id="S", location="PRD link")
+    assert source.availability == "unknown"
+    data = source.model_dump()
+    data["availability"] = "unreachable"
+    assert TraceSource.model_validate(data).availability == "unreachable"

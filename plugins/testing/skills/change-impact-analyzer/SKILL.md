@@ -1,6 +1,6 @@
 ---
 name: change-impact-analyzer
-version: 1.2.2
+version: 1.3.0
 description: >-
   Analyzes git changes against test cases to find behavioral impacts and coverage gaps.
   Invoke when user asks to check code changes impact on tests, analyze diff coverage,
