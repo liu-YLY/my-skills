@@ -117,8 +117,16 @@ def parse_css_rules(css_text: str) -> list[tuple[str, dict[str, str]]]:
 # ─── Step 3: Markdown → HTML ──────────────────────────────────────────────
 
 MODULE_BLOCK_RE = re.compile(
-    r'(?ms)^:::(module|[a-zA-Z][\w-]*)(?:\s*\[([^\]]*)\])?(?:\s*\{([^}]*)\})?\s*\n(.*?)^:::+\s*(?:\n|$)'
+    r'^:::(module|[a-zA-Z][\w-]*)(?:\s*\[([^\]]*)\])?(?:\s*\{([^}]*)\})?\s*$'
 )
+
+
+def update_module_fence(line: str, fence: str | None) -> str | None:
+    if fence:
+        closing = r'^ {0,3}' + re.escape(fence[0]) + '{' + str(len(fence)) + r',}\s*$'
+        return None if re.match(closing, line) else fence
+    opening = re.match(r'^ {0,3}(`{3,}|~{3,})', line)
+    return opening[1] if opening else None
 
 
 FIELD_MODULES = {
@@ -383,9 +391,19 @@ def module_image_steps(body: str, params: str) -> tuple[str, str]:
 
 def module_sections(name: str, body: str, params: str) -> tuple[str, str]:
     attributes = module_params(params, {'columns': {'2', '3', '4'}} if name == 'columns' else {})
-    if re.search(r'^:::', body, re.MULTILINE):
-        raise ValueError('nested modules are unsupported')
-    sections = re.split(r'^---\s*$', body.strip(), flags=re.MULTILINE)
+    sections = [[]]
+    fence = None
+    for line in body.strip().splitlines(keepends=True):
+        previous = fence
+        fence = update_module_fence(line, fence)
+        if not (previous or fence):
+            if re.fullmatch(r'---\s*', line):
+                sections.append([])
+                continue
+            if re.match(r'^:::', line):
+                raise ValueError('nested modules are unsupported')
+        sections[-1].append(line)
+    sections = [''.join(section) for section in sections]
     count = int(attributes.get('columns', '2'))
     if len(sections) != count or any(not section.strip() for section in sections):
         raise ValueError('section count does not match layout')
@@ -441,41 +459,32 @@ def render_module_block(name: str, title: str | None, body: str, params: str = '
         return module_fallback(name, title, body, params, str(error))
 
 
-def render_modules(md_text: str) -> str:
-    """将 Markdown 中的 :::module 块预渲染为 HTML，替换回文本。
-
-    位置保持：占位替换后 BeautifulSoup 内联阶段仍能保留结构。
-    """
-    parts: list[str] = []
-    plain: list[str] = []
-    fence: str | None = None
-    in_module = False
-
-    def flush_plain():
-        parts.append(MODULE_BLOCK_RE.sub(
-            lambda m: '\n' + render_module_block(m.group(1), m.group(2), m.group(4), m.group(3) or '') + '\n',
-            ''.join(plain),
-        ))
-        plain.clear()
-
+def render_modules(md_text: str, stash=None) -> str:
+    """Collect modules outside code fences; optionally stash completed HTML."""
+    parts, body = [], []
+    fence = None
+    module = None
+    header_line = ''
     for line in md_text.splitlines(keepends=True):
-        if fence:
-            parts.append(line)
-            if re.match(r'^ {0,3}' + re.escape(fence[0]) + '{' + str(len(fence)) + r',}\s*$', line):
-                fence = None
-            continue
-        opening = re.match(r'^ {0,3}(`{3,}|~{3,})', line)
-        if opening and not in_module:
-            flush_plain()
-            fence = opening.group(1)
-            parts.append(line)
-            continue
-        plain.append(line)
-        if re.match(r'^:::[a-zA-Z]', line):
-            in_module = True
-        elif re.match(r'^:::+\s*$', line):
-            in_module = False
-    flush_plain()
+        previous = fence
+        fence = update_module_fence(line, fence)
+        protected = previous or fence
+        if module is not None:
+            if not protected and re.fullmatch(r':::+\s*', line):
+                name, title, params = module
+                html = render_module_block(name, title, ''.join(body), params or '')
+                parts.append('\n' + (stash(html) if stash else html) + '\n')
+                module, body = None, []
+            else:
+                body.append(line)
+        else:
+            opening = None if protected else MODULE_BLOCK_RE.fullmatch(line.rstrip('\r\n'))
+            if opening:
+                module, header_line = opening.groups(), line
+            else:
+                parts.append(line)
+    if module is not None:
+        parts.append(header_line + ''.join(body))
     return ''.join(parts)
 
 
@@ -492,13 +501,13 @@ def md_to_html(md_text: str) -> str:
     # 移除文件头部的 HTML 注释
     md_text = re.sub(r'^<!--.*?-->\s*', '', md_text, flags=re.DOTALL)
     # 预渲染 :::module 高级排版模块（避免被当作普通引用于代码块丢弃）
-    md_text = render_modules(md_text)
-    return markdown.markdown(md_text, extensions=[
-        'fenced_code',
-        'tables',
-        'sane_lists',
-        'smarty',
-    ])
+    class ModulePreprocessor(markdown.preprocessors.Preprocessor):
+        def run(self, lines):
+            return render_modules('\n'.join(lines), self.md.htmlStash.store).split('\n')
+
+    parser = markdown.Markdown(extensions=['fenced_code', 'tables', 'sane_lists', 'smarty'])
+    parser.preprocessors.register(ModulePreprocessor(parser), 'modules', 27)
+    return parser.convert(md_text)
 
 
 # ─── Step 4 & 5: CSS 内联化 ──────────────────────────────────────────────
