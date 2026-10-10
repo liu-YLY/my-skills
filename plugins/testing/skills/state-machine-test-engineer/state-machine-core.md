@@ -201,7 +201,7 @@ completeness_report:
 
 ### 4.1 目标
 
-基于状态机模型，对每条 transition 生成 10 类场景，每场景标注依据类型。**只输出场景级**，不出用例步骤（用例步骤由 test-case-engineer 落地）。
+基于状态机模型先判断十类适用性，再对适用转换生成场景；不适用类不凑数，未知项单列依据缺口。每场景标注依据类型。**只输出场景级**，不出用例步骤（用例步骤由 test-case-engineer 落地）。
 
 ### 4.2 10 类场景生成规则
 
@@ -211,14 +211,14 @@ completeness_report:
 |---|---|
 | legal_transition | 对每条 transition 生成 1 个合法场景 |
 | illegal_transition | 对每条 forbidden 生成 1 个非法场景 |
-| guard_violation | 对每条 transition 移除 1 个 guard 生成场景 |
+| guard_violation | 逐个违反一个 guard，其余条件保持；其他分支存在时目标待确认 |
 | idempotency | 对涉及外部回调的 transition 生成重复触发场景 |
-| concurrency | 对涉及用户操作 + 系统回调的 transition 生成并发场景 |
+| concurrency | 对同源状态可竞争事件生成候选；并发能力与联合条件未知时待确认 |
 | message_reorder | 对涉及异步消息的 transition 生成乱序场景 |
 | timeout_retry | 对涉及等待/重试的 transition 生成超时场景 |
 | data_consistency | 对涉及副作用（关联对象更新）的 transition 生成一致性场景 |
 | access_control | 对涉及权限的 transition 生成越权场景 |
-| failure_recovery | 对每条 transition 生成"执行失败后状态"场景 |
+| failure_recovery | 按失败阶段与适用性生成；未知提交边界只输出待确认候选 |
 
 ### 4.3 输出格式
 

@@ -279,12 +279,13 @@ scenarios:
     source: 状态机 transitions 中 side_effects 的验证
 
   - id: SM-009
-    title: 非分配客服尝试处理工单应被拒绝
+    title: 处理中 下 客服标记解决（非分配客服操作） 的权限边界待确认
     current_state: 处理中
     trigger_event: 客服标记解决（非分配客服操作）
     precondition: 操作者为非分配客服
-    expected_target_state: 处理中
-    forbidden_states: [已解决]
+    expected_target_state: 待确认
+    expected_target_state_reason: 权限矩阵及拒绝行为缺少依据
+    forbidden_states: []
     risk_type: access_control
     related_objects: [权限系统, 工单, 操作日志]
     evidence_type: 待确认

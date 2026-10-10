@@ -267,12 +267,13 @@ scenarios:
     source: 状态机 transitions 中 side_effects 的验证
 
   - id: SM-009
-    title: 非审批人尝试审批应被拒绝
+    title: 审批中 下 审批人同意（非指定审批人操作） 的权限边界待确认
     current_state: 审批中
     trigger_event: 审批人同意（非指定审批人操作）
     precondition: 操作者为非指定审批人
-    expected_target_state: 审批中
-    forbidden_states: [已通过]
+    expected_target_state: 待确认
+    expected_target_state_reason: 权限矩阵及拒绝行为缺少依据
+    forbidden_states: []
     risk_type: access_control
     related_objects: [权限系统, 操作日志]
     evidence_type: 待确认

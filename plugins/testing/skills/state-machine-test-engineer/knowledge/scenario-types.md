@@ -135,7 +135,7 @@ state_machine:
 
 **生成规则**：对涉及外部回调的 transition（支付/退款/通知类事件）生成重复触发场景。
 
-**生成条件**：transition 的 event 包含"回调"/"通知"/"消息"等外部触发词。
+**生成条件**：需求确认事件可能重复或明确要求幂等；回调/通知/消息关键词只能提示候选，不能证明幂等规则。
 
 **示例**：
 
@@ -158,7 +158,7 @@ state_machine:
 
 **生成规则**：对涉及用户操作 + 系统回调的 transition 生成并发场景，验证并发时的最终状态。
 
-**生成条件**：transition 的 event 同时涉及用户和系统（如"用户取消"与"支付回调"并发）。
+**生成条件**：同一对象同一前置状态有可竞争事件；触发源和并发成立条件需核实，不要求必须是用户加系统回调。
 
 **示例**：
 
@@ -206,22 +206,23 @@ state_machine:
 
 **生成规则**：对涉及等待/重试的 transition 生成超时场景。
 
-**生成条件**：transition 的 event 或 guard 涉及"超时"/"重试"/"等待"。
+**生成条件**：需求明确存在等待或重试能力；关键词仅是候选线索。时限及超时后的目标需要来源，不能代填30分钟。
 
 **示例**：
 
 ```yaml
 - id: SM-007
-  title: 待支付订单 30 分钟未支付应自动取消
+  title: 待支付超时后目标与处理策略待确认
   current_state: 待支付
-  trigger_event: 超时定时器触发（30 分钟）
-  precondition: 订单创建后 30 分钟未收到支付回调
-  expected_target_state: 已取消
-  forbidden_states: [已支付]
+  trigger_event: 超时定时器（时限待确认）
+  precondition: 达到等待阈值，实际时限待确认
+  expected_target_state: 待确认
+  expected_target_state_reason: 需求未提供超时阈值与目标状态
+  forbidden_states: []
   risk_type: timeout_retry
   related_objects: [定时任务, 订单日志]
-  evidence_type: 合理推理
-  source: 业务常识（PRD 可能未提超时时长）
+  evidence_type: 待确认
+  source: 超时阈值及处理策略缺少需求依据
   notes: 需澄清超时时长是 15 分钟/30 分钟/60 分钟
 ```
 
@@ -252,18 +253,19 @@ state_machine:
 
 **生成规则**：对涉及权限的 transition 生成越权场景。
 
-**生成条件**：transition 涉及管理员/审批人/特定角色操作，或目标态隐含角色权限。若 PRD 未明确权限矩阵或场景无角色信号，全部标"待确认"并给出 `expected_target_state_reason`（说明待确认原因），不静默跳过。
+**生成条件**：有已确认权限要求时设计权限场景；角色词只能提示候选。PRD 未明确角色/矩阵/拒绝规则时目标保持 `待确认`，不能声称未授权或必拒绝，另列缺失依据。
 
 **示例**：
 
 ```yaml
 - id: SM-009
-  title: 普通用户尝试管理员退款操作应被拒绝
+  title: 已支付 下 管理员发起退款（普通用户冒充） 的权限边界待确认
   current_state: 已支付
   trigger_event: 管理员发起退款（普通用户冒充）
   precondition: 用户为普通用户，无管理员权限
-  expected_target_state: 已支付
-  forbidden_states: [退款中]
+  expected_target_state: 待确认
+  expected_target_state_reason: 权限矩阵及拒绝行为缺少依据
+  forbidden_states: []
   risk_type: access_control
   related_objects: [权限系统, 操作日志]
   evidence_type: 待确认
@@ -275,7 +277,7 @@ state_machine:
 
 **生成规则**：对每条 transition 生成"执行失败后状态"场景。
 
-**生成条件**：所有 transition 都生成。PRD 通常未写失败后状态，多数标"待确认"，须随附 `expected_target_state_reason`。
+**生成条件**：根据明确失败能力生成；资料不足只给 unknown 候选，附 `expected_target_state_reason`，不以每条转换都有失败路径作为业务事实。
 
 **示例**：
 
@@ -348,3 +350,5 @@ state_machine:
 
 
 覆盖报告保留 `scenario_type_coverage`（类型条数）和 `missing_scenario_types`（零计数类型）的旧描述性含义；新增 `applicable_missing_scenario_types / not_applicable_scenario_types / unknown_scenario_types` 分别表示适用但缺场景、不适用、尚未确定适用性。完成判断使用新三态信息，不能把待确认候选算成已验证业务行为。
+
+`applicable_missing_scenario_types` 只认可结构匹配、目标已明确且依据非待确认的场景；错误 legal/illegal 目标与 pending 候选不代表已处理。旧类型计数保留所有输入场景的描述性含义。
