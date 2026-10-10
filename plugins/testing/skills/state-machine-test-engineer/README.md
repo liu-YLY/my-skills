@@ -1,6 +1,6 @@
 # State Machine Test Engineer Skill
 
-> 状态机驱动的状态型需求测试 skill v1.3.6：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
+> 状态机驱动的状态型需求测试 skill v1.3.8：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
 
 ## 简介
 
@@ -61,7 +61,7 @@ State Machine Test Engineer 是 testing-bundle v3.0.0 新增的子 skill，专�
 
 | 模式 | 触发条件 | 行为 | 输出标记 |
 |---|---|---|---|
-| 增强模式 | MCP 可用（v0.4.6+，已联调验证） | skill 自身推理 + MCP 做校验/穷举/可视化复核 | `✓ MCP 增强模式` |
+| 增强模式 | MCP 工具已暴露且参数 Schema 兼容 | skill 自身推理 + MCP 做校验/穷举/可视化复核 | `✓ MCP 增强模式` |
 | 独立模式 | MCP 未安装 | skill 纯 LLM 推理执行全流程 | `⚠ 独立模式（未校验）` |
 | 降级模式 | MCP 调用失败 | 自动回退到独立模式 | `⚠ 降级模式` |
 
@@ -164,6 +164,8 @@ state-machine-test-engineer/
 
 ## 版本历史
 
+- v1.3.8: 统一状态机演示的授权适用性与宿主可用性边界
+- v1.3.7: 使复制安装后的源码引用和契约检查可解释
 - v1.3.6: 排除错误匹配和待确认场景的适用性完成计数
 - v1.3.5: 去除知识示例对未知权限和超时规则的断言
 - v1.3.4: 根据显式重试能力生成场景
@@ -185,7 +187,7 @@ state-machine-test-engineer/
 - [SKILL.md](SKILL.md) - 完整方法论与工作流
 - [state-machine-core.md](state-machine-core.md) - 核心流程详述
 - [integrations/quickstart.md](integrations/quickstart.md) - MCP 配置说明
-- [设计文档](../../../../docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
+- [设计文档](https://github.com/liu-YLY/my-skills/blob/main/docs/superpowers/specs/2026-07-18-state-machine-testing-design.md) - 完整设计 spec
 - [testing-bundle](../testing-bundle/SKILL.md) - bundle 入口（6-way 路由：5 核心 + 1 协同）
 - [test-case-engineer](../test-case-engineer/SKILL.md) - 下游协同（链 5）
-- [state-machine-testing-mcp](../../mcp-servers/state-machine-testing/README.md) - 配套 MCP Server
+- [state-machine-testing-mcp](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/mcp-servers/state-machine-testing/README.md) - 配套 MCP Server

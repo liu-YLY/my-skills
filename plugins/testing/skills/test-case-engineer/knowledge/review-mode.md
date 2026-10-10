@@ -49,7 +49,9 @@
 
 ## MCP 增强（可选）
 
-> **与 state-machine-test-engineer 的 MCP 增强对称**：安装配套 [review-checker MCP Server](../../../mcp-servers/review-checker/README.md) 后，R2 评审与 R3 度量报告可调用确定性机器校验，不依赖 LLM 推理这些本该确定的事。未安装时降级为纯 LLM 推理。
+> **与 state-machine-test-engineer 的 MCP 增强对称**：安装配套 [review-checker MCP Server](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/mcp-servers/review-checker/README.md) 后，R2 评审与 R3 度量报告可调用确定性机器校验，不依赖 LLM 推理这些本该确定的事。未安装时降级为纯 LLM 推理。
+
+源码链接仅用于定位；安装版本需匹配当前 Skill 契约，并核对 `tools/list` 参数 Schema。旧服务不支持新可选字段时省略字段、保留人工说明，不能把远程旧版本视为本次能力已交付。
 
 ### 三模式
 
