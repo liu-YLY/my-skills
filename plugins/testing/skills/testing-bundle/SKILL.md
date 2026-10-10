@@ -82,7 +82,7 @@ keywords:
 - [test-case-engineer](../test-case-engineer/SKILL.md)：功能用例、测试点、用例评审；review-checker MCP 为可选增强。
 - [performance-test-engineer](../performance-test-engineer/SKILL.md)：性能方案与资源/架构层瓶颈。
 - [bug-analyzer](../bug-analyzer/SKILL.md)：功能缺陷根因；缺少共享 bug-patterns 时按其自身规则降级。
-- [state-machine-test-engineer](../state-machine-test-engineer/SKILL.md)：状态建模与场景穷举；state-machine-testing MCP v0.7.0 为可选增强。
+- [state-machine-test-engineer](../state-machine-test-engineer/SKILL.md)：状态建模与场景穷举；state-machine-testing MCP v0.8.1 为可选增强。
 - [change-impact-analyzer](../change-impact-analyzer/SKILL.md)：代码变更 × 用例的影响与覆盖缺口。
 
 安装方式、依赖关系和 MCP 配置属于部署文档，见 [../../README.md](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/README.md)，不参与运行时路由判断。复制安装只交付 Skill 资源，不安装 MCP 服务；缺 MCP 时由专业 Skill 进入独立模式并如实标记。
