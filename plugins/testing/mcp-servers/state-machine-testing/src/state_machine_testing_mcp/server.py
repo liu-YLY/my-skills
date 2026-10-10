@@ -15,6 +15,7 @@ from .exporters import export_artifacts as _export_artifacts
 from .generators import generate_scenarios as _generate_scenarios
 from .schemas import (
     CoverageReport,
+    CoverageContext,
     ExportResult,
     ScenarioList,
     StateMachine,
@@ -61,14 +62,15 @@ def export_artifacts(
     scenarios: ScenarioList | None = None,
     formats: list[Literal["markdown", "json", "mermaid"]] | None = None,
     output_dir: str = "./state-machine-outputs",
+    coverage_report: CoverageReport | None = None,
 ) -> ExportResult:
     """导出为 Markdown / JSON / Mermaid。"""
-    return _export_artifacts(state_machine, scenarios, formats, output_dir)
+    return _export_artifacts(state_machine, scenarios, formats, output_dir, coverage_report)
 
 
-def check_coverage(state_machine: StateMachine, scenarios: ScenarioList) -> CoverageReport:
+def check_coverage(state_machine: StateMachine, scenarios: ScenarioList, context: CoverageContext | None = None) -> CoverageReport:
     """覆盖度检查。"""
-    return _check_coverage(state_machine, scenarios)
+    return _check_coverage(state_machine, scenarios, context)
 
 
 def _register_mcp_tools(mcp_server) -> None:
@@ -109,24 +111,26 @@ def _register_mcp_tools(mcp_server) -> None:
         scenarios: ScenarioList | None = None,
         formats: list[Literal["markdown", "json", "mermaid"]] | None = None,
         output_dir: str = "./state-machine-outputs",
+        coverage_report: CoverageReport | None = None,
     ) -> ExportResult:
         """导出为 Markdown / JSON / Mermaid。"""
-        return _export_artifacts(state_machine, scenarios, formats, output_dir)
+        return _export_artifacts(state_machine, scenarios, formats, output_dir, coverage_report)
 
     @mcp_server.tool()
     def check_coverage(
         state_machine: StateMachine,
         scenarios: ScenarioList,
+        context: CoverageContext | None = None,
     ) -> CoverageReport:
         """覆盖度检查。"""
-        return _check_coverage(state_machine, scenarios)
+        return _check_coverage(state_machine, scenarios, context)
 
 
 def main() -> int:
     """命令行入口。"""
     parser = argparse.ArgumentParser(
         prog="state-machine-testing-mcp",
-        description="State Machine Testing MCP Server v0.8.1",
+        description="State Machine Testing MCP Server v0.8.2",
     )
     parser.add_argument(
         "--transport",
@@ -164,10 +168,10 @@ def main() -> int:
         print("3. generate_scenarios(state_machine, scenario_types?, evidence_filter?)")
         print("   - 基于状态机穷举 10 类场景")
         print()
-        print("4. export_artifacts(state_machine, scenarios?, formats?, output_dir?)")
+        print("4. export_artifacts(state_machine, scenarios?, formats?, output_dir?, coverage_report?)")
         print("   - 导出为 Markdown / JSON / Mermaid")
         print()
-        print("5. check_coverage(state_machine, scenarios)")
+        print("5. check_coverage(state_machine, scenarios, context?)")
         print("   - 覆盖度检查")
         return 0
 

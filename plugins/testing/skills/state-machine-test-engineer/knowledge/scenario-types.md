@@ -356,3 +356,13 @@ state_machine:
 ## 失败阶段与不确定结果
 
 转换可选 `failure_outcomes`、场景可选 `failure_semantics`，默认不要求旧输入提供。每项包含 `phase/allowed_states/forbidden_side_effects/observations/recovery_conditions/source/evidence_type`；阶段是 `pre_execution_rejected/pre_commit_failed/committed_response_lost/partial_success/unknown`。只有已核实提交才选响应丢失阶段；普通超时保留 unknown。phase 为 unknown 时即使只有一个允许态且来源标签明确，目标仍为待确认，不以该集合推断提交边界已知。允许态为多元素集合时目标 `待确认` 并说明条件，不能伪造复合状态名。副作用、幂等键、时限和补偿动作均需需求依据。先核实业务记录与外部结果，再依据重试政策决定动作；结果未知不能生成无条件重试。缺少失败资料仅给 unknown 候选，不能自动认定原态未变。
+
+## 分层覆盖契约
+
+`check_coverage` 增加末尾可选 `context`，旧调用不变。context 可提供 requirement_baseline/design_baseline/case_baseline（source/version/items）、requirement_links（item_id/scenario_ref/confirmation）及 execution_records（case_id/baseline_version/run_id/status/evidence_ref）。需求关联只有 confirmed 且场景目标/依据已确定才计入；场景设计基线由已确认适用场景集合提供，不从条数猜分母。无基线为 `not_assessed`、数值 null；显式空基线为 `not_applicable`、分母 0 且比例 null。
+
+layers 分别报告 requirements/model/scenario_design/execution/execution_pass，每层带 status、分子分母、比例、基线来源版本及未评估项。旧 transition/forbidden 比例与分母保持。执行覆盖和通过率分开，仅使用对应版本、实际执行且有证据引用的记录；重复证据不重复计数，同一用例同一运行结果冲突单列未评估。设计完成但未执行不能声称通过；业务待确认场景不计已确定覆盖。`export_artifacts` 可选 coverage_report 将层级结果带入 Markdown/JSON。
+
+执行记录新增可选 `evidence_status`，缺省 unknown；verified 还需明确 `evidence_check_source` 记录核验依据。未提供 execution_records 表示未评估，显式 [] 表示该基线尚无执行记录；空用例基线表示不适用。只有调用方明确核验为 verified 且有非占位证据引用才计已执行，MCP 不自行验证文件/远端引用内容。未知或不可达证据、旧基线版本不计入分子。需求/设计层同时列未确定关联项；失败阶段 unknown 或依据待确认不计已确定场景覆盖。
+
+新 model 层独立统计依据已确定且完整匹配的合法转换；场景或转换仍待确认不计分子，legacy transition_coverage 仍保留原结构覆盖口径。
