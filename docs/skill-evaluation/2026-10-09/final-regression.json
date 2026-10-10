@@ -1,0 +1,101 @@
+{
+  "status": "passed",
+  "source_content_commit": "8e55998ab7622c9bd3e3f95a6e8ef931f0359a6f",
+  "checked_head": "c311f8a172ef153fdcb2a07db6d32f182bea4bc2",
+  "deterministic_total": 405,
+  "suite_totals": {
+    "state_machine": 114,
+    "review_checker": 104,
+    "wechat_formatter": 142,
+    "repository_tools": 45
+  },
+  "static_commands": [
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "scripts/check-version-sync.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "scripts/check-knowledge-count.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "scripts/check-md-links.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "scripts/check-skill-consistency.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "scripts/check-project-inventory.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "npx",
+        "--yes",
+        "markdownlint-cli",
+        "-c",
+        ".markdownlint.jsonc",
+        "--ignore",
+        ".git",
+        "--ignore",
+        "node_modules",
+        "--ignore",
+        ".venv-tools",
+        "*.md",
+        "plugins/**/*.md",
+        "docs/**/*.md",
+        ".github/**/*.md"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "yamllint",
+        "-d",
+        "{extends: default, rules: {line-length: disable, document-start: disable}}",
+        ".pre-commit-config.yaml",
+        ".github/workflows/ci.yml"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "pre-commit",
+        "run",
+        "--all-files"
+      ],
+      "exit_code": 0
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "python_version": "Python 3.11.16",
+  "codex_cli_version_observed_at_final_regression": "codex-cli 0.161.0",
+  "platform": "Darwin arm64",
+  "remote_ci_run": false,
+  "native_windows_run": false,
+  "full_receipt_sha256": "07517f0bd35f13435ded8081f01347e166d3943015261415a8ff5253233ff775"
+}
