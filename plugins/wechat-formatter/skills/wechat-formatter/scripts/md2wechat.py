@@ -116,37 +116,195 @@ def parse_css_rules(css_text: str) -> list[tuple[str, dict[str, str]]]:
 # ─── Step 3: Markdown → HTML ──────────────────────────────────────────────
 
 MODULE_BLOCK_RE = re.compile(
-    r'(?ms)^:::(module|[a-zA-Z][\w-]*)(?:\s*\[([^\]]*)\])?(?:\s*\{[^}]*\})?\s*\n(.*?)^:::+\s*(?:\n|$)'
+    r'(?ms)^:::(module|[a-zA-Z][\w-]*)(?:\s*\[([^\]]*)\])?(?:\s*\{([^}]*)\})?\s*\n(.*?)^:::+\s*(?:\n|$)'
 )
 
 
-def render_module_block(name: str, title: str | None, body: str) -> str:
-    """将单个 :::module 块渲染为带模块类名的 HTML 片段。
+FIELD_MODULES = {
+    'audience-fit': ('title subtitle fit avoid', 'title'),
+    'manifesto': ('label title body believe against', ''),
+    'question': ('title options', ''),
+    'poll': ('title options', ''),
+    'hero': ('eyebrow title subtitle kicker', 'eyebrow title'),
+    'part': ('index title subtitle', ''),
+    'label-title': ('label title', ''),
+    'infographic': ('eyebrow title subtitle', ''),
+    'verdict': ('eyebrow title body note', ''),
+    'bridge': ('label title body next', ''),
+    'cta': ('title note', ''),
+    'highlight': ('eyebrow title body', ''),
+    'quote': ('eyebrow quote source', 'quote'),
+}
+MODULE_ENUMS = {
+    'hero': {'variant': {'editorial'}},
+    'quote': {'variant': {'light'}},
+    'infographic': {'type': {'thesis', 'number', 'contrast', 'formula'}},
+}
 
-    body 按行解析：`key: value` 字段转为 .module-field，其余文本原样保留。
-    """
-    header = f'<div class="module-header">{escape(title)}</div>' if title else ''
-    fields: list[str] = []
-    paragraphs: list[str] = []
-    for line in body.strip().split('\n'):
-        stripped = line.strip()
-        if not stripped:
+
+def module_node(cls: str, text: str = '', inner: str | None = None) -> str:
+    return f'<div class="{cls}">{escape(text) if inner is None else inner}</div>'
+
+
+def module_fields(body: str, allowed: set[str], repeated: set[str] | None = None) -> dict:
+    result = {}
+    for line in body.strip().splitlines():
+        if not line.strip():
             continue
-        m = re.match(r'^([^:|：]{1,20}?)[:：]\s*(.+)$', stripped)
-        if m and '|' not in stripped:
-            fields.append(
-                f'<div class="module-field"><span class="module-field-name">'
-                f'{escape(m.group(1))}</span>'
-                f'<span class="module-field-value">{escape(m.group(2))}</span></div>'
-            )
+        match = re.match(r'^([^:：]+)[:：]\s*(.*)$', line.strip())
+        if not match or match[1] not in allowed:
+            raise ValueError('unknown field or malformed content')
+        key, value = match[1], match[2]
+        if repeated and key in repeated:
+            result.setdefault(key, []).append(value)
+        elif key in result:
+            raise ValueError('duplicate field: ' + key)
         else:
-            paragraphs.append(f'<p>{escape(stripped)}</p>')
-    field_html = '\n'.join(fields)
-    para_html = '\n'.join(paragraphs)
-    module_body = f'<div class="module-body">\n{field_html}\n{para_html}\n</div>'
-    return (
-        f'<div class="module module-{escape(name)}">\n{header}\n{module_body}\n</div>'
-    )
+            result[key] = value
+    return result
+
+
+def module_fallback(name: str, title: str | None, body: str, params: str = '') -> str:
+    print('warning: unsupported or invalid module ' + name, file=sys.stderr)
+    header = ':::' + name + ('[' + title + ']' if title else '')
+    header += '{' + params + '}' if params else ''
+    literal = '<pre><code>' + escape(header + '\n' + body.rstrip() + '\n:::') + '</code></pre>'
+    return module_node('module-' + name, inner=literal) if name in FIELD_MODULES else literal
+
+
+def module_group(name: str, key: str, value: str) -> str:
+    values = [item.strip() for item in value.split('|')]
+    if any(not item for item in values):
+        raise ValueError('empty list item')
+    if key == 'options':
+        if name == 'poll':
+            items = ''.join(module_node('option', inner=module_node('option-radio', '○')
+                                       + module_node('option-text', item)) for item in values)
+        else:
+            items = ''.join(module_node('option', item) for item in values)
+        return module_node('options', inner=items)
+    labels = {'fit': '适合', 'avoid': '不适合', 'believe': '相信', 'against': '反对'}
+    glyph = '✓ ' if key == 'fit' else '✗ ' if key == 'avoid' else ''
+    items = ''.join(module_node(key + '-item', glyph + item) for item in values)
+    return module_node(key + '-section', inner=module_node(key + '-label', labels[key]) + items)
+
+
+ROW_MODULES = {
+    'faq': ('faq-item', 'faq-question faq-answer', False),
+    'cards': ('card', 'card-title card-subtitle card-desc', True),
+    'compare': ('compare-row', 'compare-cell compare-cell compare-cell', True),
+    'cases': ('case', 'case-title case-industry case-result', False),
+    'toc': ('toc-item', 'toc-number toc-name toc-desc', False),
+    'metrics': ('metric', 'metric-name metric-value metric-desc', True),
+    'steps': ('step', 'step-number step-name step-desc', False),
+    'timeline': ('timeline-item', 'timeline-date timeline-name timeline-desc', False),
+}
+
+
+def module_wrap(name: str, title: str | None, content: str, suffix: str = '') -> str:
+    header = module_node('module-header ' + name + '-title', title) if title else ''
+    return module_node('module module-' + name + ' ' + name + suffix,
+                       inner=header + module_node('module-body', inner=content))
+
+
+def module_rows(name: str, body: str) -> str:
+    item_cls, columns, accent = ROW_MODULES[name]
+    classes = columns.split()
+    result = ''
+    for line in body.strip().splitlines():
+        if not line.strip():
+            continue
+        values = [part.strip() for part in re.split(r'(?<!\\)\|', line)]
+        values = [part.replace('\\|', '|') for part in values]
+        if len(values) != len(classes) + int(accent):
+            raise ValueError('incorrect row columns')
+        suffix = ''
+        if accent:
+            color = values.pop()
+            if color not in {'accent', 'default'}:
+                raise ValueError('invalid accent')
+            suffix = ' accent' if color == 'accent' else ''
+        cells = [module_node(cls + (suffix if name == 'compare' else ''), value)
+                 for cls, value in zip(classes, values)]
+        if name == 'steps':
+            cells = [cells[0], module_node('step-content', inner=''.join(cells[1:]))]
+        result += module_node(item_cls + suffix, inner=''.join(cells))
+    if not result:
+        raise ValueError('empty rows')
+    return result
+
+
+LABELED_MODULES = {'myth-fact', 'checklist', 'callout'}
+
+
+def module_labeled(name: str, body: str) -> str:
+    result, pair = '', ''
+    for line in body.strip().splitlines():
+        if not line.strip():
+            continue
+        parts = [part.strip() for part in line.split('|')]
+        if len(parts) != (3 if name == 'checklist' else 2):
+            raise ValueError('incorrect labeled row')
+        kind, value = parts[:2]
+        if name == 'myth-fact':
+            if kind not in {'myth', 'fact'} or (kind == 'fact') != bool(pair):
+                raise ValueError('expected myth/fact pair')
+            cell = module_node(kind, inner=module_node(kind + '-label', '误区' if kind == 'myth' else '事实')
+                               + module_node(kind + '-text', value))
+            if kind == 'myth':
+                pair = cell
+            else:
+                result += module_node('myth-fact-pair', inner=pair + cell)
+                pair = ''
+        elif name == 'checklist':
+            glyphs = {'done': '✓', 'pending': '⏳', 'warn': '⚠', 'todo': '○'}
+            if kind not in glyphs:
+                raise ValueError('invalid status')
+            result += module_node('checklist-item', inner=module_node('checklist-status ' + kind, glyphs[kind])
+                                  + module_node('checklist-content', inner=module_node('checklist-desc', value)
+                                                + module_node('checklist-note', parts[2])))
+        else:
+            labels = {'tip': '💡 提示', 'warning': '⚠ 警告', 'note': '📝 注意', 'important': '❗ 重要'}
+            if kind not in labels:
+                raise ValueError('invalid callout type')
+            result += module_node('callout ' + kind, inner=module_node('callout-label', labels[kind])
+                                  + module_node('callout-content', value))
+    if pair or not result:
+        raise ValueError('incomplete labeled rows')
+    return result
+
+
+def render_module_block(name: str, title: str | None, body: str, params: str = '') -> str:
+    try:
+        if name in LABELED_MODULES and not params:
+            return module_wrap(name, title, module_labeled(name, body))
+        if name in ROW_MODULES and not params:
+            return module_wrap(name, title, module_rows(name, body))
+        if name not in FIELD_MODULES or params:
+            raise ValueError('unsupported module or parameters')
+        field_order, required = FIELD_MODULES[name]
+        enums = MODULE_ENUMS.get(name, {})
+        fields = module_fields(body, set(field_order.split()) | set(enums))
+        if any(not fields.get(key) for key in required.split()):
+            raise ValueError('missing required fields')
+        suffix = ''
+        for key, values in enums.items():
+            if key in fields:
+                if fields[key] not in values:
+                    raise ValueError('invalid enum: ' + key)
+                suffix += ' ' + key + '-' + fields[key]
+        content = ''
+        for key in field_order.split():
+            if key not in fields:
+                continue
+            cls = 'part-' + key if name == 'part' else 'quote-text' if key == 'quote' else key
+            if key in {'fit', 'avoid', 'believe', 'against', 'options'}:
+                content += module_group(name, key, fields[key])
+            else:
+                content += module_node(cls, fields[key])
+        return module_wrap(name, title, content, suffix)
+    except ValueError:
+        return module_fallback(name, title, body, params)
 
 
 def render_modules(md_text: str) -> str:
@@ -161,7 +319,7 @@ def render_modules(md_text: str) -> str:
 
     def flush_plain():
         parts.append(MODULE_BLOCK_RE.sub(
-            lambda m: '\n' + render_module_block(m.group(1), m.group(2), m.group(3)) + '\n',
+            lambda m: '\n' + render_module_block(m.group(1), m.group(2), m.group(4), m.group(3) or '') + '\n',
             ''.join(plain),
         ))
         plain.clear()
@@ -393,7 +551,7 @@ def convert(md_path: str, style_path: str, size: str = 'medium') -> str:
     rules = parse_css_rules(css_text)
     module_css = load_modules_css()
     if module_css:
-        rules = rules + parse_css_rules(module_css)
+        rules = parse_css_rules(module_css) + rules
     title = extract_title(md_text)
     style_name = detect_style_name(style_path)
 

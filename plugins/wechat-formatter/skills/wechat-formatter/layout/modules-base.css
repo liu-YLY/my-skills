@@ -1489,3 +1489,33 @@
         grid-template-columns: 1fr;
     }
 }
+
+.hero, .verdict { background-color: #4c51a4; }
+.manifesto { background-color: #2c3e50; }
+.cta { background-color: #0056b3; }
+.infographic { background-color: #e2e8f0; }
+.highlight { background-color: #fef3c7; }
+.module { display: block; }
+
+
+.module .options, .module .fit-section, .module .avoid-section { display: block; }
+.module .option { display: block; margin-bottom: 8px; }
+.module .option-radio { display: inline-block; }
+.module .fit-item::before, .module .avoid-item::before { content: none; }
+
+
+.module.metrics, .module .toc-item, .module .step { display: block; }
+.module .metric, .module .step-content { margin-bottom: 12px; }
+.module .step-number { display: inline-block; text-align: center; }
+.module.timeline { border-left: 2px solid #007bff; }
+.module.timeline::before, .module .timeline-item::before { content: none; }
+
+
+.module.cards, .module.cases, .module .compare-row { display: block; }
+.module .card, .module .case { margin-bottom: 12px; }
+
+
+.module .myth-fact-pair, .module .checklist-item { display: block; }
+.module .checklist-status { display: inline-block; text-align: center; }
+.module .callout-label { font-weight: 600; margin-bottom: 8px; }
+.module .callout::before, .module .checklist-status::after { content: none; }
