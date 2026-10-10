@@ -22,6 +22,28 @@ class EvidenceType(str, Enum):
     PENDING = "待确认"
 
 
+RiskType = Literal[
+    "legal_transition",
+    "illegal_transition",
+    "guard_violation",
+    "idempotency",
+    "concurrency",
+    "message_reorder",
+    "timeout_retry",
+    "data_consistency",
+    "access_control",
+    "failure_recovery",
+]
+
+
+class ScenarioApplicability(BaseModel):
+    status: Literal["applicable", "not_applicable", "unknown"]
+    reason: str = Field(min_length=1)
+    source: str = Field(min_length=1)
+    evidence_type: EvidenceType = EvidenceType.PENDING
+    missing_information: list[str] = Field(default_factory=list)
+
+
 class StateMachineMeta(BaseModel):
     """状态机元信息。"""
 
@@ -71,6 +93,7 @@ class ForbiddenTransition(BaseModel):
     to_state: str | Literal["*"] = Field(alias="to")
     reason: str
     evidence_type: EvidenceType
+    source: str = ""
     id: str | None = None
 
     @model_validator(mode="after")
@@ -90,20 +113,10 @@ class StateMachine(BaseModel):
     states: list[State]
     transitions: list[Transition]
     forbidden: list[ForbiddenTransition] = Field(default_factory=list)
+    scenario_applicability: dict[RiskType, ScenarioApplicability] = Field(default_factory=dict)
 
 
-RiskType = Literal[
-    "legal_transition",
-    "illegal_transition",
-    "guard_violation",
-    "idempotency",
-    "concurrency",
-    "message_reorder",
-    "timeout_retry",
-    "data_consistency",
-    "access_control",
-    "failure_recovery",
-]
+
 
 
 class Scenario(BaseModel):
@@ -143,6 +156,7 @@ class ScenarioList(BaseModel):
 
     scenarios: list[Scenario]
     coverage_summary: dict[str, int] = Field(default_factory=dict)
+    scenario_applicability: dict[RiskType, ScenarioApplicability] = Field(default_factory=dict)
     pending_confirmation: list[Scenario] = Field(default_factory=list)
 
 
