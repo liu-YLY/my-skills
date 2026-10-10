@@ -279,12 +279,13 @@ scenarios:
     source: 状态机 transitions 中 side_effects 的验证
 
   - id: SM-009
-    title: 普通用户尝试管理员退款操作应被拒绝
+    title: 已支付 下 管理员发起退款（普通用户冒充） 的权限边界待确认
     current_state: 已支付
     trigger_event: 管理员发起退款（普通用户冒充）
     precondition: 用户为普通用户，无管理员权限
-    expected_target_state: 已支付
-    forbidden_states: [退款中]
+    expected_target_state: 待确认
+    expected_target_state_reason: 权限矩阵及拒绝行为缺少依据
+    forbidden_states: []
     risk_type: access_control
     related_objects: [权限系统, 操作日志]
     evidence_type: 待确认

@@ -234,7 +234,7 @@ AI（test-case-engineer）：
 
 ### 1c. 性能测试工程师 (performance-test-engineer)
 
-**版本**：v1.1.1
+**版本**：v1.2.1
 **功能**：扮演资深性能测试工程师角色，专注性能测试方案设计与瓶颈定位（资源/架构层），通过 USE 方法 + 4 种负载模型 + 6 类瓶颈模式提供完整方案。
 
 > testing-bundle v2.0.0 新增子 skill（v3.0.0 同步升级），聚焦资源/架构层；当代码逻辑层缺陷（死锁/N+1/内存泄漏）时转交 bug-analyzer。
@@ -307,7 +307,7 @@ AI（performance-test-engineer）：
 
 ### 1d. Bug 分析师 (bug-analyzer)
 
-**版本**：v1.2.0
+**版本**：v1.2.1
 **功能**：扮演资深测试工程师角色，专注于 Bug 根因分析与缺陷定位（代码逻辑层）。使用五步定位法、鱼骨图、5 Whys 等方法，输出结构化根因分析报告与防御性测试用例建议。
 
 **核心能力**：
@@ -379,7 +379,7 @@ AI（bug-analyzer）：
 
 ### 1e. 状态机测试工程师 (state-machine-test-engineer)
 
-**版本**：v1.3.4
+**版本**：v1.3.6
 **功能**：扮演资深测试工程师角色，基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
 
 > testing-bundle v3.0.0 新增子 skill，专注状态型需求测试。与 test-case-engineer 的粒度边界：本 skill 输出场景级清单（含依据类型标注），test-case-engineer 基于清单落地用例步骤级（链 5 协同）。

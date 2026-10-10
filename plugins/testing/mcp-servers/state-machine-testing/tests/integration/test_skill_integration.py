@@ -140,3 +140,20 @@ def test_industry_scenario_examples_use_the_same_complete_contract():
                 assert s.expected_target_state == "待确认" or s.expected_target_state in {x.name for x in sm.states}
                 assert s.source
             assert check_coverage(sm, scenarios).unmatched_scenarios == [], name
+
+
+def test_unknown_permission_examples_do_not_assert_rejection_targets():
+    import re
+    import yaml
+    from state_machine_testing_mcp.schemas import Scenario
+    knowledge = Path(__file__).resolve().parents[4] / "skills/state-machine-test-engineer/knowledge"
+    paths = [knowledge / "scenario-types.md", *sorted((knowledge / "industry-templates").glob("*.md"))]
+    for path in paths:
+        for block in re.findall(r"```yaml\n(.*?)```", path.read_text(), re.S):
+            data = yaml.safe_load(block)
+            raw = data if isinstance(data, list) else data.get("scenarios", []) if isinstance(data, dict) else []
+            for item in raw:
+                if item.get("risk_type") == "access_control" and item.get("evidence_type") == "待确认":
+                    scenario = Scenario.model_validate(item)
+                    assert scenario.expected_target_state == "待确认", str(path)
+                    assert scenario.expected_target_state_reason and scenario.forbidden_states == []

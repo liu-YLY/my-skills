@@ -73,6 +73,14 @@ def check_coverage(state_machine: StateMachine, scenarios: ScenarioList) -> Cove
         if risk not in state_machine.scenario_applicability:
             applicability[risk] = item
 
+    qualified_types = set()
+    for scenario in scenarios.scenarios:
+        failure = getattr(scenario, "failure_semantics", None)
+        if (scenario.id not in unmatched and scenario.evidence_type.value != "待确认"
+                and scenario.expected_target_state in {state.name for state in state_machine.states}
+                and (failure is None or (failure.phase != "unknown" and failure.evidence_type.value != "待确认"))):
+            qualified_types.add(scenario.risk_type)
+
     # 4. evidence_distribution: 依据类型分布
     evidence_dist: dict[str, int] = {"需求明确": 0, "合理推理": 0, "待确认": 0}
     for s in scenarios.scenarios:
@@ -90,7 +98,7 @@ def check_coverage(state_machine: StateMachine, scenarios: ScenarioList) -> Cove
         unmatched_scenarios=unmatched,
         scenario_applicability=applicability,
         applicable_missing_scenario_types=[risk for risk, item in applicability.items()
-                                           if item.status == "applicable" and not type_coverage[risk]],
+                                           if item.status == "applicable" and risk not in qualified_types],
         not_applicable_scenario_types=[risk for risk, item in applicability.items()
                                       if item.status == "not_applicable"],
         unknown_scenario_types=[risk for risk, item in applicability.items() if item.status == "unknown"],

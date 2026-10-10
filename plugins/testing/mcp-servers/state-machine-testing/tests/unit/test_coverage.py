@@ -80,3 +80,26 @@ def test_markdown_keeps_applicability_unknown_visible():
     output = export_to_markdown(sm, generate_scenarios(sm))
     assert "适用性" in output
     assert "access_control | unknown" in output
+
+
+
+def test_applicable_missing_ignores_wrong_structural_match_and_pending_candidates():
+    from state_machine_testing_mcp.schemas import ScenarioList
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["scenario_applicability"] = {"idempotency": {"status": "applicable",
+        "reason": "需求要求幂等", "source": "PRD §2"}}
+    sm = StateMachine.model_validate(data)
+    generated = generate_scenarios(sm, ["legal_transition", "idempotency"])
+    raw = generated.model_dump(mode="json")
+    for scenario in raw["scenarios"]:
+        if scenario["risk_type"] == "legal_transition":
+            scenario["guard_conditions"] = ["不存在的守卫"]
+        else:
+            scenario["expected_target_state"] = "待确认"
+            scenario["expected_target_state_reason"] = "重复事件结果规则未明确"
+            scenario["evidence_type"] = "待确认"
+    report = check_coverage(sm, ScenarioList.model_validate(raw))
+    assert report.scenario_type_coverage["legal_transition"] > 0
+    assert report.scenario_type_coverage["idempotency"] > 0
+    assert "legal_transition" in report.applicable_missing_scenario_types
+    assert "idempotency" in report.applicable_missing_scenario_types
