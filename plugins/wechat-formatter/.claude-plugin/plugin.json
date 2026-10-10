@@ -1,7 +1,7 @@
 {
   "name": "wechat-formatter",
   "description": "WeChat article formatter with 6 professional styles (tech-blog, tutorial, deep-dive, casual-chat, apple, cyber). Produces formatted Markdown and optional sanitized, paste-ready HTML.",
-  "version": "3.0.15",
+  "version": "3.0.16",
   "author": {
     "name": "lyle"
   },
