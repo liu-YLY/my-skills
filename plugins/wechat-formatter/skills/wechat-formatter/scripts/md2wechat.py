@@ -154,10 +154,37 @@ def render_modules(md_text: str) -> str:
 
     位置保持：占位替换后 BeautifulSoup 内联阶段仍能保留结构。
     """
-    return MODULE_BLOCK_RE.sub(
-        lambda m: '\n' + render_module_block(m.group(1), m.group(2), m.group(3)) + '\n',
-        md_text,
-    )
+    parts: list[str] = []
+    plain: list[str] = []
+    fence: str | None = None
+    in_module = False
+
+    def flush_plain():
+        parts.append(MODULE_BLOCK_RE.sub(
+            lambda m: '\n' + render_module_block(m.group(1), m.group(2), m.group(3)) + '\n',
+            ''.join(plain),
+        ))
+        plain.clear()
+
+    for line in md_text.splitlines(keepends=True):
+        if fence:
+            parts.append(line)
+            if re.match(r'^ {0,3}' + re.escape(fence[0]) + '{' + str(len(fence)) + r',}\s*$', line):
+                fence = None
+            continue
+        opening = re.match(r'^ {0,3}(`{3,}|~{3,})', line)
+        if opening and not in_module:
+            flush_plain()
+            fence = opening.group(1)
+            parts.append(line)
+            continue
+        plain.append(line)
+        if re.match(r'^:::[a-zA-Z]', line):
+            in_module = True
+        elif re.match(r'^:::+\s*$', line):
+            in_module = False
+    flush_plain()
+    return ''.join(parts)
 
 
 def load_modules_css() -> str:
