@@ -295,7 +295,13 @@ state_machine:
   notes: 需澄清失败后是允许重试/回退到原状态/进入退款失败终态
 ```
 
-## 3. 何时跳过某类场景
+## 3. 适用性与何时跳过
+
+十类均输出 `status: applicable / not_applicable / unknown`，以及 `reason/source/evidence_type/missing_information`。模型结构可判断当前是否有转换、禁止规则、守卫或副作用，来源注明模型层，不能证明业务完整性。幂等、并发、消息、等待、权限和失败能力需要需求明确提供范围；事件关键词仅产生候选，不证明业务能力。未知不等于不适用，未说明权限时目标保持 `待确认`，不能默认拒绝；显式不适用不生成该类场景。
+
+`scenario_applicability` 是模型与清单的可选兼容字段；缺省时业务能力为 unknown。同步且明确无消息通道才可将乱序标不适用。并发候选必须来自同一对象同一前置状态的事件，联合触发条件未知时保留待确认。场景类型条数保留描述统计，不作为完整性门槛。
+
+以下跳过条件需要相应事实依据；资料没有提及不等于明确不存在：
 
 | 场景类型 | 跳过条件 |
 |---|---|
@@ -307,8 +313,8 @@ state_machine:
 | `message_reorder` | 无异步消息可跳过 |
 | `timeout_retry` | 无等待/重试可跳过 |
 | `data_consistency` | transition 无 side_effects 可跳过 |
-| `access_control` | 无权限要求可跳过（但多数业务都有权限，默认生成） |
-| `failure_recovery` | 不跳过，每条 transition 必生成 |
+| `access_control` | 明确无权限要求才可跳过；未说明时列未知项或待确认候选 |
+| `failure_recovery` | 按失败能力与副作用适用性生成；未知时只给待确认候选 |
 
 ## 4. 场景去重规则
 
@@ -339,3 +345,6 @@ state_machine:
 - [completeness-check.md](completeness-check.md) - 9 项检查清单
 - [anti-patterns.md](anti-patterns.md) - 反模式黑名单
 - [../state-machine-core.md](../state-machine-core.md) - 核心流程详述
+
+
+覆盖报告保留 `scenario_type_coverage`（类型条数）和 `missing_scenario_types`（零计数类型）的旧描述性含义；新增 `applicable_missing_scenario_types / not_applicable_scenario_types / unknown_scenario_types` 分别表示适用但缺场景、不适用、尚未确定适用性。完成判断使用新三态信息，不能把待确认候选算成已验证业务行为。

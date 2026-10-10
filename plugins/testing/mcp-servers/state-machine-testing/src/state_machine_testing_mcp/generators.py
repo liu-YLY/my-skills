@@ -185,7 +185,7 @@ def _generate_idempotency(sm: StateMachine) -> list[Scenario]:
     base = len(sm.transitions) + len(sm.forbidden)
     idx = 0
     for t in sm.transitions:
-        if not _is_external_callback(t.event):
+        if not _is_external_callback(t.event) and not _explicitly_applicable(sm, "idempotency"):
             continue
         idx += 1
         scenarios.append(
@@ -218,7 +218,7 @@ def _generate_concurrency(sm: StateMachine) -> list[Scenario]:
     paires: list[tuple] = []
     for i, t1 in enumerate(sm.transitions):
         for t2 in sm.transitions[i + 1:]:
-            if t1.event != t2.event:
+            if t1.from_state == t2.from_state and t1.event != t2.event:
                 paires.append((t1, t2))
     for t1, t2 in paires[:20]:  # 限制数量，避免组合爆炸
         scenarios.append(
@@ -227,7 +227,7 @@ def _generate_concurrency(sm: StateMachine) -> list[Scenario]:
                 title=f"{t1.event} 与 {t2.event} 并发时最终状态正确",
                 current_state=t1.from_state,
                 trigger_event=f"{t1.event} + {t2.event}（并发）",
-                precondition=f"{t1.from_state} 状态，{t1.event} 与 {t2.event} 同时到达（不同触发源）",
+                precondition=f"{t1.from_state} 状态，{t1.event} 与 {t2.event} 同时到达（触发源与同时成立条件待核实）",
                 expected_target_state="待确认",
                 expected_target_state_reason="PRD 未说明两个事件并发的目标态",
                 forbidden_states=[],
@@ -246,7 +246,7 @@ def _generate_message_reorder(sm: StateMachine) -> list[Scenario]:
     base = 200
     idx = 0
     for t in sm.transitions:
-        if not _is_async_event(t.event):
+        if not _is_async_event(t.event) and not _explicitly_applicable(sm, "message_reorder"):
             continue
         idx += 1
         scenarios.append(
@@ -274,9 +274,8 @@ def _generate_timeout_retry(sm: StateMachine) -> list[Scenario]:
     base = 300
     idx = 0
     for t in sm.transitions:
-        if not _is_timeout_event(t.event) and not any(
-            "超时" in g or "retry" in g.lower() for g in t.guards
-        ):
+        if (not _is_timeout_event(t.event) and not _explicitly_applicable(sm, "timeout_retry")
+                and not any("超时" in g or "retry" in g.lower() for g in t.guards)):
             continue
         idx += 1
         scenarios.append(
@@ -325,68 +324,18 @@ def _generate_data_consistency(sm: StateMachine) -> list[Scenario]:
 
 
 def _generate_access_control(sm: StateMachine) -> list[Scenario]:
-    """生成 access_control 场景。
-
-    判定条件放宽：transition 事件或目标态涉及角色操作（管理员/审批人/客服/
-    运营/商家/店长/用户本人/admin 等），或模型含角色/权限字段时即生成；
-    否则（无任何权限信号）仍默认生成并标「待确认」，避免依赖事件关键词丢场景。
-    """
-    role_hints = ["管理员", "审批人", "客服", "admin", "运营", "商家", "店长", "用户"]
-    scenarios: list[Scenario] = []
-    base = 500
-    idx = 0
-    has_role_signal = any(
-        (hasattr(t, 'event') and any(h in t.event for h in role_hints))
-        or any(h in t.to_state for h in role_hints)
-        for t in sm.transitions
-    )
-    has_role_fields = any(
-        f in {"role", "roles", "actor", "operator", "permission"}
-        for f in (getattr(sm, "fields", None) or {})
-    )
-    if not (has_role_signal or has_role_fields):
-        # 无任何权限信号：仍默认生成 1 条待确认场景（PRD 未定义权限矩阵）
-        for t in sm.transitions[:1]:
-            scenarios.append(
-                Scenario(
-                    id=f"SM-{base + idx + 1:03d}",
-                    title=f"{t.event} 的权限控制规则未定义，越权访问应被拒绝",
-                    current_state=t.from_state,
-                    trigger_event=f"{t.event}（非授权角色）",
-                    precondition=f"{t.from_state} 状态，操作者为未授权角色",
-                    expected_target_state=t.from_state,
-                    expected_target_state_reason="PRD 未定义权限矩阵，默认生成越权拒绝场景",
-                    forbidden_states=[t.to_state],
-                    risk_type="access_control",
-                    related_objects=[],
-                    evidence_type=EvidenceType.PENDING,
-                    source="PRD 通常未说明权限矩阵",
-                )
-            )
-        return scenarios
-    for t in sm.transitions:
-        if not any(h in t.event for h in role_hints) and not any(
-            h in t.to_state for h in role_hints
-        ):
-            continue
-        idx += 1
-        scenarios.append(
-            Scenario(
-                id=f"SM-{base + idx:03d}",
-                title=f"非授权角色尝试 {t.event} 应被拒绝",
-                current_state=t.from_state,
-                trigger_event=f"{t.event}（非授权角色）",
-                precondition=f"{t.from_state} 状态，操作者为非授权角色",
-                expected_target_state=t.from_state,
-                expected_target_state_reason="PRD 未细化权限矩阵，越权行为按拒绝处理",
-                forbidden_states=[t.to_state],
-                risk_type="access_control",
-                related_objects=[],
-                evidence_type=EvidenceType.PENDING,
-                source="PRD 通常未说明权限矩阵",
-            )
-        )
-    return scenarios
+    """权限能力与拒绝规则未知时只生成待确认候选。"""
+    return [Scenario(
+        id=f"SM-{501 + index:03d}",
+        title=f"{t.event} 的角色与权限边界需确认",
+        current_state=t.from_state,
+        trigger_event=f"{t.event}（权限边界）",
+        precondition=f"{t.from_state} 状态，操作者与权限矩阵待确认",
+        expected_target_state="待确认",
+        expected_target_state_reason="模型未提供角色、授权矩阵及拒绝行为依据",
+        risk_type="access_control", evidence_type=EvidenceType.PENDING,
+        source="权限规则缺口候选；不证明存在越权或拒绝规则",
+    ) for index, t in enumerate(sm.transitions[:1])]
 
 
 def _generate_failure_recovery(sm: StateMachine) -> list[Scenario]:
@@ -428,7 +377,9 @@ def generate_scenarios(
     Returns:
         ScenarioList: 场景清单
     """
-    types_to_generate = scenario_types or ALL_SCENARIO_TYPES
+    applicability = assess_applicability(state_machine)
+    types_to_generate = [risk for risk in (scenario_types or ALL_SCENARIO_TYPES)
+                         if applicability[risk].status != "not_applicable"]
 
     all_scenarios: list[Scenario] = []
 
@@ -453,6 +404,15 @@ def generate_scenarios(
     if "failure_recovery" in types_to_generate:
         all_scenarios.extend(_generate_failure_recovery(state_machine))
 
+    for scenario in all_scenarios:
+        item = applicability[scenario.risk_type]
+        if item.status == "unknown":
+            scenario.expected_target_state = "待确认"
+            scenario.expected_target_state_reason = item.reason
+            scenario.evidence_type = EvidenceType.PENDING
+            scenario.forbidden_states = []
+            scenario.notes += "；适用性未知，属于待确认候选，不证明业务规则"
+
     # 按依据类型过滤
     if evidence_filter:
         all_scenarios = [s for s in all_scenarios if s.evidence_type.value == evidence_filter]
@@ -474,5 +434,6 @@ def generate_scenarios(
     return ScenarioList(
         scenarios=all_scenarios,
         coverage_summary=type_coverage,
+        scenario_applicability=applicability,
         pending_confirmation=pending,
     )

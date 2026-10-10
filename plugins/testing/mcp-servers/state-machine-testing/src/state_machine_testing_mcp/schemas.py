@@ -231,6 +231,10 @@ class CoverageReport(BaseModel):
     uncovered_transitions: list[str] = Field(default_factory=list)
     missing_scenario_types: list[str] = Field(default_factory=list)
     unmatched_scenarios: list[str] = Field(default_factory=list)
+    scenario_applicability: dict[RiskType, ScenarioApplicability] = Field(default_factory=dict)
+    applicable_missing_scenario_types: list[str] = Field(default_factory=list)
+    not_applicable_scenario_types: list[str] = Field(default_factory=list)
+    unknown_scenario_types: list[str] = Field(default_factory=list)
 
 
 class ExportResult(BaseModel):

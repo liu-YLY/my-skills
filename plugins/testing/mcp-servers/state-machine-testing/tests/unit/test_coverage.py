@@ -53,3 +53,30 @@ def test_uncovered_transitions_empty_when_legal_generated() -> None:
     scenarios = generate_scenarios(sm)
     report = check_coverage(sm, scenarios)
     assert report.uncovered_transitions == []
+
+
+
+def test_applicability_separates_missing_excluded_and_unknown():
+    from state_machine_testing_mcp.schemas import ScenarioList
+    sm = _load_order_refund()
+    data = sm.model_dump(by_alias=True)
+    data["scenario_applicability"] = {
+        "message_reorder": {"status": "not_applicable", "reason": "同步无消息", "source": "PRD §1"},
+        "idempotency": {"status": "applicable", "reason": "回调会重复", "source": "PRD §2"}}
+    sm = StateMachine.model_validate(data)
+    report = check_coverage(sm, ScenarioList(scenarios=[]))
+    assert "legal_transition" in report.applicable_missing_scenario_types
+    assert "idempotency" in report.applicable_missing_scenario_types
+    assert "message_reorder" in report.not_applicable_scenario_types
+    assert "access_control" in report.unknown_scenario_types
+    assert "access_control" not in report.applicable_missing_scenario_types
+    assert report.scenario_type_coverage["access_control"] == 0
+    assert "access_control" in report.missing_scenario_types
+
+
+def test_markdown_keeps_applicability_unknown_visible():
+    from state_machine_testing_mcp.exporters import export_to_markdown
+    sm = _load_order_refund()
+    output = export_to_markdown(sm, generate_scenarios(sm))
+    assert "适用性" in output
+    assert "access_control | unknown" in output
