@@ -217,7 +217,7 @@ tip | 这是嵌套的提示
 | 层级 | 文件位置 | 作用范围 | 优先级 |
 |------|---------|---------|--------|
 | 模块基础样式 | [layout/modules-base.css](../layout/modules-base.css) | 所有模块的通用结构（`.module` 容器、`.module-header`、`.module-body`） | 最低 |
-| 风格 CSS | [styles/](../styles/) 下各风格文件（如 `apple.md`、`cyber.md`） | 覆盖模块基础样式，注入风格配色（`md2wechat.py` 导出时会将模块基础样式与风格 CSS 一并内联） | 中 |
+| 风格 CSS | [styles/](../styles/) 下各风格文件（如 `apple.md`、`cyber.md`） | 覆盖模块基础样式，注入风格配色（`md2wechat.py` 按基础样式、风格覆盖的顺序内联；复制内容使用安全纯色与纵向堆叠） | 中 |
 | Brand Profile 覆盖 | `~/.config/md2wechat/brand.md` 中声明的颜色与字号 | 全局品牌色覆盖 | 最高 |
 
 ### 6.2 模块到 CSS 类的映射
@@ -225,25 +225,25 @@ tip | 这是嵌套的提示
 | 模块 | 主 CSS 类 | 关键子类 |
 |------|---------|---------|
 | `hero` | `.hero` | `.hero .eyebrow` / `.hero .title` / `.hero .subtitle` |
-| `toc` | `.toc` | `.toc-item` / `.toc-index` |
-| `cards` | `.cards` | `.card` / `.card-accent` |
-| `steps` | `.steps` | `.step-item` / `.step-number` |
-| `timeline` | `.timeline` | `.timeline-item` / `.timeline-dot` |
+| `toc` | `.toc` | `.toc-item` / `.toc-number` |
+| `cards` | `.cards` | `.card` / `.card.accent` |
+| `steps` | `.steps` | `.step` / `.step-number` |
+| `timeline` | `.timeline` | `.timeline-item` / `.timeline-date` |
 | `metrics` | `.metrics` | `.metric` / `.metric-value` |
-| `compare` | `.compare` | `.compare-row` / `.compare-accent` |
-| `verdict` | `.verdict` | `.verdict-title` / `.verdict-body` |
-| `quote` | `.quote` | `.quote-text` / `.quote-source` |
-| `cta` | `.cta` | `.cta-title` / `.cta-note` |
-| `callout` | `.callout` | `.callout-tip` / `.callout-warning` / `.callout-note` / `.callout-important` |
-| `highlight` | `.highlight` | `.highlight-title` |
+| `compare` | `.compare` | `.compare-row` / `.compare-cell.accent` |
+| `verdict` | `.verdict` | `.title` / `.body` |
+| `quote` | `.quote` | `.quote-text` / `.source` |
+| `cta` | `.cta` | `.title` / `.note` |
+| `callout` | `.callout` | `.callout.tip` / `.callout.warning` / `.callout.note` / `.callout.important` |
+| `highlight` | `.highlight` | `.title` |
 | `author-card` | `.author-card` | `.author-name` / `.author-bio` |
-| `brand-banner` | `.brand-banner` | `.brand-logo` / `.brand-slogan` |
-| `checklist` | `.checklist` | `.check-item` / `.check-done` / `.check-pending` |
+| `brand-banner` | `.brand-banner` | `.logo` / `.brand-slogan` |
+| `checklist` | `.checklist` | `.checklist-item` / `.checklist-status.done` / `.checklist-status.pending` |
 | `faq` | `.faq` | `.faq-item` / `.faq-question` |
 | `split` | `.split` | `.split-left` / `.split-right` |
-| `columns` | `.columns` | `.column-item` |
-| `question` | `.question` | `.question-options` |
-| `poll` | `.poll` | `.poll-options` |
+| `columns` | `.columns` | `.column` |
+| `question` | `.question` | `.options` |
+| `poll` | `.poll` | `.options` |
 
 ### 6.3 风格覆盖规则
 

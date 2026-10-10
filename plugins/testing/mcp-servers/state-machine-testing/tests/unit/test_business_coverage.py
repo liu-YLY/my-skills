@@ -115,3 +115,32 @@ def test_wildcard_is_not_a_concrete_attempt_target():
     report = check_coverage(sm, scenarios)
     assert report.forbidden_coverage == 0
     assert report.unmatched_scenarios == [scenarios.scenarios[0].id]
+
+
+
+def test_guard_failure_cannot_choose_or_forbid_a_sibling_target():
+    sm = model()
+    for same_target in (False, True):
+        if same_target:
+            sm.transitions[1].to_state = sm.transitions[0].to_state
+        result = generate_scenarios(sm, ["guard_violation"])
+        assert len(result.scenarios) == 2
+        for scenario, transition in zip(result.scenarios, sm.transitions):
+            assert scenario.expected_target_state == "待确认"
+            assert scenario.expected_target_state_reason
+            assert scenario.forbidden_states == []
+            assert scenario.transition_id == transition.id
+            assert scenario.violated_guard in transition.guards
+            assert scenario.guard_conditions == transition.guards
+
+
+def test_individual_guard_failure_keeps_other_conditions_explicit():
+    sm = model()
+    sm.transitions = sm.transitions[:1]
+    sm.transitions[0].guards = ["金额一致", "签名有效"]
+    result = generate_scenarios(sm, ["guard_violation"])
+    assert {s.violated_guard for s in result.scenarios} == {"金额一致", "签名有效"}
+    for scenario in result.scenarios:
+        other = next(g for g in sm.transitions[0].guards if g != scenario.violated_guard)
+        assert other + " 满足" in scenario.precondition
+        assert "联合可满足性未验证" in scenario.notes

@@ -18,6 +18,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -29,6 +32,31 @@ spec = importlib.util.spec_from_file_location('md2wechat', SCRIPT_PATH)
 assert spec is not None and spec.loader is not None
 md2wechat = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(md2wechat)
+
+
+@pytest.mark.parametrize('outcome', ['false', 'throw', 'true'])
+def test_copy_button_reports_actual_clipboard_result(tmp_path, outcome):
+    from bs4 import BeautifulSoup
+
+    node = shutil.which('node')
+    if not node:
+        pytest.skip('Node.js unavailable for browser script boundary test')
+    output = md2wechat.convert(str(_write_markdown(tmp_path)), str(_write_style_file(tmp_path, 'tech-blog')))
+    script = BeautifulSoup(Path(output).read_text(), 'html.parser').find('script').string
+    harness = '''const fs = require('node:fs'), vm = require('node:vm');
+const input = JSON.parse(fs.readFileSync(0, 'utf8'));
+const messages = [], selection = {count:0,removeAllRanges(){this.count=0;},addRange(){this.count++;}};
+const context = {document:{getElementById(){return {};},createRange(){return {selectNodeContents(){}};},
+execCommand(){if(input.outcome==='throw')throw new Error('clipboard denied');return input.outcome==='true';}},
+window:{getSelection(){return selection;}},alert(message){messages.push(message);}};
+vm.createContext(context);vm.runInContext(input.script,context);context.copyContent();
+process.stdout.write(JSON.stringify({messages,selectionCleared:selection.count===0}));'''
+    result = subprocess.run([node, '-e', harness], input=json.dumps({'script': script, 'outcome': outcome}),
+                            text=True, capture_output=True, check=True)
+    observed = json.loads(result.stdout)
+    expected = '已复制' if outcome == 'true' else '复制失败'
+    assert observed['messages'][0].startswith(expected)
+    assert observed['selectionCleared']
 
 
 # ─── 公共 fixture ───────────────────────────────────────────────────────────
@@ -723,3 +751,55 @@ def test_section_raw_html_is_inert():
     assert not soup.select('script, iframe')
     assert all(not key.startswith('on') for img in soup.select('img') for key in img.attrs)
     assert all('src' not in img.attrs for img in soup.select('img'))
+
+
+
+def test_all_declared_module_examples_export_with_semantic_structure(tmp_path, capsys):
+    from bs4 import BeautifulSoup
+    import re
+    spec = (SCRIPT_PATH.parent.parent / 'layout/layout-modules.md').read_text()
+    examples = []
+    for match in re.finditer(r'^#### ([a-z][\w-]*) —.*?\n(.*?)(?=^#### |^### |^## |\Z)', spec, re.M | re.S):
+        block = re.search(r'```markdown\n(.*?)\n```', match[2], re.S)
+        assert block is not None
+        examples.append((match[1], block[1]))
+    assert len(examples) == 32
+    source = tmp_path / 'all-modules.md'
+    source.write_text('\n\n'.join(block for name, block in examples))
+    html = Path(md2wechat.convert(str(source), str(_write_style_file(tmp_path, 'tech-blog')))).read_text()
+    soup = BeautifulSoup(html, 'html.parser')
+    content = soup.select_one('#content')
+    assert len(content.select('.module')) == 32
+    for name, _ in examples:
+        assert content.select_one('.module-' + name + '.' + name) is not None
+    assert len(content.select('img')) == 8
+    assert not content.select('.module-field-name, script, iframe, svg, form')
+    assert 'unsupported' not in capsys.readouterr().err
+    for node in content.select('[style]'):
+        assert 'linear-gradient' not in node['style']
+        assert 'grid' not in node['style'] and 'flex' not in node['style']
+
+
+def test_module_image_markdown_title_and_unsafe_url_diagnostic(capsys):
+    from bs4 import BeautifulSoup
+    out = md2wechat.render_module_block('image-steps', None,
+        'step: 打开\n![截图](https://example.com/a.png "截图标题 有空格")')
+    assert BeautifulSoup(out, 'html.parser').select_one('.step-image img')['alt'] == '截图'
+    out = md2wechat.render_module_block('image-text', None, 'image: https://example.com/a.png" onerror="x')
+    assert not BeautifulSoup(out, 'html.parser').select('img')
+    assert 'image URL' in capsys.readouterr().err
+
+
+
+@pytest.mark.parametrize('status', ['done', 'pending', 'warn', 'todo'])
+def test_real_checklist_markers_are_not_duplicated_by_preview_css(status):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.render_module_block('checklist', None, status + ' | 描述 | 说明'), 'html.parser')
+    marker = soup.select_one('.checklist-status')
+    winning = (-1, -1, None)
+    for order, (selector, props) in enumerate(md2wechat.parse_css_rules(md2wechat.load_modules_css())):
+        if selector.endswith('::after') and marker in soup.select(selector[:-7]):
+            specificity = selector.count('.') + selector.count(':') - 2
+            if (specificity, order) > winning[:2]:
+                winning = (specificity, order, props.get('content'))
+    assert winning[2] == 'none'

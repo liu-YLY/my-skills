@@ -165,8 +165,8 @@ def module_fields(body: str, allowed: set[str], repeated: set[str] | None = None
     return result
 
 
-def module_fallback(name: str, title: str | None, body: str, params: str = '') -> str:
-    print('warning: unsupported or invalid module ' + name, file=sys.stderr)
+def module_fallback(name: str, title: str | None, body: str, params: str = '', reason: str = '') -> str:
+    print('warning: unsupported or invalid module ' + name + ': ' + reason, file=sys.stderr)
     header = ':::' + name + ('[' + title + ']' if title else '')
     header += '{' + params + '}' if params else ''
     literal = '<pre><code>' + escape(header + '\n' + body.rstrip() + '\n:::') + '</code></pre>'
@@ -285,7 +285,8 @@ IMAGE_MODULES = {
 
 def module_image(url: str, alt: str = '', cls: str = '') -> str:
     parsed = urlsplit(url)
-    if parsed.scheme.lower() not in {'http', 'https'} or not parsed.hostname:
+    if (parsed.scheme.lower() not in {'http', 'https'} or not parsed.hostname
+            or any(char.isspace() or char in '<>\"' for char in url)):
         raise ValueError('image URL must be HTTP(S)')
     return f'<img src="{escape(url, quote=True)}" alt="{escape(alt, quote=True)}" class="{cls}">'
 
@@ -356,7 +357,7 @@ def module_image_steps(body: str, params: str) -> tuple[str, str]:
         elif not groups:
             raise ValueError('image step must start with step')
         elif line.startswith('!['):
-            image = re.fullmatch(r'!\[([^\]]*)\]\(([^\s]+)(?:\s+"[^" ]*")?\)', line)
+            image = re.fullmatch(r'!\[([^\]]*)\]\(([^\s]+)(?:\s+"[^"]*")?\)', line)
             if not image or 'image' in groups[-1]:
                 raise ValueError('invalid or duplicate step image')
             groups[-1]['image'] = module_image(image[2], image[1])
@@ -436,8 +437,8 @@ def render_module_block(name: str, title: str | None, body: str, params: str = '
             else:
                 content += module_node(cls, fields[key])
         return module_wrap(name, title, content, suffix)
-    except ValueError:
-        return module_fallback(name, title, body, params)
+    except ValueError as error:
+        return module_fallback(name, title, body, params, str(error))
 
 
 def render_modules(md_text: str) -> str:
@@ -634,7 +635,9 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             selection.removeAllRanges();
             selection.addRange(range);
             try {{
-                document.execCommand('copy');
+                if (!document.execCommand('copy')) {{
+                    throw new Error('clipboard copy was rejected');
+                }}
                 alert('已复制！请打开微信公众号编辑器，Ctrl+V 粘贴');
             }} catch(e) {{
                 alert('复制失败，请手动选中内容后 Ctrl+C 复制');
