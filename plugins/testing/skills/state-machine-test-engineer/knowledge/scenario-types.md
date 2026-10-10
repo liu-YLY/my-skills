@@ -366,3 +366,7 @@ layers 分别报告 requirements/model/scenario_design/execution/execution_pass�
 执行记录新增可选 `evidence_status`，缺省 unknown；verified 还需明确 `evidence_check_source` 记录核验依据。未提供 execution_records 表示未评估，显式 [] 表示该基线尚无执行记录；空用例基线表示不适用。只有调用方明确核验为 verified 且有非占位证据引用才计已执行，MCP 不自行验证文件/远端引用内容。未知或不可达证据、旧基线版本不计入分子。需求/设计层同时列未确定关联项；失败阶段 unknown 或依据待确认不计已确定场景覆盖。
 
 新 model 层独立统计依据已确定且完整匹配的合法转换；场景或转换仍待确认不计分子，legacy transition_coverage 仍保留原结构覆盖口径。
+
+执行通过层比例是“已确认通过用例数 / 已核实执行用例数”。同一用例同一基线存在声称 passed/failed 但证据未核实的运行时，不计已确认通过；已有核实运行仍计执行覆盖，未评估项保留。未知不等于失败，不能由此反算失败率。其他基线的记录不影响当前基线用例结论，撤去失败证据不能提升确认等级。
+
+失败恢复只在明确单一 allowed_states 与目标一致时计已确定设计；未给集合、集合条件未确定或目标冲突均列缺口。场景先按 from/event/完整守卫/可选 transition_id 唯一关联；匹配转换未声明 failure_outcomes 时可使用场景本身的明确单一失败事实，添加无关转换的结果不改变结论。匹配转换已声明 failure_outcomes 时，并匹配阶段、允许态、禁止副作用、观测与恢复条件；错误引用不能绕过模型依据，待确认模型结果不得由场景标签升级。该检查不改变旧转换/禁止覆盖分母。

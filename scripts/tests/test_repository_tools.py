@@ -381,3 +381,26 @@ def test_model_pair_metrics_exclude_a_valid_but_unpaired_artifact(tmp_path):
     assert summary["variants"]["with_skill"]["completed_runs"] == 1
     assert summary["variants"]["with_skill"]["checks_total"] == 0
     assert summary["variants"]["baseline"]["invalid_runs"]
+
+
+def test_model_trigger_repeats_can_differ_from_task_repeats(tmp_path):
+    cases = [dict(skill="sample", id="task", kind="task", prompt="task", checks=["done"]),
+             dict(skill="sample", id="trigger", kind="trigger", prompt="route", checks=[], should_trigger=True)]
+    rows=[]
+    for variant in ("old", "new", "no_skill"):
+        for case in cases:
+            for run in range(1, 4 if case["kind"] == "task" else 2):
+                row=dict(skill="sample", id=case["id"], kind=case["kind"], variant=variant,
+                         run=run, duration_seconds=1.0, output_characters=4,
+                         output_path=f"{variant}-{case['id']}-{run}.md")
+                row.update(check_results=[True]) if case["kind"] == "task" else row.update(predicted_trigger=True)
+                rows.append(row)
+    path=tmp_path / "results.jsonl"
+    write_model_output_fixtures(path, rows)
+    path.write_text("\n".join(json.dumps(row) for row in rows))
+    read=evals.read_results(path, cases)
+    summary=evals.summarize_results(read, cases, expected_runs=3, expected_trigger_runs=1)
+    assert summary["status"] == "evaluated"
+    assert summary["variants"]["old"]["expected_runs"] == 4
+    assert summary["variants"]["old"]["trigger_runs"] == 1
+    assert evals.summarize_results(read, cases, expected_runs=3)["status"] == "partial"
