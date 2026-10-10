@@ -288,3 +288,10 @@ contradictions:
 - [scenario-types.md](scenario-types.md) - 10 类场景穷举规则
 - [anti-patterns.md](anti-patterns.md) - 反模式黑名单
 - [../state-machine-core.md](../state-machine-core.md) - 核心流程详述
+
+
+## 可选安全与进展属性
+
+模型可选 `safety_properties`（id/statement/applies_to/source/verification_method/evidence_type）；自然语言安全规则不是机器证明，输出属性 `not_checked` 与实际验证方法。示例“不重复扣款”必须核对资金流水，不能由状态名推断。
+
+可选 `progress_requirement` 包含 `required/allowed_terminal_states/applies_from_states/source/evidence_type`。缺省未评估；显式 false 表示允许周期流程。true 时从适用起点检查所有可达态能否通过图结构到达允许结束集合，闭合循环或死端输出失败及状态证据。存在退出路径只证明结构可达；guards、环境、公平性和时限仍待验证，不能宣称所有执行最终结束。属性结果附在 `property_checks`，保留 C0–C9 原编号和含义。幂等事件接收与终态业务状态变化分开验证，不为接收重复请求添加终态到其他态的合法边。

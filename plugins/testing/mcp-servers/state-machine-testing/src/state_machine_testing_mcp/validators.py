@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from .schemas import (
     CheckItem,
+    PropertyCheck,
     Contradiction,
     EvidenceType,
     Gap,
@@ -247,11 +248,54 @@ def check_structure(sm: StateMachine) -> CheckItem:
             if rule.from_state not in names or not allowed_target:
                 errors.append(f"{label} 端点不存在: {rule.from_state} → {rule.to_state}")
     for transition in sm.transitions:
+        for outcome in transition.failure_outcomes:
+            if any(state not in names for state in outcome.allowed_states):
+                errors.append(f"失败允许状态不存在: {transition.id}")
         for forbidden in sm.forbidden:
             if transition.from_state == forbidden.from_state and forbidden.to_state in {"*", transition.to_state}:
                 errors.append(f"合法与禁止转换矛盾: {transition.id} / {forbidden.id}")
     return CheckItem(check_id="C0", name="模型结构一致", status="fail" if errors else "pass",
                      detail="；".join(errors))
+
+
+def check_properties(sm: StateMachine) -> list[PropertyCheck]:
+    items = [PropertyCheck(check_id=prop.id, name=prop.statement, status="not_checked",
+                           detail=f"需实际验证: {prop.verification_method}", source=prop.source, evidence_type=prop.evidence_type)
+             for prop in sm.safety_properties]
+    requirement = sm.progress_requirement
+    if requirement is None:
+        return items
+    item = PropertyCheck(check_id="P-PROGRESS", name="有限流程结构结束路径", status="not_applicable",
+                         source=requirement.source, evidence_type=requirement.evidence_type, detail="明确不要求有限结束")
+    if requirement.required:
+        names = _state_names(sm)
+        goals = set(requirement.allowed_terminal_states)
+        roots = set(requirement.applies_from_states) or _initial_states(sm)
+        if not goals or not roots or not (goals | roots) <= names:
+            item.status, item.detail = "warn", "结束目标或适用起点缺失/不存在，需核实模型"
+        else:
+            reachable, frontier = set(roots), list(roots)
+            forward = {name: set() for name in names}
+            reverse = {name: set() for name in names}
+            for transition in sm.transitions:
+                if transition.from_state in names and transition.to_state in names:
+                    forward[transition.from_state].add(transition.to_state)
+                    reverse[transition.to_state].add(transition.from_state)
+            while frontier:
+                for target in forward[frontier.pop()] - reachable:
+                    reachable.add(target)
+                    frontier.append(target)
+            can_finish, frontier = set(goals), list(goals)
+            while frontier:
+                for source in reverse[frontier.pop()] - can_finish:
+                    can_finish.add(source)
+                    frontier.append(source)
+            blocked = sorted(reachable - can_finish)
+            item.status = "fail" if blocked else "pass"
+            item.detail = (f"无法结构性到达允许结束态的状态: {blocked}" if blocked else
+                           "存在结构退出路径；守卫与环境仍需核实，不证明时限内必达或所有执行必结束")
+    items.append(item)
+    return items
 
 
 def validate_state_machine(state_machine: StateMachine, strict: bool = True) -> ValidationReport:
@@ -297,8 +341,9 @@ def validate_state_machine(state_machine: StateMachine, strict: bool = True) -> 
     # C9
     checks.append(check_c9_no_deadlock(state_machine))
 
+    property_checks = check_properties(state_machine)
     # 计算 overall_status
-    statuses = [c.status for c in checks if c.status != "not_checked"]
+    statuses = [c.status for c in checks + property_checks if c.status not in {"not_checked", "not_applicable"}]
     if "fail" in statuses:
         overall = "fail"
     elif "warn" in statuses:
@@ -313,8 +358,9 @@ def validate_state_machine(state_machine: StateMachine, strict: bool = True) -> 
     return ValidationReport(
         overall_status=overall,
         checks=checks,
+        property_checks=property_checks,
         gaps=gaps,
         contradictions=contradictions,
         suggestions=suggestions,
-        manual_review_required=any(c.status == "not_checked" for c in checks),
+        manual_review_required=any(c.status == "not_checked" for c in checks + property_checks),
     )

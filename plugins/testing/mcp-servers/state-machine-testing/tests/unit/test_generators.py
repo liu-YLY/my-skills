@@ -197,3 +197,73 @@ def test_explicit_retry_capability_works_without_timeout_keywords():
         "status": "applicable", "reason": "需求规定输入可重试", "source": "PRD §重试"}}
     result = generate_scenarios(StateMachine.model_validate(data), ["timeout_retry"])
     assert result.scenarios
+
+
+def test_failure_semantics_do_not_treat_response_loss_as_unpaid():
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["transitions"] = data["transitions"][:1]
+    data["transitions"][0]["failure_outcomes"] = [{
+        "phase": "committed_response_lost", "allowed_states": ["已支付"],
+        "observations": ["核对支付记录与渠道结果"], "recovery_conditions": ["核实结果后按重试规则处理"],
+        "source": "PRD §支付结果", "evidence_type": "需求明确"}]
+    result = generate_scenarios(StateMachine.model_validate(data), ["failure_recovery"])
+    case = result.scenarios[0]
+    assert case.failure_semantics.phase == "committed_response_lost"
+    assert case.expected_target_state == "已支付"
+    assert "无条件重试" not in " ".join(case.failure_semantics.recovery_conditions)
+
+
+def test_unknown_failure_retains_observation_gap_and_multiple_states_are_conditional():
+    sm = _load_order_refund()
+    case = generate_scenarios(sm, ["failure_recovery"]).scenarios[0]
+    assert case.failure_semantics.phase == "unknown"
+    assert case.expected_target_state == "待确认"
+    assert case.failure_semantics.allowed_states == []
+    data = sm.model_dump(by_alias=True)
+    data["transitions"][0]["failure_outcomes"] = [{
+        "phase": "partial_success", "allowed_states": ["待支付", "已支付"],
+        "source": "PRD §补偿", "evidence_type": "需求明确"}]
+    case = generate_scenarios(StateMachine.model_validate(data), ["failure_recovery"]).scenarios[0]
+    assert case.expected_target_state == "待确认"
+    assert set(case.failure_semantics.allowed_states) == {"待支付", "已支付"}
+    assert case.expected_target_state_reason
+
+
+def test_all_five_failure_phases_preserve_declared_observations_and_effects():
+    phases = ["pre_execution_rejected", "pre_commit_failed", "committed_response_lost", "partial_success", "unknown"]
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["transitions"] = data["transitions"][:1]
+    data["transitions"][0]["failure_outcomes"] = [{
+        "phase": phase, "allowed_states": ["待支付"] if phase.startswith("pre_") else [],
+        "observations": ["核对事务记录"], "forbidden_side_effects": ["重复扣款"],
+        "source": "PRD §失败阶段", "evidence_type": "需求明确" if phase.startswith("pre_") else "待确认"}
+        for phase in phases]
+    result = generate_scenarios(StateMachine.model_validate(data), ["failure_recovery"])
+    assert len(result.scenarios) == 5
+    for scenario in result.scenarios:
+        assert scenario.failure_semantics.observations == ["核对事务记录"]
+        assert scenario.failure_semantics.forbidden_side_effects == ["重复扣款"]
+
+
+
+def test_unknown_failure_phase_cannot_claim_a_known_target_from_one_allowed_state():
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["transitions"] = data["transitions"][:1]
+    data["transitions"][0]["failure_outcomes"] = [{"phase": "unknown", "allowed_states": ["已支付"],
+        "source": "明确资料说明提交边界未知", "evidence_type": "需求明确"}]
+    case = generate_scenarios(StateMachine.model_validate(data), ["failure_recovery"]).scenarios[0]
+    assert case.expected_target_state == "待确认" and case.expected_target_state_reason
+
+
+
+def test_explicit_rule_with_unknown_or_conditional_target_stays_in_pending_list():
+    for phase, states in [("unknown", ["已支付"]), ("partial_success", ["待支付", "已支付"])]:
+        data = _load_order_refund().model_dump(by_alias=True)
+        data["transitions"] = data["transitions"][:1]
+        data["transitions"][0]["failure_outcomes"] = [{"phase": phase, "allowed_states": states,
+            "source": "PRD明确描述未知或条件结果", "evidence_type": "需求明确"}]
+        result = generate_scenarios(StateMachine.model_validate(data), ["failure_recovery"])
+        case = result.scenarios[0]
+        assert case.evidence_type.value == "需求明确"
+        assert case.expected_target_state == "待确认" and case.expected_target_state_reason
+        assert case.id in {item.id for item in result.pending_confirmation}

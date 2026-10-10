@@ -64,6 +64,22 @@ class State(BaseModel):
     invariants: list[str] = Field(default_factory=list)
 
 
+class FailureSemantics(BaseModel):
+    phase: Literal["pre_execution_rejected", "pre_commit_failed", "committed_response_lost", "partial_success", "unknown"]
+    allowed_states: list[str] = Field(default_factory=list)
+    forbidden_side_effects: list[str] = Field(default_factory=list)
+    observations: list[str] = Field(default_factory=list)
+    recovery_conditions: list[str] = Field(default_factory=list)
+    source: str = ""
+    evidence_type: EvidenceType = EvidenceType.PENDING
+
+    @model_validator(mode="after")
+    def require_source_for_known_phase(self):
+        if self.phase != "unknown" and not self.source.strip():
+            raise ValueError("已确定失败阶段需要来源；提交边界未知使用 unknown")
+        return self
+
+
 class Transition(BaseModel):
     """转换定义。evidence_type 必填，保证依据标签存在；标签不能证明业务事实已核实。"""
 
@@ -72,6 +88,7 @@ class Transition(BaseModel):
     event: str
     guards: list[str] = Field(default_factory=list)
     side_effects: list[str] = Field(default_factory=list)
+    failure_outcomes: list[FailureSemantics] = Field(default_factory=list)
     evidence_type: EvidenceType
     source: str = ""
     id: str | None = None
@@ -106,6 +123,23 @@ class ForbiddenTransition(BaseModel):
     model_config = {"populate_by_name": True}
 
 
+class ProgressRequirement(BaseModel):
+    required: bool
+    allowed_terminal_states: list[str] = Field(default_factory=list)
+    applies_from_states: list[str] = Field(default_factory=list)
+    source: str = Field(min_length=1)
+    evidence_type: EvidenceType = EvidenceType.PENDING
+
+
+class SafetyProperty(BaseModel):
+    id: str
+    statement: str
+    applies_to: list[str] = Field(default_factory=list)
+    source: str = Field(min_length=1)
+    verification_method: str = Field(min_length=1)
+    evidence_type: EvidenceType = EvidenceType.PENDING
+
+
 class StateMachine(BaseModel):
     """状态机模型。"""
 
@@ -114,6 +148,8 @@ class StateMachine(BaseModel):
     transitions: list[Transition]
     forbidden: list[ForbiddenTransition] = Field(default_factory=list)
     scenario_applicability: dict[RiskType, ScenarioApplicability] = Field(default_factory=dict)
+    progress_requirement: ProgressRequirement | None = None
+    safety_properties: list[SafetyProperty] = Field(default_factory=list)
 
 
 
@@ -140,6 +176,7 @@ class Scenario(BaseModel):
     guard_conditions: list[str] = Field(default_factory=list)
     attempted_target_state: str | None = None
     violated_guard: str | None = None
+    failure_semantics: FailureSemantics | None = None
 
     @model_validator(mode="after")
     def require_reason_for_pending_target(self):
@@ -210,11 +247,21 @@ class Contradiction(BaseModel):
     related_check: str = ""
 
 
+class PropertyCheck(BaseModel):
+    evidence_type: EvidenceType = EvidenceType.PENDING
+    check_id: str
+    name: str
+    status: Literal["pass", "fail", "warn", "not_checked", "not_applicable"]
+    detail: str = ""
+    source: str = ""
+
+
 class ValidationReport(BaseModel):
     """validate_state_machine 返回结构。"""
 
     overall_status: Literal["pass", "fail", "warn"]
     checks: list[CheckItem]
+    property_checks: list[PropertyCheck] = Field(default_factory=list)
     gaps: list[Gap] = Field(default_factory=list)
     contradictions: list[Contradiction] = Field(default_factory=list)
     suggestions: list[str] = Field(default_factory=list)

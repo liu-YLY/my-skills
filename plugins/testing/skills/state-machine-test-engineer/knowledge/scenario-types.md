@@ -352,3 +352,7 @@ state_machine:
 覆盖报告保留 `scenario_type_coverage`（类型条数）和 `missing_scenario_types`（零计数类型）的旧描述性含义；新增 `applicable_missing_scenario_types / not_applicable_scenario_types / unknown_scenario_types` 分别表示适用但缺场景、不适用、尚未确定适用性。完成判断使用新三态信息，不能把待确认候选算成已验证业务行为。
 
 `applicable_missing_scenario_types` 只认可结构匹配、目标已明确且依据非待确认的场景；错误 legal/illegal 目标与 pending 候选不代表已处理。旧类型计数保留所有输入场景的描述性含义。
+
+## 失败阶段与不确定结果
+
+转换可选 `failure_outcomes`、场景可选 `failure_semantics`，默认不要求旧输入提供。每项包含 `phase/allowed_states/forbidden_side_effects/observations/recovery_conditions/source/evidence_type`；阶段是 `pre_execution_rejected/pre_commit_failed/committed_response_lost/partial_success/unknown`。只有已核实提交才选响应丢失阶段；普通超时保留 unknown。phase 为 unknown 时即使只有一个允许态且来源标签明确，目标仍为待确认，不以该集合推断提交边界已知。允许态为多元素集合时目标 `待确认` 并说明条件，不能伪造复合状态名。副作用、幂等键、时限和补偿动作均需需求依据。先核实业务记录与外部结果，再依据重试政策决定动作；结果未知不能生成无条件重试。缺少失败资料仅给 unknown 候选，不能自动认定原态未变。

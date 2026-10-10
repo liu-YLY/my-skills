@@ -10,6 +10,7 @@ from .schemas import (
     Scenario,
     ScenarioList,
     ScenarioApplicability,
+    FailureSemantics,
     StateMachine,
 )
 
@@ -35,6 +36,8 @@ def assess_applicability(sm: StateMachine) -> dict[str, ScenarioApplicability]:
         "guard_violation": (any(t.guards for t in sm.transitions), "transitions[].guards"),
         "data_consistency": (any(t.side_effects for t in sm.transitions), "transitions[].side_effects"),
     }
+    if any(t.failure_outcomes for t in sm.transitions):
+        structural["failure_recovery"] = (True, "transitions[].failure_outcomes")
     result = {}
     for risk in ALL_SCENARIO_TYPES:
         if risk in sm.scenario_applicability:
@@ -339,26 +342,25 @@ def _generate_access_control(sm: StateMachine) -> list[Scenario]:
 
 
 def _generate_failure_recovery(sm: StateMachine) -> list[Scenario]:
-    """生成 failure_recovery 场景。"""
-    scenarios: list[Scenario] = []
-    base = 600
-    for i, t in enumerate(sm.transitions, 1):
-        scenarios.append(
-            Scenario(
-                id=f"SM-{base + i:03d}",
-                title=f"{t.from_state} → {t.to_state} 执行失败后状态恢复路径",
-                current_state=t.from_state,
-                trigger_event=f"{t.event}（执行失败）",
-                precondition=f"{t.from_state} 状态，{t.event} 执行失败",
-                expected_target_state="待确认",
-                expected_target_state_reason="PRD 通常未说明执行失败后的恢复状态",
-                forbidden_states=[],
-                risk_type="failure_recovery",
-                related_objects=t.side_effects,
-                evidence_type=EvidenceType.PENDING,
-                source="PRD 通常未说明失败后状态",
-            )
-        )
+    scenarios = []
+    for t in sm.transitions:
+        outcomes = t.failure_outcomes or [FailureSemantics(
+            phase="unknown", source="模型未定义提交边界、业务结果与恢复政策",
+            observations=["核对业务结果记录、外部结果与已发生副作用"],
+            recovery_conditions=["先核实业务结果及重试政策；缺依据时不确定恢复动作"])]
+        for outcome in outcomes:
+            certain = outcome.phase != "unknown" and len(outcome.allowed_states) == 1 and outcome.evidence_type != EvidenceType.PENDING
+            scenarios.append(Scenario(
+                id=f"SM-{601 + len(scenarios):03d}",
+                title=f"{t.from_state} → {t.to_state} 在 {outcome.phase} 阶段的恢复路径",
+                current_state=t.from_state, trigger_event=f"{t.event}（执行失败）",
+                transition_id=t.id, guard_conditions=list(t.guards),
+                precondition=f"{t.from_state} 状态；失败阶段 {outcome.phase}",
+                expected_target_state=outcome.allowed_states[0] if certain else "待确认",
+                expected_target_state_reason=None if certain else "状态集合与恢复条件需核验，不能由请求失败推断未提交",
+                risk_type="failure_recovery", related_objects=t.side_effects,
+                evidence_type=outcome.evidence_type, source=outcome.source,
+                failure_semantics=outcome))
     return scenarios
 
 
@@ -428,7 +430,7 @@ def generate_scenarios(
     for s in all_scenarios:
         type_coverage[s.risk_type] = type_coverage.get(s.risk_type, 0) + 1
         evidence_dist[s.evidence_type.value] = evidence_dist.get(s.evidence_type.value, 0) + 1
-        if s.evidence_type == EvidenceType.PENDING:
+        if s.evidence_type == EvidenceType.PENDING or s.expected_target_state == "待确认":
             pending.append(s)
 
     return ScenarioList(

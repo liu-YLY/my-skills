@@ -165,3 +165,65 @@ def test_order_refund_fixture_passes_validation() -> None:
     report = validate_state_machine(sm, strict=False)
     # 不应有 fail 项
     assert all(c.status != "fail" for c in report.checks)
+
+
+def _finite_cycle(exit_path=False, required=True):
+    return StateMachine.model_validate({"meta": {"object": "审批"},
+        "states": [{"name": "A", "meaning": "待审", "is_initial": True},
+                   {"name": "B", "meaning": "复核"},
+                   {"name": "Done", "meaning": "结束", "is_terminal": True}],
+        "transitions": [{"from": f, "to": t, "event": f + t,
+                         "side_effects": ["记录"], "evidence_type": "需求明确"}
+                        for f, t in ([("A", "B"), ("B", "A")] + ([("B", "Done")] if exit_path else []))],
+        "progress_requirement": {"required": required, "allowed_terminal_states": ["Done"],
+                                 "source": "PRD §审批结束", "evidence_type": "需求明确"}})
+
+
+def test_finite_cycle_without_exit_fails_and_with_exit_is_only_structural_pass():
+    bad = validate_state_machine(_finite_cycle(), strict=False)
+    item = next(c for c in bad.property_checks if c.check_id == "P-PROGRESS")
+    assert item.status == "fail" and "A" in item.detail and "B" in item.detail
+    good = validate_state_machine(_finite_cycle(True), strict=False)
+    item = next(c for c in good.property_checks if c.check_id == "P-PROGRESS")
+    assert item.status == "pass"
+    assert "不证明时限内必达" in item.detail
+    assert len(good.checks) == 10
+
+
+def test_periodic_model_can_explicitly_exclude_termination_requirement():
+    report = validate_state_machine(_finite_cycle(required=False), strict=False)
+    assert next(c for c in report.property_checks if c.check_id == "P-PROGRESS").status == "not_applicable"
+
+
+def test_safety_statement_is_preserved_without_claiming_a_proof():
+    sm = _finite_cycle(True)
+    data = sm.model_dump(by_alias=True)
+    data["safety_properties"] = [{"id": "SAFE-PAY", "statement": "不重复扣款", "applies_to": ["A"],
+                                 "source": "PRD §资金", "verification_method": "核对资金流水次数"}]
+    report = validate_state_machine(StateMachine.model_validate(data), strict=False)
+    item = next(c for c in report.property_checks if c.check_id == "SAFE-PAY")
+    assert item.status == "not_checked" and "流水" in item.detail
+
+
+def test_property_report_preserves_pending_basis_without_promoting_business_facts():
+    report = validate_state_machine(_finite_cycle(True), strict=False)
+    item = next(c for c in report.property_checks if c.check_id == "P-PROGRESS")
+    assert item.evidence_type.value == "需求明确"
+    sm = _finite_cycle(True)
+    data = sm.model_dump(by_alias=True)
+    data["progress_requirement"]["evidence_type"] = "待确认"
+    report = validate_state_machine(StateMachine.model_validate(data), strict=False)
+    assert next(c for c in report.property_checks if c.check_id == "P-PROGRESS").evidence_type.value == "待确认"
+
+
+def test_progress_check_handles_a_long_model_without_recursion():
+    size = 1500
+    sm = StateMachine.model_validate({"meta": {"object": "长审批"},
+        "states": [{"name": str(i), "meaning": "阶段", "is_initial": i == 0,
+                    "is_terminal": i == size - 1} for i in range(size)],
+        "transitions": [{"from": str(i), "to": str(i + 1), "event": "推进",
+                         "side_effects": ["记录"], "evidence_type": "需求明确"} for i in range(size - 1)],
+        "progress_requirement": {"required": True, "allowed_terminal_states": [str(size - 1)],
+                                 "source": "模型基线", "evidence_type": "需求明确"}})
+    report = validate_state_machine(sm, strict=False)
+    assert next(c for c in report.property_checks if c.check_id == "P-PROGRESS").status == "pass"
