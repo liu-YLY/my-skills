@@ -506,3 +506,121 @@ class TestCliInvalidPaths:
         assert code == 1
         err = capsys.readouterr().err
         assert '未能提取到 CSS' in err
+
+
+@pytest.mark.parametrize('name,body,selector', [
+    ('hero', 'eyebrow: 观察\ntitle: 判断\nvariant: editorial', '.hero .title'),
+    ('part', 'index: 02\ntitle: 章节', '.part .part-title'),
+    ('label-title', 'label: 标签\ntitle: 判断', '.label-title .title'),
+    ('infographic', 'type: number\ntitle: 23%', '.infographic .title'),
+    ('verdict', 'title: 判断\nbody: 依据', '.verdict .body'),
+    ('bridge', 'title: 转场\nnext: 下一步', '.bridge .next'),
+    ('cta', 'title: 行动\nnote: 联系', '.cta .note'),
+    ('highlight', 'title: 重点\nbody: 内容', '.highlight .body'),
+    ('quote', 'variant: light\nquote: 引文\nsource: 来源', '.quote.variant-light .quote-text'),
+])
+def test_semantic_field_cards(name, body, selector):
+    from bs4 import BeautifulSoup
+    out = md2wechat.render_module_block(name, None, body)
+    node = BeautifulSoup(out, 'html.parser').select_one(selector)
+    assert node is not None and node.get_text()
+    assert 'module-field-name' not in out
+
+@pytest.mark.parametrize('name', ['definition', 'tweet', 'stat-row', 'resource-list',
+    'gallery-grid', 'svg-swipe-gallery', 'figure-caption', 'flow', 'dialogue-pair'])
+def test_undefined_modules_are_explicitly_unsupported(name, capsys):
+    out = md2wechat.render_modules(':::' + name + '\n<script>alert(1)</script>\n:::\n')
+    assert 'unsupported' in capsys.readouterr().err
+    assert '<script>' not in out and '&lt;script&gt;' in out
+
+@pytest.mark.parametrize('body', ['title: 缺少标签', 'eyebrow: 标签\ntitle: 标题\nevil: 值',
+    'eyebrow: 标签\ntitle: A\ntitle: B', 'eyebrow: 标签\ntitle: 标题\nvariant: unknown'])
+def test_invalid_fields_warn_and_preserve(body, capsys):
+    out = md2wechat.render_module_block('hero', None, body)
+    assert 'warning' in capsys.readouterr().err.lower()
+    assert '<pre>' in out
+
+def test_solid_module_background_and_theme_precedence(tmp_path):
+    from bs4 import BeautifulSoup
+    source = tmp_path / 'hero.md'
+    source.write_text(':::hero\neyebrow: 标签\ntitle: 标题\n:::')
+    style = _write_style_file(tmp_path, 'tech-blog')
+    style.write_text(style.read_text() + '\n')
+    out = Path(md2wechat.convert(str(source), str(style))).read_text()
+    hero = BeautifulSoup(out, 'html.parser').select_one('#content .hero')
+    assert 'background-color' in hero['style']
+    assert 'linear-gradient' not in hero['style']
+    style.write_text('```css\n#nice .hero { background-color: #112233; }\n```')
+    out = Path(md2wechat.convert(str(source), str(style))).read_text()
+    assert '#112233' in BeautifulSoup(out, 'html.parser').select_one('#content .hero')['style']
+
+
+
+@pytest.mark.parametrize('name,body,selector,count', [
+    ('audience-fit', 'title: 读者\nfit: 写作者 | 编辑\navoid: 广告', '.fit-item', 2),
+    ('manifesto', 'title: 理念\nbelieve: 结构 | 阅读\nagainst: 堆砌', '.believe-item', 2),
+    ('question', 'title: 问题\noptions: 结构 | 视觉', '.option', 2),
+    ('poll', 'title: 投票\noptions: A | B', '.option-text', 2),
+])
+def test_grouped_fields_are_semantic_and_static(name, body, selector, count):
+    from bs4 import BeautifulSoup
+    html = md2wechat.sanitize_content(md2wechat.render_module_block(name, None, body))
+    soup = BeautifulSoup(html, 'html.parser')
+    assert len(soup.select(selector)) == count
+    assert not soup.select('input, button, script, form')
+    assert '|' not in soup.get_text()
+
+
+
+@pytest.mark.parametrize('name,body,selector', [
+    ('toc', '01 | 问题 | 原因', '.toc-item .toc-number'),
+    ('metrics', '完读率 | 79% | 提升 | accent', '.metric.accent .metric-value'),
+    ('steps', '01 | 开始 | 操作', '.step .step-content .step-desc'),
+    ('timeline', '2026 | 发布 | 内容', '.timeline-item .timeline-date'),
+])
+def test_sequence_rows_keep_columns_and_title(name, body, selector):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.render_modules(':::' + name + '[标题]\n' + body + '\n:::\n'), 'html.parser')
+    assert soup.select_one(selector) is not None
+    assert soup.select_one('.' + name + '-title').get_text() == '标题'
+    assert '|' not in soup.get_text()
+
+@pytest.mark.parametrize('name,body', [('metrics', '名称 | 10 | 说明 | invalid'),
+    ('toc', '只一列'), ('steps', '1 | 两列')])
+def test_bad_rows_warn(name, body, capsys):
+    out = md2wechat.render_module_block(name, None, body)
+    assert 'warning' in capsys.readouterr().err
+    assert '<pre>' in out
+
+
+
+@pytest.mark.parametrize('name,body,selector,text', [
+    ('cards', 'PART 01 | 问题 | 原因 | accent', '.card.accent .card-desc', '原因'),
+    ('compare', '耗时 | 旧2小时 | 新1小时 | accent', '.compare-row .compare-cell.accent', '耗时'),
+    ('cases', '客户 | 科技 | 提升', '.case .case-result', '提升'),
+])
+def test_matrix_rows_bind_content(name, body, selector, text):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.render_module_block(name, '标题', body), 'html.parser')
+    assert soup.select_one(selector).get_text() == text
+    assert '|' not in soup.get_text()
+
+
+
+@pytest.mark.parametrize('name,body,selector,text', [
+    ('faq', '能用吗 | 可以', '.faq-answer', '可以'),
+    ('myth-fact', 'myth | 堆砌\nfact | 适用', '.myth-fact-pair .fact-text', '适用'),
+    ('checklist', 'done | 检查 | 完成', '.checklist-status.done', '✓'),
+    ('callout', 'warning | 风险', '.callout.warning .callout-content', '风险'),
+])
+def test_labeled_rows_emit_real_labels(name, body, selector, text):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.sanitize_content(md2wechat.render_module_block(name, None, body)), 'html.parser')
+    assert soup.select_one(selector).get_text() == text
+    assert '|' not in soup.get_text()
+
+@pytest.mark.parametrize('name,body', [('myth-fact', 'fact | 真相'),
+    ('myth-fact', 'myth | 误区'), ('checklist', 'bad | 项 | 描述'), ('callout', 'bad | 提示')])
+def test_labeled_invalid_rows_are_reported(name, body, capsys):
+    out = md2wechat.render_module_block(name, None, body)
+    assert 'warning' in capsys.readouterr().err and '<pre>' in out
