@@ -1,6 +1,6 @@
 # State Machine Testing MCP Server
 
-> 配套 state-machine-test-engineer skill 的 Python MCP Server v0.3.1：提供状态机建模/校验/穷举/导出/覆盖度 5 个工具，作为 skill 的可选增强引擎。
+> 配套 state-machine-test-engineer skill 的 Python MCP Server v0.4.0：提供状态机建模/校验/穷举/导出/覆盖度 5 个工具，作为 skill 的可选增强引擎。
 
 > **实现状态**：已实现 pydantic Schema、5 个工具及 stdio / streamable-http 传输。当前版本校验结果区分机器检查与待人工核实项，测试记录见本次交付报告。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM；自由文本建模由调用方 skill 的 LLM 完成）。skill 安装本 Server 后进入增强模式，未安装时降级为独立模式。
 
@@ -165,7 +165,7 @@ uv pip install -e .
 ```toml
 [project]
 name = "state-machine-testing-mcp"
-version = "0.3.1"
+version = "0.4.0"
 requires-python = ">=3.11"
 dependencies = [
     "mcp>=0.9.0,<2.0.0",  # 2.0.0 移除了 mcp.server.fastmcp 模块
@@ -324,6 +324,9 @@ ruff check src/ tests/
 
 ## 版本历史
 
+- v0.4.0: 增加三态场景适用性契约
+- v0.3.3: 校准四个行业模板的分支与引用契约
+- v0.3.2: 统一模型和场景规范并校验示例
 - v0.3.1: 修正守卫失败的分支目标语义
 - v0.3.0: 结构校验与需求完整性分开判定；按转换目标、事件、守卫和规则引用计算覆盖（不再依赖关键词粗判）
 - v0.2.0: MCP 协议层端到端联调验证（stdio + streamable-http）；`build_state_machine` 去占位，改为确定性行业模板加载（不内置 LLM）；新增 HTTP 传输与 `--host/--port` 参数；新增协议测试与 skill 协作契约测试（52 项全绿）；依赖锁定 mcp < 2.0.0 并新增 pyyaml

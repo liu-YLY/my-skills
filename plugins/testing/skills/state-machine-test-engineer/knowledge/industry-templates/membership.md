@@ -236,6 +236,8 @@ scenarios:
     expected_target_state: 银卡
     forbidden_states: [已注销]
     risk_type: legal_transition
+    transition_id: T-f0baf1453a8c0947
+    guard_conditions: [积分 ≥ 1000]
     related_objects: [会员, 积分记录]
     evidence_type: 需求明确
     source: PRD §3.1
@@ -245,9 +247,11 @@ scenarios:
     current_state: 已注销
     trigger_event: 积分达标升级
     precondition: 会员已注销
-    expected_target_state: 已注销（保持不变）
+    expected_target_state: 已注销
     forbidden_states: [银卡, 金卡, 钻石]
     risk_type: illegal_transition
+    forbidden_id: F-19ef58c954d8e5a2
+    attempted_target_state: 银卡
     related_objects: [会员, 积分记录]
     evidence_type: 需求明确
     source: 状态机 forbidden 规则（终态吸收）
@@ -257,9 +261,12 @@ scenarios:
     current_state: 普通
     trigger_event: 积分达标升级
     precondition: 普通会员，积分 = 999（未达 1000）
-    expected_target_state: 普通（保持不变）
+    expected_target_state: 普通
     forbidden_states: [银卡]
     risk_type: guard_violation
+    transition_id: T-f0baf1453a8c0947
+    guard_conditions: [积分 ≥ 1000]
+    violated_guard: 积分 ≥ 1000
     related_objects: [会员, 积分记录]
     evidence_type: 合理推理
     source: 状态机 transitions 中 guard "积分 ≥ 1000" 的反向
@@ -269,7 +276,7 @@ scenarios:
     current_state: 银卡
     trigger_event: 积分达标升级（重复）
     precondition: 已是银卡，收到第二次升级事件
-    expected_target_state: 银卡（保持不变）
+    expected_target_state: 银卡
     forbidden_states: [重复生效权益]
     risk_type: idempotency
     related_objects: [会员, 权益记录]
@@ -282,6 +289,7 @@ scenarios:
     trigger_event: 用户注销 + 管理员冻结（同时到达）
     precondition: 金卡会员，用户点注销的同时管理员点冻结
     expected_target_state: 待确认
+    expected_target_state_reason: 示例未定义该异常输入的业务目标
     forbidden_states: []
     risk_type: concurrency
     related_objects: [会员, 锁机制, 操作日志]
@@ -294,6 +302,7 @@ scenarios:
     trigger_event: 积分增加 + 积分扣减（乱序到达）
     precondition: 银卡会员，积分变更消息乱序
     expected_target_state: 待确认
+    expected_target_state_reason: 示例未定义该异常输入的业务目标
     forbidden_states: []
     risk_type: message_reorder
     related_objects: [消息队列, 积分记录]
@@ -306,6 +315,7 @@ scenarios:
     trigger_event: 超时定时器（90 天未活跃）
     precondition: 钻石会员，90 天未消费
     expected_target_state: 待确认
+    expected_target_state_reason: 示例未定义该异常输入的业务目标
     forbidden_states: []
     risk_type: timeout_retry
     related_objects: [定时任务, 会员, 通知系统]
@@ -329,7 +339,7 @@ scenarios:
     current_state: 金卡
     trigger_event: 管理员冻结（普通用户冒充）
     precondition: 操作者为普通用户，无管理员权限
-    expected_target_state: 金卡（保持不变）
+    expected_target_state: 金卡
     forbidden_states: [已冻结]
     risk_type: access_control
     related_objects: [权限系统, 操作日志]
@@ -342,6 +352,7 @@ scenarios:
     trigger_event: 系统故障恢复
     precondition: 升级到银卡过程中系统故障
     expected_target_state: 待确认
+    expected_target_state_reason: 示例未定义该异常输入的业务目标
     forbidden_states: []
     risk_type: failure_recovery
     related_objects: [会员, 系统日志, 数据库]

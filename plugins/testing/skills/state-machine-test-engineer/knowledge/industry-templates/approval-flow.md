@@ -169,6 +169,8 @@ scenarios:
     expected_target_state: 审批中
     forbidden_states: [已通过, 已驳回]
     risk_type: legal_transition
+    transition_id: T-9018651b5ca440d6
+    guard_conditions: []
     related_objects: [审批单, 审批日志]
     evidence_type: 需求明确
     source: PRD §2.1
@@ -178,9 +180,11 @@ scenarios:
     current_state: 已通过
     trigger_event: 审批人同意
     precondition: 审批单已通过
-    expected_target_state: 已通过（保持不变）
+    expected_target_state: 已通过
     forbidden_states: [已驳回, 已撤回]
     risk_type: illegal_transition
+    forbidden_id: F-76222feabd0e80c0
+    attempted_target_state: 已驳回
     related_objects: [审批单, 审批日志]
     evidence_type: 需求明确
     source: 状态机 forbidden 规则（终态吸收）
@@ -190,9 +194,12 @@ scenarios:
     current_state: 审批中
     trigger_event: 审批人同意
     precondition: 会签场景，3 个审批人中仅 2 个同意
-    expected_target_state: 审批中（保持不变）
+    expected_target_state: 审批中
     forbidden_states: [已通过]
     risk_type: guard_violation
+    transition_id: T-2b6d7760aa79ba55
+    guard_conditions: [所有会签人已同意]
+    violated_guard: 所有会签人已同意
     related_objects: [审批单, 会签记录]
     evidence_type: 合理推理
     source: 状态机 transitions 中 guard "所有会签人已同意" 的反向
@@ -202,7 +209,7 @@ scenarios:
     current_state: 已通过
     trigger_event: 审批人同意（重复）
     precondition: 审批单已通过，收到第二次同意事件
-    expected_target_state: 已通过（保持不变）
+    expected_target_state: 已通过
     forbidden_states: [重复触发后续业务流程]
     risk_type: idempotency
     related_objects: [审批单, 业务流程触发记录]
@@ -215,6 +222,7 @@ scenarios:
     trigger_event: 发起人撤回 + 审批人同意（同时到达）
     precondition: 审批中状态，发起人点撤回的同时审批人点同意
     expected_target_state: 待确认
+    expected_target_state_reason: 示例未定义该异常输入的业务目标
     forbidden_states: []
     risk_type: concurrency
     related_objects: [审批单, 锁机制, 审批日志]
@@ -227,6 +235,7 @@ scenarios:
     trigger_event: 审批人 A 同意 + 审批人 B 驳回（乱序到达）
     precondition: 会签场景，A 和 B 意见相反，消息乱序
     expected_target_state: 待确认
+    expected_target_state_reason: 示例未定义该异常输入的业务目标
     forbidden_states: []
     risk_type: message_reorder
     related_objects: [消息队列, 会签记录]
@@ -238,7 +247,7 @@ scenarios:
     current_state: 待审批
     trigger_event: 超时定时器（7 天）
     precondition: 审批单提交后 7 天未被处理
-    expected_target_state: 待审批（保持不变，仅通知）
+    expected_target_state: 待审批
     forbidden_states: []
     risk_type: timeout_retry
     related_objects: [定时任务, 通知系统]
@@ -262,7 +271,7 @@ scenarios:
     current_state: 审批中
     trigger_event: 审批人同意（非指定审批人操作）
     precondition: 操作者为非指定审批人
-    expected_target_state: 审批中（保持不变）
+    expected_target_state: 审批中
     forbidden_states: [已通过]
     risk_type: access_control
     related_objects: [权限系统, 操作日志]
@@ -274,7 +283,7 @@ scenarios:
     current_state: 审批中
     trigger_event: 系统故障恢复
     precondition: 审批中状态时系统故障，恢复后状态可能不一致
-    expected_target_state: 审批中（应保持不变）
+    expected_target_state: 审批中
     forbidden_states: []
     risk_type: failure_recovery
     related_objects: [审批单, 系统日志, 数据库]

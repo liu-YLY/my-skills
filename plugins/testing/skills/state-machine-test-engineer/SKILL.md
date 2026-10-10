@@ -1,6 +1,6 @@
 ---
 name: state-machine-test-engineer
-version: 1.2.2
+version: 1.3.0
 description: >-
   Use when user needs state-machine-driven testing for stateful business objects
   (orders, approvals, tickets, membership, etc.). Triggers on: 状态机、状态流转、状态转换、
@@ -86,7 +86,7 @@ MCP 配置方式见 [integrations/quickstart.md](integrations/quickstart.md)。
 
 ## 核心数据契约
 
-完整 Schema 与示例见 [state-machine-core.md](state-machine-core.md)。入口只保留跨阶段和下游必须稳定的字段：
+模型 Schema 见 [state-modeling.md](knowledge/state-modeling.md)，场景完整 Schema 见 [scenario-types.md](knowledge/scenario-types.md)。入口只保留跨阶段和下游必须稳定的字段：
 
 - 状态模型：`meta / states / transitions / forbidden`；transition 与 forbidden 应有稳定 `id`。
 - 每条转换与禁止规则必须包含 `evidence_type` 和 `source`；未知业务规则标 `待确认`，不得伪造目标状态。

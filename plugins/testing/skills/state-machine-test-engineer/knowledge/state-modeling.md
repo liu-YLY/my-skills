@@ -247,3 +247,10 @@ forbidden:
 - [scenario-types.md](scenario-types.md) - 10 类场景穷举规则
 - [completeness-check.md](completeness-check.md) - 9 项检查清单
 - [anti-patterns.md](anti-patterns.md) - 反模式黑名单
+
+
+## 模型结构契约
+
+模型顶层必填 `meta/states/transitions`，`forbidden` 默认空列表。`meta.object` 必填，版本默认 `"1.0"`；每个状态必填 `name/meaning`，初始/终态标志默认 false。转换必填 `from/to/event/evidence_type`；`guards/side_effects` 默认空列表，`source` 默认空字符串。禁止规则必填 `from/to/reason/evidence_type`，`source` 默认空字符串。转换与禁止规则 `id` 可显式提供，缺省按原结构生成稳定 ID；新增来源信息不改变 ID。来源未提供要保留缺口，不能以默认空字符串声称需求明确已核实。
+
+本文件维护模型规范，[scenario-types.md](scenario-types.md) 维护完整场景规范；core 仅说明执行流程，不反向定义另一个 Schema。
