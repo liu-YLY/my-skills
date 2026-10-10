@@ -135,17 +135,21 @@ def read_results(path: Path, cases: list[dict]) -> list[dict]:
 
 
 def summarize_results(results: list[dict], cases: list[dict], expected_runs: int = 1,
-                      variants: list[str] | None = None) -> dict:
+                      variants: list[str] | None = None, expected_trigger_runs: int | None = None) -> dict:
     """Produce deterministic task and trigger metrics grouped by variant."""
     if isinstance(expected_runs, bool) or not isinstance(expected_runs, int) or expected_runs < 1:
         raise ValueError("expected_runs must be a positive integer")
+    if expected_trigger_runs is not None and (isinstance(expected_trigger_runs, bool)
+            or not isinstance(expected_trigger_runs, int) or expected_trigger_runs < 1):
+        raise ValueError("expected_trigger_runs must be a positive integer")
+    repeats = {"task": expected_runs, "trigger": expected_trigger_runs or expected_runs}
     variants = variants or (["old", "new", "no_skill"] if any(
         row["variant"] in {"old", "new", "no_skill"} for row in results) else ["with_skill", "baseline"])
     if len(set(variants)) != len(variants) or not set(variants) <= RESULT_VARIANTS:
         raise ValueError("invalid or duplicate variants")
     case_map = {(case["skill"], case["id"], case["kind"]): case for case in cases}
     expected_keys = set(case_map)
-    expected_run_keys = {(*key, run) for key in expected_keys for run in range(1, expected_runs + 1)}
+    expected_run_keys = {(*key, run) for key in expected_keys for run in range(1, repeats[key[2]] + 1)}
     def run_key(row):
         return (str(row["skill"]), str(row["id"]), row["kind"], row["run"])
     valid_keys = {variant: {run_key(row) for row in results if row["variant"] == variant
@@ -165,7 +169,7 @@ def summarize_results(results: list[dict], cases: list[dict], expected_runs: int
         trigger_rows = [row for row in metric_rows if row["kind"] == "trigger"]
         check_values = [value for row in task_rows for value in row["check_results"]]
         completed_keys = {key for key in expected_keys if all(
-            (*key, run) in valid_keys[variant] for run in range(1, expected_runs + 1))}
+            (*key, run) in valid_keys[variant] for run in range(1, repeats[key[2]] + 1))}
         missing_keys = sorted(expected_keys - completed_keys)
         confusion = Counter()
         for row in trigger_rows:
@@ -183,7 +187,8 @@ def summarize_results(results: list[dict], cases: list[dict], expected_runs: int
         summaries[variant] = {
             "runs": len(valid_keys[variant]),
             "expected_runs": len(expected_run_keys),
-            "repetitions_per_case": expected_runs,
+            "repetitions_per_case": expected_runs if repeats["task"] == repeats["trigger"] else None,
+            "repetitions_per_kind": repeats,
             "completed_runs": len(valid_keys[variant]),
             "run_completion_rate": len(valid_keys[variant]) / len(expected_run_keys) if expected_run_keys else None,
             "missing_runs": labels(expected_run_keys - valid_keys[variant]),
@@ -241,6 +246,7 @@ def main():
     parser.add_argument("--skill")
     parser.add_argument("--cases-file", type=Path, help="Use an explicitly frozen selected suite")
     parser.add_argument("--expected-runs", type=int, default=1, help="Required repeats per case; formal evaluation uses 3")
+    parser.add_argument("--expected-trigger-runs", type=int, help="Trigger repeats; defaults to --expected-runs")
     parser.add_argument("--variants", nargs="+", choices=sorted(RESULT_VARIANTS))
     parser.add_argument("--json", action="store_true", help="Emit normalized cases for a model runner")
     parser.add_argument("--results", type=Path,
@@ -248,6 +254,8 @@ def main():
     args = parser.parse_args()
     if args.expected_runs < 1:
         parser.error("--expected-runs must be positive")
+    if args.expected_trigger_runs is not None and args.expected_trigger_runs < 1:
+        parser.error("--expected-trigger-runs must be positive")
     cases = read_cases(args.cases_file) if args.cases_file else load_cases(args.root, args.skill)
     if args.cases_file and args.skill:
         cases = [case for case in cases if case["skill"] == args.skill]
@@ -257,7 +265,7 @@ def main():
         validate_trigger_coverage(cases)
     if args.results:
         results = read_results(args.results, cases)
-        print(json.dumps(summarize_results(results, cases, args.expected_runs, args.variants), ensure_ascii=False, indent=2))
+        print(json.dumps(summarize_results(results, cases, args.expected_runs, args.variants, args.expected_trigger_runs), ensure_ascii=False, indent=2))
     elif args.json:
         print(json.dumps(cases, ensure_ascii=False, indent=2))
     else:

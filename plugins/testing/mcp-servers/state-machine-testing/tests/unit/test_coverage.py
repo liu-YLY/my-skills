@@ -254,3 +254,100 @@ def test_pending_model_rule_cannot_be_promoted_by_an_explicit_scenario_label():
         report = check_coverage(sm, ScenarioList.model_validate(raw), context)
         assert report.layers["requirements"].numerator == 0, kind
         if kind == "legal_transition": assert report.layers["model"].numerator == 0
+
+
+
+def test_withdrawing_a_failed_runs_evidence_cannot_raise_confirmed_pass_count():
+    from state_machine_testing_mcp.schemas import CoverageContext
+    sm = _load_order_refund()
+    scenarios = generate_scenarios(sm, ["legal_transition"])
+    def report(second):
+        return check_coverage(sm, scenarios, CoverageContext.model_validate({
+            "case_baseline": {"source": "cases", "version": "v1", "items": ["C"]},
+            "execution_records": [dict(case_id="C", baseline_version="v1", run_id="r1", status="passed",
+                evidence_status="verified", evidence_ref="r1", evidence_check_source="read r1"), second]}))
+    failed = dict(case_id="C", baseline_version="v1", run_id="r2", status="failed",
+                  evidence_status="verified", evidence_ref="r2", evidence_check_source="read r2")
+    known = report(failed)
+    for update in [{"evidence_status": "unknown"}, {"evidence_status": "unreachable"},
+                   {"evidence_ref": None}, {"evidence_check_source": None}]:
+        after = report(dict(failed, **update))
+        assert after.transition_coverage == known.transition_coverage == 1
+        assert after.layers["execution"].numerator == after.layers["execution"].denominator == 1
+        assert after.layers["execution_pass"].numerator == known.layers["execution_pass"].numerator == 0
+        assert after.layers["execution_pass"].denominator == 1
+        assert after.layers["execution_pass"].unassessed_items == ["C"]
+    other_version = report(dict(failed, baseline_version="old", evidence_status="unknown"))
+    assert other_version.layers["execution_pass"].ratio == 1
+    assert other_version.layers["execution_pass"].unassessed_items == []
+
+
+
+def test_failure_design_cannot_override_allowed_states_or_model_outcomes():
+    from state_machine_testing_mcp.schemas import ScenarioList, CoverageContext
+    import copy
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["transitions"][0]["failure_outcomes"] = [{"phase": "committed_response_lost", "allowed_states": ["已支付"],
+        "source": "PRD §支付", "evidence_type": "需求明确"}]
+    sm = StateMachine.model_validate(data)
+    legal = generate_scenarios(sm, ["legal_transition"]).model_dump(mode="json")["scenarios"]
+    case = generate_scenarios(sm, ["failure_recovery"]).model_dump(mode="json")["scenarios"][0]
+    ref = case["stable_ref"]
+    context = CoverageContext.model_validate({"requirement_baseline": {"source": "PRD", "version": "1", "items": ["R"]},
+        "requirement_links": [{"item_id": "R", "scenario_ref": ref, "confirmation": "confirmed"}],
+        "design_baseline": {"source": "设计", "version": "1", "items": [ref]}})
+    def report(item):
+        return check_coverage(sm, ScenarioList.model_validate({"scenarios": legal + [item]}), context)
+    good = report(case)
+    assert good.layers["requirements"].numerator == good.layers["scenario_design"].numerator == 1
+    for mutation in ["target", "empty", "conditional", "phase", "reference", "guard", "withdraw_evidence"]:
+        wrong = copy.deepcopy(case)
+        if mutation == "target": wrong["expected_target_state"] = "待支付"
+        elif mutation == "empty": wrong["failure_semantics"]["allowed_states"] = []
+        elif mutation == "conditional": wrong["failure_semantics"]["allowed_states"] = ["已支付", "待支付"]
+        elif mutation == "phase": wrong["failure_semantics"]["phase"] = "pre_commit_failed"
+        elif mutation == "reference": wrong["transition_id"] = sm.transitions[1].id
+        elif mutation == "guard": wrong["guard_conditions"] = []
+        else: wrong["failure_semantics"]["evidence_type"] = "待确认"
+        result = report(wrong)
+        assert result.transition_coverage == good.transition_coverage == 1
+        assert result.forbidden_coverage == good.forbidden_coverage
+        assert result.scenario_type_coverage["failure_recovery"] == 1
+        assert "failure_recovery" in result.applicable_missing_scenario_types, mutation
+        assert result.layers["requirements"].numerator == result.layers["scenario_design"].numerator == 0, mutation
+
+
+
+def test_failure_without_model_outcomes_still_requires_unique_structural_transition():
+    from state_machine_testing_mcp.schemas import ScenarioList, CoverageContext
+    import copy
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["scenario_applicability"] = {"failure_recovery": {"status": "applicable",
+        "reason": "明确响应丢失场景", "source": "PRD §支付", "evidence_type": "需求明确"}}
+    sm = StateMachine.model_validate(data)
+    case = generate_scenarios(sm, ["failure_recovery"]).model_dump(mode="json")["scenarios"][0]
+    case.update(evidence_type="需求明确", expected_target_state="已支付", transition_id=None)
+    case["failure_semantics"] = {"phase": "committed_response_lost", "allowed_states": ["已支付"],
+        "source": "明确场景事实", "evidence_type": "需求明确"}
+    ref = case["stable_ref"]
+    context = CoverageContext.model_validate({"requirement_baseline": {"source": "PRD", "version": "1", "items": ["R"]},
+        "requirement_links": [{"item_id": "R", "scenario_ref": ref, "confirmation": "confirmed"}],
+        "design_baseline": {"source": "设计", "version": "1", "items": [ref]}})
+    def report(model, item):
+        legal = generate_scenarios(model, ["legal_transition"]).scenarios
+        return check_coverage(model, ScenarioList.model_validate({"scenarios": [s.model_dump(mode="json") for s in legal] + [item]}), context)
+    good = report(sm, case)
+    assert good.layers["requirements"].numerator == good.layers["scenario_design"].numerator == 1
+    for field, value in [("trigger_event", "不存在事件"), ("current_state", "已支付"), ("guard_conditions", [])]:
+        wrong = copy.deepcopy(case)
+        wrong[field] = value
+        result = report(sm, wrong)
+        assert result.transition_coverage == good.transition_coverage == 1
+        assert "failure_recovery" in result.applicable_missing_scenario_types
+        assert result.layers["requirements"].numerator == result.layers["scenario_design"].numerator == 0
+    changed = copy.deepcopy(data)
+    changed["transitions"][1]["failure_outcomes"] = [{"phase": "pre_commit_failed", "allowed_states": ["待支付"],
+        "source": "无关取消规则", "evidence_type": "需求明确"}]
+    unaffected = report(StateMachine.model_validate(changed), case)
+    assert unaffected.layers["requirements"].numerator == good.layers["requirements"].numerator == 1
+    assert unaffected.layers["scenario_design"].numerator == 1

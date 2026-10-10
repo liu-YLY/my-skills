@@ -376,3 +376,28 @@ class ExportResult(BaseModel):
     files: list[str]
     formats: list[Literal["markdown", "json", "mermaid"]]
     notes: str = ""
+
+
+
+def failure_target_is_consistent(state_machine, scenario):
+    failure = scenario.failure_semantics
+    if failure is None:
+        return scenario.risk_type != "failure_recovery"
+    if (failure.phase == "unknown" or failure.evidence_type == EvidenceType.PENDING
+            or set(failure.allowed_states) != {scenario.expected_target_state}):
+        return False
+    candidates = [transition for transition in state_machine.transitions
+                  if transition.from_state == scenario.current_state
+                  and scenario.trigger_event in {transition.event, f"{transition.event}（执行失败）"}]
+    matches = [transition for transition in candidates
+               if (not scenario.transition_id or scenario.transition_id == transition.id)
+               and set(transition.guards) == set(scenario.guard_conditions)]
+    if len(matches) != 1:
+        return False
+    if not matches[0].failure_outcomes:
+        return True
+    def signature(outcome):
+        return (outcome.phase, frozenset(outcome.allowed_states), frozenset(outcome.forbidden_side_effects),
+                frozenset(outcome.observations), frozenset(outcome.recovery_conditions))
+    return any(outcome.evidence_type != EvidenceType.PENDING and signature(outcome) == signature(failure)
+               for outcome in matches[0].failure_outcomes)

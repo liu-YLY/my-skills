@@ -1,6 +1,6 @@
 """覆盖分层只使用输入的基线、确认关联和实际执行证据。"""
 
-from .schemas import CoverageContext, CoverageLayer
+from .schemas import CoverageContext, CoverageLayer, failure_target_is_consistent
 
 
 def _metric(baseline, covered, unassessed=()):
@@ -19,8 +19,7 @@ def layered_coverage(sm, scenarios, context, covered_transitions, unmatched):
     resolved = {s.stable_ref or s.id for s in scenarios.scenarios
                 if s.id not in unmatched and s.evidence_type.value != "待确认"
                 and s.expected_target_state in {state.name for state in sm.states}
-                and (s.failure_semantics is None or (
-                    s.failure_semantics.phase != "unknown" and s.failure_semantics.evidence_type.value != "待确认"))}
+                and failure_target_is_consistent(sm, s)}
     requirements = {link.item_id for link in context.requirement_links
                     if link.confirmation == "confirmed" and link.scenario_ref in resolved}
     result = {
@@ -49,22 +48,26 @@ def layered_coverage(sm, scenarios, context, covered_transitions, unmatched):
         result["execution_pass"].baseline_version = context.case_baseline.version
         result["execution_pass"].unassessed_items = sorted(set(context.case_baseline.items))
         return result
-    cases, by_run, unassessed = set(context.case_baseline.items), {}, set()
+    cases, by_run, unassessed, uncertain = set(context.case_baseline.items), {}, set(), set()
     for record in context.execution_records:
-        if record.case_id not in cases or record.baseline_version != context.case_baseline.version:
+        if record.baseline_version != context.case_baseline.version:
+            continue
+        if record.case_id not in cases:
             unassessed.add(record.case_id)
             continue
         if (record.status not in {"passed", "failed"} or record.evidence_status != "verified"
                 or not record.evidence_ref or record.evidence_ref.strip().lower() in {"unknown", "待确认", "?"}
                 or not record.evidence_check_source or record.evidence_check_source.strip().lower() in {"unknown", "待确认", "?"}):
             unassessed.add(record.case_id)
+            if record.status in {"passed", "failed"}:
+                uncertain.add(record.case_id)
             continue
         key = (record.case_id, record.run_id)
         by_run.setdefault(key, set()).add(record.status)
     conflicts = {case for (case, run), statuses in by_run.items() if len(statuses) != 1}
     unassessed.update(conflicts)
     completed = {case for case, run in by_run if case not in conflicts}
-    passed = {case for case in completed if all(statuses == {"passed"}
+    passed = {case for case in completed - uncertain if all(statuses == {"passed"}
                                                for (item, run), statuses in by_run.items() if item == case)}
     result["execution"] = _metric(context.case_baseline, completed, unassessed)
     if completed:

@@ -46,6 +46,9 @@ def affected_by_change(context, changed_refs):
             uncorroborated.add(f"{link.upstream}→{link.downstream}: 缺少关联依据或可核验来源版本")
         graph = confirmed if link.confirmation == "confirmed" and backed else candidates
         graph[link.upstream].add(link.downstream)
+        for ref in link.source_refs:
+            if ref in known:
+                graph[ref].add(link.downstream)
     affected, frontier = set(roots), list(roots)
     while frontier:
         for target in confirmed[frontier.pop()] - affected:

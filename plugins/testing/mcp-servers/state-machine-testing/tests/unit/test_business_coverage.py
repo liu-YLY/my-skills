@@ -207,3 +207,25 @@ def test_unsubstantiated_or_unreachable_trace_links_are_only_candidate_impacts()
         report = affected_by_change(TraceabilityContext.model_validate(data), ["S"])
         assert report.affected == [] and report.candidate_impacts == ["R"]
         assert report.uncorroborated_links
+
+
+
+def test_changed_mapping_source_reviews_its_downstream_without_affecting_unrelated_cases():
+    from state_machine_testing_mcp.schemas import TraceabilityContext
+    from state_machine_testing_mcp.provenance import affected_by_change
+    import copy
+    data = {"sources": [{"id": "SRC", "location": "req.md", "version": "v1", "availability": "available"}],
+        "artifacts": [{"id": x, "kind": k} for x,k in [("REQ", "requirement"), ("SC", "scenario"),
+                     ("TC", "case"), ("LOGIN", "case")]],
+        "links": [{"upstream": a, "downstream": z, "confirmation": "confirmed",
+                   "source": "明确映射依据", "source_refs": ["SRC"]} for a,z in [("REQ", "SC"), ("SC", "TC")]]}
+    original = copy.deepcopy(data)
+    context = TraceabilityContext.model_validate(data)
+    by_source = affected_by_change(context, ["SRC"])
+    assert by_source.affected == ["SC", "TC"] and by_source.candidate_impacts == []
+    assert "LOGIN" not in by_source.affected
+    assert affected_by_change(context, ["REQ"]).affected == ["SC", "TC"]
+    data["sources"][0]["availability"] = "unreachable"
+    candidate = affected_by_change(TraceabilityContext.model_validate(data), ["SRC"])
+    assert candidate.affected == [] and candidate.candidate_impacts == ["SC", "TC"]
+    assert context.model_dump(mode="json")["sources"] == original["sources"]
