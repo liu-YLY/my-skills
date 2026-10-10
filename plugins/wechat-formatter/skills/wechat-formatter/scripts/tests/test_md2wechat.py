@@ -185,6 +185,24 @@ class TestMdToHtml:
         assert '<table>' in html
         assert '<th>a</th>' in html
 
+    @pytest.mark.parametrize('fence', ['```', '````', '~~~'])
+    def test_module_example_inside_fence_is_literal(self, fence):
+        from bs4 import BeautifulSoup
+
+        source = ':::hero\ntitle: 示例代码\n:::'
+        html = md2wechat.md_to_html(f'{fence}markdown\n{source}\n{fence}')
+        code = BeautifulSoup(html, 'html.parser').find('code')
+        assert code is not None
+        assert code.get_text().strip() == source
+
+    def test_indented_module_example_is_literal_and_body_module_renders(self):
+        from bs4 import BeautifulSoup
+
+        html = md2wechat.md_to_html('    :::hero\n    title: 示例\n    :::\n\n:::hero\ntitle: 正文\n:::')
+        soup = BeautifulSoup(html, 'html.parser')
+        assert ':::hero' in soup.find('code').get_text()
+        assert len(soup.select('.module-hero')) == 1
+
 
 # ─── 4. apply_inline_styles ────────────────────────────────────────────────
 

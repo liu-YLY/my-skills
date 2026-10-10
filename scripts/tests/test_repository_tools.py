@@ -5,6 +5,47 @@ from pathlib import Path
 
 import pytest
 
+
+def test_docx_conversion_preserves_table_section_order(tmp_path):
+    from docx import Document
+
+    source = tmp_path / "requirements.docx"
+    document = Document()
+    document.add_heading("支付规则", level=1)
+    table = document.add_table(rows=1, cols=2)
+    table.cell(0, 0).text = "退款条件"
+    table.cell(0, 1).text = "未履约"
+    document.add_heading("注册规则", level=1)
+    document.add_paragraph("邮箱唯一")
+    document.save(source)
+    script = Path(__file__).resolve().parents[2] / "plugins/testing/skills/test-case-engineer/scripts/convert_docs.py"
+    spec = importlib.util.spec_from_file_location("doc_converter", script)
+    converter = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(converter)
+    output = converter.convert_file(source)[0].read_text()
+    assert output.index("# 支付规则") < output.index("| 退款条件") < output.index("# 注册规则")
+    assert "邮箱唯一" in output
+
+
+def test_docx_conversion_preserves_adjacent_tables_and_text(tmp_path):
+    from docx import Document
+
+    source = tmp_path / "requirements.docx"
+    document = Document()
+    document.add_paragraph("开始")
+    for text in ("第一表|字段\n第二行", "第二表"):
+        document.add_table(rows=1, cols=1).cell(0, 0).text = text
+    document.add_paragraph("")
+    document.add_heading("结束", level=2)
+    document.save(source)
+    script = Path(__file__).resolve().parents[2] / "plugins/testing/skills/test-case-engineer/scripts/convert_docs.py"
+    spec = importlib.util.spec_from_file_location("doc_converter", script)
+    converter = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(converter)
+    output = converter.convert_file(source)[0].read_text()
+    assert output.index("开始") < output.index("第一表") < output.index("第二表") < output.index("## 结束")
+    assert "第一表\\|字段<br>第二行" in output
+
 ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location("skill_evals", ROOT / "scripts/skill-evals.py")
 evals = importlib.util.module_from_spec(spec)

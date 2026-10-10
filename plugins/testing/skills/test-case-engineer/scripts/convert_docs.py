@@ -37,11 +37,26 @@ def _has_markdown_list_prefix(text: str) -> bool:
 def convert_docx_to_md(file_path: Path) -> Path:
     from docx import Document
     from docx.oxml.ns import qn
+    from docx.table import Table
+    from docx.text.paragraph import Paragraph
 
     doc = Document(file_path)
     lines = []
 
-    for para in doc.paragraphs:
+    for element in doc.element.body:
+        if element.tag == qn("w:tbl"):
+            table = Table(element, doc)
+            lines.append("")
+            for i, row in enumerate(table.rows):
+                cells = [_escape_table_cell(cell.text.strip()) for cell in row.cells]
+                lines.append("| " + " | ".join(cells) + " |")
+                if i == 0:
+                    lines.append("| " + " | ".join(["---"] * len(cells)) + " |")
+            lines.append("")
+            continue
+        if element.tag != qn("w:p"):
+            continue
+        para = Paragraph(element, doc)
         style_name = para.style.name.lower() if para.style else ""
         text = para.text.strip()
         if not text:
@@ -67,15 +82,6 @@ def convert_docx_to_md(file_path: Path) -> Path:
             lines.append(f"#### {text}")
         else:
             lines.append(text)
-
-    for table in doc.tables:
-        lines.append("")
-        for i, row in enumerate(table.rows):
-            cells = [_escape_table_cell(cell.text.strip()) for cell in row.cells]
-            lines.append("| " + " | ".join(cells) + " |")
-            if i == 0:
-                lines.append("| " + " | ".join(["---"] * len(cells)) + " |")
-        lines.append("")
 
     content = "\n".join(lines)
     content = re.sub(r"\n{3,}", "\n\n", content)
