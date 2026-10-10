@@ -349,3 +349,5 @@ git diff --check
 - B19e 已验证：禁止撤去失败运行证据后提升已确认通过率；根项目 MCP 111 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.7.3、MCP 0.8.3，仓库工具与静态检查通过。
 - B18c 已验证：沿映射依据来源传播需复核结论；根项目 MCP 112 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.7.4、MCP 0.8.4，仓库工具与静态检查通过。
 - B19f 已验证：校验失败场景的唯一转换关联与允许目标；根项目 MCP 114 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.7.5、MCP 0.8.5，仓库工具与静态检查通过。
+
+- B20d 冻结前回归：state-machine 114、review-checker 104、WeChat 142、仓库工具45，合计405项通过；Markdown/YAML/JSON及五项项目检查通过。pre-commit初次因shell缺python别名失败，指定隔离QA环境PATH后六项通过。安装实测为macOS PowerShell，未外推Windows；行为评测尚未开始，记录在 deterministic-validation.json。

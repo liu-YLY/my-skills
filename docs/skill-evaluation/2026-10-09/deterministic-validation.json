@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "source_commit": "57bcd1758dec14f303c8ea16fd175a1e7972a8d7",
+  "state_machine_version": "0.8.5",
+  "review_checker_version": "0.3.1",
+  "behavior_evaluation_status": "not_started",
+  "deterministic_checks": [
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "-m",
+        "pytest",
+        "tests",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "cwd": "/Users/lyle/myfile/python_project/my-skills/plugins/testing/mcp-servers/state-machine-testing",
+      "exit_code": 0,
+      "seconds": 5.482958417000191,
+      "summary": "============================= 114 passed in 5.11s =============================="
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "-m",
+        "pytest",
+        "tests",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "cwd": "/Users/lyle/myfile/python_project/my-skills/plugins/testing/mcp-servers/review-checker",
+      "exit_code": 0,
+      "seconds": 0.8580272919971321,
+      "summary": "======================= 104 passed, 6 warnings in 0.64s ========================"
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "-m",
+        "pytest",
+        "plugins/wechat-formatter/skills/wechat-formatter/scripts/tests",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "cwd": "/Users/lyle/myfile/python_project/my-skills",
+      "exit_code": 0,
+      "seconds": 1.0773312500023167,
+      "summary": "142 passed in 0.82s"
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "-m",
+        "pytest",
+        "scripts/tests",
+        "-q",
+        "-p",
+        "no:cacheprovider"
+      ],
+      "cwd": "/Users/lyle/myfile/python_project/my-skills",
+      "exit_code": 0,
+      "seconds": 5.271168082999793,
+      "summary": "45 passed in 5.01s"
+    }
+  ],
+  "static_checks": [
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "scripts/check-version-sync.py"
+      ],
+      "exit_code": 0,
+      "environment": null,
+      "reason": null
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "scripts/check-knowledge-count.py"
+      ],
+      "exit_code": 0,
+      "environment": null,
+      "reason": null
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "scripts/check-md-links.py"
+      ],
+      "exit_code": 0,
+      "environment": null,
+      "reason": null
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "scripts/check-skill-consistency.py"
+      ],
+      "exit_code": 0,
+      "environment": null,
+      "reason": null
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/python",
+        "scripts/check-project-inventory.py"
+      ],
+      "exit_code": 0,
+      "environment": null,
+      "reason": null
+    },
+    {
+      "command": [
+        "npx",
+        "--yes",
+        "markdownlint-cli",
+        "-c",
+        ".markdownlint.jsonc",
+        "--ignore",
+        ".git",
+        "--ignore",
+        "node_modules",
+        "--ignore",
+        ".venv-tools",
+        "*.md",
+        "plugins/**/*.md",
+        "docs/**/*.md",
+        ".github/**/*.md"
+      ],
+      "exit_code": 0,
+      "environment": null,
+      "reason": null
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/yamllint",
+        "-d",
+        "{extends: default, rules: {line-length: disable, document-start: disable}}",
+        ".pre-commit-config.yaml",
+        ".github/workflows/ci.yml"
+      ],
+      "exit_code": 0,
+      "environment": null,
+      "reason": null
+    },
+    {
+      "command": [
+        "/tmp/my-skills-audit-20261009-venv/bin/pre-commit",
+        "run",
+        "--all-files"
+      ],
+      "exit_code": 1,
+      "environment": null,
+      "reason": null
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "environment": null,
+      "reason": null
+    },
+    {
+      "command": [
+        "pre-commit",
+        "run",
+        "--all-files"
+      ],
+      "exit_code": 0,
+      "environment": "PATH includes isolated QA environment bin",
+      "reason": "Retry after initial shell lacked python alias; all six read-only hooks passed"
+    }
+  ],
+  "json_validation": "All project JSON files parsed; .git, node_modules and .venv-tools excluded",
+  "installation": {
+    "powershell_version": "7.6.6",
+    "platform": "macOS arm64",
+    "native_windows_tested": false,
+    "portable_skills": 8,
+    "tests_passed": 6,
+    "local_installed_docx_and_wechat_conversion": "passed",
+    "powershell_asset_sha256": "6df833d094ebac1c1a74340d7b3437f4aaf5e03ce640484a1c4359f3ce8b3db1"
+  },
+  "closure_probes": {
+    "failure_evidence_removal_confirmed_pass_ratio": [
+      0.0,
+      0.0
+    ],
+    "changed_source_affected": [
+      "SC",
+      "TC"
+    ],
+    "contradictory_failure_requirement_ratio": 0.0
+  },
+  "limits": [
+    "Model behavior not yet evaluated",
+    "Native Windows and remote CI not executed",
+    "Browser results do not prove WeChat editor paste or publishing"
+  ],
+  "raw_receipts": [
+    {
+      "path": "/tmp/my-skills-repair-20261009/final-deterministic-checks.json",
+      "sha256": "f788a0b2b28d51e66c52b6aa6f05d57044dd631f3cde0feb947ebb6d880d05b8"
+    },
+    {
+      "path": "/tmp/my-skills-repair-20261009/final-static-checks.json",
+      "sha256": "d4ba262c860d52becb3cdd6a2f110f1ff68dba3b494fa6da2c206fcbc5c033f0"
+    },
+    {
+      "path": "/tmp/my-skills-repair-20261009/stage5-independent-repro-after.json",
+      "sha256": "02cb339addd5bfa360d53e095d5b833341769312764b6602ed2e6472a8a5e336"
+    }
+  ]
+}
