@@ -296,3 +296,7 @@ git diff --check
 执行记录更新在本节，不追加重复计划。每批记录“批次、状态、变更范围、提交或差异、测试命令及结果、行为证据、未解决项”；状态使用未开始、进行中、已验证、待外部验证。
 
 - 2026年10月9日：用户批准实施。已fetch并同步main，创建 `fix/skill-repair-20261009` 与 `backup/pre-skill-repair-20261009`；旧版快照保存在 `/tmp/my-skills-repair-20261009/baseline`。B01进行中，B02至B20未开始；远程未推送。
+
+- B01 已验证：校准strategy id5及四项禁止/期望断言；`skill-evals.py`输入检查通过，仓库工具22 passed、3 skipped，版本同步通过。代码反例按所属批次先失败后修复。
+- B02 已验证：六种文档diff模式反例先6 failed，补参数后仓库工具28 passed、3 skipped；textconv未执行且diff范围正确，版本与结构检查通过。
+- B03 已验证：共享入口与跨边反例先2 failed；完整循环成员检测后review-checker 104 passed，含2000节点无环链。版本0.3.1，链接与版本检查通过。

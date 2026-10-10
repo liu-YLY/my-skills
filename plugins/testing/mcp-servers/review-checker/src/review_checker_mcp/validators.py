@@ -418,68 +418,65 @@ def check_dependency_cycles(facts: list[SemanticFacts]) -> list[Issue]:
     # 构建邻接表
     graph: dict[str, list[str]] = {f.case_id: list(f.dependencies) for f in facts}
 
-    # DFS 检测环（迭代实现，避免深递归栈溢出）
-    WHITE, GRAY, BLACK = 0, 1, 2  # 未访问 / 访问中 / 已完成
-    color: dict[str, int] = {node: WHITE for node in graph}
-
-    detected_cycles: list[list[str]] = []
-
-    def _find_cycle_from(start: str) -> list[str] | None:
-        """从 start 出发找环，返回环路径或 None。"""
-        stack: list[tuple[str, list[str]]] = [(start, [start])]
-        # 标记 start 为 GRAY（在栈中）
-        color[start] = GRAY
+    visited: set[str] = set()
+    finish_order: list[str] = []
+    for start in sorted(graph):
+        stack = [(start, False)]
         while stack:
-            node, path = stack[-1]
-            neighbors = graph.get(node, [])
-            found_next = False
-            for nbr in neighbors:
-                if nbr not in graph:
-                    continue  # 依赖的 case_id 不在用例集中，跳过
-                if color.get(nbr, WHITE) == GRAY:
-                    # 找到环：从 path 中 nbr 的位置到当前节点
-                    # 仅当 nbr 在当前 path 中才构成环；
-                    # 若 nbr 是前次 DFS 残留的 GRAY（不在 path 中）则跳过
-                    if nbr not in path:
-                        continue
-                    cycle_start_idx = path.index(nbr)
-                    cycle = path[cycle_start_idx:] + [nbr]
-                    # 将环上节点标记为 BLACK，避免后续 DFS 误判残留 GRAY
-                    for n in path[cycle_start_idx:]:
-                        color[n] = BLACK
-                    return cycle
-                if color.get(nbr, WHITE) == WHITE:
-                    color[nbr] = GRAY
-                    stack.append((nbr, path + [nbr]))
-                    found_next = True
-                    break
-            if not found_next:
-                color[node] = BLACK
-                stack.pop()
-        return None
+            node, finished = stack.pop()
+            if finished:
+                finish_order.append(node)
+            elif node not in visited:
+                visited.add(node)
+                stack.append((node, True))
+                stack.extend((nbr, False) for nbr in reversed(graph[node])
+                             if nbr in graph and nbr not in visited)
 
-    for node in graph:
-        if color[node] == WHITE:
-            cycle = _find_cycle_from(node)
-            if cycle:
-                detected_cycles.append(cycle)
+    reverse: dict[str, list[str]] = {node: [] for node in graph}
+    for node, neighbors in graph.items():
+        for nbr in neighbors:
+            if nbr in reverse:
+                reverse[nbr].append(node)
+    visited.clear()
+    for start in reversed(finish_order):
+        if start in visited:
+            continue
+        component: set[str] = set()
+        pending = [start]
+        while pending:
+            node = pending.pop()
+            if node in visited:
+                continue
+            visited.add(node)
+            component.add(node)
+            pending.extend(reverse[node])
+        if len(component) == 1 and start not in graph[start]:
+            continue
 
-    for cycle in detected_cycles:
-        # 去掉末尾重复的起点（path + [nbr] 导致末尾重复）
-        if len(cycle) > 1 and cycle[0] == cycle[-1]:
-            cycle = cycle[:-1]
-        cycle_str = ",".join(cycle)
-        arrow_path = "→".join(cycle)
-        issues.append(
-            Issue(
-                case_id=cycle_str,
-                dimension="语义一致性",
-                severity=Severity.P1,
-                rule="dependencies 有向图存在环 → P1",
-                evidence=f"依赖闭环：{arrow_path}→{cycle[0]}",
-                suggestion="拆解闭环：将其中一条依赖改为自包含步骤，或重新排序执行顺序",
-            )
-        )
+        first = min(component)
+        neighbor = next(nbr for nbr in graph[first] if nbr in component)
+        parents: dict[str, str | None] = {neighbor: None}
+        frontier = [neighbor]
+        for node in frontier:
+            if node == first:
+                break
+            for nbr in graph[node]:
+                if nbr in component and nbr not in parents:
+                    parents[nbr] = node
+                    frontier.append(nbr)
+        path: list[str] = []
+        cursor: str | None = first
+        while cursor is not None:
+            path.append(cursor)
+            cursor = parents[cursor]
+        cycle = [first, *reversed(path)]
+        members = ",".join(sorted(component))
+        issues.append(Issue(
+            case_id=members, dimension="语义一致性", severity=Severity.P1,
+            rule="dependencies 有向图存在环 → P1",
+            evidence=f"循环依赖成员：{members}；闭环示例：{'→'.join(cycle)}",
+            suggestion="拆解循环依赖，将依赖改为自包含步骤后重新核对执行顺序",
+        ))
     return issues
 
 

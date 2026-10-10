@@ -7,12 +7,12 @@
 
 | 模式 | 触发条件 | Git 命令 |
 |------|---------|---------|
-| 当前改动 | 用户说"当前改动"/"本地改动"/未指定范围 | 工作区非空：`git diff --no-ext-diff --no-textconv HEAD`；工作区干净且 feature 分支领先默认分支：`git diff <default>...HEAD` |
-| 暂存区改动 | 用户说"已暂存"/"staged" | `git diff --cached` |
-| 分支对比 | 用户指定了两个分支名 | `git diff <base>...<head>` |
-| 单个 Commit | 用户指定了单个 commit hash | `git diff <commit>~1..<commit>` |
-| Commit 范围 | 用户指定了 commit 区间 | `git diff <commit1>..<commit2>` |
-| Revision Range | 用户给出 `A..B` / `A...B` 形式 | 原样传入 `git diff <range>` |
+| 当前改动 | 用户说"当前改动"/"本地改动"/未指定范围 | 工作区非空：`git diff --no-ext-diff --no-textconv HEAD`；工作区干净且 feature 分支领先默认分支：`git diff --no-ext-diff --no-textconv <default>...HEAD` |
+| 暂存区改动 | 用户说"已暂存"/"staged" | `git diff --no-ext-diff --no-textconv --cached` |
+| 分支对比 | 用户指定了两个分支名 | `git diff --no-ext-diff --no-textconv <base>...<head>` |
+| 单个 Commit | 用户指定了单个 commit hash | `git diff --no-ext-diff --no-textconv <commit>~1..<commit>` |
+| Commit 范围 | 用户指定了 commit 区间 | `git diff --no-ext-diff --no-textconv <commit1>..<commit2>` |
+| Revision Range | 用户给出 `A..B` / `A...B` 形式 | 原样传入 `git diff --no-ext-diff --no-textconv <range>` |
 | PR Diff / 外部 Patch | 用户粘贴 patch 或提供 PR diff 文件路径 | 不执行 git，直接解析 patch 内容 |
 
 ## 2. 自动推断规则
@@ -46,7 +46,7 @@
   │    └─ 两个分支名 → 模式 3：分支对比（base...head）
   │
   ├─ 说"已暂存"/"staged"
-  │    → 模式 2：暂存区改动（git diff --cached）
+  │    → 模式 2：暂存区改动（git diff --no-ext-diff --no-textconv --cached）
   │
   ├─ 未指定范围 / 说"当前改动"/"本地改动"
   │    ├─ 工作区非空 → 模式 1：工作区改动（git diff --no-ext-diff --no-textconv HEAD）
@@ -108,7 +108,7 @@
 用户：帮我分析一下当前改动对测试用例的影响，用例在 docs/test-cases.md
 ```
 
-执行：先运行 `git status --short`。工作区非空时执行 `git diff --no-ext-diff --no-textconv HEAD`；工作区干净且当前 feature 分支领先默认分支时，解析默认分支后执行 `git diff <default>...HEAD`。两者均为空时才报告「无变更」。
+执行：先运行 `git status --short`。工作区非空时执行 `git diff --no-ext-diff --no-textconv HEAD`；工作区干净且当前 feature 分支领先默认分支时，解析默认分支后执行 `git diff --no-ext-diff --no-textconv <default>...HEAD`。两者均为空时才报告「无变更」。
 
 产出：
 ```json
@@ -126,7 +126,7 @@
 用户：分析已暂存的改动，用例在 docs/test-cases.md
 ```
 
-执行：`git diff --cached`
+执行：`git diff --no-ext-diff --no-textconv --cached`
 
 ### 5.3 模式 3：分支对比
 
@@ -134,7 +134,7 @@
 用户：对比 main 和 feat/order-cancel 分支的改动，检查对 order 相关用例的影响
 ```
 
-执行：`git diff main...feat/order-cancel`
+执行：`git diff --no-ext-diff --no-textconv main...feat/order-cancel`
 
 ### 5.4 模式 4：单个 Commit
 
@@ -142,7 +142,7 @@
 用户：检查 commit abc1234 的改动是否影响了 regression 用例
 ```
 
-执行：`git diff abc1234~1..abc1234`
+执行：`git diff --no-ext-diff --no-textconv abc1234~1..abc1234`
 
 ### 5.5 模式 5：Commit 范围
 
@@ -150,7 +150,7 @@
 用户：分析 abc1234 到 def5678 之间的所有改动
 ```
 
-执行：`git diff abc1234..def5678`
+执行：`git diff --no-ext-diff --no-textconv abc1234..def5678`
 
 ### 5.6 模式 6：Revision Range
 
@@ -158,7 +158,7 @@
 用户：分析 main..HEAD 的改动
 ```
 
-执行：原样传入 `git diff main..HEAD`
+执行：原样传入 `git diff --no-ext-diff --no-textconv main..HEAD`
 
 ### 5.7 模式 7：PR Diff / 外部 Patch
 

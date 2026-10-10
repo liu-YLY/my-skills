@@ -83,7 +83,7 @@ def test_current_changes_include_committed_feature_branch_work():
     modes = (skill_dir / "knowledge/diff-modes.md").read_text(encoding="utf-8")
     assert "工作区干净且 feature 分支领先默认分支" in skill
     assert "不得忽略 feature 分支上已提交但未合并的改动" in modes
-    assert "git diff <default>...HEAD" in modes
+    assert "git diff --no-ext-diff --no-textconv <default>...HEAD" in modes
 
 
 def test_bundle_declares_current_state_machine_mcp_version():
