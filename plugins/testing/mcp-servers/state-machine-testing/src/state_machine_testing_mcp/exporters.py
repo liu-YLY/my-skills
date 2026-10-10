@@ -64,6 +64,16 @@ def export_to_markdown(sm: StateMachine, scenarios: ScenarioList | None = None) 
                 f"{s.expected_target_state} | {s.risk_type} | {s.evidence_type.value} |"
             )
 
+    if scenarios:
+        for scenario in scenarios.scenarios:
+            failure = scenario.failure_semantics
+            if failure:
+                lines.extend(["", f"### {scenario.id} 失败语义: {failure.phase}",
+                              f"- 允许状态: {failure.allowed_states}",
+                              f"- 禁止副作用: {failure.forbidden_side_effects}",
+                              f"- 观测证据: {failure.observations}",
+                              f"- 恢复条件: {failure.recovery_conditions}"])
+
     if scenarios and scenarios.scenario_applicability:
         lines.extend(["", "## 场景适用性", "", "| 类型 | 状态 | 依据 | 缺失信息 |", "|---|---|---|---|"])
         for risk, item in scenarios.scenario_applicability.items():
