@@ -226,7 +226,19 @@ out_of_scope_changes:
     action: "需产品/开发确认是否为预期改动"
 ```
 
-## 5. 与其他 knowledge 文件的关联
+## 5. 来源变更与定向复核（可选追溯输入）
+
+- 消费 `traceability.sources`（id/location/version/availability）、`artifacts`（id/kind/version）和 `links`（upstream/downstream/confirmation/source/source_refs），保留原source/evidence_type。
+- sources availability为available/unreachable/missing/unknown；links confirmation为confirmed/candidate。使用显式稳定产物ID，不以列表下标或SM展示编号建立长期关联。
+- 先核对source_refs指向可达且明确版本的来源及关联依据，未满足时保留uncorroborated_links；再定位来源/需求ID与变更版本，沿有依据的confirmed链找风险、模型/场景、用例和执行证据；只把受影响结论标「需复核」，保留旧版本/证据，不能宣布旧测试已失败。
+- candidate链只形成候选影响清单，记录需要核对的规则/调用依赖；不得将关键词同名升级为confirmed。
+- 来源不可达只报告取证缺口；业务结果未知另报状态，两者不能互相替代。无追溯图时按现有Mode A/B继续，关系未评估而不是假装无影响。
+- 同一产物被多条路径命中只记录一次复核项，附全部依据；只复核变更项的受影响范围，不重跑无关完整流程。
+
+示例：优惠上限从30改为20，REQ-COUPON-CAP→SC-CAP→TC-COUPON-BOUNDARY有confirmed关系，
+只复核对应优惠边界断言；无关联证据的登录用例保持原状态。同模块其他用例最多进入candidate，不自动失效。
+
+## 6. 与其他 knowledge 文件的关联
 
 - 阶段 1 的 diff 来源与采集脚本见 [diff-modes.md](diff-modes.md)
 - 分析结果输出到阶段 4 报告，模板与优先级见 [report-template.md](report-template.md)

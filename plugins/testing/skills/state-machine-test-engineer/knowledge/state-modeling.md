@@ -254,3 +254,14 @@ forbidden:
 模型顶层必填 `meta/states/transitions`，`forbidden` 默认空列表。`meta.object` 必填，版本默认 `"1.0"`；每个状态必填 `name/meaning`，初始/终态标志默认 false。转换必填 `from/to/event/evidence_type`；`guards/side_effects` 默认空列表，`source` 默认空字符串。禁止规则必填 `from/to/reason/evidence_type`，`source` 默认空字符串。转换与禁止规则 `id` 可显式提供，缺省按原结构生成稳定 ID；新增来源信息不改变 ID。来源未提供要保留缺口，不能以默认空字符串声称需求明确已核实。
 
 本文件维护模型规范，[scenario-types.md](scenario-types.md) 维护完整场景规范；core 仅说明执行流程，不反向定义另一个 Schema。
+
+
+## 可选证据追溯
+
+`traceability` 默认缺省；可提供 sources（id/location/version/availability）、artifacts（id/kind/version）和 links（upstream/downstream/confirmation/source）。来源版本未知保留 null，不编造；来源不可达与业务结果未知分别记录。需求→风险→模型/场景→用例→执行证据用对象命名空间下的稳定引用关联，候选关联与已确认关联分开。来源或需求变化后确定性传播只标已确认后继需要复核，候选影响单列；不覆盖旧证据、不重跑无关流程。独立 Skill 不要求完整链。
+
+`SM-001` 仍是展示编号；生成器附加 `stable_ref` 是对象与输入/断言内容摘要，ID-only 重命名不改变摘要。语言重写、状态/条件变更可能改变摘要，因此它不证明跨版本业务身份；需要长期身份时使用 traceability 显式 artifact ID 和版本关系，不能按列表位置把旧证据绑定到新场景。场景可附 `trace_refs`，原 `source/evidence_type` 保持不变。
+
+来源 `availability` 未核实时为 `unknown`；只有明确检查依据才填 available，不能由一个位置字符串证明来源可访问。
+
+追溯边可选 `source_refs` 关联来源 ID。confirmed 标签还需关联依据 source、来源 available 和明确版本；缺失或不可达只输出 candidate_impacts，并在 uncorroborated_links 列依据缺口，不把输入标签当作已确认事实。

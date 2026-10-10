@@ -74,6 +74,13 @@ def export_to_markdown(sm: StateMachine, scenarios: ScenarioList | None = None) 
                               f"- 观测证据: {failure.observations}",
                               f"- 恢复条件: {failure.recovery_conditions}"])
 
+    if sm.traceability:
+        lines.extend(["", "## 证据追溯", ""])
+        for source in sm.traceability.sources:
+            lines.append(f"- {source.id}: {source.location}，版本 {source.version}，{source.availability}")
+        for link in sm.traceability.links:
+            lines.append(f"- {link.upstream} → {link.downstream}: {link.confirmation} ({link.source})")
+
     if scenarios and scenarios.scenario_applicability:
         lines.extend(["", "## 场景适用性", "", "| 类型 | 状态 | 依据 | 缺失信息 |", "|---|---|---|---|"])
         for risk, item in scenarios.scenario_applicability.items():

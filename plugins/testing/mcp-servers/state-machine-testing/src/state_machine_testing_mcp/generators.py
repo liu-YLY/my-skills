@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from .provenance import stable_scenario_ref, deduplicate_scenarios
 from .schemas import (
     EvidenceType,
     Scenario,
@@ -418,6 +419,10 @@ def generate_scenarios(
     # 按依据类型过滤
     if evidence_filter:
         all_scenarios = [s for s in all_scenarios if s.evidence_type.value == evidence_filter]
+
+    all_scenarios = deduplicate_scenarios(all_scenarios)
+    for scenario in all_scenarios:
+        scenario.stable_ref = stable_scenario_ref(state_machine, scenario)
 
     # 重新编号（避免 ID 冲突）
     for i, s in enumerate(all_scenarios, 1):
