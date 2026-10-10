@@ -27,7 +27,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | test-case-engineer | v9.0.2 | 功能用例生成 + 10 维度评审模式 | review-checker v0.3.1（可选） |
 | performance-test-engineer | v1.1.1 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
 | bug-analyzer | v1.2.0 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
-| state-machine-test-engineer | v1.2.1 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.3.0（可选） |
+| state-machine-test-engineer | v1.2.2 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.3.1（可选） |
 | change-impact-analyzer | v1.2.2 | 变更影响分析（协同 skill，链 6 协同使用亦可单独使用） | - |
 
 **7 条混合意图链**：
@@ -43,7 +43,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 
 | Skill | 版本 | 功能 |
 |---|---|---|
-| **wechat-formatter** | v3.0.12 | 6 种排版风格 + 高级排版模块（:::module）+ 品牌配置 + HTML 生成 |
+| **wechat-formatter** | v3.0.15 | 6 种排版风格 + 高级排版模块（:::module）+ 品牌配置 + HTML 生成 |
 
 > 各 skill 的详细能力、工作流程、使用示例见 [docs/skills-overview.md](docs/skills-overview.md)。
 
@@ -126,7 +126,7 @@ for skill_dir in plugins/testing/skills/*; do cp -R "$skill_dir" "$SKILLS_DIR/";
 | MCP Server | 版本 | 配套 skill | 功能 |
 |---|---|---|---|
 | [review-checker](plugins/testing/mcp-servers/review-checker/README.md) | v0.3.1 | test-case-engineer 评审模式 | 10 维度检查 + 候选问题及未评估范围 + 度量报告 |
-| [state-machine-testing](plugins/testing/mcp-servers/state-machine-testing/README.md) | v0.3.0 | state-machine-test-engineer | Schema 校验 + 场景穷举 + 覆盖度报告 |
+| [state-machine-testing](plugins/testing/mcp-servers/state-machine-testing/README.md) | v0.3.1 | state-machine-test-engineer | Schema 校验 + 场景穷举 + 覆盖度报告 |
 
 > MCP Server 为可选增强组件，未安装时 skill 降级为纯 LLM 推理，不影响核心能力。
 

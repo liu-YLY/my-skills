@@ -67,19 +67,21 @@ subtitle: 不是好不好看，是读者读不读得完
 :::
 ```
 
-### 九种正文格式
+### 已支持的正文格式
 
-| 格式 | 正文形态 | 典型模块 |
+| 格式 | 正文形态 | 模块示例 |
 |---|---|---|
-| `fields` | 每行 `key: value` | `hero`、`verdict` |
-| `rows` | 每行一条、列用 `\|` 分隔 | `toc`、`metrics` |
-| `json_object` | 一个 JSON 对象 | `definition`、`tweet` |
-| `json_array` | 一个 JSON 数组 | `stat-row`、`resource-list` |
-| `markdown_images` | Markdown 图片列表 | `gallery-grid`、`svg-swipe-gallery` |
-| `markdown_fields` | 重复字段组中允许 Markdown 图片 | `image-steps`、`figure-caption` |
-| `split` | 两段正文由分隔线隔开 | `split` |
-| `lines` | 逐行条目 | `flow`、`callout` |
-| `dialogue` | 成对前缀或具名说话人行 | `question`、`dialogue-pair` |
+| `fields` | 每行 `key: value`，部分字段允许 `|` 列表 | `hero`、`question` |
+| `rows` | 每行一条、列用 `|` 分隔 | `toc`、`metrics` |
+| `markdown_fields` | 重复字段组中允许一张 Markdown 图片 | `image-steps` |
+| `split` | 正文由单独一行 `---` 分隔 | `split`、`columns` |
+| `lines` | 每行 `类型 | 内容` | `callout` |
+
+本节以下 32 个模块为正式支持清单。`definition`、`tweet`、`stat-row`、
+`resource-list`、`gallery-grid`、`svg-swipe-gallery`、`figure-caption`、`flow`、
+`dialogue-pair` 没有本地渲染契约；导出时输出 unsupported 警告并保留安全源码。
+未知字段、重复单值字段、非法行列或参数同样带警告保留源码，不能静默套用通用卡片。
+字段值作为文本转义；仅图片步骤和自由布局解析其声明的 Markdown。
 
 ---
 
@@ -399,7 +401,7 @@ point: 02 | 指标区 | 适合讲关键数字、结果和变化
 :::
 ```
 
-`point` 格式是 `编号 | 标题 | 描述`；描述可省略。至少写 1 条，最多读取 3 条。
+`point` 格式是 `编号 | 标题 | 描述`；描述可省略。至少写 1 条，最多写 3 条；超出范围时带警告保留源码。
 
 ---
 
@@ -426,7 +428,9 @@ right_image: https://example.com/after.png
 
 **什么时候用**：操作教程，每步配一张截图。
 
-**格式**：每组使用 `step` 和 `desc`，中间可放一张 Markdown 图片。
+**格式**：每组以 `step` 开始，可包含 `desc`、`note` 和一张 Markdown 图片。
+参数 `columns` 允许 `2`、`3`、`4`，产生对应结构类；公众号安全导出始终纵向堆叠。
+`caption_style` 仅允许 `numbered`，在步骤标题中显示真实编号，不能依赖伪元素。
 
 ```markdown
 :::image-steps{columns=2 caption_style=numbered}
@@ -706,12 +710,13 @@ options: 技术博客风 | 教程指南风 | 深度干货风 | 轻松聊天风
 ### 错误处理
 
 - 未知模块名：输出警告，保留原始文本
-- 缺少必填字段：输出错误提示，建议补充
-- 语法格式错误：尝试自动修复，无法修复时保留原始文本
+- 缺少必填字段：输出警告，保留安全源码，提示补充字段
+- 语法格式错误：输出具体警告并保留安全源码，不猜测字段或自动改变正文
 
 ### 兼容性
 
-- 所有模块都支持微信公众号编辑器
+- 本地预览和导出采用纯色、纵向堆叠及真实状态标记；列数、类型等参数保留结构类
+- 静态模块可复制；公众号实际粘贴效果与图片上传必须按真实操作验证，不能由本地预览推断
 - 图片模块需要用户提供有效图片链接
 - 交互模块在公众号中显示为静态内容
 
