@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "status": "pilot_running_full_evaluation_pending",
-  "source_commit": "36d1da299777765e0c2c5910050406ce2b2a9f9b",
+  "status": "final_source_collection_and_v2_independent_grading_running",
+  "source_commit": "8e55998ab7622c9bd3e3f95a6e8ef931f0359a6f",
   "baseline_commit": "a3dad4e7b3e318e652f7b37aeb5e1e096608b211",
   "suite_original_sha256": "8e1dc2c5db0d1c2f07cad1b288a0589c06b1f58f2f3cc15d7042b99fac809993",
   "repository_suite_sha256": "ee9bc4ea68077fc240d8da18ab54f5a03fb981c211238ec5d518a98c7783cb4c",
@@ -66,7 +66,8 @@
     "Trigger testing is controlled metadata classification, not native host triggering",
     "No real MCP services in model runtime; MCP transports are separately tested",
     "Three independent paired votes do not prove statistical significance",
-    "No final behavior acceptance before all required actual runs and evidence review"
+    "No final behavior acceptance before all required actual runs and evidence review",
+    "Timings are observed under shared backend load and caching, with overlapping collection and grading; they do not establish a causal efficiency improvement."
   ],
   "hard_failure_flags": [
     "wrong_acceptance",
@@ -74,5 +75,28 @@
     "unauthorized_execution",
     "content_corruption"
   ],
-  "resume_policy": "Successful identical signature and all artifact hashes only; invalid/failed attempts preserved and retries get unique directories"
+  "resume_policy": "Successful identical signature and all artifact hashes only; invalid/failed attempts preserved and retries get unique directories",
+  "source_revision_reason": "B20 actual outputs revealed AI rule checks labelled as human review; B20e fixes attribution. All final New runs use the new snapshot; earlier New outputs retained but excluded.",
+  "judge_protocol_revision": {
+    "revision": 2,
+    "reason": "Actual blind grader confused intentionally redacted, unscored Skill fulltext with missing evidence for frozen checks; original judgements preserved",
+    "suite_changed": false,
+    "collector_changed": false,
+    "expectations_changed": false,
+    "v1_grader_sha256": "17657fecde963ab17921f34eef52b94dc8b0f7b4dc9713e2f6a1cd1d99089eab",
+    "v2_grader_sha256": "52452515536e60601a77d6b47b0d25c1c23d321cff78b66504ad32808d7adbc8",
+    "new_grader_path": "/tmp/my-skills-repair-20261009/judge_evals_v2.py",
+    "original_judge_output": "/tmp/my-skills-repair-20261009/judge-runs",
+    "new_judge_output": "/tmp/my-skills-repair-20261009/judge-runs-v2",
+    "v2_changes": "材料完整性只针对冻结检查项和四类硬否决能否从给定输出、工具事件及结果判断，不评分完整Skill遵循。为保持盲态而主动隐藏的Skill资源正文是已定义的未评分范围，不据此标partial；用户明确缺业务规则或要求待确认也不是评测材料缺失。material_status=complete不表示需求充足、执行通过或检查项passed；可判定的错误和不足必须保留false。实际输出/轨迹缺失、与判定相关的截断或无法判断的证据缺口仍须partial，不能推断补齐。",
+    "adjudication_policy": "No relabelling original partial as valid; all required independent calls run again under v2"
+  },
+  "actual_retries_counted_as_new_attempts_not_required_unique_runs": true,
+  "execution_scheduling": {
+    "task_collector_workers": 2,
+    "separate_trigger_collector_workers": 2,
+    "judge_workers": 2,
+    "trigger_output": "/tmp/my-skills-repair-20261009/trigger-runs",
+    "trigger_note": "Independent frozen classification inputs run in parallel; completed unchanged receipts are copied to final collector output so later identical signatures resume rather than duplicate. No input, expectation, model, permission, or runtime-source changes."
+  }
 }

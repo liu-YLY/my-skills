@@ -351,3 +351,10 @@ git diff --check
 - B19f 已验证：校验失败场景的唯一转换关联与允许目标；根项目 MCP 114 passed，旧调用与 stdio/HTTP 回归通过；Skill 1.7.5、MCP 0.8.5，仓库工具与静态检查通过。
 
 - B20d 冻结前回归：state-machine 114、review-checker 104、WeChat 142、仓库工具45，合计405项通过；Markdown/YAML/JSON及五项项目检查通过。pre-commit初次因shell缺python别名失败，指定隔离QA环境PATH后六项通过。安装实测为macOS PowerShell，未外推Windows；行为评测尚未开始，记录在 deterministic-validation.json。
+- B20e 文档/契约修复已落地：区分AI规则核对与真人审核来源；入口、知识、示例和期望同步，版本9.4.1，仓库工具与静态检查通过；自然语言行为判定保留到B20冷上下文评测，不以静态通过替代。
+
+- B20f 实测后修订评审协议：匿名隐藏的未评分Skill正文被原Judge误记为材料partial，保留v1票并用v2协议重新独立判断；冻结检查项不变。B20e归因修复后重新冻结New（8e55998），此前New输出不计最终来源组合；old/no_skill签名不变、通过完整产物校验后复用。真实采集与评审进行中。
+
+- B20g 原有触发分类123次实际运行完成，逐项核对签名/产物SHA/布尔预测：New 41/41，old 40/41（1 FP），no_skill 41/41。完整receipt原样存入最终采集目录以避免重复调用；仅代表受控metadata分类，宿主全局metadata混入的边界已记录，不外推native触发或统计显著提升。任务行为/独立评审仍进行中。
+
+- B20h 旧版混合链样本6项分歧由独立agent按原输出/trace裁决，原票与SHA绑定保留：证据传递检查成立，无恢复契约的直接重投必成功预期命中错误验收；不是人审，也不改冻结期望或New判定。另有一票逐字引用未匹配被真实验证器标partial，保留原票并独立重试，不能修写原引用冒充valid。
