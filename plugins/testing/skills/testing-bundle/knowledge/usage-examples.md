@@ -130,4 +130,4 @@ testing-bundle:
 4. 混合意图按对应链路执行（7 条链），转交点 🔴 CHECKPOINT
 5. 子 skill 执行具体任务并输出结果
 6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（v0.4.6 协议层 stdio + HTTP 已端到端联调验证，安装后增强模式可用；详见 [state-machine-test-engineer/integrations/quickstart.md](../../state-machine-test-engineer/integrations/quickstart.md)）
-7. test-case-engineer 评审模式可选安装配套 review-checker MCP Server 进入增强模式（详见 [review-checker README](../../../mcp-servers/review-checker/README.md)）
+7. test-case-engineer 评审模式可选安装配套 review-checker MCP Server 进入增强模式（详见 [review-checker README](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/mcp-servers/review-checker/README.md)）

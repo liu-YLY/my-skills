@@ -69,7 +69,7 @@ if ($Uninstall) {
 
 # Pre-install validation
 Write-Host "Install testing-bundle ($($BundleSkills.Count) skills) -> $TargetDir" -ForegroundColor Green
-foreach ($required in @("testing-bundle", "test-case-engineer", "bug-analyzer")) {
+foreach ($required in @("testing-bundle", "test-case-engineer", "bug-analyzer", "test-strategy-engineer", "performance-test-engineer", "state-machine-test-engineer", "change-impact-analyzer")) {
     if ($required -notin $BundleSkills) { throw "Missing required skill: $required" }
 }
 foreach ($resource in @("convert_docs.py", "requirements.txt")) {
@@ -78,38 +78,63 @@ foreach ($resource in @("convert_docs.py", "requirements.txt")) {
         throw "Missing conversion resource: $resourcePath"
     }
 }
-# Validate runtime references before replacing any installed skill.
-$SourcePrefix = [IO.Path]::GetFullPath($SkillsSource) + [IO.Path]::DirectorySeparatorChar
-foreach ($document in Get-ChildItem -LiteralPath $SkillsSource -Recurse -File -Filter "*.md") {
-    if ($document.Name -in @("README.md", "CHANGELOG.md") -or $document.FullName -match '[/\\]docs[/\\]') { continue }
-    foreach ($link in [regex]::Matches((Get-Content -LiteralPath $document.FullName -Raw), '\[[^\]]*\]\(([^)\s]+)\)')) {
-        $relative = ($link.Groups[1].Value -split '#', 2)[0]
-        if (-not $relative -or $relative -match '^[a-zA-Z][a-zA-Z0-9+.-]*:|^/|[{}*]') { continue }
-        $resolved = [IO.Path]::GetFullPath((Join-Path $document.DirectoryName $relative))
-        if ($resolved.StartsWith($SourcePrefix) -and -not (Test-Path -LiteralPath $resolved)) {
-            throw "Missing runtime reference: $($document.FullName) -> $relative"
+function Assert-RuntimeResources([string]$Root) {
+    $prefix = [IO.Path]::GetFullPath($Root) + [IO.Path]::DirectorySeparatorChar
+    foreach ($resource in @("convert_docs.py", "requirements.txt")) {
+        $path = Join-Path $Root "test-case-engineer/scripts/$resource"
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing conversion resource: $path" }
+    }
+    foreach ($document in Get-ChildItem -LiteralPath $Root -Recurse -File -Filter "*.md") {
+        foreach ($link in [regex]::Matches((Get-Content -LiteralPath $document.FullName -Raw), '\[[^\]]*\]\(([^)\s]+)\)')) {
+            $relative = ($link.Groups[1].Value -split '#', 2)[0]
+            if (-not $relative -or $relative -match '^[a-zA-Z][a-zA-Z0-9+.-]*:|[{}*]') { continue }
+            if ($relative -notmatch '[/\\.]') { continue } # syntax-example placeholders
+            $resolved = [IO.Path]::GetFullPath((Join-Path $document.DirectoryName $relative))
+            if (-not $resolved.StartsWith($prefix) -or -not (Test-Path -LiteralPath $resolved)) {
+                throw "Missing portable runtime reference: $($document.FullName) -> $relative"
+            }
         }
     }
 }
+Assert-RuntimeResources $SkillsSource
 
-if (-not (Test-Path $TargetDir)) {
-    New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
-    Write-Host "  created target dir: $TargetDir" -ForegroundColor DarkGray
-}
-
-foreach ($skill in $BundleSkills) {
-    $src = Join-Path $SkillsSource $skill
-    $dst = Join-Path $TargetDir $skill
-    if (Test-Path $dst) {
-        Remove-Item $dst -Recurse -Force
-        Write-Host "  overwrote old version $skill" -ForegroundColor DarkGray
+# Copy and validate the portable layout before touching existing installations.
+$stage = Join-Path ([IO.Path]::GetTempPath()) ("testing-skills-" + [guid]::NewGuid().ToString("N"))
+$payload = Join-Path $stage "payload"
+$backup = Join-Path $stage "backup"
+$installed = @()
+$replaced = @()
+$keepBackup = $false
+try {
+    New-Item -ItemType Directory -Path $payload, $backup -Force | Out-Null
+    foreach ($skill in $BundleSkills) {
+        Copy-Item (Join-Path $SkillsSource $skill) (Join-Path $payload $skill) -Recurse -Force
     }
-    Copy-Item $src $dst -Recurse -Force
-    Write-Host "  installed $skill"
+    Assert-RuntimeResources $payload
+    if (-not (Test-Path $TargetDir)) { New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null }
+    foreach ($skill in $BundleSkills) {
+        $dst = Join-Path $TargetDir $skill
+        if (Test-Path -LiteralPath $dst) {
+            Move-Item -LiteralPath $dst -Destination (Join-Path $backup $skill)
+            $replaced += $skill
+        }
+        Move-Item -LiteralPath (Join-Path $payload $skill) -Destination $dst
+        $installed += $skill
+        Write-Host "  installed $skill"
+    }
+} catch {
+    $keepBackup = $true # Keep recoverable old files if rollback itself fails.
+    foreach ($skill in $installed) { Remove-Item -LiteralPath (Join-Path $TargetDir $skill) -Recurse -Force }
+    foreach ($skill in $replaced) { Move-Item -LiteralPath (Join-Path $backup $skill) -Destination (Join-Path $TargetDir $skill) }
+    $keepBackup = $false
+    throw
+} finally {
+    if (-not $keepBackup -and (Test-Path -LiteralPath $stage)) { Remove-Item -LiteralPath $stage -Recurse -Force }
 }
 
 Write-Host ""
 Write-Host "Done. Restart the runtime to activate testing-bundle." -ForegroundColor Cyan
+Write-Host "Skill files copied; Python dependencies and MCP servers require separate installation. Missing MCP uses independent mode." -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "For other runtimes, use -TargetDir, e.g.:" -ForegroundColor DarkGray
 Write-Host "  Cursor: -TargetDir `"$ProfileDir\.cursor\skills`"" -ForegroundColor DarkGray

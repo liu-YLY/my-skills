@@ -29,6 +29,7 @@ def test_installer_delivers_all_skills_and_preserves_other_directories(tmp_path)
     installed = {p.parent.name for p in target.glob("*/SKILL.md")} - {"user-other-skill"}
     expected = {p.parent.name for p in (ROOT / "plugins/testing/skills").glob("*/SKILL.md")}
     assert installed == expected and len(installed) == 7
+    assert_portable_links(target)
     for name in ("convert_docs.py", "requirements.txt"):
         assert (target / "test-case-engineer/scripts" / name).is_file()
     subprocess.run(command + ["-Uninstall"], check=True, capture_output=True, text=True)
@@ -70,3 +71,65 @@ def test_installer_rejects_a_missing_referenced_skill(tmp_path):
                              "-TargetDir", str(target)], capture_output=True, text=True)
     assert result.returncode != 0
     assert not target.exists()
+
+
+def assert_portable_links(target):
+    import re
+
+    for document in target.rglob("*.md"):
+        for relative in re.findall(r'\[[^\]]*\]\(([^)#\s]+)(?:#[^)]*)?\)', document.read_text()):
+            if (re.match(r'^[a-zA-Z][a-zA-Z0-9+.-]*:|[{}*]', relative)
+                    or ("/" not in relative and "." not in relative)):
+                continue
+            resolved = (document.parent / relative).resolve()
+            assert resolved.is_relative_to(target.resolve()), f"unportable: {document} -> {relative}"
+            assert resolved.exists(), f"missing: {document} -> {relative}"
+
+
+def test_portable_copy_delivers_all_eight_skills_and_runs_converters(tmp_path):
+    from docx import Document
+
+    target = tmp_path / "host" / "portable skills"
+    for source in ROOT.glob("plugins/*/skills/*/SKILL.md"):
+        shutil.copytree(source.parent, target / source.parent.name)
+    assert len(list(target.glob("*/SKILL.md"))) == 8
+    assert_portable_links(target)
+    document = Document()
+    document.add_heading("支付", 1)
+    document.add_paragraph("金额270元")
+    docx = tmp_path / "payment.docx"
+    document.save(docx)
+    import sys
+
+    subprocess.run([sys.executable, str(target / "test-case-engineer/scripts/convert_docs.py"),
+                    str(docx)], cwd=tmp_path, check=True, capture_output=True, text=True)
+    assert "金额270元" in docx.with_suffix(".md").read_text()
+    markdown = tmp_path / "article.md"
+    markdown.write_text("# 支付教程\n订单42金额270元。\n")
+    result = subprocess.run([sys.executable, str(target / "wechat-formatter/scripts/md2wechat.py"),
+                             str(markdown), str(target / "wechat-formatter/styles/tech-blog.md")],
+                             cwd=tmp_path, capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+    html = (tmp_path / "article_wechat.html").read_text()
+    assert "270元" in html and "42" in html
+
+
+@pytest.mark.parametrize("document_name", ["README.md", "knowledge/runtime.md"])
+def test_installer_rejects_broken_portable_references_without_replacing_old_skills(tmp_path, document_name):
+    executable = powershell()
+    source = tmp_path / "source"
+    shutil.copytree(ROOT / "plugins/testing/skills", source / "plugins/testing/skills")
+    (source / "scripts").mkdir()
+    installer = source / "scripts/install-testing-bundle.ps1"
+    shutil.copyfile(ROOT / "scripts/install-testing-bundle.ps1", installer)
+    document = source / "plugins/testing/skills/test-case-engineer" / document_name
+    document.write_text("[required](../../missing-runtime/contract.md)")
+    target = tmp_path / "installed"
+    existing = target / "test-case-engineer/SKILL.md"
+    existing.parent.mkdir(parents=True)
+    existing.write_text("user's existing version")
+    result = subprocess.run([executable, "-NoLogo", "-NoProfile", "-File", str(installer),
+                             "-TargetDir", str(target)], capture_output=True, text=True)
+    assert result.returncode != 0
+    assert existing.read_text() == "user's existing version"
+    assert list(target.iterdir()) == [existing.parent]

@@ -54,6 +54,7 @@
 - **类型**: functional
 - **需求追溯**: Story-42 / TP-03
 - **来源**: ai-generated
+- **人工审核状态**: not-reviewed
 - **业务背景**: 以「验证」开头，一句话描述条件、对象、动作和结果方向
 
 **前置条件**:
@@ -131,7 +132,8 @@
 | **优先级** | 是 | P0/P1/P2/P3，定义与比例见 [test-standards.md](test-standards.md) |
 | **类型** | 是 | functional / ui / security / performance / compatibility / usability / accessibility / observability；描述「主要验证目标」而非技术实现 |
 | **需求追溯** | 否 | 需求 ID（Story ID）、测试点编号（TP 编号）、接口契约、设计稿或已关联缺陷 |
-| **来源** | 否 | 用例来源：ai-generated / manual / ai-reviewed |
+| **来源** | 否 | 用例来源：ai-generated / manual；历史 ai-reviewed 保留但不作为人工审核证明 |
+| **人工审核状态** | 否 | not-reviewed / reviewed，独立于来源；reviewed 需记录真实审核依据，AI 自检不等于人工审核 |
 | **业务背景** | 否 | 以「验证」开头描述条件、对象、动作和结果方向；不复述步骤 |
 | **前置条件** | 否 | 陈述句列表，覆盖角色/权限、页面或调用条件、数据状态；不写「已准备相关数据」「账号正常」「环境正常」 |
 | **测试步骤** | 是 | 按业务操作组织的有序步骤，不要求每步独立断言 |

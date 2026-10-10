@@ -1,6 +1,6 @@
 ---
 name: bug-analyzer
-version: 1.2.1
+version: 1.2.2
 description: >-
   Use when analyzing bug root causes, reproducing defects, or designing defensive test cases.
   Triggers on: Bug分析、根因、缺陷定位、复现、5 Whys、鱼骨图、NullPointerException、500错误、测试环境与预发不一致.
@@ -195,9 +195,9 @@ keywords:
 
 **步骤 5 完成**：交付报告和防御性测试点。
 
-#### 🔴 CHECKPOINT · 报告确认
+#### 🔴 CHECKPOINT · 报告披露
 
-报告输出后暂停，展示：根因分析结论、验证状态（已验证/候选原因/未验证事项）、防御性测试点清单、转交建议。等待用户确认后再进入后续动作（如转交 test-case-engineer 生成用例）。已授权的后续工作继续执行。
+报告输出后展示根因分析结论、验证状态、防御性测试点和转交依据。已有授权覆盖根因分析与完整用例时连续转交，不重复确认；用户要求逐阶段审阅、缺关键资料、改变范围或需要未授权写操作时才暂停。仅要求根因或测试点时不扩展为完整用例。
 
 ---
 

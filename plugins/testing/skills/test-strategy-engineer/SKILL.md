@@ -1,6 +1,6 @@
 ---
 name: test-strategy-engineer
-version: 1.0.2
+version: 1.2.1
 description: >-
   Use when designing project-level test strategies, risk matrices, test pyramid layering, or entry/exit criteria.
   Triggers on: 测试策略、测试计划、测试分层、风险矩阵、准入准出、测试范围与优先级、测试金字塔.
@@ -110,6 +110,8 @@ keywords:
 3. **阶段 5 仅在用户明确要求时执行，否则跳过** — 禁止默认生成资源/进度附录
 4. **风险评估标注依据** — 资料足够时按 5 维标准量化；缺少资料的维度标未评估，不填造分数
 5. **分层比例必须按项目类型选择，禁止照搬默认值** — 参照 [knowledge/test-pyramid.md](knowledge/test-pyramid.md) 决策表
+6. **发布阻断独立于风险总分** — 已确认未授权资金操作、重复扣款等阻断项不能被低分抵消；历史已修复P0只作风险依据，当前是否阻断看状态与回归证据
+7. **投入按风险、覆盖缺口和验证成本解释** — 不设高中低固定配额，全部高风险也合法；仅用户要求时估算工时，披露基线并保证总额不超预算
 
 ---
 

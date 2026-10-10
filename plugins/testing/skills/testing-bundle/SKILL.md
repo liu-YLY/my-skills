@@ -1,6 +1,6 @@
 ---
 name: testing-bundle
-version: 3.2.1
+version: 3.2.2
 description: >-
   Use when user has mixed, ambiguous, or explicitly routing-required testing requests —
   e.g. "analyze bug AND generate test cases", "design strategy AND generate layered cases",
@@ -68,7 +68,7 @@ keywords:
 | 2 | 制定测试策略并生成分层用例 | test-strategy-engineer → test-case-engineer | 测试策略 + 用例生成 |
 | 3 | 做性能测试并分析瓶颈 | performance-test-engineer（内部完成） | 性能测试 + 瓶颈定位 |
 | 4 | 性能问题定位到代码缺陷 | performance-test-engineer → bug-analyzer | 性能瓶颈 + 代码缺陷信号 |
-| 5 | 状态机建模 + 用例生成 | state-machine-test-engineer → test-case-engineer | 状态机 + 用例生成 |
+| 5 | 状态机建模 + 用例生成 | state-machine-test-engineer → test-case-engineer | 状态机 + 明确要求完整用例或步骤级落地；仅场景/测试点不触发 |
 | 6 | 评审 → 覆盖缺口验证 | test-case-engineer → change-impact-analyzer | 用例评审 + 覆盖缺口/diff 分析 |
 | 7 | 评审 → 风险用例根因反推 | test-case-engineer → bug-analyzer | 用例评审 + 根因反推 |
 
@@ -85,7 +85,7 @@ keywords:
 - [state-machine-test-engineer](../state-machine-test-engineer/SKILL.md)：状态建模与场景穷举；state-machine-testing MCP v0.4.6 为可选增强。
 - [change-impact-analyzer](../change-impact-analyzer/SKILL.md)：代码变更 × 用例的影响与覆盖缺口。
 
-安装方式、依赖关系和 MCP 配置属于部署文档，见 [../../README.md](../../README.md)，不参与运行时路由判断。
+安装方式、依赖关系和 MCP 配置属于部署文档，见 [../../README.md](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/README.md)，不参与运行时路由判断。复制安装只交付 Skill 资源，不安装 MCP 服务；缺 MCP 时由专业 Skill 进入独立模式并如实标记。
 
 ## 失败模式与 Fallback
 
@@ -127,7 +127,7 @@ keywords:
 | 2 | 在 bundle 层重复实现子 skill 的能力 | 破坏职责边界，导致内容冗余和维护成本翻倍 | bundle 只做路由，具体能力由子 skill 承载 |
 | 3 | 路由后不传递上下文 | 用户需重新描述需求，体验差且信息丢失 | 路由时显式传递：原始请求 + 已收集上下文 + 已完成步骤摘要 |
 | 4 | 混合意图不按"先上游后下游"顺序 | 跳过上游直接下游，下游缺乏上游输入，输出缺乏针对性 | strategy → case-engineer；performance → bug-analyzer（当瓶颈定位到代码缺陷时） |
-| 5 | 混合意图协同无用户确认点 | 用户无法终止流程或修改中间产物 | 报告转交依据；既有授权覆盖的只读分析连续执行，仅缺关键信息、范围变化或未授权写操作时询问 |
+| 5 | 已授权协同仍默认逐段暂停 | 重复确认阻断完整交付 | 报告转交依据；既有授权覆盖的只读分析连续执行，仅缺关键信息、范围变化或未授权写操作时询问 |
 
 > 路由方向性反例（"性能 Bug 路由到 bug-analyzer""项目级策略路由到 case-engineer"等）已编码在失败模式表第 7/8 行，此处不重复。
 

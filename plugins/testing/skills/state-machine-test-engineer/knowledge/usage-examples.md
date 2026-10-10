@@ -7,20 +7,20 @@
 ### 示例 1：订单退款状态机建模（文章案例）
 
 ```
-用户：订单退款流程要做测试，订单状态包括待支付/已支付/已取消/退款中/退款成功/退款失败
+用户：订单退款流程要做测试，状态包括待支付/已支付/已取消/退款中/退款成功/退款失败；PRD明确已取消不能支付，退款成功是终态，支付成功回调后到已支付；其余规则未提供
 
 state-machine-test-engineer:
-  → 阶段 1：识别业务对象 Order，识别参与者（用户/支付渠道/管理员/定时器）
+  → 阶段 1：识别业务对象 Order，识别已知参与者；管理员与定时器未提供，列待确认
   → 阶段 2：构建 6 状态状态机
     - 状态：待支付/已支付/已取消/退款中/退款成功/退款失败
-    - 转换：待支付→已支付（支付成功回调）/待支付→已取消（用户取消/超时关闭）等
+    - 转换：待支付→已支付（支付成功回调）；取消/超时规则未提供，单列候选
     - 禁止：已取消→已支付（已取消订单不可支付）、退款成功→任何状态（终态吸收）
-  → 🔴 CHECKPOINT 展示状态机模型给用户确认
+  → 🔴 CHECKPOINT 披露模型与未决事项；已有依据且无阻塞时继续
   → 阶段 3：完整性检查（标注"退款失败后恢复路径 PRD 未说明"为缺口）
-  → 阶段 4：10 类场景穷举，每场景标注依据类型
+  → 阶段 4：记录十类适用性，仅适用类生成场景，未知项列缺口
     - 已取消订单尝试支付 → illegal_transition（依据：需求明确）
-    - 支付回调重复到达 → idempotency（依据：合理推理）
-    - 取消与支付并发 → concurrency（依据：合理推理）
+    - 支付回调重复到达 → idempotency（依据：待确认，重复能力及处理规则未提供）
+    - 取消与支付并发 → concurrency（依据：待确认，竞争能力及目标规则未提供）
     - 退款失败后状态恢复 → failure_recovery（依据：待确认，PRD 未说明）
   → 输出：状态机模型 + 场景清单（含依据类型标注）
 ```
@@ -49,9 +49,9 @@ state-machine-test-engineer:
 
 testing-bundle → state-machine-test-engineer:
   → 执行五阶段，输出状态机模型 + 场景清单
-  → 🔴 CHECKPOINT 用户确认状态机模型与场景清单
+  → 🔴 CHECKPOINT 披露模型、场景与转交依据；在完整用例授权内继续
 
-用户确认后 → testing-bundle → test-case-engineer:
+已有授权内 → testing-bundle → test-case-engineer:
   → 基于场景清单生成完整用例（每场景落实为可执行步骤）
   → 输出：状态机模型 + 场景清单 + 完整测试用例
 ```
@@ -59,8 +59,8 @@ testing-bundle → state-machine-test-engineer:
 ## 快速上手
 
 1. 确认已安装本 skill（独立可用，无需 MCP）
-2. （可选增强）配套 MCP Server v0.3.0 协议层（stdio + HTTP）已端到端联调验证，按 [integrations/quickstart.md](../integrations/quickstart.md) 配置后进入增强模式；未配置时以独立模式运行
+2. （可选增强）先检查当前宿主工具与参数 Schema 兼容性，按 [integrations/quickstart.md](../integrations/quickstart.md) 配置后进入增强模式；未配置时以独立模式运行
 3. 通过 testing-bundle 路由，或直接调用本 skill
 4. 提供状态型需求（含业务对象、状态名、状态转换描述）
-5. 五阶段流程自动执行，CHECKPOINT 处确认状态机模型
+5. 五阶段流程连续执行，CHECKPOINT 披露模型；仅逐阶段审阅、关键资料缺失或范围变化时暂停
 6. 输出场景清单，可手动转交 test-case-engineer 或通过链 5 自动协同
