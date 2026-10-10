@@ -19,6 +19,7 @@ from html import escape
 import re
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import markdown
 import nh3
@@ -274,8 +275,140 @@ def module_labeled(name: str, body: str) -> str:
     return result
 
 
+IMAGE_MODULES = {
+    'author-card': 'name title bio avatar wechat',
+    'brand-banner': 'logo name slogan',
+    'image-compare': 'eyebrow title left_title left_image right_title right_image',
+    'image-text': 'layout eyebrow title body image alt',
+}
+
+
+def module_image(url: str, alt: str = '', cls: str = '') -> str:
+    parsed = urlsplit(url)
+    if parsed.scheme.lower() not in {'http', 'https'} or not parsed.hostname:
+        raise ValueError('image URL must be HTTP(S)')
+    return f'<img src="{escape(url, quote=True)}" alt="{escape(alt, quote=True)}" class="{cls}">'
+
+
+def module_images(name: str, body: str) -> tuple[str, str]:
+    fields = module_fields(body, set(IMAGE_MODULES[name].split()))
+    if name in {'author-card', 'brand-banner'}:
+        author = name == 'author-card'
+        image_key, image_cls = ('avatar', 'avatar') if author else ('logo', 'logo')
+        content = module_image(fields[image_key], fields.get('name', ''), image_cls) if image_key in fields else ''
+        prefix = 'author-' if author else 'brand-'
+        order = ('name', 'title', 'bio', 'wechat') if author else ('name', 'slogan')
+        content += module_node(prefix + 'info', inner=''.join(module_node(prefix + key, fields[key])
+                                                             for key in order if key in fields))
+        return content, ''
+    heading = ''.join(module_node(key, fields[key]) for key in ('eyebrow', 'title') if key in fields)
+    if name == 'image-compare':
+        sides = ''
+        for side in ('left', 'right'):
+            sides += module_node('compare-side', inner=module_node('compare-side-title', fields.get(side + '_title', ''))
+                                 + module_image(fields.get(side + '_image', ''), fields.get(side + '_title', '')))
+        return heading + module_node('compare-container', inner=sides), ''
+    layout = fields.get('layout', 'left')
+    if layout not in {'left', 'right'}:
+        raise ValueError('invalid image layout')
+    content = module_node('image-text-content', inner=heading + module_node('body', fields.get('body', '')))
+    image = module_node('image-container', inner=module_image(fields.get('image', ''), fields.get('alt', '')))
+    return (content + image if layout == 'right' else image + content), ' layout-' + layout
+
+
+def module_params(raw: str, allowed: dict[str, set[str]]) -> dict[str, str]:
+    result = {}
+    for token in raw.split():
+        key, separator, value = token.partition('=')
+        if not separator or key not in allowed or value not in allowed[key] or key in result:
+            raise ValueError('unsupported or duplicate module parameter')
+        result[key] = value
+    return result
+
+
+def module_annotate(body: str) -> str:
+    fields = module_fields(body, {'eyebrow', 'title', 'image', 'alt', 'point'}, {'point'})
+    points = fields.get('point', [])
+    if not 1 <= len(points) <= 3:
+        raise ValueError('annotation needs 1..3 points')
+    content = ''.join(module_node(key, fields[key]) for key in ('eyebrow', 'title') if key in fields)
+    content += module_node('image-container', inner=module_image(fields.get('image', ''), fields.get('alt', '')))
+    rendered = ''
+    for point in points:
+        values = [item.strip() for item in point.split('|')]
+        if len(values) not in {2, 3}:
+            raise ValueError('invalid annotation point')
+        rendered += module_node('point', inner=module_node('point-number', values[0])
+                                + module_node('point-content', inner=module_node('point-title', values[1])
+                                              + module_node('point-desc', values[2] if len(values) == 3 else '')))
+    return content + module_node('points', inner=rendered)
+
+
+def module_image_steps(body: str, params: str) -> tuple[str, str]:
+    attributes = module_params(params, {'columns': {'2', '3', '4'}, 'caption_style': {'numbered'}})
+    groups = []
+    for line in body.strip().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith('step:'):
+            groups.append({'step': line.split(':', 1)[1].strip()})
+        elif not groups:
+            raise ValueError('image step must start with step')
+        elif line.startswith('!['):
+            image = re.fullmatch(r'!\[([^\]]*)\]\(([^\s]+)(?:\s+"[^" ]*")?\)', line)
+            if not image or 'image' in groups[-1]:
+                raise ValueError('invalid or duplicate step image')
+            groups[-1]['image'] = module_image(image[2], image[1])
+        else:
+            fields = module_fields(line, {'desc', 'note'})
+            if set(fields) & set(groups[-1]):
+                raise ValueError('duplicate step field')
+            groups[-1].update(fields)
+    if not groups or any(not group['step'] for group in groups):
+        raise ValueError('missing step title')
+    content = ''
+    for index, group in enumerate(groups, 1):
+        number = f'{index:02d} ' if attributes.get('caption_style') == 'numbered' else ''
+        cells = module_node('step-name', number + group['step'])
+        if 'image' in group:
+            cells += module_node('step-image', inner=group['image'])
+        cells += ''.join(module_node('step-' + key, group[key]) for key in ('desc', 'note') if key in group)
+        content += module_node('step', inner=cells)
+    suffix = ' columns-' + attributes['columns'] if 'columns' in attributes else ''
+    suffix += ' caption-numbered' if 'caption_style' in attributes else ''
+    return content, suffix
+
+
+def module_sections(name: str, body: str, params: str) -> tuple[str, str]:
+    attributes = module_params(params, {'columns': {'2', '3', '4'}} if name == 'columns' else {})
+    if re.search(r'^:::', body, re.MULTILINE):
+        raise ValueError('nested modules are unsupported')
+    sections = re.split(r'^---\s*$', body.strip(), flags=re.MULTILINE)
+    count = int(attributes.get('columns', '2'))
+    if len(sections) != count or any(not section.strip() for section in sections):
+        raise ValueError('section count does not match layout')
+    content = ''
+    for index, section in enumerate(sections):
+        cls = 'column' if name == 'columns' else ('split-left' if index == 0 else 'split-right')
+        html = sanitize_content(markdown.markdown(section.strip(), extensions=['fenced_code', 'tables']))
+        content += module_node(cls, inner=html)
+    return content, ' columns-' + str(count) if name == 'columns' else ''
+
+
 def render_module_block(name: str, title: str | None, body: str, params: str = '') -> str:
     try:
+        if name in {'split', 'columns'}:
+            content, suffix = module_sections(name, body, params)
+            return module_wrap(name, title, content, suffix)
+        if name == 'image-annotate' and not params:
+            return module_wrap(name, title, module_annotate(body))
+        if name == 'image-steps':
+            content, suffix = module_image_steps(body, params)
+            return module_wrap(name, title, content, suffix)
+        if name in IMAGE_MODULES and not params:
+            content, suffix = module_images(name, body)
+            return module_wrap(name, title, content, suffix)
         if name in LABELED_MODULES and not params:
             return module_wrap(name, title, module_labeled(name, body))
         if name in ROW_MODULES and not params:

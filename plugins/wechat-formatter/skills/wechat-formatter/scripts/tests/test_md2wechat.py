@@ -624,3 +624,102 @@ def test_labeled_rows_emit_real_labels(name, body, selector, text):
 def test_labeled_invalid_rows_are_reported(name, body, capsys):
     out = md2wechat.render_module_block(name, None, body)
     assert 'warning' in capsys.readouterr().err and '<pre>' in out
+
+
+
+@pytest.mark.parametrize('name,body,images,selector', [
+    ('image-compare', 'title: 对比\nleft_title: 之前\nleft_image: https://example.com/a.png\nright_title: 之后\nright_image: https://example.com/b.png', 2, '.compare-side-title'),
+    ('image-text', 'layout: right\ntitle: 图文\nbody: 说明\nimage: https://example.com/a.png\nalt: 示例', 1, '.layout-right .image-text-content'),
+])
+def test_image_fields_produce_safe_semantic_img(name, body, images, selector):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.sanitize_content(md2wechat.render_module_block(name, None, body)), 'html.parser')
+    assert len(soup.select('img')) == images
+    assert soup.select_one(selector) is not None
+    assert all(img['src'].startswith('https://') for img in soup.select('img'))
+    if name == 'image-text':
+        assert soup.select_one('img')['alt'] == '示例'
+        assert soup.select_one('.module-body').contents[0].get('class') == ['image-text-content']
+
+@pytest.mark.parametrize('url', ['javascript:alert(1)', 'data:text/html,x', 'mailto:user@example.com', 'https://'])
+def test_module_image_urls_reject_active_or_invalid_sources(url, capsys):
+    from bs4 import BeautifulSoup
+    out = md2wechat.sanitize_content(md2wechat.render_module_block('image-text', None, 'image: ' + url))
+    assert 'warning' in capsys.readouterr().err
+    assert not BeautifulSoup(out, 'html.parser').select('img, script')
+
+
+
+def test_repeated_annotate_points_and_step_images_are_ordered():
+    from bs4 import BeautifulSoup
+    annotate = 'title: 解读\nimage: https://example.com/a.png\npoint: 01 | 标题 | 描述\npoint: 02 | 次项'
+    soup = BeautifulSoup(md2wechat.render_module_block('image-annotate', None, annotate), 'html.parser')
+    assert [n.get_text() for n in soup.select('.point-number')] == ['01', '02']
+    assert soup.select_one('.point-desc').get_text() == '描述'
+    steps = 'step: 打开\n![截图](https://example.com/a.png)\ndesc: 选择\nnote: 提示\nstep: 复制\n![完成](https://example.com/b.png)\ndesc: 完成'
+    soup = BeautifulSoup(md2wechat.render_modules(':::image-steps{columns=2 caption_style=numbered}\n' + steps + '\n:::\n'), 'html.parser')
+    assert len(soup.select('.image-steps.columns-2.caption-numbered .step')) == 2
+    assert [n.get_text() for n in soup.select('.step-name')] == ['01 打开', '02 复制']
+    assert [n['alt'] for n in soup.select('.step-image img')] == ['截图', '完成']
+    assert soup.select_one('.step-note').get_text() == '提示'
+
+@pytest.mark.parametrize('params,body', [
+    ('columns=99', 'step: 开始\ndesc: 描述'),
+    ('caption_style=evil', 'step: 开始\ndesc: 描述'),
+    ('columns=2 columns=3', 'step: 开始\ndesc: 描述'),
+    ('', '![截图](https://example.com/a.png)\nstep: 开始'),
+    ('', 'step: 开始\n![截图](javascript:alert(1))'),
+    ('', 'step: 开始\n<img src="https://example.com/a.png" onerror="alert(1)">'),
+])
+def test_invalid_image_step_groups_and_parameters_warn(params, body, capsys):
+    from bs4 import BeautifulSoup
+    out = md2wechat.render_modules(':::image-steps{' + params + '}\n' + body + '\n:::\n')
+    assert 'warning' in capsys.readouterr().err
+    assert not BeautifulSoup(out, 'html.parser').select('img, script')
+
+
+
+@pytest.mark.parametrize('name,body,selector,alt', [
+    ('author-card', 'name: 作者\ntitle: 编辑\nbio: 写作\navatar: https://example.com/a.png\nwechat: wx', '.avatar', '作者'),
+    ('brand-banner', 'name: 品牌\nslogan: 易读\nlogo: https://example.com/a.png', '.logo', '品牌'),
+])
+def test_brand_images_and_semantic_identity(name, body, selector, alt):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.sanitize_content(md2wechat.render_module_block(name, None, body)), 'html.parser')
+    assert soup.select_one(selector)['alt'] == alt
+    assert soup.select_one('.author-name' if name == 'author-card' else '.brand-name').get_text() == alt
+    assert 'name:' not in soup.get_text()
+
+def test_author_without_optional_avatar_is_supported():
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.render_module_block('author-card', None, 'name: 作者\nbio: 写作'), 'html.parser')
+    assert not soup.select('img')
+    assert soup.select_one('.author-bio').get_text() == '写作'
+
+
+
+@pytest.mark.parametrize('name,params,body,selector,count', [
+    ('split', '', '**左侧**\n---\n右侧', '.split-left strong', 2),
+    ('columns', 'columns=3', '一\n---\n二\n---\n三', '.columns-3 .column', 3),
+])
+def test_free_layout_has_decisive_structure_and_markdown(name, params, body, selector, count):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(md2wechat.render_modules(':::' + name + '{' + params + '}\n' + body + '\n:::'), 'html.parser')
+    assert soup.select_one(selector) is not None
+    assert len(soup.select('.split-left, .split-right, .column')) == count
+    assert '---' not in soup.get_text()
+
+@pytest.mark.parametrize('name,params,body', [('columns', 'columns=9', '一\n---\n二'),
+    ('columns', 'columns=3', '一\n---\n二'), ('split', '', '只有一段'),
+    ('split', '', '一\n:::hero\ntitle: 嵌套\n---\n二')])
+def test_invalid_sections_warn(name, params, body, capsys):
+    out = md2wechat.render_module_block(name, None, body, params)
+    assert 'warning' in capsys.readouterr().err and '<pre>' in out
+
+def test_section_raw_html_is_inert():
+    from bs4 import BeautifulSoup
+    body = '<script>alert(1)</script><img src="javascript:x" onerror="alert(1)">\n---\n右侧'
+    soup = BeautifulSoup(md2wechat.render_module_block('split', None, body), 'html.parser')
+    assert not soup.select('script, iframe')
+    assert all(not key.startswith('on') for img in soup.select('img') for key in img.attrs)
+    assert all('src' not in img.attrs for img in soup.select('img'))
