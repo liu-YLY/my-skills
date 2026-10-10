@@ -129,6 +129,31 @@ async def test_http_transport_tool_list() -> None:
                 await session.initialize()
                 tools = await session.list_tools()
                 assert {t.name for t in tools.tools} == EXPECTED_TOOLS
+                result = await session.call_tool("validate_state_machine", {
+                    "state_machine": _load_fixture("order_refund_state_machine"), "strict": False})
+                assert not result.isError
+                assert json.loads(result.content[0].text)["overall_status"] in {"pass", "warn"}
     finally:
         proc.terminate()
         proc.wait(timeout=10)
+
+
+
+async def test_capability_probe_accepts_business_failure_and_preserves_parameter_errors():
+    from state_machine_testing_mcp.capabilities import classify_probe
+    async with stdio_client(_server_params()) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            names = [t.name for t in (await session.list_tools()).tools]
+            assert classify_probe(names) == "available"
+            assert classify_probe(names, disabled=True) == "disabled"
+            model = {"meta": {"object": "probe"}, "states": [], "transitions": []}
+            result = await session.call_tool("validate_state_machine", {"state_machine": model})
+            assert not result.isError
+            report = json.loads(result.content[0].text)
+            assert report["overall_status"] == "fail"
+            assert classify_probe(names, validation_report=report) == "available"
+            invalid = await session.call_tool("validate_state_machine", {"state_machine": {"meta": {}}})
+            assert invalid.isError
+            assert classify_probe(names, parameter_error=invalid.isError) == "parameter_error"
+            assert classify_probe([], transport_error="connection_refused") == "connection_failed"

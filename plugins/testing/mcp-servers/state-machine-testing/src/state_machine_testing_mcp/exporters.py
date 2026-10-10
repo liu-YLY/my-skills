@@ -64,6 +64,12 @@ def export_to_markdown(sm: StateMachine, scenarios: ScenarioList | None = None) 
                 f"{s.expected_target_state} | {s.risk_type} | {s.evidence_type.value} |"
             )
 
+    if scenarios and scenarios.scenario_applicability:
+        lines.extend(["", "## 场景适用性", "", "| 类型 | 状态 | 依据 | 缺失信息 |", "|---|---|---|---|"])
+        for risk, item in scenarios.scenario_applicability.items():
+            lines.append(f"| {risk} | {item.status} | {item.reason} ({item.source}) | "
+                         f"{'; '.join(item.missing_information)} |")
+
     return "\n".join(lines)
 
 
