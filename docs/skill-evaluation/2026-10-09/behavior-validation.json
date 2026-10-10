@@ -1,0 +1,271 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "candidate_acceptance_gate": "passed",
+  "source_commit": "8e55998ab7622c9bd3e3f95a6e8ef931f0359a6f",
+  "baseline_commit": "a3dad4e7b3e318e652f7b37aeb5e1e096608b211",
+  "frozen_suite_sha256": "8e1dc2c5db0d1c2f07cad1b288a0589c06b1f58f2f3cc15d7042b99fac809993",
+  "executor": {
+    "model": "gpt-6.1-sol",
+    "effort": "high"
+  },
+  "independent_grader": {
+    "model": "gpt-6-astra",
+    "effort": "high",
+    "formal_protocol_revision": 2
+  },
+  "actual_collection": {
+    "task_cases": 32,
+    "task_variants": [
+      "old",
+      "new",
+      "no_skill"
+    ],
+    "task_repeats": 3,
+    "task_records": 288,
+    "trigger_cases": 41,
+    "trigger_repeats": 1,
+    "trigger_records": 123,
+    "expected_records": 411,
+    "validated_records": 411,
+    "required_valid_paired_judge_calls": 96,
+    "required_valid_pointwise_judge_calls": 32,
+    "quote_validation_retries": 2,
+    "missing": [],
+    "artifact_or_decision_gaps": [],
+    "invalid_or_partial_required_judges": []
+  },
+  "metrics": {
+    "new": {
+      "runs": 137,
+      "expected_runs": 137,
+      "repetitions_per_case": null,
+      "repetitions_per_kind": {
+        "task": 3,
+        "trigger": 1
+      },
+      "completed_runs": 137,
+      "run_completion_rate": 1.0,
+      "missing_runs": [],
+      "unpaired_runs": [],
+      "unexpected_runs": [],
+      "invalid_runs": [],
+      "expected_cases": 73,
+      "completed_cases": 73,
+      "completion_rate": 1.0,
+      "missing_cases": [],
+      "task_runs": 96,
+      "checks_passed": 288,
+      "checks_total": 288,
+      "trigger_runs": 41,
+      "trigger_confusion": {
+        "true_positive": 21,
+        "false_positive": 0,
+        "true_negative": 20,
+        "false_negative": 0
+      },
+      "trigger_precision": 1.0,
+      "trigger_recall": 1.0,
+      "mean_duration_seconds": 45.5058540449854,
+      "mean_output_characters": 888.4744525547445
+    },
+    "no_skill": {
+      "runs": 137,
+      "expected_runs": 137,
+      "repetitions_per_case": null,
+      "repetitions_per_kind": {
+        "task": 3,
+        "trigger": 1
+      },
+      "completed_runs": 137,
+      "run_completion_rate": 1.0,
+      "missing_runs": [],
+      "unpaired_runs": [],
+      "unexpected_runs": [],
+      "invalid_runs": [],
+      "expected_cases": 73,
+      "completed_cases": 73,
+      "completion_rate": 1.0,
+      "missing_cases": [],
+      "task_runs": 96,
+      "checks_passed": 275,
+      "checks_total": 288,
+      "trigger_runs": 41,
+      "trigger_confusion": {
+        "true_positive": 21,
+        "false_positive": 0,
+        "true_negative": 20,
+        "false_negative": 0
+      },
+      "trigger_precision": 1.0,
+      "trigger_recall": 1.0,
+      "mean_duration_seconds": 29.67172896651095,
+      "mean_output_characters": 500.021897810219
+    },
+    "old": {
+      "runs": 137,
+      "expected_runs": 137,
+      "repetitions_per_case": null,
+      "repetitions_per_kind": {
+        "task": 3,
+        "trigger": 1
+      },
+      "completed_runs": 137,
+      "run_completion_rate": 1.0,
+      "missing_runs": [],
+      "unpaired_runs": [],
+      "unexpected_runs": [],
+      "invalid_runs": [],
+      "expected_cases": 73,
+      "completed_cases": 73,
+      "completion_rate": 1.0,
+      "missing_cases": [],
+      "task_runs": 96,
+      "checks_passed": 286,
+      "checks_total": 288,
+      "trigger_runs": 41,
+      "trigger_confusion": {
+        "true_positive": 21,
+        "false_positive": 1,
+        "true_negative": 19,
+        "false_negative": 0
+      },
+      "trigger_precision": 0.9545454545454546,
+      "trigger_recall": 1.0,
+      "mean_duration_seconds": 44.7841791110292,
+      "mean_output_characters": 848.956204379562
+    }
+  },
+  "gate_by_variant": {
+    "old": "failed",
+    "new": "passed",
+    "no_skill": "failed"
+  },
+  "agent_evidence_review": {
+    "decisions": 12,
+    "reviewer_type": "agent",
+    "human_reviewed": false,
+    "file": "final-agent-adjudications.json",
+    "sha256": "3d8f46bd1c7e82554c880126f2d41524bf865a8a6e5339c1fe7bd4ffc0e00167",
+    "details": [
+      "Old bundle normal: three evidence-link checks confirmed from original outputs; three uncontracted direct-retry success assertions retained as wrong acceptance.",
+      "Change-impact insufficient information: six original unauthorized-execution flags cleared only after independent primary-prompt/invocation/trace review established that exactly the authorized Skill entry was read. No business file or external action was observed.",
+      "Original votes, literal quotes, raw hard flags, superseded attempts and complete adjudication evidence retained; no majority vote substitutes for this evidence review."
+    ]
+  },
+  "paired_quality": {
+    "votes": {
+      "tie": 269,
+      "better": 15,
+      "worse": 4
+    },
+    "statistically_significant_improvement_claimed": false,
+    "general_quality_regressions": [
+      {
+        "case": "test-strategy-engineer-collaboration_or_degradation",
+        "run": 2,
+        "judge": 1,
+        "reason": "两侧均满足冻结检查且无硬否决。B进一步把已确认规则展开为独立夹具、具体请求操作和预期结果，并覆盖无UI时的真实入口401验证，本次用例成果更易落地。A明确交接包，但将详细步骤整体留待下游，实际完成度略低；差异不是篇幅或标题数量。",
+        "regression_risk": {
+          "scenario": "潜在假设：A、B用户的并发请求因共享身份上下文发生串单，但串行交替请求始终正常。",
+          "why_worse": "B的A07仅安排同一客户端交替和重复请求，未明确并发隔离；A的A-05明确包含并发查询。直接照B清单执行可能漏掉此类竞态，这是潜在覆盖风险，未实测发生。",
+          "at_risk_side": "B"
+        }
+      },
+      {
+        "case": "test-strategy-engineer-collaboration_or_degradation",
+        "run": 2,
+        "judge": 2,
+        "reason": "两侧冻结检查均通过，且均无四类硬否决。B 在已授权的分层用例生成上多完成了独立数据夹具、具体前置操作和预期断言；A 明确停留在覆盖主题清单。优势来自当前可用成果的完成度，不来自篇幅或 Skill 边界遵循。",
+        "regression_risk": {
+          "scenario": "潜在、未实测：服务复用身份上下文，只有 A、B 请求并发交错时才发生串用户。",
+          "why_worse": "B 的 A07 只明确交替和重复请求，可能漏掉并发竞态；A 的 A-05 明确要求在共享缓存或身份上下文复用时验证并发查询。因此直接按 B 清单执行，在该路径上的保护可能较弱。",
+          "at_risk_side": "B"
+        }
+      },
+      {
+        "case": "test-strategy-engineer-collaboration_or_degradation",
+        "run": 3,
+        "judge": 1,
+        "reason": "两侧均满足冻结检查，明确区分设计与执行，无错误验收、伪造执行、越界安装或业务规则篡改。B提供具体多用户数据、请求操作和预期结果，已确认权限规则的用例更容易直接落地；A交付的是仍待展开的覆盖主题，真实完成度略低。",
+        "regression_risk": {
+          "scenario": "潜在假设：两个有效用户同时查询时共享上下文被覆盖，顺序执行A、B、A查询无法复现泄露。",
+          "why_worse": "B的A04只有顺序身份切换，没有明确并发场景；A的A-03明确要求多账号并发隔离。仅执行B草案可能漏掉并发串单。该风险来自清单差异，不是已观测到的执行退化。",
+          "at_risk_side": "B"
+        }
+      },
+      {
+        "case": "test-strategy-engineer-collaboration_or_degradation",
+        "run": 3,
+        "judge": 2,
+        "reason": "双方均满足冻结检查并准确区分设计与执行，无错误验收、伪造证据、越界执行或业务规则篡改。B 将已知权限规则展开为有数据、操作和预期的用例草案，更接近用户要求的本次直接交付；A 仍明确仅提供后续展开的覆盖清单。",
+        "regression_risk": {
+          "scenario": "潜在、未实测：两个登录用户同时查询，服务的请求身份在异步处理期间被另一请求覆盖。",
+          "why_worse": "B 的 A04 明列 A、B、A 顺序查询，没有并发操作，顺序执行可能无法触发该竞态；A 的 A-03 明列多账号并发隔离。因此 B 在该具体执行路径上可能漏检。",
+          "at_risk_side": "B"
+        }
+      }
+    ],
+    "disposition": "Four votes over two strategy degradation runs prefer Old for more concrete data/actions/assertions. New provides authorized strategy and reusable layered coverage, explicitly discloses absent downstream and unexpanded detailed cases, and passes the frozen contract. This granularity tradeoff is retained rather than hidden by aggregate scores. Future fallback improvement can add minimal concrete fixture/action/assertion within strategy scope; that improvement is not implemented or claimed here.",
+    "risk_review_downgrades": [
+      {
+        "case": "testing-bundle-normal",
+        "run": 1,
+        "judge": 3,
+        "effect": "better vote downgraded to tie; no unsupported improvement claim"
+      }
+    ]
+  },
+  "supplementary_v3_smoke": {
+    "source": "judge-v3-smoke-summary.json",
+    "sha256": "75c08b36c7c5a78da575d20ec6eb5f7d19536b7f22b6a3d247e4177d6ba55704",
+    "valid_actual_calls": 4,
+    "checks_passed": 63,
+    "checks_total": 63,
+    "hard_failure_hits": 0,
+    "scope": "Adds verified trusted execution setup to grader inputs; separate from formal v2 results and 128 required calls."
+  },
+  "archive_verification": {
+    "status": "passed",
+    "root": "/Users/lyle/.codex/artifacts/skill-repair-20261009",
+    "normalization_rerun_from_persistent_archive": true,
+    "official_aggregator_metrics_equal_temporary_results": true,
+    "new_snapshot_files_verified": 230,
+    "omitted_duplicate_files": "Per-attempt workspace copies omitted; frozen complete source snapshots and every receipt-hashed artifact retained.",
+    "reports": {
+      "normalized-final-cohort/normalization-report.json": "4a48a48a7144f55b3b431ad8bca7d8aeaa0599c2de368e6f0ab57b691934892a",
+      "normalized-final-cohort/disagreements-and-hard-gates.json": "9f5b42332dc9734e87a42eb8ccc9ab3602c5f86fdd0d45a4760fca2ce4b58c83",
+      "normalized-final-cohort/results.jsonl": "a7293acc6ee2b194f9123a1d652cf2b2d9b9c6380382a598682a209553ce8902",
+      "behavior-summary.json": "e042f9d8628d743d71f364cdd2d6ca74727561cb6b46a22d8989996050d800a4",
+      "normalized-final-cohort/evaluation-review.html": "76a944eaebcc5b723e27f9b1a3dcf598874c9ae9ffcb4faa7d94e97398db431b",
+      "normalize_evals.py": "61e8c41ff7370531a965e23dd1297ba0006b1306b8c68a7f9ac7ecc2cc45cee2",
+      "judge_evals_v2.py": "52452515536e60601a77d6b47b0d25c1c23d321cff78b66504ad32808d7adbc8",
+      "judge_evals_v3.py": "d00591ddf045c4f19ca3354c7aaf6629454a4cba794f15f5bb84eb83cc8608a6"
+    }
+  },
+  "browser_viewer": {
+    "actual_render_checked": true,
+    "entries": 411,
+    "width": 1440,
+    "horizontal_overflow": false,
+    "feedback_submitted": false
+  },
+  "deterministic_regression": {
+    "source": "final-regression.json",
+    "tests_passed": 405,
+    "state_machine": 114,
+    "review_checker": 104,
+    "wechat": 142,
+    "scripts": 45,
+    "local_project_checks": "passed",
+    "local_readonly_pre_commit_hooks": 6
+  },
+  "limits": [
+    "No-skill has no supplied/readable target Skill body, but host injected global Skill metadata; not a zero-metadata control.",
+    "Trigger results are controlled metadata classification, not native host triggering.",
+    "MCP transport behavior was verified separately; no real MCP services in model evaluation runtime.",
+    "Durations reflect shared load/cache and overlapping collection/grading; New mean duration is slightly longer, and no causal efficiency improvement is claimed.",
+    "No native Windows installation, real OS clipboard write, WeChat editor paste/publish, remote CI or other host end-to-end acceptance.",
+    "Local branch only; no push, PR, merge or release."
+  ]
+}
