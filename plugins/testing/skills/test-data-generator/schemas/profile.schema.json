@@ -70,7 +70,15 @@
         {"type": "object", "additionalProperties": false, "required": ["kind"], "properties": {"kind": {"enum": ["integer", "decimal"]}}},
         {"type": "object", "additionalProperties": false, "required": ["kind", "min_offset_seconds", "max_offset_seconds"], "properties": {"kind": {"const": "datetime_window"}, "min_offset_seconds": {"type": "integer"}, "max_offset_seconds": {"type": "integer"}}},
         {"type": "object", "additionalProperties": false, "required": ["kind", "field", "min_seconds", "max_seconds"], "properties": {"kind": {"const": "relative_datetime"}, "field": {"$ref": "#/$defs/id"}, "min_seconds": {"type": "integer"}, "max_seconds": {"type": "integer"}}},
-        {"type": "object", "additionalProperties": false, "required": ["kind", "relation"], "properties": {"kind": {"const": "reference"}, "relation": {"$ref": "#/$defs/id"}}}
+        {"type": "object", "additionalProperties": false, "required": ["kind", "relation"], "properties": {"kind": {"const": "reference"}, "relation": {"$ref": "#/$defs/id"}}},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "provider", "locale"], "properties": {
+          "kind": {"const": "faker"}, "provider": {"enum": ["name", "first_name", "last_name", "city", "street_address", "company", "email", "phone_number", "uuid4"]},
+          "locale": {"type": "string", "pattern": "^[a-z]{2,3}_[A-Z]{2}$"}
+        }},
+        {"type": "object", "additionalProperties": false, "required": ["kind", "point"], "properties": {
+          "kind": {"const": "boundary"}, "point": {"enum": ["min", "max", "min_length", "max_length", "empty", "null"]},
+          "fill": {"type": "string", "minLength": 1, "maxLength": 1}
+        }}
       ]
     },
     "field": {
@@ -119,7 +127,11 @@
     "mutation": {
       "oneOf": [
         {"type": "object", "additionalProperties": false, "required": ["op", "field", "value"], "properties": {"op": {"const": "set"}, "field": {"$ref": "#/$defs/id"}, "value": {"$ref": "#/$defs/scalar"}}},
-        {"type": "object", "additionalProperties": false, "required": ["op", "field"], "properties": {"op": {"const": "remove"}, "field": {"$ref": "#/$defs/id"}}}
+        {"type": "object", "additionalProperties": false, "required": ["op", "field"], "properties": {"op": {"const": "remove"}, "field": {"$ref": "#/$defs/id"}}},
+        {"type": "object", "additionalProperties": false, "required": ["op", "field", "point"], "properties": {
+          "op": {"const": "boundary"}, "field": {"$ref": "#/$defs/id"}, "point": {"enum": ["below_min", "above_max", "too_short", "too_long"]},
+          "fill": {"type": "string", "minLength": 1, "maxLength": 1}
+        }}
       ]
     },
     "negative": {

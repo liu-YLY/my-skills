@@ -4,7 +4,7 @@ from collections import Counter
 from decimal import Decimal, localcontext
 
 from .common import Budget, comparable, json_equal, timestamp, typed
-from .generators import schedule
+from .generators import boundary_value, schedule
 from .profile import inspect_profile
 
 
@@ -80,6 +80,8 @@ def scenario_matches(profile, scenario, row, fields, index):
         if name not in row:
             return False
         value, kind = row[name], generator["kind"]
+        if kind == "boundary" and not json_equal(value, boundary_value(fields[name], generator)):
+            return False
         if kind == "constant" and not json_equal(value, generator["value"]):
             return False
         if kind == "choice":

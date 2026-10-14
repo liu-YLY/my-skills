@@ -137,7 +137,7 @@ def test_portable_copy_delivers_data_engine_resources_and_runs_inspection(tmp_pa
     assert json.loads(result.stdout)["total_rows"] == 16
 
 
-@pytest.mark.parametrize("resource", ["scripts/engine/runner.py", "schemas/profile.schema.json", "scripts/requirements.txt"])
+@pytest.mark.parametrize("resource", ["scripts/engine/runner.py", "schemas/profile.schema.json", "scripts/requirements.txt", "scripts/requirements-faker.txt"])
 def test_installer_rejects_missing_data_runtime_before_replacing_existing_skill(tmp_path, resource):
     executable = powershell()
     source = tmp_path / "source"

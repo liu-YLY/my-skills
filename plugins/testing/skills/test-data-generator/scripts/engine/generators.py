@@ -1,16 +1,60 @@
 import re
 from datetime import timedelta
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, localcontext
+from functools import lru_cache
 from math import ceil, floor
 
 from .common import Budget, ProfileError, ResourceError, canonical, comparable, random_for, timestamp, typed
 from .profile import field_order
 
 
+@lru_cache(maxsize=16)
+def faker_instance(locale):
+    try:
+        from faker import Faker
+        from faker.config import AVAILABLE_LOCALES
+    except ImportError as error:
+        raise ResourceError("optional Faker dependency is missing; install scripts/requirements-faker.txt") from error
+    if locale not in AVAILABLE_LOCALES:
+        raise ProfileError(f"unsupported Faker locale: {locale}")
+    return Faker(locale, use_weighting=False)
+
+
 def planned_rules(profile, entity):
     return [rule for rule in profile["rules"] if rule["entity"] == entity and "when" not in rule
             and rule["assert"]["op"] in ("eq", "in", "gte", "lte") and "value" in rule["assert"]
             and (rule["assert"]["op"] in ("eq", "in") or rule["assert"]["value"] is not None)]
+
+
+def boundary_value(field, recipe):
+    point, kind = recipe["point"], field["type"]
+    if point == "null":
+        if not field.get("nullable"):
+            raise ProfileError("null boundary requires a nullable field")
+        return None
+    if point in ("min", "max", "below_min", "above_max"):
+        bound = "min" if point in ("min", "below_min") else "max"
+        if kind not in ("integer", "decimal") or bound not in field:
+            raise ProfileError(f"{point} boundary requires a declared numeric {bound}")
+        if kind == "integer":
+            return field[bound] + (-1 if point == "below_min" else 1 if point == "above_max" else 0)
+        with localcontext() as ctx:
+            ctx.prec = 100
+            scale = field.get("scale", 2)
+            step = Decimal(10) ** -scale
+            value = Decimal(field[bound]) + (-step if point == "below_min" else step if point == "above_max" else 0)
+            return format(value, f".{scale}f")
+    if kind != "string":
+        raise ProfileError("length and empty boundaries require a string field")
+    if point == "empty":
+        return ""
+    bound = "min_length" if point in ("min_length", "too_short") else "max_length"
+    if bound not in field:
+        raise ProfileError(f"{point} boundary requires a declared {bound}")
+    length = field[bound] + (-1 if point == "too_short" else 1 if point == "too_long" else 0)
+    if length < 0:
+        raise ProfileError("no shorter string exists below a zero minimum length")
+    return recipe.get("fill", "x") * length
 
 
 def generation_fields(profile, entity, scenario=None, for_sampling=True):
@@ -20,6 +64,8 @@ def generation_fields(profile, entity, scenario=None, for_sampling=True):
             field["generator"] = dict((scenario or {}).get("generators", {}).get(name, field["generator"]))
             if name in (scenario or {}).get("set", {}):
                 field["generator"] = {"kind": "constant", "value": scenario["set"][name]}
+            if field["generator"]["kind"] == "boundary":
+                field["generator"] = {"kind": "constant", "value": boundary_value(field, field["generator"])}
     for rule in planned_rules(profile, entity):
         assertion = rule["assert"]
         field = fields[assertion["field"]]
@@ -136,6 +182,13 @@ def scalar(field, generator, rng, index, row, settings, reference=None):
         if reference is None:
             raise ProfileError("reference generator requires a planned parent key assignment")
         return reference[0]
+    if kind == "faker":
+        fake = faker_instance(generator["locale"])
+        fake.random = rng
+        provider = generator["provider"]
+        if provider not in {"name", "first_name", "last_name", "city", "street_address", "company", "email", "phone_number", "uuid4"}:
+            raise ProfileError("unsupported Faker provider")
+        return fake.user_name() + "@example.invalid" if provider == "email" else getattr(fake, provider)()
     raise ProfileError(f"unsupported generator: {kind}")
 
 

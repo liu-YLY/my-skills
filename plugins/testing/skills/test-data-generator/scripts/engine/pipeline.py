@@ -8,7 +8,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 
 from . import VERSION
-from .common import Budget, ProfileError, ResourceError, digest
+from .common import Budget, ProfileError, ResourceError, digest, engine_fingerprint
 from .exporters import Writer, export_data, read_bundle
 from .negative import build_negative_cases, validate_negative_cases
 from .profile import ROOT, inspect_profile
@@ -102,9 +102,19 @@ def generate_bundle(profile, output_root, on_start=None):
         REPORT_CHECKER.validate(report)
         writer.json("validation-report.json", report)
         writer.write("report.md", [human_report(report)])
-        manifest = {"schema_version": "1.0", "run_id": run_id, "engine_version": VERSION,
+        generators = []
+        for entity, spec in profile["entities"].items():
+            scopes = [scenario for scenario in profile["scenarios"] if scenario["entity"] == entity] or [{}]
+            for scope in scopes:
+                if scope.get("count", spec["count"]) > 0:
+                    generators.extend(scope.get("generators", {}).get(name, field.get("generator", {}))
+                                      for name, field in spec["fields"].items() if name not in scope.get("set", {}))
+        dependencies = {name: version(name) for name in ("PyYAML", "jsonschema")}
+        if any(generator.get("kind") == "faker" for generator in generators):
+            dependencies["Faker"] = version("Faker")
+        manifest = {"schema_version": "1.0", "run_id": run_id, "engine_version": VERSION, "engine_hash": engine_fingerprint(ROOT),
                     "python_version": platform.python_version(),
-                    "dependencies": {name: version(name) for name in ("PyYAML", "jsonschema")},
+                    "dependencies": dependencies,
                     "seed": profile["generation"]["seed"], "reference_datetime": profile["generation"].get("reference_datetime"),
                     "profile_hash": digest(profile), "dataset_id": digest(data),
                     "entity_files": entity_files, "files": dict(writer.files),

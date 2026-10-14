@@ -23,6 +23,11 @@ def digest(value):
     return hashlib.sha256(canonical(value).encode("utf-8")).hexdigest()
 
 
+def engine_fingerprint(root):
+    files = [root / "scripts/run_data.py", *sorted((root / "scripts/engine").glob("*.py")), *sorted((root / "schemas").glob("*.json"))]
+    return digest({str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest() for path in files})
+
+
 def json_equal(left, right):
     """Compare JSON values without Python's bool/int equivalence."""
     try:

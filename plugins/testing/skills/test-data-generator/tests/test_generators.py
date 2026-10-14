@@ -126,6 +126,32 @@ def test_impossible_decimal_equality_is_not_rounded_into_another_rule():
         inspect_profile(profile)
 
 
+@pytest.mark.parametrize("locale", ["en_US", "zh_CN"])
+def test_faker_is_seeded_per_field_and_email_is_nonroutable(locale):
+    pytest.importorskip("faker")
+    profile = simple({"name": {"type": "string", "generator": {"kind": "faker", "provider": "name", "locale": locale}},
+                      "email": {"type": "string", "unique": True,
+                                "generator": {"kind": "faker", "provider": "email", "locale": locale}}}, 20)
+    first, _ = generate_entity(profile, "item")
+    assert first == generate_entity(copy.deepcopy(profile), "item")[0]
+    assert all(row["email"].endswith("@example.invalid") for row in first)
+    assert len({row["email"] for row in first}) == 20
+    assert all(isinstance(row["name"], str) and row["name"] for row in first)
+
+
+@pytest.mark.parametrize("field,point,expected", [
+    ({"type": "integer", "min": -2, "max": 5}, "min", -2),
+    ({"type": "decimal", "min": "0.01", "max": "9.99", "scale": 2}, "max", "9.99"),
+    ({"type": "string", "min_length": 2, "max_length": 5}, "max_length", "00000"),
+    ({"type": "string", "nullable": True}, "null", None),
+])
+def test_boundary_recipes_use_declared_contract(field, point, expected):
+    profile = simple({"value": dict(field, generator={"kind": "boundary", "point": point, "fill": "0"})}, 1)
+    rows, _ = generate_entity(profile, "item")
+    assert rows[0]["value"] == expected
+    assert validate_data(profile, {"item": rows})["validation_status"] == "passed"
+
+
 @pytest.mark.parametrize("generator", [{"kind": "choice", "values": ["A"]}, {"kind": "constant", "value": "A"}])
 def test_scene_overrides_do_not_inherit_default_sampling_domain(generator):
     profile = simple({"value": {"type": "string", "enum": ["A", "B"], "generator": generator}}, 1)

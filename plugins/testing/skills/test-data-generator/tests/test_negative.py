@@ -54,3 +54,14 @@ def test_missing_duplicate_or_forged_negative_evidence_fails(mutation):
     mutation(cases)
     result = validate_negative_cases(profile, data, ids, cases)
     assert result["validation_status"] == "failed"
+
+
+def test_negative_boundary_recipe_uses_decimal_step_and_preserves_baseline():
+    profile = negative_profile()
+    profile["negative_scenarios"][0]["mutations"] = [{"op": "boundary", "field": "amount", "point": "below_min"}]
+    data, ids, _ = generate_dataset(profile)
+    baseline = copy.deepcopy(data)
+    cases = build_negative_cases(profile, data, ids)
+    assert cases[0]["input_record"]["amount"] == "0.00"
+    assert validate_negative_cases(profile, data, ids, cases)["validation_status"] == "passed"
+    assert data == baseline

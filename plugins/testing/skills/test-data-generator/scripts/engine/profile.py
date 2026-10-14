@@ -133,7 +133,7 @@ def check_generator(profile, entity, name, field, generator, for_generation=True
     fields = profile["entities"][entity]["fields"]
     kind = generator["kind"]
     required_type = {"sequence": "string", "integer": "integer", "decimal": "decimal",
-                     "datetime_window": "datetime", "relative_datetime": "datetime"}.get(kind)
+                     "datetime_window": "datetime", "relative_datetime": "datetime", "faker": "string"}.get(kind)
     if required_type and field["type"] != required_type:
         raise ProfileError(f"{entity}.{name}: {kind} requires {required_type}")
     if kind == "constant" and not typed(generator["value"], field):
@@ -170,6 +170,13 @@ def check_generator(profile, entity, name, field, generator, for_generation=True
         relation = next((r for r in profile["relations"] if r["id"] == generator["relation"]), None)
         if not relation or relation["child"]["entity"] != entity or name not in relation["child"]["fields"]:
             raise ProfileError(f"{entity}.{name}: invalid reference generator")
+    if kind == "faker" and for_generation:
+        from .generators import faker_instance
+        faker_instance(generator["locale"])
+    if kind == "boundary":
+        from .generators import boundary_value, permitted
+        if not permitted(boundary_value(field, generator), field, check_pattern=False):
+            raise ProfileError(f"{entity}.{name}: boundary conflicts with field constraints; use a negative scenario")
 
 
 def field_order(profile, entity, scenario=None):
@@ -376,6 +383,10 @@ def inspect_profile(profile, for_generation=True):
             raise ProfileError(f"{case['id']}: missing or insufficient base scenario")
         if any(m["field"] not in entities[base["entity"]]["fields"] for m in case["mutations"]):
             raise ProfileError(f"{case['id']}: unknown mutation field")
+        for mutation in case["mutations"]:
+            if mutation["op"] == "boundary":
+                from .generators import boundary_value
+                boundary_value(entities[base["entity"]]["fields"][mutation["field"]], mutation)
         if not set(case["expected_rule_violations"]) <= set(check_ids):
             raise ProfileError(f"{case['id']}: unknown expected violation")
     total = sum(spec["count"] for spec in entities.values()) + sum(case["count"] for case in profile["negative_scenarios"])

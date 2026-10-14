@@ -118,3 +118,23 @@ def test_cli_missing_dependency_has_structured_runtime_error(tmp_path):
     assert result.returncode == 4
     assert json.loads(result.stdout)["validation_status"] == "not_run"
     assert "dependency" in json.loads(result.stdout)["error"]
+
+
+def test_unused_faker_does_not_require_optional_runtime_version(tmp_path, monkeypatch):
+    import engine.pipeline as pipeline
+    from importlib.metadata import PackageNotFoundError
+
+    profile = simple({"name": {"type": "string", "generator": {"kind": "constant", "value": "synthetic"}}}, 1)
+    profile["entities"]["item"]["fields"]["name"]["generator"] = {"kind": "faker", "provider": "name", "locale": "en_US"}
+    profile["scenarios"] = [{"id": "fixed", "entity": "item", "kind": "normal", "count": 1, "set": {"name": "synthetic"}}]
+    original = pipeline.version
+
+    def dependency_version(name):
+        if name == "Faker":
+            raise PackageNotFoundError(name)
+        return original(name)
+
+    monkeypatch.setattr(pipeline, "version", dependency_version)
+    output = generate_bundle(profile, tmp_path)
+    manifest = json.loads((Path(output["output_directory"]) / "manifest.json").read_text())
+    assert output["validation_status"] == "passed" and "Faker" not in manifest["dependencies"]

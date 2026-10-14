@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: python -m pip install pytest -r plugins/testing/skills/test-data-generator/scripts/requirements.txt
+      - run: python -m pip install pytest -r plugins/testing/skills/test-data-generator/scripts/requirements-faker.txt
       - run: python -m pytest plugins/testing/skills/test-data-generator/tests
 
   functional-tests:

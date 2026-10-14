@@ -1,6 +1,7 @@
 import copy
 
 from .common import Budget, ProfileError, digest, json_equal
+from .generators import boundary_value
 from .validator import validate_data
 
 
@@ -17,11 +18,13 @@ def expected_cases(profile, scenario_ids):
     return result
 
 
-def changed_record(record, mutations):
+def changed_record(record, mutations, fields=None):
     result = copy.deepcopy(record)
     for mutation in mutations:
         if mutation["op"] == "set":
             result[mutation["field"]] = mutation["value"]
+        elif mutation["op"] == "boundary":
+            result[mutation["field"]] = boundary_value(fields[mutation["field"]], mutation)
         else:
             result.pop(mutation["field"], None)
     return result
@@ -40,7 +43,7 @@ def build_negative_cases(profile, data, scenario_ids, budget=None):
         cases.append({"case_id": case_id, "scenario_id": scenario["id"], "entity": entity,
                       "record_index": index, "base_dataset_id": dataset_id,
                       "base_key": [record[name] for name in profile["entities"][entity]["primary_key"]],
-                      "input_record": changed_record(record, scenario["mutations"]),
+                      "input_record": changed_record(record, scenario["mutations"], profile["entities"][entity]["fields"]),
                       "mutations": scenario["mutations"],
                       "expected_rule_violations": sorted(scenario["expected_rule_violations"]),
                       "expected_system_result": "pending-confirmation"})
@@ -77,7 +80,7 @@ def validate_negative_cases(profile, data, scenario_ids, cases, budget=None):
                        and json_equal(case.get("base_key"), [record[name] for name in profile["entities"][entity]["primary_key"]])
                        and json_equal(case.get("expected_rule_violations"), expected_ids)
                        and json_equal(case.get("mutations"), scenario["mutations"])
-                       and json_equal(case.get("input_record"), changed_record(record, scenario["mutations"])))
+                       and json_equal(case.get("input_record"), changed_record(record, scenario["mutations"], profile["entities"][entity]["fields"])))
         context = dict(data)
         context[entity] = list(data[entity])
         context[entity][index] = case.get("input_record")

@@ -81,7 +81,7 @@ foreach ($resource in @("convert_docs.py", "requirements.txt")) {
 function Assert-RuntimeResources([string]$Root) {
     $prefix = [IO.Path]::GetFullPath($Root) + [IO.Path]::DirectorySeparatorChar
     $dataResources = @(
-        "scripts/run_data.py", "scripts/requirements.txt", "schemas/profile.schema.json", "schemas/report.schema.json",
+        "scripts/run_data.py", "scripts/requirements.txt", "scripts/requirements-faker.txt", "schemas/profile.schema.json", "schemas/report.schema.json",
         "scripts/engine/__init__.py", "scripts/engine/common.py", "scripts/engine/profile.py",
         "scripts/engine/generators.py", "scripts/engine/relations.py", "scripts/engine/validator.py",
         "scripts/engine/negative.py", "scripts/engine/exporters.py", "scripts/engine/pipeline.py", "scripts/engine/runner.py"
