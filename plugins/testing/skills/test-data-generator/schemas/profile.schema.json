@@ -62,6 +62,7 @@
   "$defs": {
     "id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,63}$"},
     "ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/id"}},
+    "check_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,159}$"}},
     "confirmation": {"enum": ["confirmed", "candidate", "pending-confirmation", "conflict"]},
     "scalar": {"type": ["string", "integer", "boolean", "null"]},
     "generator": {
@@ -110,7 +111,11 @@
       "oneOf": [
         {"type": "object", "additionalProperties": false, "required": ["field", "op"], "properties": {"field": {"$ref": "#/$defs/id"}, "op": {"enum": ["is_null", "not_null"]}}},
         {"type": "object", "additionalProperties": false, "required": ["field", "op"], "oneOf": [{"required": ["value"]}, {"required": ["other_field"]}], "properties": {"field": {"$ref": "#/$defs/id"}, "op": {"enum": ["eq", "gte", "lte"]}, "value": {"$ref": "#/$defs/scalar"}, "other_field": {"$ref": "#/$defs/id"}}},
-        {"type": "object", "additionalProperties": false, "required": ["field", "op", "value"], "properties": {"field": {"$ref": "#/$defs/id"}, "op": {"const": "in"}, "value": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/scalar"}}}}
+        {"type": "object", "additionalProperties": false, "required": ["field", "op", "value"], "properties": {"field": {"$ref": "#/$defs/id"}, "op": {"const": "in"}, "value": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/scalar"}}}},
+        {"type": "object", "additionalProperties": false, "required": ["field", "op", "other_field", "min_seconds", "max_seconds"], "properties": {
+          "field": {"$ref": "#/$defs/id"}, "op": {"const": "time_delta"}, "other_field": {"$ref": "#/$defs/id"},
+          "min_seconds": {"type": "integer"}, "max_seconds": {"type": "integer"}
+        }}
       ]
     },
     "rule": {
@@ -123,6 +128,8 @@
         "id": {"$ref": "#/$defs/id"}, "entity": {"$ref": "#/$defs/id"}, "count": {"type": "integer", "minimum": 1}, "kind": {"enum": ["normal", "boundary"]},
         "set": {"type": "object", "additionalProperties": {"$ref": "#/$defs/scalar"}},
         "generators": {"type": "object", "additionalProperties": {"$ref": "#/$defs/generator"}},
+        "case_ids": {"$ref": "#/$defs/ids"}, "combination_id": {"$ref": "#/$defs/id"},
+        "target_check_ids": {"$ref": "#/$defs/check_ids"}, "description": {"type": "string", "maxLength": 512},
         "confirmation": {"$ref": "#/$defs/confirmation"}, "source_ids": {"$ref": "#/$defs/ids"}
       }
     },
@@ -141,7 +148,7 @@
       "properties": {
         "id": {"$ref": "#/$defs/id"}, "base_scenario": {"$ref": "#/$defs/id"}, "count": {"type": "integer", "minimum": 1},
         "mutations": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/mutation"}},
-        "expected_rule_violations": {"$ref": "#/$defs/ids"},
+        "expected_rule_violations": {"$ref": "#/$defs/check_ids"},
         "confirmation": {"$ref": "#/$defs/confirmation"}, "source_ids": {"$ref": "#/$defs/ids"}
       }
     }

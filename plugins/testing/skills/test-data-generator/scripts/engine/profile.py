@@ -369,6 +369,8 @@ def inspect_profile(profile, for_generation=True):
                 raise ProfileError(f"{rule['id']}: incompatible predicate types")
             if predicate["op"] in ("gte", "lte") and field["type"] not in ("integer", "decimal", "datetime"):
                 raise ProfileError(f"{rule['id']}: ordered comparison requires numeric or datetime fields")
+            if predicate["op"] == "time_delta" and (field["type"] != "datetime" or predicate["min_seconds"] > predicate["max_seconds"]):
+                raise ProfileError(f"{rule['id']}: time_delta requires datetime fields and ordered bounds")
             values = predicate.get("value", [])
             if "value" in predicate:
                 values = values if predicate["op"] == "in" else [values]
@@ -377,6 +379,9 @@ def inspect_profile(profile, for_generation=True):
         check_ids.append(rule["id"])
     if len(check_ids) != len(set(check_ids)):
         raise ProfileError("rule IDs conflict with generated check IDs")
+    for scenario in scenarios.values():
+        if not set(scenario.get("target_check_ids", [])) <= set(check_ids):
+            raise ProfileError(f"{scenario['id']}: unknown target check")
     for case in profile["negative_scenarios"]:
         provenance(case, case["id"])
         base = scenarios.get(case["base_scenario"])
@@ -419,10 +424,14 @@ def inspect_profile(profile, for_generation=True):
     validation_rows = normal_rows * (negative_rows + (3 if for_generation else 1))
     if validation_rows > profile["generation"]["limits"].get("max_validation_rows", 5000000):
         raise ProfileError("estimated validation row budget exceeded")
+    targets = [{"id": item["id"], "entity": item["entity"], "kind": item["kind"], "expected_rows": item["count"],
+                "case_ids": item.get("case_ids", []), "combination_id": item.get("combination_id"),
+                "target_check_ids": item.get("target_check_ids", []),
+                "source_ids": item.get("source_ids", profile.get("default_source_ids", []))} for item in scenarios.values()]
     return {"schema_version": "1.0", "profile_id": profile["profile_id"], "profile_hash": digest(profile),
             "entity_order": entity_order, "total_rows": total,
             "entity_counts": {name: spec["count"] for name, spec in entities.items()},
-            "check_ids": sorted(check_ids), "issues": issues,
+            "check_ids": sorted(check_ids), "issues": issues, "scenario_targets": targets,
             "operation": "generate" if for_generation else "validate", "estimated_validation_rows": validation_rows,
             "planned_rule_ids": sorted(planned), "validation_only_rule_ids": sorted(set(rules) - set(planned)),
             "generation_status": "not_run",

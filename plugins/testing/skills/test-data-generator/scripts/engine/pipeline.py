@@ -55,6 +55,12 @@ def human_report(report):
              "数据校验结果不代表业务接口执行或业务测试通过。", ""]
     if report["issues"]:
         lines.extend(["待确认规则：", *[f"- {item['target']}：{item['confirmation']}" for item in report["issues"]], ""])
+    if report.get("scenario_summary"):
+        lines.extend(["| 场景 | 目标条数 | 实际条数 | 验收 | 用例 / 组合 |", "|---|---:|---:|---|---|"])
+        for item in report["scenario_summary"]:
+            trace = ", ".join([*item["case_ids"], *([item["combination_id"]] if item["combination_id"] else [])])
+            lines.append(f"| {item['id']} | {item['expected_rows']} | {item['observed_rows']} | {item['validation_status']} | {trace} |")
+        lines.append("")
     return "\n".join(lines)
 
 

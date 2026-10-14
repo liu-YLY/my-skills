@@ -120,6 +120,20 @@ def test_cli_missing_dependency_has_structured_runtime_error(tmp_path):
     assert "dependency" in json.loads(result.stdout)["error"]
 
 
+def test_scenario_targets_have_actual_results_and_case_traceability(tmp_path):
+    profile = simple({"active": {"type": "boolean", "generator": {"kind": "constant", "value": True}}}, 2)
+    profile["rules"] = [{"id": "active-user", "entity": "item", "assert": {"field": "active", "op": "eq", "value": True}}]
+    profile["scenarios"] = [{"id": "active", "entity": "item", "kind": "normal", "count": 2,
+                             "case_ids": ["TC01"], "combination_id": "COMBO01", "target_check_ids": ["active-user"]}]
+    output = generate_bundle(profile, tmp_path)
+    report = validate_bundle(profile, output["output_directory"])
+    scenario = report["scenario_summary"][0]
+    assert scenario["case_ids"] == ["TC01"] and scenario["combination_id"] == "COMBO01"
+    assert scenario["expected_rows"] == scenario["observed_rows"] == 2
+    assert scenario["target_checks"]["active-user"]["applicable"] == 2
+    assert scenario["validation_status"] == "passed"
+
+
 def test_unused_faker_does_not_require_optional_runtime_version(tmp_path, monkeypatch):
     import engine.pipeline as pipeline
     from importlib.metadata import PackageNotFoundError

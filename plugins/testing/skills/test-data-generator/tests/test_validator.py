@@ -36,12 +36,73 @@ def test_scenario_generator_constants_and_time_offsets_are_checked():
     assert "S-item-distribution" in report["violation_ids"]
 
 
+def test_explicit_time_delta_rule_is_independent_of_generator():
+    profile = simple({"created": {"type": "datetime", "generator": {"kind": "constant", "value": "2026-10-14T00:00:00Z"}},
+                      "expires": {"type": "datetime", "generator": {"kind": "constant", "value": "2026-10-14T01:00:00Z"}}}, 1)
+    profile["rules"] = [{"id": "one-hour", "entity": "item", "assert": {"field": "expires", "op": "time_delta",
+                        "other_field": "created", "min_seconds": 3600, "max_seconds": 3600}}]
+    rows, _ = generate_entity(profile, "item")
+    assert validate_data(profile, {"item": rows})["validation_status"] == "passed"
+    rows[0]["expires"] = "2026-10-14T02:00:00Z"
+    assert validate_data(profile, {"item": rows})["violation_ids"] == ["one-hour"]
+
+
+def test_a_target_rule_with_no_applicable_records_is_incomplete():
+    profile = simple({"active": {"type": "boolean", "generator": {"kind": "constant", "value": False}}}, 2)
+    profile["rules"] = [{"id": "active-branch", "entity": "item", "when": {"field": "active", "op": "eq", "value": True},
+                         "assert": {"field": "id", "op": "not_null"}}]
+    profile["scenarios"] = [{"id": "branch", "entity": "item", "kind": "normal", "count": 2,
+                             "target_check_ids": ["active-branch"]}]
+    rows, _ = generate_entity(profile, "item")
+    report = validate_data(profile, {"item": rows})
+    assert report["validation_status"] == report["scenario_summary"][0]["validation_status"] == "incomplete"
+    assert report["scenario_summary"][0]["target_checks"]["active-branch"]["applicable"] == 0
+
+
 def test_s_prefix_business_rule_is_not_skipped_with_scenario_checks_disabled():
     profile = simple({"left": {"type": "integer", "generator": {"kind": "constant", "value": 1}},
                       "right": {"type": "integer", "nullable": True, "generator": {"kind": "constant", "value": 1}}}, 1)
     profile["rules"] = [{"id": "S-business", "entity": "item", "assert": {"field": "left", "op": "gte", "other_field": "right"}}]
     report = validate_data(profile, {"item": [{"id": "0001", "left": 1, "right": None}]}, check_scenarios=False)
     assert report["validation_status"] == "incomplete" and report["incomplete_checks"] == ["S-business"]
+
+
+def test_n_prefix_business_rule_keeps_scene_applicability():
+    profile = simple({"active": {"type": "boolean", "generator": {"kind": "choice"}}}, 2)
+    profile["rules"] = [{"id": "N-business", "entity": "item", "when": {"field": "active", "op": "eq", "value": True},
+                         "assert": {"field": "id", "op": "not_null"}}]
+    profile["scenarios"] = [{"id": "off", "entity": "item", "kind": "normal", "count": 1, "set": {"active": False},
+                             "target_check_ids": ["N-business"]},
+                            {"id": "on", "entity": "item", "kind": "normal", "count": 1, "set": {"active": True}}]
+    rows, _ = generate_entity(profile, "item")
+    report = validate_data(profile, {"item": rows})
+    assert report["validation_status"] == report["scenario_summary"][0]["validation_status"] == "incomplete"
+    assert report["scenario_summary"][0]["target_checks"]["N-business"]["applicable"] == 0
+
+
+def test_relation_target_includes_parent_cardinality_failure():
+    profile = linked()
+    profile["scenarios"] = [{"id": "children", "entity": "child", "kind": "normal", "count": 12, "target_check_ids": ["belongs"]}]
+    data, _, _ = generate_dataset(profile)
+    for row in data["child"]:
+        row["id"] = data["parent"][0]["id"]
+    report = validate_data(profile, data)
+    scene = report["scenario_summary"][0]
+    assert scene["validation_status"] == "failed"
+    assert scene["target_checks"]["belongs"]["scope"] == "relation"
+    assert scene["target_checks"]["belongs"]["failed"] > 0
+
+
+def test_null_reference_scene_cannot_borrow_relation_coverage():
+    profile = linked()
+    profile["entities"]["child"]["fields"]["id"]["nullable"] = True
+    profile["relations"][0]["min_children"] = 1
+    profile["scenarios"] = [{"id": "empty", "entity": "child", "kind": "normal", "count": 4, "set": {"id": None},
+                             "target_check_ids": ["belongs"]}, {"id": "present", "entity": "child", "kind": "normal", "count": 8}]
+    data, _, _ = generate_dataset(profile)
+    report = validate_data(profile, data)
+    assert report["scenario_summary"][0]["validation_status"] == "incomplete"
+    assert report["scenario_summary"][0]["target_checks"]["belongs"]["scene_applicable"] == 0
 
 
 def test_independent_validator_finds_range_type_precision_and_duplicates():

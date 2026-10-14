@@ -9,15 +9,26 @@ from .profile import inspect_profile
 
 
 class Results:
-    def __init__(self, ids, detail_limit):
+    def __init__(self, ids, detail_limit, scenarios=()):
         self.checks = {key: {"evaluated": 0, "applicable": 0, "failed": 0, "not_evaluable": 0} for key in ids}
         self.error_count = 0
         self.errors = []
         self.violation_ids = set()
         self.detail_limit = detail_limit
+        self.scenario_by_record = {}
+        self.scenario_checks = {item["id"]: {key: {"evaluated": 0, "applicable": 0, "failed": 0, "not_evaluable": 0}
+                                for key in [f"S-{item['entity']}-distribution", *item.get("target_check_ids", [])]}
+                                for item in scenarios}
 
     def add(self, key, valid, entity=None, index=None, field=None, expected=None, actual=None, applicable=True):
         check = self.checks[key]
+        scenario = self.scenario_by_record.get((entity, index))
+        scoped = self.scenario_checks.get(scenario, {}).get(key)
+        if scoped is not None:
+            scoped["not_evaluable"] += int(valid is None)
+            scoped["evaluated"] += int(valid is not None)
+            scoped["applicable"] += int(valid is not None and applicable)
+            scoped["failed"] += int(valid is not None and not valid)
         if valid is None:
             check["not_evaluable"] += 1
             return
@@ -69,6 +80,9 @@ def predicate_matches(predicate, row, fields):
         return left == right
     if left is None or right is None:
         return None
+    if op == "time_delta":
+        seconds = (left - right).total_seconds()
+        return predicate["min_seconds"] <= seconds <= predicate["max_seconds"]
     return left >= right if op == "gte" else left <= right
 
 
@@ -105,7 +119,7 @@ def scenario_matches(profile, scenario, row, fields, index):
 
 def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=True):
     plan = inspect_profile(profile, for_generation=False)
-    results = Results(plan["check_ids"], detail_limit)
+    results = Results(plan["check_ids"], detail_limit, profile["scenarios"] if check_scenarios else [])
     budget = budget or Budget(profile["generation"]["limits"])
     entities = profile["entities"]
     results.add("N-dataset-entities", isinstance(data, dict) and set(data) == set(entities),
@@ -123,6 +137,9 @@ def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=
                          *[(f"F-{entity}.{name}-unique", [name]) for name, field in fields.items() if field.get("unique")]]
         seen = {key: set() for key, _ in unique_groups}
         expected_scenarios = schedule(profile, entity)
+        if check_scenarios:
+            results.scenario_by_record.update({(entity, index): scenario["id"] for index, scenario in enumerate(expected_scenarios)
+                                               if scenario is not None})
         for index, raw_row in enumerate(rows):
             budget.check()
             valid_row = isinstance(raw_row, dict)
@@ -206,10 +223,12 @@ def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=
         parent_fields = entities[parent["entity"]]["fields"]
         child_fields = entities[child["entity"]]["fields"]
         keys = set()
-        for row in parent_rows:
+        parent_indexes = {}
+        for parent_index, row in enumerate(parent_rows):
             if isinstance(row, dict) and all(name in row and row[name] is not None and typed(row[name], parent_fields[name]) for name in parent["fields"]):
                 key = tuple(row[name] for name in parent["fields"])
                 keys.add(key)
+                parent_indexes[key] = parent_index
         counts = Counter()
         for index, row in enumerate(child_rows):
             budget.check()
@@ -227,13 +246,34 @@ def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=
         low, high = relation.get("min_children", 0), relation.get("max_children")
         for key in sorted(keys, key=str):
             results.add(relation["id"], counts[key] >= low and (high is None or counts[key] <= high),
-                        parent["entity"], field=parent["fields"], expected={"min_children": low, "max_children": high}, actual=counts[key])
+                        parent["entity"], parent_indexes[key], field=parent["fields"], expected={"min_children": low, "max_children": high}, actual=counts[key])
     scenario_ids = {f"S-{entity}-distribution" for entity in entities}
     unexecuted = [key for key, counts in results.checks.items() if not counts["evaluated"]
                   and (check_scenarios or key not in scenario_ids)]
     incomplete = sorted(key for key, counts in results.checks.items() if counts["not_evaluable"]
                         and (check_scenarios or key not in scenario_ids))
-    status = "failed" if results.error_count else "incomplete" if plan["issues"] or unexecuted or incomplete else "passed"
+    summaries = []
+    if check_scenarios:
+        offsets = Counter()
+        for scenario in profile["scenarios"]:
+            entity = scenario["entity"]
+            rows = data.get(entity, [])
+            observed = max(0, min(scenario["count"], len(rows) - offsets[entity])) if isinstance(rows, list) else 0
+            offsets[entity] += scenario["count"]
+            checks = dict(results.scenario_checks[scenario["id"]])
+            for key in scenario.get("target_check_ids", []):
+                if key in {"N-dataset-entities", *[f"N-{name}-count" for name in entities]}:
+                    checks[key] = dict(results.checks[key], scope="dataset")
+                elif key in {item["id"] for item in profile["relations"]}:
+                    checks[key] = dict(results.checks[key], scope="relation", scene_applicable=checks[key]["applicable"])
+            failed = any(item["failed"] for item in checks.values()) or observed != scenario["count"]
+            pending = any(item["not_evaluable"] or not item["applicable"] or item.get("scene_applicable") == 0 for item in checks.values())
+            summaries.append({"id": scenario["id"], "entity": entity, "kind": scenario["kind"],
+                              "expected_rows": scenario["count"], "observed_rows": observed,
+                              "case_ids": scenario.get("case_ids", []), "combination_id": scenario.get("combination_id"),
+                              "target_checks": checks, "validation_status": "failed" if failed else "incomplete" if pending else "passed"})
+    status = "failed" if results.error_count or any(item["validation_status"] == "failed" for item in summaries) else (
+        "incomplete" if plan["issues"] or unexecuted or incomplete or any(item["validation_status"] == "incomplete" for item in summaries) else "passed")
     budget.check()
     return {"schema_version": "1.0", "profile_id": profile["profile_id"], "profile_hash": plan["profile_hash"],
             "generation_status": "not_run", "validation_status": status, "system_execution_status": "not_run",
@@ -241,7 +281,7 @@ def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=
             "errors_truncated": results.error_count > len(results.errors), "violation_ids": sorted(results.violation_ids),
             "checks": results.checks, "issues": plan["issues"],
             "unexecuted_checks": sorted(unexecuted),
-            "incomplete_checks": incomplete,
+            "incomplete_checks": incomplete, "scenario_summary": summaries,
             "rule_summary": {"declared": len(results.checks), "implemented": len(results.checks),
                              "executed": sum(item["evaluated"] > 0 for item in results.checks.values()),
                              "not_evaluable": sum(item["not_evaluable"] for item in results.checks.values()),

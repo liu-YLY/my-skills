@@ -145,3 +145,16 @@ def test_negative_scan_work_is_bounded_before_execution(profile):
     with pytest.raises(ProfileError, match="validation row budget"):
         inspect_profile(profile)
     assert inspect_profile(profile, for_generation=False)["estimated_validation_rows"] == 12
+
+
+def test_generated_long_check_ids_are_valid_target_and_negative_references(profile):
+    entity, name = "E" * 64, "F" * 64
+    spec = profile["entities"].pop("item")
+    spec["fields"][name] = spec["fields"].pop("id")
+    spec["primary_key"] = [name]
+    profile["entities"][entity] = spec
+    check_id = f"F-{entity}.{name}-required"
+    profile["scenarios"] = [{"id": "long", "entity": entity, "kind": "normal", "count": 3, "target_check_ids": [check_id]}]
+    profile["negative_scenarios"] = [{"id": "missing", "base_scenario": "long", "count": 1,
+                                     "mutations": [{"op": "remove", "field": name}], "expected_rule_violations": [check_id]}]
+    assert check_id in inspect_profile(normalize(profile))["check_ids"]
