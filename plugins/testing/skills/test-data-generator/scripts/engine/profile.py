@@ -243,8 +243,16 @@ def inspect_profile(profile):
             values = field["generator"].get("values", field.get("enum"))
             if field.get("unique") or name in spec["primary_key"] and len(spec["primary_key"]) == 1:
                 capacity = len(values) if values else None
+                if field["generator"]["kind"] == "constant" and field["generator"]["value"] is not None:
+                    capacity = 1
+                if field["generator"]["kind"] == "choice" and kind == "boolean" and values is None:
+                    capacity = 2
                 if field["generator"]["kind"] == "integer" and {"min", "max"} <= field.keys():
                     capacity = field["max"] - field["min"] + 1
+                if field["generator"]["kind"] == "decimal" and {"min", "max"} <= field.keys():
+                    with localcontext() as ctx:
+                        ctx.prec = 100
+                        capacity = int((decimal_value(field["max"]) - decimal_value(field["min"])) * Decimal(10) ** field["scale"]) + 1
                 if capacity is not None and capacity < spec["count"]:
                     raise ProfileError(f"{entity}.{name}: unique capacity exhausted")
             check_ids.extend(field_check_ids(entity, name, field))
@@ -334,6 +342,10 @@ def inspect_profile(profile):
         raise ProfileError("total record limit exceeded")
     if issues and profile["generation"]["mode"] == "strict":
         raise ProfileError(f"unconfirmed constraints: {canonical(issues)}")
+    if relations:
+        from .relations import check_capacity
+        for relation in relations.values():
+            check_capacity(profile, relation)
     return {"schema_version": "1.0", "profile_id": profile["profile_id"], "profile_hash": digest(profile),
             "entity_order": order_graph(entities, dependencies, "entity"), "total_rows": total,
             "entity_counts": {name: spec["count"] for name, spec in entities.items()},
