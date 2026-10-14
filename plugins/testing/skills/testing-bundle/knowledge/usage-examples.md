@@ -26,7 +26,7 @@ testing-bundle:
   → 路由到 bug-analyzer 执行根因分析
   → bug-analyzer 输出防御性测试点清单
 
-🔴 CHECKPOINT · bug-analyzer 完成：防御性测试点清单必须展示给用户确认，用户可修改清单或终止流程，确认后才转交 test-case-engineer。
+🔴 CHECKPOINT · bug-analyzer 完成：展示防御性测试点清单与转交依据，继续已授权的分析；缺关键信息、改变范围或未授权写操作时再询问。
 
   → 转交 test-case-engineer 基于清单生成完整用例
   → 输出根因分析报告 + 完整测试用例
@@ -34,7 +34,7 @@ testing-bundle:
 
 ### 示例 3：意图不明确（追问）
 
-🔴 **CHECKPOINT · 意图不明确时强制追问**：不得"默认路由"，必须列出 6 个子 skill 的能力让用户选择。
+🔴 **CHECKPOINT · 意图不明确时强制追问**：不得"默认路由"，必须列出 7 个子 skill 的能力让用户选择。
 
 ```
 用户：我有个测试相关的问题
@@ -48,7 +48,8 @@ testing-bundle:
      C. 性能测试方案/瓶颈定位（performance-test-engineer）
      D. 分析 Bug 根因（bug-analyzer）
      E. 状态机驱动的状态型需求测试（state-machine-test-engineer）
-     F. 变更影响分析（change-impact-analyzer）"
+     F. 变更影响分析（change-impact-analyzer）
+     G. 离线测试数据生成/校验（test-data-generator）"
 ```
 
 ### 示例 4：测试策略（自动路由到 strategy）
@@ -73,7 +74,7 @@ testing-bundle:
   → 路由到 performance-test-engineer
   → 执行阶段 1-2：性能需求理解 + 测试场景设计
 
-🔴 CHECKPOINT · performance 阶段 2 后：性能测试方案必须展示给用户确认，确认后进入阶段 3（若需瓶颈定位）。
+🔴 CHECKPOINT · performance 阶段 2 后：展示性能测试方案与转交依据，按已有授权继续需要的瓶颈定位。
 
   → 输出性能测试方案（负载模型 + 场景 + 指标阈值）
 ```
@@ -88,7 +89,7 @@ testing-bundle:
   → 路由到 test-strategy-engineer 执行项目级策略设计
   → strategy 输出分层策略 + 优先级 + 准入准出
 
-🔴 CHECKPOINT · strategy 完成：分层策略与优先级必须展示给用户确认，用户可修改或终止流程，确认后才转交 test-case-engineer。
+🔴 CHECKPOINT · strategy 完成：展示分层策略、优先级与未决事项，继续已授权的用例生成。
 
   → 转交 test-case-engineer 按分层策略生成对应层用例
   → 输出测试策略 + 分层测试用例
@@ -116,18 +117,45 @@ testing-bundle:
   → 路由到 state-machine-test-engineer 执行状态机建模
   → state-machine 输出状态机模型 + 场景清单（含依据类型标注）
 
-🔴 CHECKPOINT · state-machine 完成：状态机模型与场景清单必须展示给用户确认，用户可修改模型/补充场景/终止流程，确认后才转交 test-case-engineer。
+🔴 CHECKPOINT · state-machine 完成：展示状态机模型、场景清单与依据类型，继续已授权的用例生成；关键规则缺口保留待确认。
 
   → 转交 test-case-engineer 基于场景清单生成完整用例
   → 输出状态机模型 + 场景清单 + 完整测试用例
 ```
 
+### 示例 9：已有用例准备数据（直接路由到 test-data-generator）
+
+```
+用户：按 cases.csv 中已确认的用户组合准备 200 条 JSON 数据，固定矩阵维度，保留用例编号
+
+testing-bundle:
+  → 意图判断：已有用例的数据准备，不重新编写用例
+  → 路由到 test-data-generator，传递文件、固定维度、数量和规则来源
+  → 整理 profile，运行 inspect → generate 与独立校验
+  → 交付配置、数据文件、case_ids/combination_id 映射和校验报告
+  → 数据校验结果按实际报告填写，系统执行保持 not_run
+```
+
+### 示例 10：编写用例 + 准备数据（链 8 协同）
+
+```
+用户：根据会员订单需求编写边界与异常用例，再为每个场景生成离线测试数据
+
+testing-bundle:
+  → 路由到 test-case-engineer 编写用例，保留业务规则来源和未决事项
+  → 披露用例与数据需求，继续已授权的离线文件生成
+  → 转交 test-data-generator，保留用例编号、字段关联、场景与验收目标
+  → 生成正常/边界数据和单独的异常输入，独立校验后交付文件与报告
+  → 未确认的关键规则不补猜；受影响部分保留 incomplete，不声称系统测试通过
+```
+
 ## 快速上手
 
-1. 确认已安装 6 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer）
-2. 用户提出测试相关请求时，testing-bundle 自动触发
-3. bundle 按 6-way 路由决策表（5 核心 + 1 协同）判断意图并路由到对应子 skill
-4. 混合意图按对应链路执行（7 条链），转交点 🔴 CHECKPOINT
+1. 确认已安装 7 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer / test-data-generator）
+2. 混合、模糊或明确要求路由的请求触发 testing-bundle；单一意图直接使用对应 Skill
+3. bundle 按七路路由决策表判断意图并路由到对应子 skill
+4. 混合意图按对应链路执行（8 条链），转交点披露依据并按既有授权继续
 5. 子 skill 执行具体任务并输出结果
 6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（v0.8.5 协议层 stdio + HTTP 已端到端联调验证，安装后增强模式可用；详见 [state-machine-test-engineer/integrations/quickstart.md](../../state-machine-test-engineer/integrations/quickstart.md)）
 7. test-case-engineer 评审模式可选安装配套 review-checker MCP Server 进入增强模式（详见 [review-checker README](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/mcp-servers/review-checker/README.md)）
+8. test-data-generator 无需 MCP；运行依赖与命令见 [运行指南](../../test-data-generator/integrations/quickstart.md)，文件校验通过不代表系统执行通过

@@ -25,8 +25,8 @@ my-skill/
 │   │   ├── .codex-plugin/
 │   │   │   └── plugin.json        # Codex plugin manifest
 │   │   ├── skills/                # runtime 扫描此目录加载 skill
-│   │   │   ├── testing-bundle/    # 测试能力 Bundle（6-way 路由入口 + 链 6 协同）
-│   │   │   │   ├── SKILL.md       # 入口（路由规则 + 7 条混合意图链）
+│   │   │   ├── testing-bundle/    # 测试能力 Bundle（七路路由入口）
+│   │   │   │   ├── SKILL.md       # 入口（路由规则 + 8 条混合意图链）
 │   │   │   │   ├── README.md      # Bundle 说明文档
 │   │   │   │   ├── CHANGELOG.md   # bundle 版本变更记录
 │   │   │   │   └── test-prompts.json
@@ -63,10 +63,19 @@ my-skill/
 │   │   │   │   ├── knowledge/     # state-modeling / scenario-types / completeness-check / anti-patterns + 4 行业模板
 │   │   │   │   ├── integrations/  # quickstart.md（含 state-machine-testing MCP Server 安装）
 │   │   │   │   └── test-prompts.json
-│   │   │   └── change-impact-analyzer/  # 变更影响分析师 v1.1.0（testing plugin 第 6 个协同 skill，链 6）
-│   │   │       ├── SKILL.md       # 入口 + 四阶段流程（含阶段 3 CHECKPOINT）
-│   │   │       ├── README.md
-│   │   │       ├── knowledge/     # diff-modes / cross-impact-analysis / report-template / anti-patterns
+│   │   │   ├── change-impact-analyzer/  # 变更影响分析师 v1.5.0（链 6 协同，亦可独立使用）
+│   │   │   │   ├── SKILL.md       # 入口 + 四阶段流程（含阶段 3 CHECKPOINT）
+│   │   │   │   ├── README.md
+│   │   │   │   ├── knowledge/     # diff-modes / cross-impact-analysis / report-template / anti-patterns
+│   │   │   │   └── test-prompts.json
+│   │   │   └── test-data-generator/  # 离线数据生成与校验 v1.1.0（链 8 协同，亦可独立使用）
+│   │   │       ├── SKILL.md       # profile 整理、生成/校验模式与交付边界
+│   │   │       ├── knowledge/     # 输入协议、生成校验和扩展边界
+│   │   │       ├── integrations/  # Python 运行指南与安全约束
+│   │   │       ├── scripts/       # run_data.py、engine/ 与依赖清单
+│   │   │       ├── schemas/       # profile 与报告 Schema
+│   │   │       ├── examples/      # 字段、关联、异常与组合矩阵配置
+│   │   │       ├── tests/
 │   │   │       └── test-prompts.json
 │   │   └── mcp-servers/               # 配套 MCP Server（可选增强）
 │   │       ├── review-checker/         # review-checker MCP Server v0.2.0（评审 10 维度校验）

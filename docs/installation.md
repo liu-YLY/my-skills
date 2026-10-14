@@ -52,13 +52,13 @@ npx skills add liu-YLY/my-skills --list
 
 **场景 1：安装所有 skill（推荐）**
 ```bash
-# 包含 testing-bundle、6 个子 skill、独立 test-data-generator 和 wechat-formatter
+# 包含 testing-bundle、7 个专业子 skill 和 wechat-formatter，共 9 个 skill
 npx skills add liu-YLY/my-skills --skill '*' -g -y
 ```
 
 **场景 2：仅安装测试能力 bundle**
 ```bash
-# 安装 8 个 skill：现有 testing-bundle 及专业技能，加独立 test-data-generator
+# 安装 8 个 skill：testing-bundle 与 7 个专业子 skill
 npx skills add liu-YLY/my-skills \
   --skill 'testing-bundle' \
   --skill 'test-strategy-engineer' \
@@ -105,7 +105,7 @@ Claude Code 用户可通过原生 `/plugin` 命令，按 plugin 粒度一键安�
 /plugin marketplace add liu-YLY/my-skills
 
 # 步骤 2：安装测试能力 bundle
-# 含 testing-bundle + 6 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer）
+# 含 testing-bundle + 7 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer / test-data-generator）
 /plugin install testing-bundle@my-skill-marketplace
 
 # 步骤 3：安装微信公众号排版 skill（可选）
