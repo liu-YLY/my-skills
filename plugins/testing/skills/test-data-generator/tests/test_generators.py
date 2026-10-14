@@ -71,3 +71,34 @@ def test_unique_integer_capacity_and_datetime_cycles():
     fields["b"] = {"type": "datetime", "generator": {"kind": "relative_datetime", "field": "a", "min_seconds": 0, "max_seconds": 1}}
     with pytest.raises(ProfileError, match="cycle"):
         inspect_profile(profile)
+
+
+def test_nullable_unique_choice_can_repeat_null_beyond_nonnull_capacity():
+    profile = simple({"code": {"type": "string", "nullable": True, "unique": True,
+                               "generator": {"kind": "choice", "values": [None, "one"]}}}, 30)
+    rows, _ = generate_entity(profile, "item")
+    assert sum(row["code"] is None for row in rows) >= 29
+    assert len([row for row in rows if row["code"] == "one"]) <= 1
+
+
+def test_scenario_fixed_unique_keys_override_default_generator_capacity():
+    profile = simple({}, 1)
+    profile["entities"]["item"]["count"] = 3
+    profile["entities"]["item"]["fields"]["id"]["generator"] = {"kind": "constant", "value": "default"}
+    profile["scenarios"] = [{"id": f"case-{i}", "entity": "item", "kind": "normal", "count": 1,
+                             "set": {"id": f"key-{i}"}} for i in range(3)]
+    inspect_profile(profile)
+    assert {row["id"] for row in generate_entity(profile, "item")[0]} == {"key-0", "key-1", "key-2"}
+
+
+def test_timezone_offsets_are_normalized_and_naive_times_rejected():
+    profile = simple({
+        "created": {"type": "datetime", "generator": {"kind": "datetime_window", "min_offset_seconds": 0, "max_offset_seconds": 0}},
+        "paid": {"type": "datetime", "generator": {"kind": "relative_datetime", "field": "created", "min_seconds": 60, "max_seconds": 60}}}, 1)
+    profile["generation"]["reference_datetime"] = "2026-10-14T08:00:00+08:00"
+    rows, _ = generate_entity(profile, "item")
+    assert rows[0]["created"] == "2026-10-14T00:00:00Z"
+    assert rows[0]["paid"] == "2026-10-14T00:01:00Z"
+    profile["entities"]["item"]["fields"]["created"]["generator"] = {"kind": "constant", "value": "2026-10-14T08:00:00"}
+    with pytest.raises(ProfileError, match="incompatible type"):
+        inspect_profile(profile)

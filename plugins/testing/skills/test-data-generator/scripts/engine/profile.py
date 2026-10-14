@@ -254,7 +254,12 @@ def inspect_profile(profile):
                     with localcontext() as ctx:
                         ctx.prec = 100
                         capacity = int((decimal_value(field["max"]) - decimal_value(field["min"])) * Decimal(10) ** field["scale"]) + 1
-                if capacity is not None and capacity < spec["count"]:
+                overridden = any(s["entity"] == entity and (name in s.get("set", {}) or name in s.get("generators", {}))
+                                 for s in profile["scenarios"])
+                allows_null = field.get("nullable", False) and (
+                    field["generator"]["kind"] == "choice" and values is not None and None in values
+                    or field["generator"]["kind"] == "constant" and field["generator"]["value"] is None)
+                if capacity is not None and capacity < spec["count"] and not overridden and not allows_null:
                     raise ProfileError(f"{entity}.{name}: unique capacity exhausted")
             check_ids.extend(field_check_ids(entity, name, field))
         field_order(profile, entity)
