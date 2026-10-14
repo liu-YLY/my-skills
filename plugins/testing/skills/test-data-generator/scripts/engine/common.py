@@ -23,6 +23,20 @@ def digest(value):
     return hashlib.sha256(canonical(value).encode("utf-8")).hexdigest()
 
 
+def json_equal(left, right):
+    """Compare JSON values without Python's bool/int equivalence."""
+    try:
+        return canonical(left) == canonical(right)
+    except (TypeError, ValueError):
+        return False
+
+
+def strict_json(value):
+    def reject_constant(token):
+        raise ValueError(f"nonfinite JSON number: {token}")
+    return json.loads(value, parse_constant=reject_constant)
+
+
 def random_for(seed, *parts):
     return random.Random(int(digest([seed, *parts]), 16))
 

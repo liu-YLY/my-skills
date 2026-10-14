@@ -32,6 +32,7 @@ def combined_report(profile, data, cases, scenario_ids, budget, integrity=None):
     if report["negative_summary"]["validation_status"] != "passed" or report["integrity_issues"]:
         report["validation_status"] = "failed"
     REPORT_CHECKER.validate(report)
+    budget.check()
     return report
 
 
@@ -48,6 +49,7 @@ def human_report(report):
              f"正常数据违规数：{report['error_count']}",
              f"异常样本完成数：{report['negative_summary']['completed_cases']}",
              f"异常预期不匹配数：{report['negative_summary']['mismatches']}", "",
+             f"未执行检查数：{len(report['unexecuted_checks'])}", "",
              "规则统计和错误定位见 validation-report.json。", "",
              "数据校验结果不代表业务接口执行或业务测试通过。", ""]
     if report["issues"]:
@@ -55,7 +57,21 @@ def human_report(report):
     return "\n".join(lines)
 
 
-def generate_bundle(profile, output_root):
+def preserve_failed_run(staging, target, error):
+    staging, target = Path(staging), Path(target)
+    directory = staging if staging.is_dir() else target if target.is_dir() else None
+    if directory is None:
+        return
+    failure = {"schema_version": "1.0", "run_id": target.name, "generation_status": "failed",
+               "validation_status": "not_run", "system_execution_status": "not_run",
+               "error": str(error)}
+    (directory / "manifest.json").write_text(json.dumps(failure, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
+    failed = target.with_name(target.name + ".failed")
+    if not failed.exists():
+        directory.rename(failed)
+
+
+def generate_bundle(profile, output_root, on_start=None):
     plan = inspect_profile(profile)
     root = Path(output_root).resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -64,6 +80,8 @@ def generate_bundle(profile, output_root):
     if target.exists():
         raise FileExistsError("output directory already exists")
     staging.mkdir()
+    if on_start is not None:
+        on_start(str(staging), str(target))
     budget = Budget(profile["generation"]["limits"])
     writer = Writer(staging, budget)
     try:
@@ -95,17 +113,13 @@ def generate_bundle(profile, output_root):
         writer.json("manifest.json", manifest)
         if target.exists():
             raise FileExistsError("output directory appeared during generation")
-        staging.rename(target)
-        return {"output_directory": str(target), "generation_status": "complete",
+        result = {"output_directory": str(target), "generation_status": "complete",
                 "validation_status": report["validation_status"], "system_execution_status": "not_run",
                 "normal_rows": sum(len(rows) for rows in data.values()), "negative_cases": len(cases),
                 "profile_hash": digest(profile), "dataset_id": digest(data)}
+        budget.check()
+        staging.rename(target)
+        return result
     except BaseException as error:
-        failure = {"schema_version": "1.0", "run_id": run_id, "generation_status": "failed",
-                   "validation_status": "not_run", "system_execution_status": "not_run",
-                   "error": "interrupted" if isinstance(error, KeyboardInterrupt) else str(error)}
-        (staging / "manifest.json").write_text(json.dumps(failure, ensure_ascii=False, indent=2), encoding="utf-8")
-        failed = root / f"{run_id}.failed"
-        if not failed.exists():
-            staging.rename(failed)
+        preserve_failed_run(staging, target, "interrupted" if isinstance(error, KeyboardInterrupt) else error)
         raise

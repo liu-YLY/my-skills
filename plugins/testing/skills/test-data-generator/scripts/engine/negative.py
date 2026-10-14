@@ -1,6 +1,6 @@
 import copy
 
-from .common import Budget, ProfileError, digest
+from .common import Budget, ProfileError, digest, json_equal
 from .validator import validate_data
 
 
@@ -70,13 +70,14 @@ def validate_negative_cases(profile, data, scenario_ids, cases, budget=None):
             continue
         record = data[entity][index]
         expected_ids = sorted(scenario["expected_rule_violations"])
-        metadata_ok = (case.get("entity") == entity and case.get("record_index") == index
+        metadata_ok = (case.get("entity") == entity and type(case.get("record_index")) is int
+                       and case.get("record_index") == index
                        and case.get("scenario_id") == scenario["id"]
                        and case.get("base_dataset_id") == dataset_id
-                       and case.get("base_key") == [record[name] for name in profile["entities"][entity]["primary_key"]]
-                       and case.get("expected_rule_violations") == expected_ids
-                       and case.get("mutations") == scenario["mutations"]
-                       and case.get("input_record") == changed_record(record, scenario["mutations"]))
+                       and json_equal(case.get("base_key"), [record[name] for name in profile["entities"][entity]["primary_key"]])
+                       and json_equal(case.get("expected_rule_violations"), expected_ids)
+                       and json_equal(case.get("mutations"), scenario["mutations"])
+                       and json_equal(case.get("input_record"), changed_record(record, scenario["mutations"])))
         context = dict(data)
         context[entity] = list(data[entity])
         context[entity][index] = case.get("input_record")
@@ -88,6 +89,7 @@ def validate_negative_cases(profile, data, scenario_ids, cases, budget=None):
                         "not_evaluable": report["rule_summary"]["not_evaluable"],
                         "expected_system_result": "pending-confirmation"})
     mismatches = sum(not result["matched"] for result in results)
+    budget.check()
     return {"validation_status": "failed" if issues or mismatches else "passed",
             "expected_cases": len(expected), "completed_cases": len(results),
             "mismatches": mismatches, "issues": issues, "cases": results}

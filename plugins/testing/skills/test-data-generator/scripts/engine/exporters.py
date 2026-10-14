@@ -5,7 +5,7 @@ import json
 from itertools import chain
 from pathlib import Path
 
-from .common import ResourceError, canonical, digest
+from .common import ResourceError, canonical, digest, strict_json
 from .generators import schedule
 
 
@@ -32,7 +32,7 @@ def decode_csv(value, field):
             index += 1
         return "".join(result)
     try:
-        return json.loads(value)
+        return strict_json(value)
     except json.JSONDecodeError:
         return value
 
@@ -111,9 +111,9 @@ def checked_path(root, relative):
 def read_rows(path, kind, fields):
     with path.open(encoding="utf-8", newline="") as handle:
         if kind == "json":
-            rows = json.load(handle)
+            rows = strict_json(handle.read())
         elif kind == "jsonl":
-            rows = [json.loads(line) for line in handle if line.strip()]
+            rows = [strict_json(line) for line in handle if line.strip()]
         else:
             reader = csv.DictReader(handle)
             if reader.fieldnames is None or len(reader.fieldnames) != len(set(reader.fieldnames)):
@@ -133,7 +133,7 @@ def read_bundle(profile, directory, budget):
     manifest_path = checked_path(root, "manifest.json")
     if manifest_path.is_file() and manifest_path.stat().st_size > min(4194304, budget.limits["max_output_bytes"]):
         raise ResourceError("manifest byte limit exceeded")
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.is_file() else None
+    manifest = strict_json(manifest_path.read_text(encoding="utf-8")) if manifest_path.is_file() else None
     issues = []
     total_bytes = 0
     measured = set()
@@ -194,7 +194,7 @@ def read_bundle(profile, directory, budget):
     negative_path = checked_path(root, "negative/cases.jsonl")
     if negative_path.is_file():
         measure(negative_path)
-        cases = [json.loads(line) for line in negative_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+        cases = [strict_json(line) for line in negative_path.read_text(encoding="utf-8").splitlines() if line.strip()]
     else:
         cases = []
     if sum(len(rows) for rows in data.values()) + len(cases) > budget.limits["max_total_rows"]:

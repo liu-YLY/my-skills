@@ -2,7 +2,7 @@ import re
 from datetime import timedelta
 from decimal import Decimal, localcontext
 
-from .common import Budget, ProfileError, ResourceError, comparable, random_for, timestamp, typed
+from .common import Budget, ProfileError, ResourceError, canonical, comparable, random_for, timestamp, typed
 from .profile import field_order
 
 
@@ -72,6 +72,57 @@ def permitted(value, field):
     return True
 
 
+def unique_values(profile, entity, scenarios, groups, budget):
+    """Sample finite single-column keys without replacement or a full range allocation."""
+    spec = profile["entities"][entity]
+    values_by_field = {}
+    for names in groups:
+        if len(names) != 1 or names[0] in values_by_field:
+            continue
+        name = names[0]
+        if any(name in (s or {}).get("set", {}) or name in (s or {}).get("generators", {}) for s in scenarios):
+            continue
+        field = spec["fields"][name]
+        kind = field["generator"]["kind"]
+        candidates = None
+        if kind == "choice" or (kind in ("integer", "decimal") and "enum" in field):
+            raw = field["generator"].get("values", field.get("enum", [False, True]))
+            if None in raw:  # nullable unique keys permit repeated nulls
+                continue
+            candidates = list({canonical(v): v for v in raw if permitted(v, field)}.values())
+            capacity = len(candidates)
+        elif kind in ("integer", "decimal"):
+            with localcontext() as ctx:
+                ctx.prec = 100
+                factor = Decimal(10) ** field.get("scale", 0)
+                low = int(Decimal(field["min"]) * factor)
+                capacity = int(Decimal(field["max"]) * factor) - low + 1
+        else:
+            continue
+        if spec["count"] > capacity:
+            raise ResourceError(f"{entity}.{name}: unique permitted capacity exhausted")
+        rng = random_for(profile["generation"]["seed"], entity, name, "unique-pool")
+        swaps, values = {}, []
+        for index in range(spec["count"]):
+            budget.check()
+            remaining = capacity - index
+            slot = rng.randrange(remaining)
+            selected = swaps.get(slot, slot)
+            swaps[slot] = swaps.get(remaining - 1, remaining - 1)
+            swaps.pop(remaining - 1, None)
+            if candidates is not None:
+                value = candidates[selected]
+            elif kind == "integer":
+                value = low + selected
+            else:
+                with localcontext() as ctx:
+                    ctx.prec = 100
+                    value = format(Decimal(low + selected) / factor, f".{field['scale']}f")
+            values.append(value)
+        values_by_field[name] = values
+    return values_by_field
+
+
 def generate_entity(profile, entity, assignments=None, budget=None):
     spec = profile["entities"][entity]
     fields = spec["fields"]
@@ -81,9 +132,11 @@ def generate_entity(profile, entity, assignments=None, budget=None):
     groups = [spec["primary_key"], *spec.get("unique_keys", []),
               *[[name] for name, field in fields.items() if field.get("unique")]]
     seen = [set() for _ in groups]
+    scenarios = schedule(profile, entity)
+    planned_values = unique_values(profile, entity, scenarios, groups, budget)
     rows, scenario_ids = [], []
     orders = {}
-    for index, scenario in enumerate(schedule(profile, entity)):
+    for index, scenario in enumerate(scenarios):
         budget.check()
         scenario_id = scenario["id"] if scenario else None
         if scenario_id not in orders:
@@ -98,6 +151,8 @@ def generate_entity(profile, entity, assignments=None, budget=None):
                 generator = overrides.get(name, field["generator"])
                 if name in fixed:
                     value = fixed[name]
+                elif name in planned_values:
+                    value = planned_values[name][index]
                 else:
                     reference = None
                     if generator["kind"] == "reference":
@@ -124,4 +179,5 @@ def generate_entity(profile, entity, assignments=None, budget=None):
                 break
         else:
             raise ResourceError(f"{entity} row {index}: constraints or uniqueness unsatisfied after 128 attempts")
+    budget.check()
     return rows, scenario_ids

@@ -20,6 +20,7 @@
       "declared": {"type": "integer", "minimum": 0}, "implemented": {"type": "integer", "minimum": 0}, "executed": {"type": "integer", "minimum": 0}, "not_evaluable": {"type": "integer", "minimum": 0}, "pending": {"type": "integer", "minimum": 0}
     }},
     "integrity_issues": {"type": "array", "items": {"type": "string"}},
+    "unexecuted_checks": {"type": "array", "items": {"type": "string"}},
     "negative_summary": {"type": "object", "additionalProperties": false, "required": ["validation_status", "expected_cases", "completed_cases", "mismatches", "issues", "cases"], "properties": {
       "validation_status": {"enum": ["passed", "failed", "not_run"]}, "expected_cases": {"type": "integer", "minimum": 0}, "completed_cases": {"type": "integer", "minimum": 0}, "mismatches": {"type": "integer", "minimum": 0}, "issues": {"type": "array", "items": {"type": "string"}}, "cases": {"type": "array", "items": {"type": "object"}}
     }}

@@ -3,8 +3,8 @@ import json
 import sys
 
 from engine.common import ProfileError, ResourceError
-from engine.pipeline import generate_bundle, validate_bundle
 from engine.profile import inspect_profile, load_profile
+from engine.runner import run_isolated
 
 
 def main():
@@ -23,18 +23,18 @@ def main():
         if args.command == "inspect":
             result = inspect_profile(profile)
         elif args.command == "generate":
-            result = generate_bundle(profile, args.output_root)
+            result = run_isolated("generate", profile, args.output_root)
         else:
-            result = validate_bundle(profile, args.dataset)
+            result = run_isolated("validate", profile, args.dataset)
     except ProfileError as error:
         print(json.dumps({"generation_status": "blocked", "validation_status": "not_run",
-                          "system_execution_status": "not_run", "error": str(error)}, ensure_ascii=False))
+                          "system_execution_status": "not_run", "error": str(error)}, ensure_ascii=False, allow_nan=False))
         return 2
     except (OSError, ValueError, OverflowError, ResourceError, KeyboardInterrupt) as error:
         print(json.dumps({"generation_status": "failed", "validation_status": "not_run",
-                          "system_execution_status": "not_run", "error": "interrupted" if isinstance(error, KeyboardInterrupt) else str(error)}, ensure_ascii=False))
+                          "system_execution_status": "not_run", "error": "interrupted" if isinstance(error, KeyboardInterrupt) else str(error)}, ensure_ascii=False, allow_nan=False))
         return 4
-    print(json.dumps(result, ensure_ascii=False, indent=2))
+    print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))
     return 3 if result["validation_status"] in ("failed", "incomplete") else 0
 
 

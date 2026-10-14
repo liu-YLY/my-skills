@@ -79,3 +79,11 @@ def test_manifest_or_entity_claim_does_not_replace_data_checks():
     valid = copy.deepcopy(data)
     del valid["unexpected"]
     assert validate_data(profile, valid)["validation_status"] == "passed"
+
+
+def test_zero_records_leave_required_checks_unexecuted_and_incomplete():
+    profile = simple({}, 0)
+    report = validate_data(profile, {"item": []})
+    assert report["validation_status"] == "incomplete"
+    assert "K-item-primary" in report["unexecuted_checks"]
+    assert not report["error_count"]

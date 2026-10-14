@@ -1,3 +1,4 @@
+import math
 import re
 from collections import Counter
 from decimal import Decimal, localcontext
@@ -30,7 +31,17 @@ class Results:
                 if isinstance(actual, str) and len(actual) > 160:
                     actual = actual[:160] + "…"
                 self.errors.append({"rule_id": key, "entity": entity, "record_index": index,
-                                    "field": field, "expected": expected, "actual": actual})
+                                    "field": field, "expected": expected, "actual": safe_observation(actual)})
+
+
+def safe_observation(value):
+    if isinstance(value, float) and not math.isfinite(value):
+        return {"invalid_number": str(value)}
+    if isinstance(value, list):
+        return [safe_observation(item) for item in value]
+    if isinstance(value, dict):
+        return {key: safe_observation(item) for key, item in value.items()}
+    return value
 
 
 def predicate_matches(predicate, row, fields):
@@ -98,6 +109,11 @@ def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=
                             "nullable" if field.get("nullable") else "non-null", value)
                 type_ok = typed(value, dict(field, nullable=True))
                 results.add(f"{prefix}-type", type_ok, entity, index, name, field["type"], value)
+                if type_ok and value is None:
+                    for suffix, keys in {"enum": ("enum",), "range": ("min", "max"), "scale": ("scale",),
+                                         "length": ("min_length", "max_length"), "pattern": ("pattern",)}.items():
+                        if any(key in field for key in keys):
+                            results.add(f"{prefix}-{suffix}", True, applicable=False)
                 if not type_ok or value is None:
                     continue
                 if "enum" in field:
@@ -180,12 +196,16 @@ def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=
         for key in sorted(keys, key=str):
             results.add(relation["id"], counts[key] >= low and (high is None or counts[key] <= high),
                         parent["entity"], field=parent["fields"], expected={"min_children": low, "max_children": high}, actual=counts[key])
-    status = "failed" if results.error_count else "incomplete" if plan["issues"] else "passed"
+    unexecuted = [key for key, counts in results.checks.items() if not counts["evaluated"]
+                  and (check_scenarios or not key.startswith("S-"))]
+    status = "failed" if results.error_count else "incomplete" if plan["issues"] or unexecuted else "passed"
+    budget.check()
     return {"schema_version": "1.0", "profile_id": profile["profile_id"], "profile_hash": plan["profile_hash"],
             "generation_status": "not_run", "validation_status": status, "system_execution_status": "not_run",
             "error_count": results.error_count, "errors": results.errors,
             "errors_truncated": results.error_count > len(results.errors), "violation_ids": sorted(results.violation_ids),
             "checks": results.checks, "issues": plan["issues"],
+            "unexecuted_checks": sorted(unexecuted),
             "rule_summary": {"declared": len(results.checks), "implemented": len(results.checks),
                              "executed": sum(item["evaluated"] > 0 for item in results.checks.values()),
                              "not_evaluable": sum(item["not_evaluable"] for item in results.checks.values()),
