@@ -1,0 +1,269 @@
+"""generate_scenarios 单元测试（10 类场景穷举）。"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+from state_machine_testing_mcp.generators import (
+    ALL_SCENARIO_TYPES,
+    generate_scenarios,
+)
+from state_machine_testing_mcp.schemas import StateMachine
+
+FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
+
+
+def _load_order_refund() -> StateMachine:
+    """加载订单退款 fixture。"""
+    fixture = FIXTURES_DIR / "order_refund_state_machine.json"
+    return StateMachine.model_validate(json.loads(fixture.read_text(encoding="utf-8")))
+
+
+def test_generate_all_10_types() -> None:
+    """默认应生成 10 类场景（部分类型可能为 0 条，但 type_coverage 应包含 10 类键）。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm)
+    assert set(result.coverage_summary.keys()) == set(ALL_SCENARIO_TYPES)
+
+
+def test_legal_transitions_generated() -> None:
+    """每条 transition 应生成 1 个 legal_transition 场景。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm, scenario_types=["legal_transition"])
+    assert len(result.scenarios) == len(sm.transitions)
+
+
+def test_illegal_transitions_generated() -> None:
+    """禁止规则生成具体尝试目标，通配规则展开为各已知状态。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm, scenario_types=["illegal_transition"])
+    assert len(result.scenarios) == sum(len(sm.states) if f.to_state == "*" else 1 for f in sm.forbidden)
+    assert all(s.attempted_target_state in {state.name for state in sm.states} for s in result.scenarios)
+
+
+def test_failure_recovery_always_generated() -> None:
+    """每条 transition 都应生成 failure_recovery 场景。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm, scenario_types=["failure_recovery"])
+    assert len(result.scenarios) == len(sm.transitions)
+    assert all(s.risk_type == "failure_recovery" for s in result.scenarios)
+    assert all(s.evidence_type.value == "待确认" for s in result.scenarios)
+
+
+def test_idempotency_only_for_callbacks() -> None:
+    """idempotency 仅对涉及外部回调的 transition 生成。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm, scenario_types=["idempotency"])
+    # 订单退款 fixture 中，"支付成功回调"/"退款成功回调"/"退款失败回调" 都涉及回调
+    assert len(result.scenarios) > 0
+    for s in result.scenarios:
+        assert "回调" in s.trigger_event or "重复" in s.trigger_event
+
+
+def test_evidence_filter() -> None:
+    """evidence_filter 应按依据类型过滤。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm, evidence_filter="待确认")
+    for s in result.scenarios:
+        assert s.evidence_type.value == "待确认"
+
+
+def test_scenario_ids_unique() -> None:
+    """场景 ID 应唯一且格式为 SM-{三位序号}。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm)
+    ids = [s.id for s in result.scenarios]
+    assert len(ids) == len(set(ids))  # 无重复
+    for sid in ids:
+        assert sid.startswith("SM-")
+        assert len(sid) == 6  # SM-XXX
+
+
+def test_pending_confirmation_correct() -> None:
+    """pending_confirmation 应包含所有 evidence_type=待确认 的场景。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm)
+    pending_ids = {s.id for s in result.pending_confirmation}
+    for s in result.scenarios:
+        if s.evidence_type.value == "待确认":
+            assert s.id in pending_ids
+
+
+def test_pending_target_has_reason() -> None:
+    """expected_target_state=待确认 的场景必须提供 expected_target_state_reason。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm)
+    for s in result.scenarios:
+        if s.expected_target_state == "待确认":
+            assert s.expected_target_state_reason, f"{s.id} 缺待确认原因"
+        else:
+            assert s.expected_target_state in {state.name for state in sm.states}
+
+
+def test_access_control_generates_when_target_implies_role() -> None:
+    """event 无角色词但 target 隐含权限时应生成 access_control 场景。"""
+    sm = StateMachine.model_validate({
+        "meta": {"object": "审批流", "source": "test"},
+        "states": [
+            {"name": "待审批", "meaning": "等待审批"},
+            {"name": "审批中", "meaning": "审批人处理中"},
+            {"name": "已通过", "meaning": "审批通过", "is_terminal": True},
+        ],
+        "transitions": [
+            {"from": "待审批", "to": "审批中", "event": "提交", "evidence_type": "需求明确"},
+            {"from": "审批中", "to": "已通过", "event": "通过", "evidence_type": "需求明确"},
+        ],
+        "forbidden": [],
+    })
+    result = generate_scenarios(sm, scenario_types=["access_control"])
+    assert len(result.scenarios) > 0
+    for s in result.scenarios:
+        assert s.risk_type == "access_control"
+        assert s.evidence_type.value in ("需求明确", "合理推理", "待确认")
+
+
+def test_access_control_defaults_pending_without_role_signal() -> None:
+    """无任何角色信号时仍默认生成 1 条待确认越权场景，不静默跳过。"""
+    sm = StateMachine.model_validate({
+        "meta": {"object": "订单", "source": "test"},
+        "states": [
+            {"name": "已创建", "meaning": "订单已创建"},
+            {"name": "已支付", "meaning": "订单已支付", "is_terminal": True},
+        ],
+        "transitions": [
+            {"from": "已创建", "to": "已支付", "event": "支付成功", "evidence_type": "需求明确"},
+        ],
+        "forbidden": [],
+    })
+    result = generate_scenarios(sm, scenario_types=["access_control"])
+    assert len(result.scenarios) >= 1
+    assert result.scenarios[0].evidence_type.value == "待确认"
+
+
+def test_concurrency_generates_for_different_events() -> None:
+    """不同事件的 transition 组合应生成并发场景（不再仅限 用户+回调）。"""
+    sm = _load_order_refund()
+    result = generate_scenarios(sm, scenario_types=["concurrency"])
+    assert len(result.scenarios) > 0
+    for s in result.scenarios:
+        assert "+" in s.trigger_event
+        assert s.evidence_type.value == "待确认"
+
+
+
+def test_explicit_synchronous_model_skips_message_reorder_and_reports_three_states():
+    sm = _load_order_refund()
+    data = sm.model_dump(by_alias=True)
+    data["scenario_applicability"] = {"message_reorder": {
+        "status": "not_applicable", "reason": "本例明确同步且无消息通道", "source": "PRD §1"}}
+    sm = StateMachine.model_validate(data)
+    result = generate_scenarios(sm)
+    assert result.coverage_summary["message_reorder"] == 0
+    assert result.scenario_applicability["message_reorder"].status == "not_applicable"
+    assert result.scenario_applicability["access_control"].status == "unknown"
+    candidates = [s for s in result.scenarios if s.risk_type == "access_control"]
+    assert candidates and all(s.expected_target_state == "待确认" for s in candidates)
+    assert all(s.forbidden_states == [] and "应被拒绝" not in s.title for s in candidates)
+
+
+def test_concurrency_candidates_only_share_an_initial_object_state():
+    sm = _load_order_refund()
+    result = generate_scenarios(sm, ["concurrency"])
+    assert result.scenarios
+    for scenario in result.scenarios:
+        events = scenario.trigger_event.replace("（并发）", "").split(" + ")
+        assert all(any(t.event == event and t.from_state == scenario.current_state
+                       for t in sm.transitions) for event in events)
+
+
+def test_explicit_async_capability_does_not_require_event_keywords():
+    sm = _load_order_refund()
+    for t in sm.transitions:
+        t.event = "输入" + t.id
+    data = sm.model_dump(by_alias=True)
+    data["scenario_applicability"] = {"message_reorder": {
+        "status": "applicable", "reason": "输入来自队列", "source": "PRD §2"}}
+    sm = StateMachine.model_validate(data)
+    assert generate_scenarios(sm, ["message_reorder"]).scenarios
+
+
+def test_explicit_retry_capability_works_without_timeout_keywords():
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["transitions"] = data["transitions"][:1]
+    data["transitions"][0]["event"] = "执行输入"
+    data["transitions"][0]["guards"] = []
+    data["scenario_applicability"] = {"timeout_retry": {
+        "status": "applicable", "reason": "需求规定输入可重试", "source": "PRD §重试"}}
+    result = generate_scenarios(StateMachine.model_validate(data), ["timeout_retry"])
+    assert result.scenarios
+
+
+def test_failure_semantics_do_not_treat_response_loss_as_unpaid():
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["transitions"] = data["transitions"][:1]
+    data["transitions"][0]["failure_outcomes"] = [{
+        "phase": "committed_response_lost", "allowed_states": ["已支付"],
+        "observations": ["核对支付记录与渠道结果"], "recovery_conditions": ["核实结果后按重试规则处理"],
+        "source": "PRD §支付结果", "evidence_type": "需求明确"}]
+    result = generate_scenarios(StateMachine.model_validate(data), ["failure_recovery"])
+    case = result.scenarios[0]
+    assert case.failure_semantics.phase == "committed_response_lost"
+    assert case.expected_target_state == "已支付"
+    assert "无条件重试" not in " ".join(case.failure_semantics.recovery_conditions)
+
+
+def test_unknown_failure_retains_observation_gap_and_multiple_states_are_conditional():
+    sm = _load_order_refund()
+    case = generate_scenarios(sm, ["failure_recovery"]).scenarios[0]
+    assert case.failure_semantics.phase == "unknown"
+    assert case.expected_target_state == "待确认"
+    assert case.failure_semantics.allowed_states == []
+    data = sm.model_dump(by_alias=True)
+    data["transitions"][0]["failure_outcomes"] = [{
+        "phase": "partial_success", "allowed_states": ["待支付", "已支付"],
+        "source": "PRD §补偿", "evidence_type": "需求明确"}]
+    case = generate_scenarios(StateMachine.model_validate(data), ["failure_recovery"]).scenarios[0]
+    assert case.expected_target_state == "待确认"
+    assert set(case.failure_semantics.allowed_states) == {"待支付", "已支付"}
+    assert case.expected_target_state_reason
+
+
+def test_all_five_failure_phases_preserve_declared_observations_and_effects():
+    phases = ["pre_execution_rejected", "pre_commit_failed", "committed_response_lost", "partial_success", "unknown"]
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["transitions"] = data["transitions"][:1]
+    data["transitions"][0]["failure_outcomes"] = [{
+        "phase": phase, "allowed_states": ["待支付"] if phase.startswith("pre_") else [],
+        "observations": ["核对事务记录"], "forbidden_side_effects": ["重复扣款"],
+        "source": "PRD §失败阶段", "evidence_type": "需求明确" if phase.startswith("pre_") else "待确认"}
+        for phase in phases]
+    result = generate_scenarios(StateMachine.model_validate(data), ["failure_recovery"])
+    assert len(result.scenarios) == 5
+    for scenario in result.scenarios:
+        assert scenario.failure_semantics.observations == ["核对事务记录"]
+        assert scenario.failure_semantics.forbidden_side_effects == ["重复扣款"]
+
+
+
+def test_unknown_failure_phase_cannot_claim_a_known_target_from_one_allowed_state():
+    data = _load_order_refund().model_dump(by_alias=True)
+    data["transitions"] = data["transitions"][:1]
+    data["transitions"][0]["failure_outcomes"] = [{"phase": "unknown", "allowed_states": ["已支付"],
+        "source": "明确资料说明提交边界未知", "evidence_type": "需求明确"}]
+    case = generate_scenarios(StateMachine.model_validate(data), ["failure_recovery"]).scenarios[0]
+    assert case.expected_target_state == "待确认" and case.expected_target_state_reason
+
+
+
+def test_explicit_rule_with_unknown_or_conditional_target_stays_in_pending_list():
+    for phase, states in [("unknown", ["已支付"]), ("partial_success", ["待支付", "已支付"])]:
+        data = _load_order_refund().model_dump(by_alias=True)
+        data["transitions"] = data["transitions"][:1]
+        data["transitions"][0]["failure_outcomes"] = [{"phase": phase, "allowed_states": states,
+            "source": "PRD明确描述未知或条件结果", "evidence_type": "需求明确"}]
+        result = generate_scenarios(StateMachine.model_validate(data), ["failure_recovery"])
+        case = result.scenarios[0]
+        assert case.evidence_type.value == "需求明确"
+        assert case.expected_target_state == "待确认" and case.expected_target_state_reason
+        assert case.id in {item.id for item in result.pending_confirmation}

@@ -1,0 +1,18 @@
+{
+  "modules": 34,
+  "codeTexts": [
+    "---\n:::hero\n订单42金额270元。\n:::\n",
+    "~~~\n---\n:::\n~~~\n",
+    ":::unsupported\n```html\n<script>boom()</script>\n<img onerror=\"boom()\">\n:::\n```\n:::"
+  ],
+  "activeTags": 0,
+  "width": 390,
+  "scroll": 390,
+  "brokenImages": 0,
+  "browser": "ego-browser",
+  "task_space": 2,
+  "kind": "real DOM and mobile overflow verification",
+  "screenshot_status": "Page.captureScreenshot timed out on two attempts; no new screenshot claimed",
+  "native_clipboard_write_tested": false,
+  "wechat_paste_tested": false
+}

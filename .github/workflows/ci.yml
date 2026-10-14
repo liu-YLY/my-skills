@@ -1,0 +1,122 @@
+name: CI
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  repository-tools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install pytest python-docx -r plugins/wechat-formatter/skills/wechat-formatter/scripts/requirements.txt
+      - run: python -m pytest scripts/tests
+      - run: python scripts/skill-evals.py
+      - run: python scripts/check-project-inventory.py
+
+  functional-tests:
+    name: Functional tests (${{ matrix.suite }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [review-checker, state-machine-testing, wechat-formatter]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install and test MCP package
+        if: matrix.suite != 'wechat-formatter'
+        working-directory: plugins/testing/mcp-servers/${{ matrix.suite }}
+        run: |
+          python -m pip install -e '.[dev]'
+          python -m pytest
+      - name: Test HTML conversion
+        if: matrix.suite == 'wechat-formatter'
+        run: |
+          python -m pip install pytest -r plugins/wechat-formatter/skills/wechat-formatter/scripts/requirements.txt
+          python -m pytest plugins/wechat-formatter/skills/wechat-formatter/scripts/tests
+
+  lint-and-validate:
+    name: Lint & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Validate JSON files
+        run: |
+          echo "Validating all .json files..."
+          find . -name "*.json" -not -path "./.git/*" -not -path "./node_modules/*" | while read f; do
+            python -c "import json,sys; json.load(open('$f', encoding='utf-8'))" || { echo "Invalid JSON: $f"; exit 1; }
+          done
+          echo "All JSON files valid."
+
+      - name: Validate YAML files
+        run: |
+          yamllint -d "{extends: default, rules: {line-length: disable, document-start: disable}}" \
+            .pre-commit-config.yaml \
+            .github/workflows/ci.yml
+
+      - name: Lint Markdown files
+        run: |
+          markdownlint \
+            -c .markdownlint.jsonc \
+            --ignore .git \
+            --ignore node_modules \
+            --ignore .venv-tools \
+            '*.md' \
+            'plugins/**/*.md' \
+            'docs/**/*.md' \
+            '.github/**/*.md'
+
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+        continue-on-error: false
+
+      - name: Check SKILL.md / plugin.json version sync
+        run: python scripts/check-version-sync.py
+
+      - name: Check knowledge reference integrity
+        run: python scripts/check-knowledge-count.py
+
+      - name: Check markdown link integrity
+        run: python scripts/check-md-links.py
+
+      - name: Check skill consistency
+        run: python scripts/check-skill-consistency.py

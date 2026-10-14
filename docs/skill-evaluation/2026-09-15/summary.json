@@ -1,0 +1,36 @@
+{
+  "grader": "Parent assistant; manual rubric review, not blind",
+  "scope": "9 fixed tasks x 3 repeats per condition; no trigger benchmark or actual business execution",
+  "results": {
+    "with": {
+      "tasks": 27,
+      "checks_passed": 81,
+      "checks_total": 81,
+      "confirmed_false_positives": 0,
+      "business_omissions_in_rubric": 0,
+      "elapsed_seconds": {
+        "mean": 292.8,
+        "stdev": 32.5,
+        "min": 267.681,
+        "max": 329.522
+      },
+      "mean_output_characters": 2886,
+      "token_usage": null
+    },
+    "without": {
+      "tasks": 27,
+      "checks_passed": 81,
+      "checks_total": 81,
+      "confirmed_false_positives": 0,
+      "business_omissions_in_rubric": 0,
+      "elapsed_seconds": {
+        "mean": 93.9,
+        "stdev": 13.3,
+        "min": 78.956,
+        "max": 104.585
+      },
+      "mean_output_characters": 2134,
+      "token_usage": null
+    }
+  }
+}

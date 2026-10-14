@@ -1,0 +1,37 @@
+{
+  "name": "testing-bundle",
+  "version": "3.2.2",
+  "description": "Testing capability bundle v3.2.2: testing-bundle (router) + test-strategy-engineer (project-level strategy) + test-case-engineer (test case generation) + performance-test-engineer (performance testing) + bug-analyzer (bug root cause) + state-machine-test-engineer (state-machine-driven testing) + change-impact-analyzer (change impact analysis) + state-machine-testing MCP Server (optional enhancement). Use when user needs any testing capability.",
+  "author": {
+    "name": "lyle",
+    "url": "https://github.com/liu-YLY"
+  },
+  "homepage": "https://github.com/liu-YLY/my-skills",
+  "repository": "https://github.com/liu-YLY/my-skills",
+  "license": "MIT",
+  "keywords": [
+    "testing",
+    "test-case",
+    "test-strategy",
+    "performance-testing",
+    "bug-analysis",
+    "root-cause",
+    "state-machine",
+    "qa"
+  ],
+  "skills": "./skills/",
+  "hooks": {},
+  "interface": {
+    "displayName": "Testing Bundle",
+    "shortDescription": "Test strategy, test case generation, performance testing, bug root cause, state-machine-driven testing, and testing workflows",
+    "longDescription": "Use this bundle for any testing capability: project-level test strategy, generating test cases from requirements, reviewing test cases, designing performance tests, analyzing bug root causes with 5 Whys and fishbone diagrams, or building state-machine models for stateful business objects (orders, approvals, tickets, membership).",
+    "developerName": "lyle",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/liu-YLY/my-skills"
+  }
+}

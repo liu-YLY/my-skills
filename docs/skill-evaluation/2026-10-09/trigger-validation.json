@@ -1,0 +1,33 @@
+{
+  "status": "completed",
+  "unique_runs": 123,
+  "cases_per_variant": 41,
+  "repeats": 1,
+  "metadata_classification_only": true,
+  "native_host_trigger_tested": false,
+  "confusion": {
+    "old": {
+      "tp": 21,
+      "fp": 1,
+      "tn": 19,
+      "fn": 0
+    },
+    "new": {
+      "tp": 21,
+      "fp": 0,
+      "tn": 20,
+      "fn": 0
+    },
+    "no_skill": {
+      "tp": 21,
+      "fp": 0,
+      "tn": 20,
+      "fn": 0
+    }
+  },
+  "timing_note": "Observed under parallel backend load, not causal performance evidence",
+  "suite_sha256": "8e1dc2c5db0d1c2f07cad1b288a0589c06b1f58f2f3cc15d7042b99fac809993",
+  "source_new_commit": "8e55998ab7622c9bd3e3f95a6e8ef931f0359a6f",
+  "full_run_receipts_sha256": "a766b25681bd529e51d99230430a486dbecd36dc00a2c98403445c815a4c1ea4",
+  "raw_artifact_folder": "/Users/lyle/.codex/artifacts/skill-repair-20261009/trigger-runs"
+}

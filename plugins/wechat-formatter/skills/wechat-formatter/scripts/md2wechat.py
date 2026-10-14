@@ -1,0 +1,760 @@
+#!/usr/bin/env python3
+"""
+md2wechat.py — 将格式化 Markdown 转为可直接粘贴到微信公众号的带内联样式 HTML。
+
+用法:
+    python md2wechat.py <markdown_file> <style_file> [--size small|medium|large]
+
+输出:
+    {markdown_file}_wechat.html — 带"复制到公众号"按钮的 HTML 文件
+
+依赖:
+    pip install -r requirements.txt
+"""
+
+from __future__ import annotations  # PEP 585 内建泛型（list[...]/dict[...]）在 Python 3.8 兼容
+
+import argparse
+from html import escape
+import re
+import sys
+from pathlib import Path
+from urllib.parse import urlsplit
+
+import markdown
+import nh3
+from bs4 import BeautifulSoup
+
+
+# ─── 微信不支持的 CSS 属性 ────────────────────────────────────────────────
+
+UNSUPPORTED_PROPS = frozenset({
+    'text-shadow', 'box-shadow', 'transition', 'animation',
+    'animation-name', 'animation-duration', 'animation-timing-function',
+    'animation-delay', 'animation-iteration-count', 'animation-direction',
+    'animation-fill-mode', 'animation-play-state',
+    'transform', 'filter', 'backdrop-filter',
+    ':hover', ':focus', ':active', ':before', ':after',
+})
+
+UNSUPPORTED_VALUE_KEYWORDS = ['linear-gradient', 'radial-gradient', 'text-shadow', 'box-shadow']
+
+SAFE_STYLE_PROPERTIES = frozenset({
+    'color', 'background', 'background-color', 'font-family', 'font-size', 'font-weight',
+    'font-style', 'line-height', 'letter-spacing', 'text-align', 'text-decoration',
+    'word-break', 'white-space', 'border', 'border-top', 'border-bottom', 'border-left',
+    'border-right', 'border-color', 'border-bottom-color', 'border-radius', 'border-collapse',
+    'margin', 'margin-top', 'margin-bottom', 'margin-left', 'margin-right',
+    'padding', 'padding-top', 'padding-bottom', 'padding-left', 'padding-right',
+    'width', 'height', 'max-width', 'min-width', 'display', 'overflow-x', 'opacity',
+    'list-style-type', 'vertical-align',
+})
+
+
+def sanitize_content(html: str) -> str:
+    return nh3.clean(
+        html,
+        tags={'div', 'section', 'p', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+              'strong', 'b', 'em', 'i', 's', 'del', 'u', 'br', 'hr', 'blockquote',
+              'ul', 'ol', 'li', 'pre', 'code', 'a', 'img', 'table', 'thead', 'tbody',
+              'tfoot', 'tr', 'th', 'td', 'sup', 'sub', 'figure', 'figcaption'},
+        clean_content_tags={'script', 'style', 'iframe', 'object', 'embed', 'svg', 'math', 'form'},
+        attributes={'*': {'style', 'class'}, 'div': {'id'}, 'a': {'href', 'title'},
+                    'img': {'src', 'alt', 'title', 'width', 'height'},
+                    'td': {'colspan', 'rowspan'}, 'th': {'colspan', 'rowspan', 'scope'},
+                    'ol': {'start'}, 'li': {'value'}},
+        attribute_filter=lambda tag, attr, value: (
+            value if attr != 'id' or value == 'nice' else None
+        ),
+        url_schemes={'http', 'https', 'mailto'},
+        filter_style_properties=set(SAFE_STYLE_PROPERTIES),
+    )
+
+
+# ─── Step 1: 从样式 .md 文件提取 CSS ─────────────────────────────────────
+
+def extract_css_from_md(file_path: str) -> str:
+    """从 Markdown 文件的 ```css 代码块中提取 CSS。"""
+    content = Path(file_path).read_text(encoding='utf-8')
+    match = re.search(r'```css\s*\n(.*?)```', content, re.DOTALL)
+    if not match:
+        print(f"警告: 在 {file_path} 中未找到 CSS 代码块", file=sys.stderr)
+        return ''
+    return match.group(1)
+
+
+# ─── Step 2: 解析 CSS 规则 ───────────────────────────────────────────────
+
+def parse_css_rules(css_text: str) -> list[tuple[str, dict[str, str]]]:
+    """将 CSS 文本解析为 (选择器, {属性: 值}) 元组列表，保持顺序。"""
+    # 移除注释
+    css_text = re.sub(r'/\*.*?\*/', '', css_text, flags=re.DOTALL)
+
+    rules = []
+    for match in re.finditer(r'([^{}]+)\{([^{}]+)\}', css_text):
+        selectors_str = match.group(1).strip()
+        body = match.group(2).strip()
+
+        # 解析属性
+        props: dict[str, str] = {}
+        for prop_match in re.finditer(r'([\w-]+)\s*:\s*([^;]+);?', body):
+            key = prop_match.group(1).strip()
+            value = prop_match.group(2).strip()
+            # 跳过伪类选择器（如 :hover 写在属性位置的情况）
+            if key.startswith(':'):
+                continue
+            props[key] = value
+
+        # 处理逗号分隔的选择器 (#nice ul, #nice ol)
+        for selector in selectors_str.split(','):
+            sel = selector.strip()
+            if sel and not sel.startswith(':'):
+                rules.append((sel, props))
+
+    return rules
+
+
+# ─── Step 3: Markdown → HTML ──────────────────────────────────────────────
+
+MODULE_BLOCK_RE = re.compile(
+    r'^:::(module|[a-zA-Z][\w-]*)(?:\s*\[([^\]]*)\])?(?:\s*\{([^}]*)\})?\s*$'
+)
+
+
+def update_module_fence(line: str, fence: str | None) -> str | None:
+    if fence:
+        closing = r'^ {0,3}' + re.escape(fence[0]) + '{' + str(len(fence)) + r',}\s*$'
+        return None if re.match(closing, line) else fence
+    opening = re.match(r'^ {0,3}(`{3,}|~{3,})', line)
+    return opening[1] if opening else None
+
+
+FIELD_MODULES = {
+    'audience-fit': ('title subtitle fit avoid', 'title'),
+    'manifesto': ('label title body believe against', ''),
+    'question': ('title options', ''),
+    'poll': ('title options', ''),
+    'hero': ('eyebrow title subtitle kicker', 'eyebrow title'),
+    'part': ('index title subtitle', ''),
+    'label-title': ('label title', ''),
+    'infographic': ('eyebrow title subtitle', ''),
+    'verdict': ('eyebrow title body note', ''),
+    'bridge': ('label title body next', ''),
+    'cta': ('title note', ''),
+    'highlight': ('eyebrow title body', ''),
+    'quote': ('eyebrow quote source', 'quote'),
+}
+MODULE_ENUMS = {
+    'hero': {'variant': {'editorial'}},
+    'quote': {'variant': {'light'}},
+    'infographic': {'type': {'thesis', 'number', 'contrast', 'formula'}},
+}
+
+
+def module_node(cls: str, text: str = '', inner: str | None = None) -> str:
+    return f'<div class="{cls}">{escape(text) if inner is None else inner}</div>'
+
+
+def module_fields(body: str, allowed: set[str], repeated: set[str] | None = None) -> dict:
+    result = {}
+    for line in body.strip().splitlines():
+        if not line.strip():
+            continue
+        match = re.match(r'^([^:：]+)[:：]\s*(.*)$', line.strip())
+        if not match or match[1] not in allowed:
+            raise ValueError('unknown field or malformed content')
+        key, value = match[1], match[2]
+        if repeated and key in repeated:
+            result.setdefault(key, []).append(value)
+        elif key in result:
+            raise ValueError('duplicate field: ' + key)
+        else:
+            result[key] = value
+    return result
+
+
+def module_fallback(name: str, title: str | None, body: str, params: str = '', reason: str = '') -> str:
+    print('warning: unsupported or invalid module ' + name + ': ' + reason, file=sys.stderr)
+    header = ':::' + name + ('[' + title + ']' if title else '')
+    header += '{' + params + '}' if params else ''
+    literal = '<pre><code>' + escape(header + '\n' + body.rstrip() + '\n:::') + '</code></pre>'
+    return module_node('module-' + name, inner=literal) if name in FIELD_MODULES else literal
+
+
+def module_group(name: str, key: str, value: str) -> str:
+    values = [item.strip() for item in value.split('|')]
+    if any(not item for item in values):
+        raise ValueError('empty list item')
+    if key == 'options':
+        if name == 'poll':
+            items = ''.join(module_node('option', inner=module_node('option-radio', '○')
+                                       + module_node('option-text', item)) for item in values)
+        else:
+            items = ''.join(module_node('option', item) for item in values)
+        return module_node('options', inner=items)
+    labels = {'fit': '适合', 'avoid': '不适合', 'believe': '相信', 'against': '反对'}
+    glyph = '✓ ' if key == 'fit' else '✗ ' if key == 'avoid' else ''
+    items = ''.join(module_node(key + '-item', glyph + item) for item in values)
+    return module_node(key + '-section', inner=module_node(key + '-label', labels[key]) + items)
+
+
+ROW_MODULES = {
+    'faq': ('faq-item', 'faq-question faq-answer', False),
+    'cards': ('card', 'card-title card-subtitle card-desc', True),
+    'compare': ('compare-row', 'compare-cell compare-cell compare-cell', True),
+    'cases': ('case', 'case-title case-industry case-result', False),
+    'toc': ('toc-item', 'toc-number toc-name toc-desc', False),
+    'metrics': ('metric', 'metric-name metric-value metric-desc', True),
+    'steps': ('step', 'step-number step-name step-desc', False),
+    'timeline': ('timeline-item', 'timeline-date timeline-name timeline-desc', False),
+}
+
+
+def module_wrap(name: str, title: str | None, content: str, suffix: str = '') -> str:
+    header = module_node('module-header ' + name + '-title', title) if title else ''
+    return module_node('module module-' + name + ' ' + name + suffix,
+                       inner=header + module_node('module-body', inner=content))
+
+
+def module_rows(name: str, body: str) -> str:
+    item_cls, columns, accent = ROW_MODULES[name]
+    classes = columns.split()
+    result = ''
+    for line in body.strip().splitlines():
+        if not line.strip():
+            continue
+        values = [part.strip() for part in re.split(r'(?<!\\)\|', line)]
+        values = [part.replace('\\|', '|') for part in values]
+        if len(values) != len(classes) + int(accent):
+            raise ValueError('incorrect row columns')
+        suffix = ''
+        if accent:
+            color = values.pop()
+            if color not in {'accent', 'default'}:
+                raise ValueError('invalid accent')
+            suffix = ' accent' if color == 'accent' else ''
+        cells = [module_node(cls + (suffix if name == 'compare' else ''), value)
+                 for cls, value in zip(classes, values)]
+        if name == 'steps':
+            cells = [cells[0], module_node('step-content', inner=''.join(cells[1:]))]
+        result += module_node(item_cls + suffix, inner=''.join(cells))
+    if not result:
+        raise ValueError('empty rows')
+    return result
+
+
+LABELED_MODULES = {'myth-fact', 'checklist', 'callout'}
+
+
+def module_labeled(name: str, body: str) -> str:
+    result, pair = '', ''
+    for line in body.strip().splitlines():
+        if not line.strip():
+            continue
+        parts = [part.strip() for part in line.split('|')]
+        if len(parts) != (3 if name == 'checklist' else 2):
+            raise ValueError('incorrect labeled row')
+        kind, value = parts[:2]
+        if name == 'myth-fact':
+            if kind not in {'myth', 'fact'} or (kind == 'fact') != bool(pair):
+                raise ValueError('expected myth/fact pair')
+            cell = module_node(kind, inner=module_node(kind + '-label', '误区' if kind == 'myth' else '事实')
+                               + module_node(kind + '-text', value))
+            if kind == 'myth':
+                pair = cell
+            else:
+                result += module_node('myth-fact-pair', inner=pair + cell)
+                pair = ''
+        elif name == 'checklist':
+            glyphs = {'done': '✓', 'pending': '⏳', 'warn': '⚠', 'todo': '○'}
+            if kind not in glyphs:
+                raise ValueError('invalid status')
+            result += module_node('checklist-item', inner=module_node('checklist-status ' + kind, glyphs[kind])
+                                  + module_node('checklist-content', inner=module_node('checklist-desc', value)
+                                                + module_node('checklist-note', parts[2])))
+        else:
+            labels = {'tip': '💡 提示', 'warning': '⚠ 警告', 'note': '📝 注意', 'important': '❗ 重要'}
+            if kind not in labels:
+                raise ValueError('invalid callout type')
+            result += module_node('callout ' + kind, inner=module_node('callout-label', labels[kind])
+                                  + module_node('callout-content', value))
+    if pair or not result:
+        raise ValueError('incomplete labeled rows')
+    return result
+
+
+IMAGE_MODULES = {
+    'author-card': 'name title bio avatar wechat',
+    'brand-banner': 'logo name slogan',
+    'image-compare': 'eyebrow title left_title left_image right_title right_image',
+    'image-text': 'layout eyebrow title body image alt',
+}
+
+
+def module_image(url: str, alt: str = '', cls: str = '') -> str:
+    parsed = urlsplit(url)
+    if (parsed.scheme.lower() not in {'http', 'https'} or not parsed.hostname
+            or any(char.isspace() or char in '<>\"' for char in url)):
+        raise ValueError('image URL must be HTTP(S)')
+    return f'<img src="{escape(url, quote=True)}" alt="{escape(alt, quote=True)}" class="{cls}">'
+
+
+def module_images(name: str, body: str) -> tuple[str, str]:
+    fields = module_fields(body, set(IMAGE_MODULES[name].split()))
+    if name in {'author-card', 'brand-banner'}:
+        author = name == 'author-card'
+        image_key, image_cls = ('avatar', 'avatar') if author else ('logo', 'logo')
+        content = module_image(fields[image_key], fields.get('name', ''), image_cls) if image_key in fields else ''
+        prefix = 'author-' if author else 'brand-'
+        order = ('name', 'title', 'bio', 'wechat') if author else ('name', 'slogan')
+        content += module_node(prefix + 'info', inner=''.join(module_node(prefix + key, fields[key])
+                                                             for key in order if key in fields))
+        return content, ''
+    heading = ''.join(module_node(key, fields[key]) for key in ('eyebrow', 'title') if key in fields)
+    if name == 'image-compare':
+        sides = ''
+        for side in ('left', 'right'):
+            sides += module_node('compare-side', inner=module_node('compare-side-title', fields.get(side + '_title', ''))
+                                 + module_image(fields.get(side + '_image', ''), fields.get(side + '_title', '')))
+        return heading + module_node('compare-container', inner=sides), ''
+    layout = fields.get('layout', 'left')
+    if layout not in {'left', 'right'}:
+        raise ValueError('invalid image layout')
+    content = module_node('image-text-content', inner=heading + module_node('body', fields.get('body', '')))
+    image = module_node('image-container', inner=module_image(fields.get('image', ''), fields.get('alt', '')))
+    return (content + image if layout == 'right' else image + content), ' layout-' + layout
+
+
+def module_params(raw: str, allowed: dict[str, set[str]]) -> dict[str, str]:
+    result = {}
+    for token in raw.split():
+        key, separator, value = token.partition('=')
+        if not separator or key not in allowed or value not in allowed[key] or key in result:
+            raise ValueError('unsupported or duplicate module parameter')
+        result[key] = value
+    return result
+
+
+def module_annotate(body: str) -> str:
+    fields = module_fields(body, {'eyebrow', 'title', 'image', 'alt', 'point'}, {'point'})
+    points = fields.get('point', [])
+    if not 1 <= len(points) <= 3:
+        raise ValueError('annotation needs 1..3 points')
+    content = ''.join(module_node(key, fields[key]) for key in ('eyebrow', 'title') if key in fields)
+    content += module_node('image-container', inner=module_image(fields.get('image', ''), fields.get('alt', '')))
+    rendered = ''
+    for point in points:
+        values = [item.strip() for item in point.split('|')]
+        if len(values) not in {2, 3}:
+            raise ValueError('invalid annotation point')
+        rendered += module_node('point', inner=module_node('point-number', values[0])
+                                + module_node('point-content', inner=module_node('point-title', values[1])
+                                              + module_node('point-desc', values[2] if len(values) == 3 else '')))
+    return content + module_node('points', inner=rendered)
+
+
+def module_image_steps(body: str, params: str) -> tuple[str, str]:
+    attributes = module_params(params, {'columns': {'2', '3', '4'}, 'caption_style': {'numbered'}})
+    groups = []
+    for line in body.strip().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith('step:'):
+            groups.append({'step': line.split(':', 1)[1].strip()})
+        elif not groups:
+            raise ValueError('image step must start with step')
+        elif line.startswith('!['):
+            image = re.fullmatch(r'!\[([^\]]*)\]\(([^\s]+)(?:\s+"[^"]*")?\)', line)
+            if not image or 'image' in groups[-1]:
+                raise ValueError('invalid or duplicate step image')
+            groups[-1]['image'] = module_image(image[2], image[1])
+        else:
+            fields = module_fields(line, {'desc', 'note'})
+            if set(fields) & set(groups[-1]):
+                raise ValueError('duplicate step field')
+            groups[-1].update(fields)
+    if not groups or any(not group['step'] for group in groups):
+        raise ValueError('missing step title')
+    content = ''
+    for index, group in enumerate(groups, 1):
+        number = f'{index:02d} ' if attributes.get('caption_style') == 'numbered' else ''
+        cells = module_node('step-name', number + group['step'])
+        if 'image' in group:
+            cells += module_node('step-image', inner=group['image'])
+        cells += ''.join(module_node('step-' + key, group[key]) for key in ('desc', 'note') if key in group)
+        content += module_node('step', inner=cells)
+    suffix = ' columns-' + attributes['columns'] if 'columns' in attributes else ''
+    suffix += ' caption-numbered' if 'caption_style' in attributes else ''
+    return content, suffix
+
+
+def module_sections(name: str, body: str, params: str) -> tuple[str, str]:
+    attributes = module_params(params, {'columns': {'2', '3', '4'}} if name == 'columns' else {})
+    sections = [[]]
+    fence = None
+    for line in body.strip().splitlines(keepends=True):
+        previous = fence
+        fence = update_module_fence(line, fence)
+        if not (previous or fence):
+            if re.fullmatch(r'---\s*', line):
+                sections.append([])
+                continue
+            if re.match(r'^:::', line):
+                raise ValueError('nested modules are unsupported')
+        sections[-1].append(line)
+    sections = [''.join(section) for section in sections]
+    count = int(attributes.get('columns', '2'))
+    if len(sections) != count or any(not section.strip() for section in sections):
+        raise ValueError('section count does not match layout')
+    content = ''
+    for index, section in enumerate(sections):
+        cls = 'column' if name == 'columns' else ('split-left' if index == 0 else 'split-right')
+        html = sanitize_content(markdown.markdown(section.strip(), extensions=['fenced_code', 'tables']))
+        content += module_node(cls, inner=html)
+    return content, ' columns-' + str(count) if name == 'columns' else ''
+
+
+def render_module_block(name: str, title: str | None, body: str, params: str = '') -> str:
+    try:
+        if name in {'split', 'columns'}:
+            content, suffix = module_sections(name, body, params)
+            return module_wrap(name, title, content, suffix)
+        if name == 'image-annotate' and not params:
+            return module_wrap(name, title, module_annotate(body))
+        if name == 'image-steps':
+            content, suffix = module_image_steps(body, params)
+            return module_wrap(name, title, content, suffix)
+        if name in IMAGE_MODULES and not params:
+            content, suffix = module_images(name, body)
+            return module_wrap(name, title, content, suffix)
+        if name in LABELED_MODULES and not params:
+            return module_wrap(name, title, module_labeled(name, body))
+        if name in ROW_MODULES and not params:
+            return module_wrap(name, title, module_rows(name, body))
+        if name not in FIELD_MODULES or params:
+            raise ValueError('unsupported module or parameters')
+        field_order, required = FIELD_MODULES[name]
+        enums = MODULE_ENUMS.get(name, {})
+        fields = module_fields(body, set(field_order.split()) | set(enums))
+        if any(not fields.get(key) for key in required.split()):
+            raise ValueError('missing required fields')
+        suffix = ''
+        for key, values in enums.items():
+            if key in fields:
+                if fields[key] not in values:
+                    raise ValueError('invalid enum: ' + key)
+                suffix += ' ' + key + '-' + fields[key]
+        content = ''
+        for key in field_order.split():
+            if key not in fields:
+                continue
+            cls = 'part-' + key if name == 'part' else 'quote-text' if key == 'quote' else key
+            if key in {'fit', 'avoid', 'believe', 'against', 'options'}:
+                content += module_group(name, key, fields[key])
+            else:
+                content += module_node(cls, fields[key])
+        return module_wrap(name, title, content, suffix)
+    except ValueError as error:
+        return module_fallback(name, title, body, params, str(error))
+
+
+def render_modules(md_text: str, stash=None) -> str:
+    """Collect modules outside code fences; optionally stash completed HTML."""
+    parts, body = [], []
+    fence = None
+    module = None
+    header_line = ''
+    for line in md_text.splitlines(keepends=True):
+        previous = fence
+        fence = update_module_fence(line, fence)
+        protected = previous or fence
+        if module is not None:
+            if not protected and re.fullmatch(r':::+\s*', line):
+                name, title, params = module
+                html = render_module_block(name, title, ''.join(body), params or '')
+                parts.append('\n' + (stash(html) if stash else html) + '\n')
+                module, body = None, []
+            else:
+                body.append(line)
+        else:
+            opening = None if protected else MODULE_BLOCK_RE.fullmatch(line.rstrip('\r\n'))
+            if opening:
+                module, header_line = opening.groups(), line
+            else:
+                parts.append(line)
+    if module is not None:
+        parts.append(header_line + ''.join(body))
+    return ''.join(parts)
+
+
+def load_modules_css() -> str:
+    """读取 layout/modules-base.css 内容（供导出 HTML 合并）。"""
+    css_path = Path(__file__).resolve().parent.parent / 'layout' / 'modules-base.css'
+    if css_path.exists():
+        return css_path.read_text(encoding='utf-8')
+    return ''
+
+
+def md_to_html(md_text: str) -> str:
+    """将 Markdown 转为 HTML。"""
+    # 移除文件头部的 HTML 注释
+    md_text = re.sub(r'^<!--.*?-->\s*', '', md_text, flags=re.DOTALL)
+    # 预渲染 :::module 高级排版模块（避免被当作普通引用于代码块丢弃）
+    class ModulePreprocessor(markdown.preprocessors.Preprocessor):
+        def run(self, lines):
+            return render_modules('\n'.join(lines), self.md.htmlStash.store).split('\n')
+
+    parser = markdown.Markdown(extensions=['fenced_code', 'tables', 'sane_lists', 'smarty'])
+    parser.preprocessors.register(ModulePreprocessor(parser), 'modules', 27)
+    return parser.convert(md_text)
+
+
+# ─── Step 4 & 5: CSS 内联化 ──────────────────────────────────────────────
+
+def parse_inline_style(style_str: str) -> dict[str, str]:
+    """解析已有的 inline style 字符串为字典。"""
+    props = {}
+    if not style_str:
+        return props
+    for part in style_str.split(';'):
+        part = part.strip()
+        if ':' in part:
+            key, value = part.split(':', 1)
+            props[key.strip()] = value.strip()
+    return props
+
+
+def style_dict_to_str(props: dict[str, str]) -> str:
+    """将属性字典转为 CSS style 字符串。"""
+    return '; '.join(f'{k}: {v}' for k, v in props.items())
+
+
+def apply_inline_styles(html: str, rules: list[tuple[str, dict[str, str]]],
+                        size: str) -> tuple[str, int]:
+    """将 CSS 规则内联到 HTML 元素上。返回 (HTML, 被过滤的属性数)。"""
+    soup = BeautifulSoup(html, 'html.parser')
+
+    # 包裹在 <div id="nice"> 中
+    wrapper = soup.new_tag('div', id='nice')
+    if size != 'medium':
+        wrapper['class'] = f'style-{size}'
+    for child in list(soup.contents):
+        wrapper.append(child)
+    soup.append(wrapper)
+
+    filtered_count = 0
+
+    for selector, props in rules:
+        try:
+            elements = soup.select(selector)
+        except Exception:
+            continue
+
+        for el in elements:
+            existing = parse_inline_style(el.get('style', ''))
+            # 合并：新规则覆盖已有属性（CSS 顺序优先）
+            merged = {**existing, **props}
+
+            # 过滤微信不支持的属性
+            filtered = {}
+            for key, value in merged.items():
+                if key.lower() in UNSUPPORTED_PROPS:
+                    filtered_count += 1
+                    continue
+                if any(kw in value.lower() for kw in UNSUPPORTED_VALUE_KEYWORDS):
+                    filtered_count += 1
+                    continue
+                filtered[key] = value
+
+            el['style'] = style_dict_to_str(filtered)
+
+    # Raw module HTML may not match a stylesheet selector.
+    for el in soup.find_all(style=True):
+        filtered = {}
+        for key, value in parse_inline_style(el['style']).items():
+            lowered = value.lower()
+            if (key.lower() in UNSUPPORTED_PROPS
+                    or any(token in lowered for token in UNSUPPORTED_VALUE_KEYWORDS)
+                    or any(token in lowered for token in ('url', 'expression', '\\', '@', '/*'))):
+                filtered_count += 1
+                continue
+            filtered[key] = value
+        el['style'] = style_dict_to_str(filtered)
+
+    return str(soup), filtered_count
+
+
+# ─── Step 7: 生成带"复制"按钮的 HTML ─────────────────────────────────────
+
+HTML_TEMPLATE = '''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title} - 微信公众号排版</title>
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+                background: #f0f0f0; }}
+        .toolbar {{
+            position: sticky; top: 0; z-index: 100;
+            background: #fff; border-bottom: 1px solid #e0e0e0;
+            padding: 10px 20px; display: flex; align-items: center; gap: 12px;
+        }}
+        .toolbar .btn {{
+            padding: 8px 24px; background: #07c160; color: #fff;
+            border: none; border-radius: 6px; cursor: pointer;
+            font-size: 15px; font-weight: 500;
+            transition: background 0.2s;
+        }}
+        .toolbar .btn:hover {{ background: #06ad56; }}
+        .toolbar .btn:active {{ background: #059a4b; }}
+        .toolbar .hint {{ color: #999; font-size: 13px; }}
+        .toolbar .style-tag {{
+            padding: 2px 8px; background: #f0f0f0; border-radius: 4px;
+            font-size: 12px; color: #666;
+        }}
+        .preview-wrapper {{
+            max-width: 700px; margin: 20px auto; padding: 0 16px;
+        }}
+        .preview {{
+            background: #fff; border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }}
+        {modules_css}
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button class="btn" onclick="copyContent()">复制到公众号</button>
+        <span class="hint">点击按钮后，打开微信公众号编辑器，Ctrl+V 粘贴</span>
+        <span class="style-tag">{style_name}</span>
+    </div>
+    <div class="preview-wrapper">
+        <div class="preview" id="content">{html_content}</div>
+    </div>
+    <script>
+        function copyContent() {{
+            var content = document.getElementById('content');
+            var range = document.createRange();
+            range.selectNodeContents(content);
+            var selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {{
+                if (!document.execCommand('copy')) {{
+                    throw new Error('clipboard copy was rejected');
+                }}
+                alert('已复制！请打开微信公众号编辑器，Ctrl+V 粘贴');
+            }} catch(e) {{
+                alert('复制失败，请手动选中内容后 Ctrl+C 复制');
+            }}
+            selection.removeAllRanges();
+        }}
+    </script>
+</body>
+</html>'''
+
+
+def extract_title(md_text: str) -> str:
+    """从 Markdown 中提取标题（第一个 # 行）。"""
+    match = re.search(r'^#\s+(.+)$', md_text, re.MULTILINE)
+    return match.group(1).strip() if match else '未命名文章'
+
+
+STYLE_NAMES = {
+    'tech-blog': '技术博客',
+    'tutorial': '教程指南',
+    'deep-dive': '深度干货',
+    'casual-chat': '轻松聊天',
+    'apple': '苹果风',
+    'cyber': '赛博朋克',
+}
+
+
+def detect_style_name(style_path: str) -> str:
+    """从样式文件路径推断风格名称。"""
+    stem = Path(style_path).stem
+    return STYLE_NAMES.get(stem, stem)
+
+
+# ─── 主流程 ───────────────────────────────────────────────────────────────
+
+def convert(md_path: str, style_path: str, size: str = 'medium') -> str:
+    """执行完整转换流程，返回输出文件路径。"""
+    # 读取输入
+    md_text = Path(md_path).read_text(encoding='utf-8')
+    css_text = extract_css_from_md(style_path)
+
+    if not css_text:
+        print("错误: 未能提取到 CSS，请检查样式文件格式", file=sys.stderr)
+        sys.exit(1)
+
+    # 解析（合并模块基础样式规则，使 :::module 卡片在复制内容中也带样式）
+    rules = parse_css_rules(css_text)
+    module_css = load_modules_css()
+    if module_css:
+        rules = parse_css_rules(module_css) + rules
+    title = extract_title(md_text)
+    style_name = detect_style_name(style_path)
+
+    # Markdown → HTML
+    html_body = md_to_html(md_text)
+
+    # CSS 内联化 + 微信兼容性过滤
+    html_inlined, filtered_count = apply_inline_styles(html_body, rules, size)
+    html_inlined = sanitize_content(html_inlined)
+
+    if filtered_count > 0:
+        print(f"警告: 已过滤 {filtered_count} 个微信不支持的 CSS 属性", file=sys.stderr)
+        if 'cyber' in style_path.lower():
+            print("提示: cyber 风格使用了较多高级 CSS 特性，粘贴到公众号后视觉效果会有降级", file=sys.stderr)
+
+    # 生成最终 HTML（合并模块基础样式，保证 :::module 卡片在公众号可见）
+    modules_css = load_modules_css()
+    if modules_css:
+        modules_css = '\n        /* modules-base.css */\n' + modules_css.strip()
+    final_html = HTML_TEMPLATE.format(
+        title=escape(title),
+        style_name=escape(style_name),
+        html_content=html_inlined,
+        modules_css=modules_css,
+    )
+
+    # 写入文件
+    stem = Path(md_path).stem
+    out_dir = Path(md_path).parent
+    out_path = out_dir / f'{stem}_wechat.html'
+    out_path.write_text(final_html, encoding='utf-8')
+
+    return str(out_path)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='将格式化 Markdown 转为可直接粘贴到微信公众号的 HTML'
+    )
+    parser.add_argument('markdown_file', help='格式化后的 Markdown 文件路径')
+    parser.add_argument('style_file', help='CSS 样式文件路径（styles/*.md）')
+    parser.add_argument('--size', choices=['small', 'medium', 'large'],
+                        default='medium', help='字号大小（默认: medium）')
+
+    args = parser.parse_args()
+
+    # 校验文件存在
+    if not Path(args.markdown_file).exists():
+        print(f"错误: 文件不存在 — {args.markdown_file}", file=sys.stderr)
+        sys.exit(1)
+    if not Path(args.style_file).exists():
+        print(f"错误: 文件不存在 — {args.style_file}", file=sys.stderr)
+        sys.exit(1)
+
+    out_path = convert(args.markdown_file, args.style_file, args.size)
+    print(f"已生成: {out_path}")
+    print(f"请在浏览器中打开该文件，点击「复制到公众号」按钮即可粘贴到微信编辑器")
+
+
+if __name__ == '__main__':
+    main()
