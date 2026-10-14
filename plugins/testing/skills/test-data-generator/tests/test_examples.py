@@ -49,3 +49,19 @@ def test_copied_skill_runs_without_repository_paths(tmp_path):
     outcome = json.loads(result.stdout)
     assert outcome["normal_rows"] == 14 and outcome["negative_cases"] == 2
     assert outcome["system_execution_status"] == "not_run"
+
+
+def test_matrix_example_has_fixed_dimensions_faker_and_independent_time_rule(tmp_path):
+    pytest.importorskip("faker")
+    profile = load_profile(ROOT / "examples/matrix-users.yaml")
+    first = generate_bundle(profile, tmp_path)
+    assert first["validation_status"] == "passed" and first["negative_cases"] == 2
+    directory = Path(first["output_directory"])
+    users = json.loads((directory / "data/user.json").read_text())
+    assert [row["role"] for row in users] == ["viewer"] * 5 + ["editor"] * 5
+    assert all(row["active"] is True and row["email"].endswith("@example.invalid") for row in users)
+    report = validate_bundle(profile, directory)
+    assert all(item["validation_status"] == "passed" for item in report["scenario_summary"])
+    assert report["checks"]["R-session-hour"]["applicable"] == 20
+    manifest = json.loads((directory / "manifest.json").read_text())
+    assert manifest["dependencies"]["Faker"] and len(manifest["engine_hash"]) == 64

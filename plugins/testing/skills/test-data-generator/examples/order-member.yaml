@@ -105,15 +105,21 @@ scenarios:
     kind: boundary
     entity: order
     count: 1
-    set: {status: paid, amount: "0.01"}
+    set: {status: paid}
+    case_ids: [TC-paid-min]
+    target_check_ids: [F-order.amount-range, R-paid-time-required]
     generators:
+      amount: {kind: boundary, point: min}
       pay_time: {kind: relative_datetime, field: create_time, min_seconds: 0, max_seconds: 0}
   - id: paid-max-amount
     kind: boundary
     entity: order
     count: 1
-    set: {status: paid, amount: "99999.99"}
+    set: {status: paid}
+    case_ids: [TC-paid-max]
+    target_check_ids: [F-order.amount-range, R-paid-time-required]
     generators:
+      amount: {kind: boundary, point: max}
       pay_time: {kind: relative_datetime, field: create_time, min_seconds: 0, max_seconds: 0}
   - id: cancelled-orders
     kind: normal

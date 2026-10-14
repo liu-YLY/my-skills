@@ -29,7 +29,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | bug-analyzer | v1.2.3 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
 | state-machine-test-engineer | v1.7.5 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.8.5（可选） |
 | change-impact-analyzer | v1.4.0 | 从代码改动生成影响范围与测试内容，需求和用例可选 | - |
-| test-data-generator | v1.0.0 | 独立离线造数、关联与场景生成、JSON/CSV 校验 | - |
+| test-data-generator | v1.1.0 | 独立离线造数、边界配方、关联与场景验收、JSON/CSV 校验 | - |
 
 **7 条混合意图链**：
 - 链 1：Bug 分析 + 补充用例 → bug-analyzer → case-engineer
@@ -61,7 +61,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | performance-test-engineer | 119 | 5 |
 | state-machine-test-engineer | 169 | 13 |
 | test-case-engineer | 147 | 13 |
-| test-data-generator | 53 | 4 |
+| test-data-generator | 54 | 4 |
 | test-strategy-engineer | 141 | 5 |
 | testing-bundle | 164 | 2 |
 | wechat-formatter | 169 | 29 |
