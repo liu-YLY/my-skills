@@ -83,7 +83,13 @@ class Budget:
     def __init__(self, limits):
         self.started = time.monotonic()
         self.limits = limits
+        self.generated_bytes = 0
 
     def check(self):
         if time.monotonic() - self.started > self.limits["timeout_seconds"]:
             raise ResourceError("execution timeout exceeded")
+
+    def consume_record(self, row):
+        self.generated_bytes += len(canonical(row).encode("utf-8"))
+        if self.generated_bytes > self.limits["max_output_bytes"]:
+            raise ResourceError("generated data byte limit exceeded")

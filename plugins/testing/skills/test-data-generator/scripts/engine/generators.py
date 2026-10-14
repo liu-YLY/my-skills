@@ -115,6 +115,7 @@ def generate_entity(profile, entity, assignments=None, budget=None):
             keys = [tuple(row[name] for name in group) for group in groups]
             duplicate = any(None not in key and key in known for key, known in zip(keys, seen))
             if valid and not duplicate:
+                budget.consume_record(row)
                 for key, known in zip(keys, seen):
                     if None not in key:
                         known.add(key)

@@ -2,27 +2,40 @@ import argparse
 import json
 import sys
 
-from engine.common import ProfileError
+from engine.common import ProfileError, ResourceError
+from engine.pipeline import generate_bundle, validate_bundle
 from engine.profile import inspect_profile, load_profile
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Inspect a test-data profile without generating records")
-    parser.add_argument("command", choices=["inspect"])
-    parser.add_argument("--profile", required=True)
+    parser = argparse.ArgumentParser(description="Generate or independently validate offline test data")
+    commands = parser.add_subparsers(dest="command", required=True)
+    for name in ("inspect", "generate", "validate"):
+        command = commands.add_parser(name)
+        command.add_argument("--profile", required=True)
+        if name == "generate":
+            command.add_argument("--output-root", required=True)
+        elif name == "validate":
+            command.add_argument("--dataset", required=True)
     args = parser.parse_args()
     try:
-        result = inspect_profile(load_profile(args.profile))
+        profile = load_profile(args.profile)
+        if args.command == "inspect":
+            result = inspect_profile(profile)
+        elif args.command == "generate":
+            result = generate_bundle(profile, args.output_root)
+        else:
+            result = validate_bundle(profile, args.dataset)
     except ProfileError as error:
         print(json.dumps({"generation_status": "blocked", "validation_status": "not_run",
                           "system_execution_status": "not_run", "error": str(error)}, ensure_ascii=False))
         return 2
-    except (OSError, ValueError, OverflowError) as error:
+    except (OSError, ValueError, OverflowError, ResourceError, KeyboardInterrupt) as error:
         print(json.dumps({"generation_status": "failed", "validation_status": "not_run",
-                          "system_execution_status": "not_run", "error": str(error)}, ensure_ascii=False))
+                          "system_execution_status": "not_run", "error": "interrupted" if isinstance(error, KeyboardInterrupt) else str(error)}, ensure_ascii=False))
         return 4
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    return 0
+    return 3 if result["validation_status"] in ("failed", "incomplete") else 0
 
 
 if __name__ == "__main__":
