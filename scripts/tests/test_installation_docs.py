@@ -64,3 +64,23 @@ def test_documented_diff_modes_do_not_execute_textconv(tmp_path, mode):
         output = git(*shlex.split(command)[1:])
         assert not marker.exists(), f"documented command executed textconv: {command}"
         assert "+committed" in output or "+staged" in output
+
+
+def test_documented_root_commit_diff_preserves_first_commit_content(tmp_path):
+    def git(*args):
+        return subprocess.run(["git", "-c", "core.hooksPath=/dev/null", *args],
+                              cwd=tmp_path, check=True, capture_output=True,
+                              text=True).stdout
+
+    git("init", "-q", "-b", "develop")
+    (tmp_path / "policy.py").write_text("LIMIT = 20\n")
+    git("add", "policy.py")
+    git("-c", "user.name=Skill fixture", "-c", "user.email=fixture@example.invalid",
+        "commit", "-qm", "initial policy")
+    guide = ROOT / "plugins/testing/skills/change-impact-analyzer/knowledge/diff-modes.md"
+    command = re.search(r"`(git show --root [^`]+)`", guide.read_text()).group(1)
+    before = git("status", "--porcelain")
+    output = git(*shlex.split(command.replace("<commit>", "HEAD"))[1:])
+    assert "+LIMIT = 20" in output
+    assert "diff --git a/policy.py b/policy.py" in output
+    assert git("status", "--porcelain") == before

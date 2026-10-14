@@ -51,8 +51,10 @@ keywords:
 | Bug分析、根因、缺陷定位、复现、5 Whys、鱼骨图、防御性用例反推 **等功能缺陷信号** | **bug-analyzer** | 功能缺陷根因 |
 | 性能测试、负载测试、压力测试、并发测试、TPS、响应时间、瓶颈、性能瓶颈、容量评估 **等性能/资源层信号** | **performance-test-engineer** | 性能场景+瓶颈分析 |
 | 状态机、状态流转、状态转换、生命周期、非法跳转、幂等、并发冲突、消息乱序、状态回退、幽灵状态、终态吸收 **等状态型需求信号** | **state-machine-test-engineer** | 状态机建模+场景穷举 |
-| 变更影响分析、diff 分析、代码改动检查、覆盖缺口、回归风险 **等变更影响信号** | **change-impact-analyzer** | 代码变更影响分析（链 6 协同，亦可单意图路由） |
+| 变更影响分析、diff 分析、代码改动点、影响范围与测试内容、覆盖缺口、回归风险 **等变更影响信号** | **change-impact-analyzer** | 从改动生成范围与测试内容；旧用例可选，完整用例集另行协作 |
 | 意图不明确 | **追问用户**（🔴 CHECKPOINT） | 列出 6 个子 skill 的能力让用户选择 |
+
+给定代码改动并要求范围、优先级或测试内容时，按变更分析单意图路由；不因出现「测试内容」转为完整用例生成或项目级策略。用户另外明确要求正式用例集时，再基于变更分析产物协作。
 
 > "等X信号"判定边界：含上述任一关键词，或语义等价表达（如"测试计划"等价"测试策略"、"QPS"等价"吞吐量/TPS"）。边界模糊时按"判定顺序第三步"追问用户。
 
@@ -83,7 +85,7 @@ keywords:
 - [performance-test-engineer](../performance-test-engineer/SKILL.md)：性能方案与资源/架构层瓶颈。
 - [bug-analyzer](../bug-analyzer/SKILL.md)：功能缺陷根因；缺少共享 bug-patterns 时按其自身规则降级。
 - [state-machine-test-engineer](../state-machine-test-engineer/SKILL.md)：状态建模与场景穷举；state-machine-testing MCP v0.8.5 为可选增强。
-- [change-impact-analyzer](../change-impact-analyzer/SKILL.md)：代码变更 × 用例的影响与覆盖缺口。
+- [change-impact-analyzer](../change-impact-analyzer/SKILL.md)：从代码变更生成影响范围与测试内容，用例和需求对照为可选增强。
 
 安装方式、依赖关系和 MCP 配置属于部署文档，见 [../../README.md](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/README.md)，不参与运行时路由判断。复制安装只交付 Skill 资源，不安装 MCP 服务；缺 MCP 时由专业 Skill 进入独立模式并如实标记。
 

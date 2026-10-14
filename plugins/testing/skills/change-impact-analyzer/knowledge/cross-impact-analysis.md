@@ -33,28 +33,42 @@ Model 和数据库（schema / 默认值 / 历史数据）
 - 识别**同接口多调用方**场景：同一接口被订单详情页和退款页同时调用，任一端变化都需要两侧回归
 - 识别**公共方法多业务方**场景：公共组件/工具方法被多处引用，变更影响范围需逐个评估
 - 识别**数据流下游**场景：DB 字段变化要追到所有读写该字段的接口、缓存键、消息体
+- 每条关系记录 `change_id`、调用/消费位置（文件与行或符号）、来源版本和 `confirmed/candidate`；在完整相关源码中核对实际调用、路由注册或字段消费，不能只搜索 diff 中的 import。
+- 记录已查入口与停止位置。动态调用、消息消费、配置开关或跨仓库对端不可达时列为待核实；「未找到调用方」不等于「没有调用方」。静态调用成立不证明运行时条件已满足。
+- 只提供 patch/改动说明时限定到给定材料；缺失的上下游形成候选影响，不虚构路径或组件。
 
 ### 1.3 输出格式（追加到变更清单）
 
 ```yaml
 impact_chains:
-  - change_ref: "src/api/user.ts::getUser"
+  - change_id: "CH-001"
+    change_ref: "src/api/user.ts::getUser"
     chain:
       - layer: "frontend"
         nodes: ["pages/user-profile", "pages/admin-user-list"]
         relation: "consumes_response"
+        confirmation: "confirmed"
+        source_refs: ["pages/user-profile:42@head-sha", "pages/admin-user-list:65@head-sha"]
       - layer: "api"
         nodes: ["GET /api/user/:id"]
         relation: "defines"
+        confirmation: "confirmed"
+        source_refs: ["src/api/user.ts::getUser@head-sha"]
       - layer: "service"
         nodes: ["UserService.getProfile"]
         relation: "implements"
+        confirmation: "confirmed"
+        source_refs: ["UserService::getProfile@head-sha"]
       - layer: "model"
         nodes: ["users.avatar (nullable)"]
         relation: "reads_from"
+        confirmation: "confirmed"
+        source_refs: ["UserService::getProfile@head-sha", "users::avatar@head-sha"]
       - layer: "cache"
         nodes: ["user:profile:{id}"]
         relation: "cached_as"
+        confirmation: "candidate"
+        source_refs: []
     indirect_risks:
       - "历史用户数据 avatar 为空，前端需处理 null 展示"
       - "缓存未失效会返回旧结构，需确认失效策略"
@@ -99,7 +113,7 @@ contract_checks:
 ### 3.1 高风险（任一命中即高风险）
 
 - 登录和权限
-- 支付、金额和订单
+- 支付、金额计算、订单关键状态和履约规则
 - 删除或破坏性操作
 - 敏感数据
 - 数据库迁移
@@ -127,23 +141,25 @@ contract_checks:
 
 - 「开发说改动很小」**不是**低风险证据
 - 「这个公共方法只有一个调用方，接口契约没有变化，已有自动化覆盖了主要分支」**才是**降低风险的证据
-- 如果代码覆盖不足、影响范围不清楚、前后端没有同步修改、或涉及历史数据，风险等级必须**继续提高**，不能下调
+- 覆盖不足或影响范围不清时不能无依据下调；确认契约不兼容、权限缺失或历史数据处理不当时按具体影响提级
+- 业务影响等级与证据不确定性分别说明；信息不足先标待核实，不因模块名称或未知项数量把所有改动升为高风险。
 
 ### 3.5 本清单用途
 
-- 阶段 2.4 变更清单的 `risk` 字段赋值
-- 阶段 3.1 行为变更影响的「影响程度」校准（高风险变更即使无现有用例直接引用，也应主动追间接影响）
-- 阶段 3.2 覆盖缺口的「风险等级」校准（高风险变更的覆盖缺口自动提级）
+- 阶段 2 变更清单的 `risk` 字段赋值
+- 阶段 3 行为变更影响校准（高风险变更即使无现有用例直接引用，也应主动追间接影响）
+- 阶段 3 覆盖缺口校准（有基线且已确认的高风险变化缺口优先验证；无基线仍为未评估）
 - 阶段 4 必测内容的 P0/P1/P2 优先级划分（详见 [report-template.md](report-template.md)）
 
 ## 4. Mode A / Mode B 双模式
 
-根据用户是否提供需求文档，自动选择分析模式。两种模式影响阶段 3 的输出结构和阶段 4 的报告章节。
+根据是否有需求材料选择 Mode A/B；是否有现有用例是独立维度，不影响从改动点交付影响范围和测试内容。
 
 ### 4.1 模式判定
 
-- **Mode A**（默认）：用户只提供了 git diff + 测试用例，未提供需求文档/验收标准/任务说明/Bug 描述
-- **Mode B**：用户额外提供了需求文档路径（如 `docs/requirement.md`）、验收标准、任务说明或 Bug 描述
+- **Mode A**（默认）：有 diff、patch、前后代码片段或可定位改动点，无需求/验收/任务/Bug 材料；现有用例可选。
+- **Mode B**：另有需求文档、验收标准、任务说明或 Bug 描述；现有用例仍可选。
+- 用例基线单列来源、版本、可达性、已读范围与完整程度；没有用例或指定文件不可达时，跳过该项用例对照，不能把未评估写成未覆盖。
 
 ### 4.2 Mode A：只有代码，没有需求文档
 
@@ -162,11 +178,23 @@ contract_checks:
 - 不能直接说「产品需求就是允许状态 2 的用户退款」
 - 必须写成「从状态判断变化推断，状态 2 可能被纳入退款范围，置信度中等，需要确认实际业务规则」
 
+### 4.2.1 从改动点生成测试内容（两种模式共用）
+
+按 `before → after → 触发条件 → 影响对象` 拆分行为改动点；对每点说明业务入口、直接/间接影响、风险理由和建议验证。纯移动/重构也要核对导入、注册与契约，再决定复用哪些回归。
+
+测试场景至少关联 `change_id`，包含前置、操作、观察项、可判定预期及预期来源。只展开相关维度：条件分支取边界两侧，契约变化查调用两侧，状态变化查合法/拒绝分支，副作用查数据与事件一致性；不从模块名称补出不存在的权限、重试或消息规则。
+
+金额场景区分公式的数学参考值与实际货币表示/舍入断言；整数输入也可能产生小数或浮点误差，不能据此宣称无需舍入规则。精度、容差或展示格式没有来源时保留待确认。
+
+预期来源区分 `requirement/contract/confirmed_rule/pending`，记录具体引用；代码证据另列为当前观察行为，不自动成为业务验收标准。旧用例可用作历史基线，变更后是否仍有效需核对；纯改动说明未核对源码时保留来源状态。
+
+例如只知 `timeout=10 → 20`：能报告数值变化，建议检查超时配置读取与超时前后行为；单位、默认值、重试与 SLA 均待确认，不能写成「超过20秒返回504」。无旧用例时仍交付这些内容，既有覆盖标「未评估」。
+
 ### 4.3 Mode B：需求与代码对照
 
 **适用场景**：用户同时提供了需求文档、验收标准、任务说明或 Bug 描述。
 
-**分析流程**：先拆解需求 → 把每条需求与代码实现对应 → 再把每条需求与测试用例对应 → 输出覆盖状态。
+**分析流程**：先拆解需求 → 对照实现 → 有已读用例时核对断言 → 有执行记录时核对版本和结果。三项状态独立，不用测试覆盖状态代替实现结论。
 
 ```
 需求
@@ -178,29 +206,29 @@ contract_checks:
 覆盖状态
 ```
 
-### 4.4 覆盖状态分类
+### 4.4 实现、覆盖与执行状态
 
-| 状态 | 判定条件 |
+| 维度 | 状态及判定 |
 |------|---------|
-| 已覆盖 | 需求有实现证据，且有测试用例验证 |
-| 部分覆盖 | 需求有实现证据，但测试用例只覆盖了部分场景（如只测了正向，未测异常分支） |
-| 未发现实现 | 需求存在，但代码中找不到对应实现 |
-| 实现与需求冲突 | 代码实现与需求描述矛盾（如需求要求管理员限制，但代码无角色校验） |
-| 需确认 | 无法从代码确认实现是否符合需求（如需求模糊，或实现依赖外部配置） |
+| 实现情况 | 符合 / 冲突 / 未发现实现 / 待确认；检索范围不足或权限可能在中间件时保留待确认 |
+| 测试覆盖 | 已覆盖 / 部分覆盖 / 未覆盖 / 未评估；有已读断言并匹配变化条件才认定覆盖，缺基线则未评估 |
+| 执行结果 | 当前版本通过 / 失败 / 未执行 / 历史证据待复核；记录代码版本、环境、范围与结果来源 |
 
 ### 4.5 Mode B 示例
 
-需求「只有管理员可以删除项目」，代码中虽然增加了删除接口，但没有看到角色校验。结论不是简单的「新增了删除功能」，而是：
+需求「只有管理员可以删除项目」，已检查路由、中间件与服务调用，确认普通成员可以删除；提供的完整用例清单没有权限拒绝断言，未提供执行记录：
 
 ```yaml
 requirement: "只有管理员可以删除项目"
 implementation_evidence: "已新增 DELETE /api/projects/:id 接口"
-permission_evidence: "未发现管理员角色判断"
+permission_evidence: "已检查路由/中间件/服务，普通成员路径没有拒绝条件"
 test_evidence: "无用例覆盖权限拒绝场景"
-status: "部分覆盖"
+implementation_status: "冲突"
+coverage_status: "未覆盖"
+execution_status: "未执行"
 risk: "high"
 suggested_test:
-  - "[P0][安全/权限] 普通成员账号调用删除接口 → 返回 403，项目数据不变"
+  - "[P0][安全/权限] 普通成员账号调用删除接口 → 应拒绝且项目数据不变；具体状态码待接口契约确认"
 ```
 
 ### 4.6 疑似超范围实现识别（Mode B 独有）
@@ -215,9 +243,11 @@ suggested_test:
 requirement_traceability:
   - requirement_id: "REQ-001"
     requirement: "只有管理员可以删除项目"
-    implementation_evidence: "DELETE /api/projects/:id 已新增"
+    implementation_evidence: "已检查路由/中间件/服务，普通成员路径没有拒绝条件"
     test_evidence: "无用例覆盖权限拒绝"
-    status: "部分覆盖"
+    implementation_status: "冲突"
+    coverage_status: "未覆盖"
+    execution_status: "未执行"
     risk: "high"
 out_of_scope_changes:
   - change: "订单导出接口去除了角色校验"

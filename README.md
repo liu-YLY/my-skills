@@ -28,7 +28,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | performance-test-engineer | v1.2.3 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
 | bug-analyzer | v1.2.3 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
 | state-machine-test-engineer | v1.7.5 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.8.5（可选） |
-| change-impact-analyzer | v1.3.0 | 变更影响分析（协同 skill，链 6 协同使用亦可单独使用） | - |
+| change-impact-analyzer | v1.4.0 | 从代码改动生成影响范围与测试内容，需求和用例可选 | - |
 
 **7 条混合意图链**：
 - 链 1：Bug 分析 + 补充用例 → bug-analyzer → case-engineer
@@ -56,12 +56,12 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | Skill | 入口行数 | 配套 Markdown 文件数 |
 |---|---:|---:|
 | bug-analyzer | 232 | 5 |
-| change-impact-analyzer | 146 | 5 |
+| change-impact-analyzer | 150 | 5 |
 | performance-test-engineer | 119 | 5 |
 | state-machine-test-engineer | 169 | 13 |
 | test-case-engineer | 147 | 13 |
 | test-strategy-engineer | 141 | 5 |
-| testing-bundle | 160 | 2 |
+| testing-bundle | 162 | 2 |
 | wechat-formatter | 169 | 29 |
 
 2 个插件共包含 8 个 Skills，测试插件包含 7 个 Skills 和 2 个可选 MCP 服务。
