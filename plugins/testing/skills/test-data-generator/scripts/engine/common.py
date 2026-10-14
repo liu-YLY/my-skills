@@ -52,6 +52,8 @@ def timestamp(value):
 def decimal_value(value):
     if not isinstance(value, str) or len(value) > 64:
         raise ValueError("decimal values must be strings of at most 64 characters")
+    if not re.fullmatch(r"-?[0-9]+(?:\.[0-9]+)?", value):
+        raise ValueError("decimal values must use ordinary decimal notation")
     try:
         parsed = Decimal(value)
     except InvalidOperation as error:

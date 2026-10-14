@@ -7,10 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from engine.common import ResourceError, canonical
+from engine.common import ProfileError, ResourceError, canonical
 from engine.generators import generate_entity
 from engine.negative import build_negative_cases, validate_negative_cases
 from engine.relations import generate_dataset
+from engine.profile import inspect_profile
 from engine.validator import validate_data
 from test_generators import simple
 from test_negative import negative_profile
@@ -111,3 +112,12 @@ def test_direct_validator_nonfinite_observation_is_serializable():
     assert report["validation_status"] == "failed"
     assert "F-item.number-type" in report["violation_ids"]
     canonical(report)
+
+
+@pytest.mark.parametrize("value", ["1e1000", "1e-1000", "NaN", "Infinity"])
+def test_decimal_exponents_and_nonfinite_bounds_are_configuration_errors(value):
+    profile = simple({}, 1)
+    profile["entities"]["item"]["fields"]["amount"] = {
+        "type": "decimal", "min": value, "max": value, "scale": 2, "generator": {"kind": "decimal"}}
+    with pytest.raises(ProfileError, match="invalid min"):
+        inspect_profile(profile)
