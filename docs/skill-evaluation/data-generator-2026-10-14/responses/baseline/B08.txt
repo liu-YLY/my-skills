@@ -1,0 +1,7 @@
+已准备 [shipment/event数据目录](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B08/output/logistics-events-253d2666eb2d43b8a94758cdf6e6a033/data)：8 条shipment、16 条event，均提供JSON、JSONL、CSV。
+
+生成和独立 `validate` 均实际执行并退出 0。每条运单 S001–S008 均关联 2 条事件；16 条事件的 `occurred_at >= created_at` 检查均通过。外键存在，合法数据错误 0、无法判断 0。
+
+本次只准备合法前置数据，因此派生配置不包含例子的 `earlier-event` 异常场景。没有重写用例、加入新的业务断言或执行业务系统。例子里的created_at位于event记录中，时间检查沿用该明确字段契约。
+
+[准备清单](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B08/preparation-report.json) 记录每条运单的事件数；完整校验报告随产物保存，命令原始stdout/stderr位于本项目录。

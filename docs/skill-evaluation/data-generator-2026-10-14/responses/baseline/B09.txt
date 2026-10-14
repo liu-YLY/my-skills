@@ -1,0 +1,7 @@
+已按 `tenant-rbac.yaml` 生成 [权限数据目录](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B09/output/tenant-rbac-708cf2ccf9cb4b3aa065aecb5a73b1b4)：2 个tenant、4 个role、8 个user，合法数据提供JSON、JSONL、CSV；跨租户引用异常位于 `negative/cases.jsonl`，共2条。
+
+生成、独立校验和实体字段检查均实际执行并退出0。合法用户使用 `(tenant_id, role_id)` 关联角色；两个异常保持原role_id，仅将T001改为T002，均观察到 `user-role` 违规且匹配预期。
+
+数据和配置仅含tenant、role、user三个实体，字段只有tenant_id、role_id、user_id，没有订单字段或订单状态。实际检查详见 [scope-check.json](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B09/scope-check.json) 和随产物保存的 `validation-report.json`。
+
+这只证明离线数据规则检查通过；未执行权限接口或真实系统，异常的真实业务响应待确认。原始stdout/stderr保存于本项目录。

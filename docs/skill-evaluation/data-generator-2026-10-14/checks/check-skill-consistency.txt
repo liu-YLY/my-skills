@@ -1,0 +1,1 @@
+All skill consistency invariants hold.

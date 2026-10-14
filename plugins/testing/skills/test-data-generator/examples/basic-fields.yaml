@@ -1,0 +1,74 @@
+schema_version: '1.0'
+profile_id: basic-fields
+profile_version: 1.0.0
+purpose: example
+default_source_ids:
+- example-contract
+sources:
+- id: example-contract
+  kind: example
+  reference: Explicit synthetic example contract
+  version: 1.0.0
+generation:
+  seed: 42
+  reference_datetime: '2026-10-14T00:00:00Z'
+  output_formats:
+  - json
+  - csv
+  - jsonl
+entities:
+  record:
+    count: 20
+    primary_key:
+    - id
+    fields:
+      id:
+        type: string
+        generator:
+          kind: sequence
+          prefix: D
+          width: 3
+      code:
+        type: string
+        generator:
+          kind: constant
+          value: '0012'
+      enabled:
+        type: boolean
+        generator:
+          kind: choice
+      quantity:
+        type: integer
+        generator:
+          kind: integer
+        min: 0
+        max: 100
+      note:
+        type: string
+        generator:
+          kind: choice
+          values:
+          - null
+          - ''
+          - \N
+          - '中文,"值"
+
+            换行'
+        nullable: true
+relations: []
+scenarios:
+- id: normal
+  entity: record
+  kind: normal
+  count: 20
+negative_scenarios:
+- id: wrong-boolean-type
+  base_scenario: normal
+  count: 1
+  mutations:
+  - op: set
+    field: enabled
+    value: 'true'
+  expected_rule_violations:
+  - F-record.enabled-type
+rules: []

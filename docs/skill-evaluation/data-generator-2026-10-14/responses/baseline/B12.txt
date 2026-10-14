@@ -1,0 +1,5 @@
+已生成 [record.json](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B12/output/x-id-only-375627d9151747989bfa2b0de0288c82/data/record.json)：20 条记录，仅有字符串字段id，采用从1开始的序号，范围X001至X020。
+
+生成、独立引擎校验和JSON内容检查均实际执行并退出0。数量20、id唯一、字符串类型及三位补零序号均通过；[本地检查报告](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B12/minimal-check.json) 保存结果。
+
+本次配置只有record.id，没有订单字段、状态机、关联或业务规则，也没有加载其他业务示例。未执行接口或数据库。原始stdout/stderr保存在本项目录。

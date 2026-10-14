@@ -1,0 +1,19 @@
+bug-analyzer: 16 task
+bug-analyzer: 4 trigger
+change-impact-analyzer: 22 task
+change-impact-analyzer: 7 trigger
+performance-test-engineer: 16 task
+performance-test-engineer: 4 trigger
+state-machine-test-engineer: 12 task
+state-machine-test-engineer: 4 trigger
+test-case-engineer: 31 task
+test-case-engineer: 10 trigger
+test-data-generator: 12 task
+test-data-generator: 6 trigger
+test-strategy-engineer: 14 task
+test-strategy-engineer: 4 trigger
+testing-bundle: 27 task
+testing-bundle: 4 trigger
+wechat-formatter: 19 task
+wechat-formatter: 4 trigger
+Input validation only; model behavior has not been evaluated by this command.

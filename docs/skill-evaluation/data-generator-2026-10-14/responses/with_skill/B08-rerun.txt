@@ -1,0 +1,13 @@
+已为既有用例准备合法前置数据：8 条 shipment、16 条 event，提供同源 JSON、JSONL、CSV。
+
+[本次数据和报告目录](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B08-rerun/work/generated/logistics-preconditions-81cb80cceafb493c8155155fc470e2db)
+
+每条运单实际都有 2 条事件，16 条事件的 occurred_at 均不早于同记录 created_at。固定 created_at、字段结构、数量和生成窗口来自你指定的 logistics-events 示例；这两个既有断言分别对应 shipment-event 与 R-event-time。
+
+[profile.yaml](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B08-rerun/work/profile.yaml) 的 sources 保留了你给出的原始用例片段，并明确指向目标实体和检查 ID；没有实际用例编号或文件时，直接保留该片段，不编造编号。[数据映射说明](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B08-rerun/work/data-plan.md) 记录了用例要求对应的前置数据。
+
+实际 inspect、generate、独立 validate 及交付文件复核均退出 0。validation_status 为 passed：32 个声明检查全部实现并执行，错误 0、不可检查项 0、未执行检查 0；全量扫描、三格式导出复核及完整性通过，错误明细未截断。此次准备合法前置数据，异常输入为 0。
+
+seed 42；profile logistics-preconditions 1.0.0；engine 1.0.0；Python 3.11.16；PyYAML 6.0.3、jsonschema 4.26.0。版本、哈希和规则统计在输出目录，原始 stdout/stderr 在本项 logs。
+
+未重写或执行用例。事件类型只表示字段值，不代表系统状态迁移已经测试；system_execution_status 为 not_run。本次结论只覆盖已声明的离线数据约束。

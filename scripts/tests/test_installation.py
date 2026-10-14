@@ -28,10 +28,16 @@ def test_installer_delivers_all_skills_and_preserves_other_directories(tmp_path)
     subprocess.run(command, check=True, capture_output=True, text=True)
     installed = {p.parent.name for p in target.glob("*/SKILL.md")} - {"user-other-skill"}
     expected = {p.parent.name for p in (ROOT / "plugins/testing/skills").glob("*/SKILL.md")}
-    assert installed == expected and len(installed) == 7
+    assert installed == expected and "test-data-generator" in installed
     assert_portable_links(target)
     for name in ("convert_docs.py", "requirements.txt"):
         assert (target / "test-case-engineer/scripts" / name).is_file()
+    data_skill = target / "test-data-generator"
+    expected_data_files = {p.relative_to(ROOT / "plugins/testing/skills/test-data-generator")
+                           for folder in ("scripts", "schemas", "examples")
+                           for p in (ROOT / "plugins/testing/skills/test-data-generator" / folder).rglob("*")
+                           if p.is_file() and "__pycache__" not in p.parts}
+    assert all((data_skill / path).is_file() for path in expected_data_files)
     subprocess.run(command + ["-Uninstall"], check=True, capture_output=True, text=True)
     assert list(target.glob("*/SKILL.md")) == [unrelated]
     assert unrelated.read_text() == "user-owned"
@@ -86,13 +92,15 @@ def assert_portable_links(target):
             assert resolved.exists(), f"missing: {document} -> {relative}"
 
 
-def test_portable_copy_delivers_all_eight_skills_and_runs_converters(tmp_path):
+def test_portable_copy_delivers_all_skills_and_runs_converters(tmp_path):
     from docx import Document
 
     target = tmp_path / "host" / "portable skills"
     for source in ROOT.glob("plugins/*/skills/*/SKILL.md"):
         shutil.copytree(source.parent, target / source.parent.name)
-    assert len(list(target.glob("*/SKILL.md"))) == 8
+    expected = {p.parent.name for p in ROOT.glob("plugins/*/skills/*/SKILL.md")}
+    assert {p.parent.name for p in target.glob("*/SKILL.md")} == expected
+    assert "test-data-generator" in expected
     assert_portable_links(target)
     document = Document()
     document.add_heading("支付", 1)
@@ -112,6 +120,41 @@ def test_portable_copy_delivers_all_eight_skills_and_runs_converters(tmp_path):
     assert result.returncode == 0, result.stderr
     html = (tmp_path / "article_wechat.html").read_text()
     assert "270元" in html and "42" in html
+
+
+def test_portable_copy_delivers_data_engine_resources_and_runs_inspection(tmp_path):
+    import json
+    import sys
+
+    target = tmp_path / "host" / "test-data-generator"
+    shutil.copytree(ROOT / "plugins/testing/skills/test-data-generator", target)
+    for resource in ("scripts/run_data.py", "scripts/requirements.txt", "schemas/profile.schema.json",
+                     "schemas/report.schema.json", "examples/tenant-rbac.yaml"):
+        assert (target / resource).is_file()
+    result = subprocess.run([sys.executable, str(target / "scripts/run_data.py"), "inspect", "--profile",
+                             str(target / "examples/tenant-rbac.yaml")], cwd=tmp_path, capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads(result.stdout)["total_rows"] == 16
+
+
+@pytest.mark.parametrize("resource", ["scripts/engine/runner.py", "schemas/profile.schema.json", "scripts/requirements.txt", "scripts/requirements-faker.txt"])
+def test_installer_rejects_missing_data_runtime_before_replacing_existing_skill(tmp_path, resource):
+    executable = powershell()
+    source = tmp_path / "source"
+    shutil.copytree(ROOT / "plugins/testing/skills", source / "plugins/testing/skills")
+    (source / "scripts").mkdir()
+    installer = source / "scripts/install-testing-bundle.ps1"
+    shutil.copyfile(ROOT / "scripts/install-testing-bundle.ps1", installer)
+    (source / "plugins/testing/skills/test-data-generator" / resource).unlink()
+    target = tmp_path / "installed"
+    existing = target / "test-data-generator/SKILL.md"
+    existing.parent.mkdir(parents=True)
+    existing.write_text("user's existing version")
+    result = subprocess.run([executable, "-NoLogo", "-NoProfile", "-File", str(installer),
+                             "-TargetDir", str(target)], capture_output=True, text=True)
+    assert result.returncode != 0
+    assert existing.read_text() == "user's existing version"
+    assert list(target.iterdir()) == [existing.parent]
 
 
 @pytest.mark.parametrize("document_name", ["README.md", "knowledge/runtime.md"])

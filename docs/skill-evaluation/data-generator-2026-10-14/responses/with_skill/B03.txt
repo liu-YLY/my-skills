@@ -1,0 +1,7 @@
+先把 100 条订单的数据结构与状态/时间规则分开整理；支付时间是否必填仍为 pending-confirmation，不能从“已支付”名称推导必填，也不能推导“待支付必空”。
+
+已保存 [最小配置草案](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B03/work/profile.draft.yaml)。只包含 id、status、create_time、pay_time，数量 100；seed 0 和 JSON 是技术默认。草案中的顺序 ID 和中文状态值只是表达占位，实际编码尚待确定。
+
+执行前需明确：两种状态各自是否允许/必须有 pay_time，pay_time 与 create_time 是否有先后约束，时间基准与窗口，以及状态存储值和分配数量。明确之后才能补上对应有稳定 ID 的条件规则与场景；本次不会把任何候选规则写成已确认要求。
+
+配置含日期占位符，属于可审阅方案，当前不能直接运行。generation_status、validation_status、system_execution_status 均为 not_run；未生成数据或取得校验结论。

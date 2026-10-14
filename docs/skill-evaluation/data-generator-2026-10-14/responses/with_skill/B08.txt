@@ -1,0 +1,11 @@
+已只准备 logistics-events 示例数据，未重写用例。
+
+[数据与报告目录](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B08/work/generated/logistics-events-ba65b843bbb6422bac52d7fa1a8f2034)
+
+正常数据为 8 条 shipment、16 条 event，JSON、JSONL、CSV 同源。每条 shipment 恰有 2 条 event；event.occurred_at 不早于同记录的 created_at（本示例固定为 2026-10-14T00:00:00Z）。这些条件分别由 shipment-event 与 R-event-time 独立检查。示例的 1 条 earlier-event 异常单独存放，不混入用例合法前置数据。
+
+实际 inspect、generate、独立 validate 均退出 0，validation_status 为 passed。32 个声明检查全部实现并执行，正常数据错误 0、不可检查项 0；早于 created_at 的异常实际违规严格匹配 R-event-time。全量扫描、导出复核和文件完整性通过，错误明细未截断。
+
+seed 42；profile logistics-events 1.0.0；engine 1.0.0。配置、版本、哈希与规则统计在输出目录，原始 stdout/stderr 在本项 logs。
+
+这只是离线前置数据准备。event_type 为示例字段值，不能由此认定系统状态迁移合法或事件执行成功；业务用例及系统执行均未运行，system_execution_status 为 not_run。

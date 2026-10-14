@@ -1,0 +1,100 @@
+schema_version: '1.0'
+profile_id: logistics-events
+profile_version: 1.0.0
+purpose: example
+default_source_ids:
+- example-contract
+sources:
+- id: example-contract
+  kind: example
+  reference: Explicit synthetic example contract
+  version: 1.0.0
+generation:
+  seed: 42
+  reference_datetime: '2026-10-14T00:00:00Z'
+  output_formats:
+  - json
+  - csv
+  - jsonl
+entities:
+  shipment:
+    count: 8
+    primary_key:
+    - shipment_id
+    fields:
+      shipment_id:
+        type: string
+        generator:
+          kind: sequence
+          prefix: S
+          width: 3
+  event:
+    count: 16
+    primary_key:
+    - event_id
+    fields:
+      event_id:
+        type: string
+        generator:
+          kind: sequence
+          prefix: E
+          width: 3
+      shipment_id:
+        type: string
+        generator:
+          kind: reference
+          relation: shipment-event
+      created_at:
+        type: datetime
+        generator:
+          kind: constant
+          value: '2026-10-14T00:00:00Z'
+      occurred_at:
+        type: datetime
+        generator:
+          kind: relative_datetime
+          field: created_at
+          min_seconds: 0
+          max_seconds: 86400
+      event_type:
+        type: string
+        generator:
+          kind: choice
+        enum:
+        - accepted
+        - in_transit
+        - delivered
+relations:
+- id: shipment-event
+  child:
+    entity: event
+    fields:
+    - shipment_id
+  parent:
+    entity: shipment
+    fields:
+    - shipment_id
+  min_children: 2
+  max_children: 2
+scenarios:
+- id: events
+  entity: event
+  kind: normal
+  count: 16
+negative_scenarios:
+- id: earlier-event
+  base_scenario: events
+  count: 1
+  mutations:
+  - op: set
+    field: occurred_at
+    value: '2026-10-13T23:59:59Z'
+  expected_rule_violations:
+  - R-event-time
+rules:
+- id: R-event-time
+  entity: event
+  assert:
+    field: occurred_at
+    op: gte
+    other_field: created_at

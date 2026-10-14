@@ -1,0 +1,7 @@
+保留规则：**每个订单的多笔退款合计不得超过该订单支付额**。当前引擎的断言结构没有跨表sum运算，因此这项请求目前无法由该引擎完整生成并验证。
+
+已把sum规则留在 [配置草案](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B07/profile.draft.json)，并保存 [阻塞原因与待确认项](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B07/blockers.json)。草案字段、类型和零数量占位均未确认；不是已可执行的合法profile，也不是数据产物。
+
+已实际调用当前引擎的 `generate`，退出 2：`rules/0/assert` 无法通过schema，原始stdout/stderr已保存。`generation_status=blocked`、`validation_status=not_run`；没有连接数据库或删除sum规则，也没有将“每笔退款不超过支付额”当作聚合规则的替代。
+
+后续需要引擎支持这条跨表断言，并确认字段映射、数量及金额精度后再生成和独立校验。

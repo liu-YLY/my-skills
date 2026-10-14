@@ -1,0 +1,83 @@
+schema_version: '1.0'
+profile_id: matrix-users
+profile_version: 1.1.0
+purpose: example
+default_source_ids: [example-contract]
+sources:
+  - id: example-contract
+    kind: example
+    reference: Explicit synthetic user and session contract
+    version: 1.1.0
+generation:
+  seed: 7
+  reference_datetime: '2026-10-01T00:00:00+08:00'
+  output_formats: [json, csv]
+entities:
+  user:
+    count: 10
+    primary_key: [id]
+    fields:
+      id: {type: string, generator: {kind: sequence, prefix: U, width: 3}}
+      name: {type: string, generator: {kind: faker, provider: name, locale: zh_CN}}
+      email: {type: string, unique: true, generator: {kind: faker, provider: email, locale: en_US}}
+      role: {type: string, enum: [viewer, editor], generator: {kind: choice}}
+      active: {type: boolean, generator: {kind: choice}}
+  session:
+    count: 20
+    primary_key: [id]
+    fields:
+      id: {type: string, generator: {kind: sequence, prefix: S, width: 3}}
+      user_id: {type: string, generator: {kind: reference, relation: R-session-user}}
+      created_at:
+        type: datetime
+        generator: {kind: datetime_window, min_offset_seconds: 0, max_offset_seconds: 86400}
+      expires_at:
+        type: datetime
+        generator: {kind: relative_datetime, field: created_at, min_seconds: 3600, max_seconds: 3600}
+relations:
+  - id: R-session-user
+    parent: {entity: user, fields: [id]}
+    child: {entity: session, fields: [user_id]}
+    min_children: 2
+    max_children: 2
+rules:
+  - id: R-user-active
+    entity: user
+    assert: {field: active, op: eq, value: true}
+  - id: R-session-hour
+    entity: session
+    assert: {field: expires_at, op: time_delta, other_field: created_at, min_seconds: 3600, max_seconds: 3600}
+scenarios:
+  - id: viewers
+    entity: user
+    kind: normal
+    count: 5
+    set: {role: viewer}
+    case_ids: [TC-viewer]
+    combination_id: COMBO01
+    target_check_ids: [R-user-active, F-user.role-enum]
+  - id: editors
+    entity: user
+    kind: normal
+    count: 5
+    set: {role: editor}
+    case_ids: [TC-editor]
+    combination_id: COMBO02
+    target_check_ids: [R-user-active, F-user.role-enum]
+  - id: sessions
+    entity: session
+    kind: normal
+    count: 20
+    case_ids: [TC-session]
+    target_check_ids: [R-session-user, R-session-hour]
+negative_scenarios:
+  - id: unknown-user
+    base_scenario: sessions
+    count: 1
+    mutations: [{op: set, field: user_id, value: NO_USER}]
+    expected_rule_violations: [R-session-user]
+  - id: expired-before-created
+    base_scenario: sessions
+    count: 1
+    mutations: [{op: set, field: expires_at, value: '2026-09-01T00:00:00+08:00'}]
+    expected_rule_violations: [R-session-hour]

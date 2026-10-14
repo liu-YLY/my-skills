@@ -12,13 +12,16 @@
 
 | Skill | 版本 | 类型 | 职责 |
 |---|---|---|---|
-| [testing-bundle](skills/testing-bundle/) | v3.2.2 | 元 skill / 路由入口 | 6-way 意图路由（5 核心 + 1 协同）+ 7 条混合意图链 |
+| [testing-bundle](skills/testing-bundle/) | v3.3.0 | 元 skill / 路由入口 | 6-way 意图路由（5 核心 + 1 协同）+ 7 条混合意图链 |
 | [test-strategy-engineer](skills/test-strategy-engineer/) | v1.3.0 | 子 skill | 项目级测试策略：风险矩阵 / 分层 / 范围优先级 / 准入准出 |
 | [test-case-engineer](skills/test-case-engineer/) | v9.4.1 | 子 skill | 功能用例生成：需求分析 / 测试点提取 / 用例编写 / 自检补全 |
 | [performance-test-engineer](skills/performance-test-engineer/) | v1.2.3 | 子 skill | 性能测试方案 + 瓶颈定位（资源/架构层）|
 | [bug-analyzer](skills/bug-analyzer/) | v1.2.3 | 子 skill | Bug 根因分析（代码逻辑层）：五步定位法 / 鱼骨图 / 5 Whys |
 | [state-machine-test-engineer](skills/state-machine-test-engineer/) | v1.7.5 | 子 skill | 状态机驱动的状态型需求测试：10 类场景穷举 |
 | [change-impact-analyzer](skills/change-impact-analyzer/) | v1.4.0 | 协同 skill | 代码改动 → 影响范围与测试内容，需求和用例可选（链 6 协同，亦可独立使用） |
+| [test-data-generator](skills/test-data-generator/) | v1.1.0 | 独立 skill | 项目规则配置 → 可重复数据、边界与异常配方 → 场景验收与独立文件校验 |
+
+test-data-generator 可独立调用，使用 Python 3.11 和其 scripts/requirements.txt；Faker 使用可选 requirements-faker.txt。不依赖 MCP，不修改现有六路路由和七条混合链。使用方式见 [运行指南](skills/test-data-generator/integrations/quickstart.md)（v1.1.0）。
 
 **可选配套**：[state-machine-testing MCP Server](mcp-servers/state-machine-testing/) v0.3.0 — 为 state-machine-test-engineer 提供 5 个工具（build / validate / generate / export / coverage，协议层 stdio + HTTP 已端到端联调验证），未安装时降级为纯 LLM 推理。
 
