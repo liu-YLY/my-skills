@@ -93,3 +93,36 @@ def test_cli_inspect_outside_repository(profile, tmp_path):
     assert result.returncode == 0, result.stderr
     assert json.loads(result.stdout)["total_rows"] == 3
     assert sorted(p.name for p in tmp_path.iterdir()) == ["profile.json"]
+
+
+def test_integral_configuration_numbers_are_normalized(profile):
+    profile["entities"]["item"]["count"] = 3.0
+    profile["entities"]["item"]["fields"]["id"]["generator"]["width"] = 3.0
+    normalized = normalize(profile)
+    assert type(normalized["entities"]["item"]["count"]) is int
+    assert type(normalized["entities"]["item"]["fields"]["id"]["generator"]["width"]) is int
+
+
+def test_requirement_and_sample_sources_do_not_become_sample_only(profile):
+    profile["sources"].append({"id": "sample", "kind": "sample", "reference": "synthetic sample"})
+    profile["default_source_ids"].append("sample")
+    assert not inspect_profile(profile)["issues"]
+
+
+def test_case_insensitive_entity_names_are_rejected_before_export(profile):
+    profile["entities"]["Item"] = copy.deepcopy(profile["entities"]["item"])
+    with pytest.raises(ProfileError, match="file name"):
+        inspect_profile(profile)
+
+
+def test_yaml_aliases_and_deep_profiles_are_bounded(tmp_path, profile):
+    path = tmp_path / "aliases.yaml"
+    path.write_text("base: &base [a, b]\nrepeat: [*base, *base]\n")
+    with pytest.raises(ProfileError, match="alias"):
+        load_profile(path)
+    value = "leaf"
+    for _ in range(70):
+        value = [value]
+    profile["unexpected"] = value
+    with pytest.raises(ProfileError, match="depth"):
+        normalize(profile)

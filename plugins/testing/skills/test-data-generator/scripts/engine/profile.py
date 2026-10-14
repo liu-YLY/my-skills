@@ -16,7 +16,16 @@ CHECKER = Draft202012Validator(SCHEMA, format_checker=FormatChecker())
 
 
 class StrictLoader(yaml.SafeLoader):
-    pass
+    def compose_node(self, parent, index):
+        if self.check_event(yaml.AliasEvent):
+            raise ProfileError("YAML aliases are unsupported; expand the profile explicitly")
+        self.profile_depth = getattr(self, "profile_depth", 0) + 1
+        if self.profile_depth > 64:
+            raise ProfileError("profile depth exceeds 64")
+        try:
+            return super().compose_node(parent, index)
+        finally:
+            self.profile_depth -= 1
 
 
 def mapping(loader, node, deep=False):
@@ -57,6 +66,17 @@ def load_profile(path):
 
 
 def normalize(raw):
+    stack = [(raw, 0)]
+    nodes = 0
+    while stack:
+        value, depth = stack.pop()
+        nodes += 1
+        if depth > 64 or nodes > 20000:
+            raise ProfileError("profile depth or expanded node limit exceeded")
+        if isinstance(value, dict):
+            stack.extend((item, depth + 1) for item in value.values())
+        elif isinstance(value, list):
+            stack.extend((item, depth + 1) for item in value)
     try:
         canonical(raw)
     except (TypeError, ValueError, RecursionError) as error:
@@ -65,7 +85,13 @@ def normalize(raw):
     if errors:
         error = errors[0]
         raise ProfileError(f"{'/'.join(map(str, error.path)) or 'profile'}: {error.message}")
-    profile = copy.deepcopy(raw)
+    def integers(value):
+        if isinstance(value, dict):
+            return {key: integers(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [integers(item) for item in value]
+        return int(value) if isinstance(value, float) and value.is_integer() else value
+    profile = integers(raw)
     profile.setdefault("profile_version", "1.0.0")
     profile.setdefault("purpose", "test")
     for key in ("relations", "rules", "scenarios", "negative_scenarios"):
@@ -172,6 +198,8 @@ def field_check_ids(entity, name, field):
 
 def inspect_profile(profile):
     entities = profile["entities"]
+    if len({name.casefold() for name in entities}) != len(entities):
+        raise ProfileError("entity file names conflict on case-insensitive filesystems")
     sources = unique_ids(profile["sources"], "source")
     relations = unique_ids(profile["relations"], "relation")
     rules = unique_ids(profile["rules"], "rule")
@@ -185,7 +213,7 @@ def inspect_profile(profile):
         ids = item.get("source_ids", inherited or profile.get("default_source_ids", []))
         if not ids or any(key not in sources for key in ids):
             raise ProfileError(f"{label}: missing or unknown source")
-        default = "candidate" if any(sources[key]["kind"] == "sample" for key in ids) else "confirmed"
+        default = "candidate" if all(sources[key]["kind"] == "sample" for key in ids) else "confirmed"
         status = item.get("confirmation", default)
         if status != "confirmed":
             issues.append({"target": label, "confirmation": status, "source_ids": ids})

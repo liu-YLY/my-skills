@@ -4,12 +4,17 @@ import time
 
 from .common import ProfileError, ResourceError
 from .pipeline import generate_bundle, preserve_failed_run, validate_bundle
+from .profile import inspect_profile, load_profile
 
 
 def worker(connection, command, profile, location):
     try:
-        connection.send(("ready",))
-        if command == "generate":
+        if not isinstance(profile, dict):
+            profile = load_profile(profile)
+        connection.send(("ready", profile["generation"]["limits"]["timeout_seconds"]))
+        if command == "inspect":
+            result = inspect_profile(profile)
+        elif command == "generate":
             result = generate_bundle(profile, location, on_start=lambda staging, target:
                                      connection.send(("started", staging, target)))
         else:
@@ -41,9 +46,12 @@ def run_isolated(command, profile, location):
                 if not process.is_alive():
                     raise ResourceError("worker exited without a result")
                 continue
-            message = receive.recv()
+            try:
+                message = receive.recv()
+            except EOFError as error:
+                raise ResourceError("worker exited without a result") from error
             if message[0] == "ready":
-                deadline = time.monotonic() + profile["generation"]["limits"]["timeout_seconds"]
+                deadline = time.monotonic() + message[1]
             elif message[0] == "started":
                 started = message[1:]
             elif message[0] == "error":

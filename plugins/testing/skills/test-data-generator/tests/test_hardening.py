@@ -121,3 +121,29 @@ def test_decimal_exponents_and_nonfinite_bounds_are_configuration_errors(value):
         "type": "decimal", "min": value, "max": value, "scale": 2, "generator": {"kind": "decimal"}}
     with pytest.raises(ProfileError, match="invalid min"):
         inspect_profile(profile)
+
+
+def test_worker_crash_has_runtime_error_and_failed_manifest(tmp_path):
+    profile = simple({}, 1)
+    path = tmp_path / "profile.json"
+    path.write_text(json.dumps(profile))
+    harness = tmp_path / "crash.py"
+    harness.write_text("import os, sys\nfrom pathlib import Path\n"
+                       f"sys.path.insert(0, {str(CLI.parent)!r})\n"
+                       "import run_data\nimport engine.runner as runner\n"
+                       "def crash(connection, command, profile, location):\n"
+                       "    connection.send(('ready', 120))\n"
+                       "    root = Path(location)\n    root.mkdir()\n"
+                       "    staging, target = root / '.crash.tmp', root / 'crash'\n"
+                       "    staging.mkdir()\n"
+                       "    connection.send(('started', str(staging), str(target)))\n"
+                       "    os._exit(9)\n"
+                       "if __name__ == '__main__':\n"
+                       "    runner.worker = crash\n    sys.exit(run_data.main())\n")
+    result = subprocess.run([sys.executable, str(harness), "generate", "--profile", str(path),
+                             "--output-root", str(tmp_path / "output")], capture_output=True, text=True, timeout=5)
+    assert result.returncode == 4
+    assert "worker exited" in json.loads(result.stdout)["error"]
+    assert not result.stderr
+    manifest = json.loads((tmp_path / "output/crash.failed/manifest.json").read_text())
+    assert manifest["generation_status"] == "failed" and "worker exited" in manifest["error"]

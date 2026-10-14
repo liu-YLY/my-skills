@@ -103,3 +103,11 @@ def test_external_csv_without_manifest_is_validated_using_declared_types(tmp_pat
     (tmp_path / "item.csv").write_text("code,id\n0012,0001\n0012,0001\n")
     report = validate_bundle(profile, tmp_path)
     assert report["validation_status"] == "failed" and "N-item-count" in report["violation_ids"]
+
+
+def test_cli_missing_dependency_has_structured_runtime_error(tmp_path):
+    result = subprocess.run([sys.executable, "-S", str(ROOT / "scripts/run_data.py"), "inspect",
+                             "--profile", str(tmp_path / "missing.json")], text=True, capture_output=True)
+    assert result.returncode == 4
+    assert json.loads(result.stdout)["validation_status"] == "not_run"
+    assert "dependency" in json.loads(result.stdout)["error"]
