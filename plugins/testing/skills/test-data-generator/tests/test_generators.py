@@ -6,6 +6,7 @@ import pytest
 from engine.common import ProfileError, ResourceError, timestamp
 from engine.generators import generate_entity
 from engine.profile import inspect_profile, normalize
+from engine.validator import validate_data
 
 
 def simple(fields, count=30):
@@ -102,3 +103,51 @@ def test_timezone_offsets_are_normalized_and_naive_times_rejected():
     profile["entities"]["item"]["fields"]["created"]["generator"] = {"kind": "constant", "value": "2026-10-14T08:00:00"}
     with pytest.raises(ProfileError, match="incompatible type"):
         inspect_profile(profile)
+
+
+def test_finite_rules_constrain_boolean_choice_and_decimal_sampling():
+    profile = simple({"enabled": {"type": "boolean", "nullable": True,
+                                  "generator": {"kind": "choice", "values": [None, False, True]}},
+                      "amount": {"type": "decimal", "scale": 2, "min": "0.00", "max": "9.99", "generator": {"kind": "decimal"}}}, 50)
+    profile["rules"] = [{"id": "enabled", "entity": "item", "assert": {"field": "enabled", "op": "eq", "value": True}},
+                        {"id": "minimum", "entity": "item", "assert": {"field": "amount", "op": "gte", "value": "1.234"}},
+                        {"id": "maximum", "entity": "item", "assert": {"field": "amount", "op": "lte", "value": "1.259"}}]
+    plan = inspect_profile(profile)
+    rows, _ = generate_entity(profile, "item")
+    assert all(row["enabled"] is True and row["amount"] in {"1.24", "1.25"} for row in rows)
+    assert plan["planned_rule_ids"] == ["enabled", "maximum", "minimum"]
+    assert validate_data(profile, {"item": rows})["validation_status"] == "passed"
+
+
+def test_impossible_decimal_equality_is_not_rounded_into_another_rule():
+    profile = simple({"amount": {"type": "decimal", "scale": 2, "min": "0.00", "max": "9.99", "generator": {"kind": "decimal"}}}, 1)
+    profile["rules"] = [{"id": "precise", "entity": "item", "assert": {"field": "amount", "op": "eq", "value": "1.234"}}]
+    with pytest.raises(ProfileError, match="infeasible"):
+        inspect_profile(profile)
+
+
+@pytest.mark.parametrize("generator", [{"kind": "choice", "values": ["A"]}, {"kind": "constant", "value": "A"}])
+def test_scene_overrides_do_not_inherit_default_sampling_domain(generator):
+    profile = simple({"value": {"type": "string", "enum": ["A", "B"], "generator": generator}}, 1)
+    profile["scenarios"] = [{"id": "overridden", "entity": "item", "kind": "normal", "count": 1, "set": {"value": "B"}}]
+    profile["rules"] = [{"id": "only-B", "entity": "item", "assert": {"field": "value", "op": "eq", "value": "B"}}]
+    inspect_profile(profile)
+    rows, _ = generate_entity(profile, "item")
+    assert rows[0]["value"] == "B" and validate_data(profile, {"item": rows})["validation_status"] == "passed"
+
+
+def test_ordered_literal_rule_excludes_null_from_nullable_choice():
+    profile = simple({"value": {"type": "integer", "nullable": True, "generator": {"kind": "choice", "values": [None, 1]}}}, 10)
+    profile["rules"] = [{"id": "minimum", "entity": "item", "assert": {"field": "value", "op": "gte", "value": 1}}]
+    rows, _ = generate_entity(profile, "item")
+    assert all(row["value"] == 1 for row in rows)
+    assert validate_data(profile, {"item": rows})["validation_status"] == "passed"
+
+
+def test_datetime_literal_domain_is_sampled_within_declared_window():
+    profile = simple({"value": {"type": "datetime", "generator": {"kind": "datetime_window", "min_offset_seconds": 0,
+                                                                 "max_offset_seconds": 86400}}}, 10)
+    profile["rules"] = [{"id": "midday", "entity": "item", "assert": {"field": "value", "op": "eq", "value": "2026-10-14T12:00:00Z"}}]
+    rows, _ = generate_entity(profile, "item")
+    assert all(row["value"] == "2026-10-14T12:00:00Z" for row in rows)
+    assert validate_data(profile, {"item": rows})["validation_status"] == "passed"

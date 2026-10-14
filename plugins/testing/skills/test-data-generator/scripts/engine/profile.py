@@ -388,10 +388,25 @@ def inspect_profile(profile, for_generation=True):
         from .relations import check_capacity
         for relation in relations.values():
             check_capacity(profile, relation)
+    planned = []
+    if for_generation:
+        from .generators import generation_fields, planned_rules
+        for entity in entities:
+            scopes = [item for item in scenarios.values() if item["entity"] == entity] or [None]
+            for scope in scopes:
+                fields = generation_fields(profile, entity, scope)
+                count = scope["count"] if scope else entities[entity]["count"]
+                for name, field in fields.items():
+                    if field["generator"]["kind"] == "constant" and field["generator"]["value"] is not None and count > 1:
+                        single_key = entities[entity]["primary_key"] == [name] or [name] in entities[entity].get("unique_keys", []) or field.get("unique")
+                        if single_key:
+                            raise ProfileError(f"{entity}.{name}: unique constant capacity exhausted")
+            planned.extend(rule["id"] for rule in planned_rules(profile, entity))
     return {"schema_version": "1.0", "profile_id": profile["profile_id"], "profile_hash": digest(profile),
             "entity_order": entity_order, "total_rows": total,
             "entity_counts": {name: spec["count"] for name, spec in entities.items()},
             "check_ids": sorted(check_ids), "issues": issues,
             "operation": "generate" if for_generation else "validate",
+            "planned_rule_ids": sorted(planned), "validation_only_rule_ids": sorted(set(rules) - set(planned)),
             "generation_status": "not_run",
             "validation_status": "not_run", "system_execution_status": "not_run"}
