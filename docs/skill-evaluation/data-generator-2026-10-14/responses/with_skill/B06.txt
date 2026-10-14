@@ -1,0 +1,15 @@
+已生成并独立校验三条合法基准和两条异常输入，交付 JSON：
+
+- [合法基准 record.json](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B06/work/generated/amount-negative-49ebf35c17c64f119cacb7e706be5c7f/data/record.json)
+- [异常 cases.json](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B06/work/generated/amount-negative-49ebf35c17c64f119cacb7e706be5c7f/negative/cases.json)
+- [验证报告](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B06/work/generated/amount-negative-49ebf35c17c64f119cacb7e706be5c7f/validation-report.json)
+
+合法记录 id 为 "001"、"002"、"003"，金额分别是 "5.27"、"2.65"、"0.90"，均为两位小数十进制字符串，范围 0.01–9.99。异常从已校验基准 001 构造，分别将金额改为 "0.00"、移除 id；每条异常独立替换基准校验，不追加至合法集合。
+
+最终 inspect、generate、独立 validate 均退出 0，validation_status 为 passed。16 个声明检查全部实现和执行，合法数据错误 0；两条异常的预期/实际违规严格匹配，分别为 F-record.amount-range、F-record.id-required。缺失 id 时两个唯一键检查记录 not_evaluable=2，没有伪造额外违规；金额异常无不可检查项。扫描全量，错误明细未截断。
+
+seed 0；profile amount-negative 1.0.0；engine 1.0.0。引擎内部异常档案为 JSONL，已程序化无损转换为上述 JSON，并实际重新读取确认内容一致。命令与原始输出在本项 logs；配置和版本/哈希档案在输出目录。
+
+最初追加异常配置时，我把 YAML 段落插入了错误位置，inspect 实际退出 2；错误配置及日志已保留，随后修正结构并重新执行。最终结论以修正后的配置和本次产物为准。
+
+system_execution_status 为 not_run；没有接口契约，两个异常的系统预期均保持 pending-confirmation。

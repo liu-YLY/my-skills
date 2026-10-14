@@ -1,0 +1,20 @@
+已提供 [可审阅配置](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B11/work/profile.yaml)。它只包含 20 条 record，每条只有字符串 id，按 X 前缀与三位序号构造，序号从 1 开始，设计输出为 X001–X020；固定 seed 0，输出 JSON。
+
+本次未执行 inspect、generate 或 validate，未生成数据文件。generation_status、validation_status、system_execution_status 均为 not_run；配置尚未经运行验证。
+
+以下是未来主机具备 Python 3.11+ 且允许执行命令之后的运行说明，现在仅供审阅。先创建独立虚拟环境并安装该 Skill 的 requirements.txt，不安装到全局环境。将 Skill 和 profile 复制到目标主机后替换下方路径：
+
+```bash
+python3.11 -m venv /tmp/x-id-venv
+/tmp/x-id-venv/bin/python -m pip install -r "/path/to/test-data-generator/scripts/requirements.txt"
+/tmp/x-id-venv/bin/python "/path/to/test-data-generator/scripts/run_data.py" inspect --profile "/path/to/profile.yaml"
+/tmp/x-id-venv/bin/python "/path/to/test-data-generator/scripts/run_data.py" generate --profile "/path/to/profile.yaml" --output-root /tmp/x-id-output
+```
+
+inspect 通过后才执行 generate；从 generate 实际返回的 output_directory 复制目录再独立验证：
+
+```bash
+/tmp/x-id-venv/bin/python "/path/to/test-data-generator/scripts/run_data.py" validate --profile "/path/to/profile.yaml" --dataset "/tmp/x-id-output/实际返回目录"
+```
+
+只有实际生成完成和独立校验结果为 passed 后，才能交付数据与该结论。缺少 Python 或仍禁止命令时，继续保留 not_run，不能用手写少量记录代替执行证据。

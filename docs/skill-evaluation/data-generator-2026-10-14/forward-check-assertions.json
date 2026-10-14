@@ -1,0 +1,125 @@
+[
+  {
+    "name": "F01-unique-int-seed-0",
+    "passed": true,
+    "evidence": {
+      "inspect": "unique-int-0-inspect",
+      "generate": "unique-int-0-generate",
+      "exact_full_range": true
+    }
+  },
+  {
+    "name": "F01-unique-int-seed-1",
+    "passed": true,
+    "evidence": {
+      "inspect": "unique-int-1-inspect",
+      "generate": "unique-int-1-generate",
+      "exact_full_range": true
+    }
+  },
+  {
+    "name": "F01-unique-int-seed-2",
+    "passed": true,
+    "evidence": {
+      "inspect": "unique-int-2-inspect",
+      "generate": "unique-int-2-generate",
+      "exact_full_range": true
+    }
+  },
+  {
+    "name": "F01-unique-int-seed-42",
+    "passed": true,
+    "evidence": {
+      "inspect": "unique-int-42-inspect",
+      "generate": "unique-int-42-generate",
+      "exact_full_range": true
+    }
+  },
+  {
+    "name": "F02-regex-timeout-24",
+    "passed": true,
+    "evidence": {
+      "command": "regex-budget-24",
+      "elapsed_seconds": 0.2015865409921389,
+      "limit_seconds": 0.03
+    }
+  },
+  {
+    "name": "F02-regex-timeout-26",
+    "passed": true,
+    "evidence": {
+      "command": "regex-budget-26",
+      "elapsed_seconds": 0.19109837501309812,
+      "limit_seconds": 0.03
+    }
+  },
+  {
+    "name": "F03-boolean-key-metadata-rejected",
+    "passed": true,
+    "evidence": {
+      "command": "integer-key-metadata-boolean"
+    }
+  },
+  {
+    "name": "F04-nonfinite-json-strict-report",
+    "passed": true,
+    "evidence": {
+      "command": "nonfinite-json"
+    }
+  },
+  {
+    "name": "complex-positive-and-negatives-retained",
+    "passed": true,
+    "evidence": {
+      "generate": "complex-generate",
+      "validate": "complex-validate"
+    }
+  },
+  {
+    "name": "unexecuted-checks-incomplete",
+    "passed": true,
+    "evidence": {
+      "generate": "zero-generate",
+      "validate": "zero-validate"
+    }
+  },
+  {
+    "name": "SIGINT-failure-preserved",
+    "passed": true,
+    "evidence": {
+      "command": "sigint-generate"
+    }
+  },
+  {
+    "name": "SIGINT-sentinels-retained",
+    "passed": true,
+    "evidence": {
+      "sha256_before": {
+        "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/forward-check/after-fix/interrupt-output/user-sentinel.txt": "d7bd7ac65e364b428fa4e6b42a61c9c7d395eec9d3bfda5113693fe5de56564d",
+        "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/forward-check/after-fix/interrupt-output/user-folder/retain.txt": "2c6df8203312404e4239b863446641928026675d85c5eec3c9f7bc941e87c6b3"
+      },
+      "retained_after_interrupt": {
+        "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/forward-check/after-fix/interrupt-output/user-sentinel.txt": true,
+        "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/forward-check/after-fix/interrupt-output/user-folder/retain.txt": true
+      }
+    }
+  },
+  {
+    "name": "SIGINT-recovery-generates-and-validates",
+    "passed": true,
+    "evidence": {
+      "generate": "post-sigint-generate",
+      "validate": "post-sigint-validate"
+    }
+  },
+  {
+    "name": "SIGINT-recovery-retains-sentinels-and-failure",
+    "passed": true,
+    "evidence": {
+      "retained_after_recovery": {
+        "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/forward-check/after-fix/interrupt-output/user-sentinel.txt": true,
+        "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/forward-check/after-fix/interrupt-output/user-folder/retain.txt": true
+      }
+    }
+  }
+]

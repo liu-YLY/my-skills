@@ -1,0 +1,191 @@
+{
+  "outputs": [
+    {
+      "index": 1,
+      "command": [
+        "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+        "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+        "generate",
+        "--profile",
+        "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/examples/order-member.yaml",
+        "--output-root",
+        "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/final-checks/scale"
+      ],
+      "returncode": 0,
+      "duration_seconds": 1.9959725839726161,
+      "result": {
+        "output_directory": "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/final-checks/scale/demo-order-97854880ddfd483286259f8de6a1a68c",
+        "generation_status": "complete",
+        "validation_status": "passed",
+        "system_execution_status": "not_run",
+        "normal_rows": 11000,
+        "negative_cases": 4,
+        "profile_hash": "79c27515af7b1ccf3739920099976146c0e1d2f5ef9b17bbe2495d35bcc8a812",
+        "dataset_id": "fc74cc16d16133b0a23cd6c1583b68abfa4803413f6f85efc725121f5e89124e"
+      },
+      "manifest": {
+        "dataset_id": "fc74cc16d16133b0a23cd6c1583b68abfa4803413f6f85efc725121f5e89124e",
+        "dependencies": {
+          "PyYAML": "6.0.3",
+          "jsonschema": "4.26.0"
+        },
+        "duration_seconds": 1.7407813330064528,
+        "engine_version": "1.0.0",
+        "entity_files": {
+          "member": {
+            "csv": "data/member.csv",
+            "json": "data/member.json"
+          },
+          "order": {
+            "csv": "data/order.csv",
+            "json": "data/order.json"
+          }
+        },
+        "files": {
+          "data/member.csv": {
+            "bytes": 8010,
+            "sha256": "baaee087ba5deb24384d00edf914f51cca232a75fe14d6c142467ac5bfeccfb3"
+          },
+          "data/member.json": {
+            "bytes": 36003,
+            "sha256": "b52e36411f56ae5eb1c4aacec2b9ca5287cf64a99fcc4ac3434aa9b162ba9d7c"
+          },
+          "data/order.csv": {
+            "bytes": 747938,
+            "sha256": "dfa6f69f1885ccd4fae7dc045657e3c834d25b7358e3b1ab316eb8632893e37e"
+          },
+          "data/order.json": {
+            "bytes": 1967887,
+            "sha256": "5b8b12d75444880beb91e1b04a403e5a41f080ac26737fc204cb8076ef05a2b1"
+          },
+          "generation-plan.json": {
+            "bytes": 1646,
+            "sha256": "1b6710fd589b2216b65dfa9eb0d402810481a8cf7047bee3fc11e4905ccf69fe"
+          },
+          "negative/cases.jsonl": {
+            "bytes": 2208,
+            "sha256": "fb1783a1046763d118b047c9b23fb0bb36801d9a2ac29c0caf88d5cde9554729"
+          },
+          "profile.normalized.json": {
+            "bytes": 6261,
+            "sha256": "81baca8324a5e7510373dddbb4467596975c0aab557f8414abf9f0932bff2197"
+          },
+          "report.md": {
+            "bytes": 332,
+            "sha256": "f91224428be601c3b3c1c8d25a768377f1534cefe730fda2c651833ae181fd2d"
+          },
+          "validation-report.json": {
+            "bytes": 7809,
+            "sha256": "b735ded77a92d29a4951d1192b09ca47a006625dfcb89f0a84515800b76e10ba"
+          }
+        },
+        "generation_status": "complete",
+        "profile_hash": "79c27515af7b1ccf3739920099976146c0e1d2f5ef9b17bbe2495d35bcc8a812",
+        "python_version": "3.11.16",
+        "reference_datetime": "2026-10-14T00:00:00Z",
+        "run_id": "demo-order-97854880ddfd483286259f8de6a1a68c",
+        "schema_version": "1.0",
+        "seed": 20261014,
+        "system_execution_status": "not_run",
+        "validation_status": "passed"
+      }
+    },
+    {
+      "index": 2,
+      "command": [
+        "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+        "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+        "generate",
+        "--profile",
+        "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/examples/order-member.yaml",
+        "--output-root",
+        "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/final-checks/scale"
+      ],
+      "returncode": 0,
+      "duration_seconds": 1.9648575419851113,
+      "result": {
+        "output_directory": "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/final-checks/scale/demo-order-78ba5b45d83143a6a973118c4edbfa54",
+        "generation_status": "complete",
+        "validation_status": "passed",
+        "system_execution_status": "not_run",
+        "normal_rows": 11000,
+        "negative_cases": 4,
+        "profile_hash": "79c27515af7b1ccf3739920099976146c0e1d2f5ef9b17bbe2495d35bcc8a812",
+        "dataset_id": "fc74cc16d16133b0a23cd6c1583b68abfa4803413f6f85efc725121f5e89124e"
+      },
+      "manifest": {
+        "dataset_id": "fc74cc16d16133b0a23cd6c1583b68abfa4803413f6f85efc725121f5e89124e",
+        "dependencies": {
+          "PyYAML": "6.0.3",
+          "jsonschema": "4.26.0"
+        },
+        "duration_seconds": 1.7524620839976706,
+        "engine_version": "1.0.0",
+        "entity_files": {
+          "member": {
+            "csv": "data/member.csv",
+            "json": "data/member.json"
+          },
+          "order": {
+            "csv": "data/order.csv",
+            "json": "data/order.json"
+          }
+        },
+        "files": {
+          "data/member.csv": {
+            "bytes": 8010,
+            "sha256": "baaee087ba5deb24384d00edf914f51cca232a75fe14d6c142467ac5bfeccfb3"
+          },
+          "data/member.json": {
+            "bytes": 36003,
+            "sha256": "b52e36411f56ae5eb1c4aacec2b9ca5287cf64a99fcc4ac3434aa9b162ba9d7c"
+          },
+          "data/order.csv": {
+            "bytes": 747938,
+            "sha256": "dfa6f69f1885ccd4fae7dc045657e3c834d25b7358e3b1ab316eb8632893e37e"
+          },
+          "data/order.json": {
+            "bytes": 1967887,
+            "sha256": "5b8b12d75444880beb91e1b04a403e5a41f080ac26737fc204cb8076ef05a2b1"
+          },
+          "generation-plan.json": {
+            "bytes": 1646,
+            "sha256": "1b6710fd589b2216b65dfa9eb0d402810481a8cf7047bee3fc11e4905ccf69fe"
+          },
+          "negative/cases.jsonl": {
+            "bytes": 2208,
+            "sha256": "fb1783a1046763d118b047c9b23fb0bb36801d9a2ac29c0caf88d5cde9554729"
+          },
+          "profile.normalized.json": {
+            "bytes": 6261,
+            "sha256": "81baca8324a5e7510373dddbb4467596975c0aab557f8414abf9f0932bff2197"
+          },
+          "report.md": {
+            "bytes": 332,
+            "sha256": "f91224428be601c3b3c1c8d25a768377f1534cefe730fda2c651833ae181fd2d"
+          },
+          "validation-report.json": {
+            "bytes": 7809,
+            "sha256": "b735ded77a92d29a4951d1192b09ca47a006625dfcb89f0a84515800b76e10ba"
+          }
+        },
+        "generation_status": "complete",
+        "profile_hash": "79c27515af7b1ccf3739920099976146c0e1d2f5ef9b17bbe2495d35bcc8a812",
+        "python_version": "3.11.16",
+        "reference_datetime": "2026-10-14T00:00:00Z",
+        "run_id": "demo-order-78ba5b45d83143a6a973118c4edbfa54",
+        "schema_version": "1.0",
+        "seed": 20261014,
+        "system_execution_status": "not_run",
+        "validation_status": "passed"
+      }
+    }
+  ],
+  "repeatable_artifact_sha256": {
+    "data/order.json": "5b8b12d75444880beb91e1b04a403e5a41f080ac26737fc204cb8076ef05a2b1",
+    "data/order.csv": "dfa6f69f1885ccd4fae7dc045657e3c834d25b7358e3b1ab316eb8632893e37e",
+    "data/member.json": "b52e36411f56ae5eb1c4aacec2b9ca5287cf64a99fcc4ac3434aa9b162ba9d7c",
+    "data/member.csv": "baaee087ba5deb24384d00edf914f51cca232a75fe14d6c142467ac5bfeccfb3",
+    "negative/cases.jsonl": "fb1783a1046763d118b047c9b23fb0bb36801d9a2ac29c0caf88d5cde9554729"
+  }
+}

@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.16, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/lyle/myfile/python_project/my-skills/plugins/testing/mcp-servers/state-machine-testing
+configfile: pyproject.toml
+testpaths: tests
+plugins: platformdirs-4.13.0, cov-7.1.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 114 items
+
+tests/integration/test_end_to_end.py ..                                  [  1%]
+tests/integration/test_mcp_protocol.py .......                           [  7%]
+tests/integration/test_skill_integration.py .......                      [ 14%]
+tests/unit/test_builders.py .........                                    [ 21%]
+tests/unit/test_business_coverage.py ..................                  [ 37%]
+tests/unit/test_coverage.py ...................                          [ 54%]
+tests/unit/test_exporters.py ......                                      [ 59%]
+tests/unit/test_generators.py .....................                      [ 78%]
+tests/unit/test_schemas.py ...........                                   [ 87%]
+tests/unit/test_validators.py ..............                             [100%]
+
+============================= 114 passed in 5.38s ==============================

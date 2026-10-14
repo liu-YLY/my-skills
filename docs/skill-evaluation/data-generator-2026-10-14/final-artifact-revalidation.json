@@ -1,0 +1,230 @@
+[
+  {
+    "variant": "with_skill",
+    "id": "B01",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B01/work/generated/demo-order-0e40579b0d7847f98ecffb6983a83344/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B01/work/generated/demo-order-0e40579b0d7847f98ecffb6983a83344"
+    ],
+    "returncode": 0,
+    "duration_seconds": 1.2279471670044586,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "fc74cc16d16133b0a23cd6c1583b68abfa4803413f6f85efc725121f5e89124e",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  },
+  {
+    "variant": "with_skill",
+    "id": "B05",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B05/work/generated/basic-fields-bbb4eb4dedc74ab9800222e74d8f3f9d/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B05/work/generated/basic-fields-bbb4eb4dedc74ab9800222e74d8f3f9d"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.40482954200706445,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "1bb88c34aecdb765dceb9d888bbe44ac61255e2e4dd32ac09ee025a87172db0e",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  },
+  {
+    "variant": "with_skill",
+    "id": "B06",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B06/work/generated/amount-negative-49ebf35c17c64f119cacb7e706be5c7f/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B06/work/generated/amount-negative-49ebf35c17c64f119cacb7e706be5c7f"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.2072385840001516,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "ac69fddc24286899e73cec39edc1f4095d3df6d22bc627b187e2d9cfae97ecc9",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  },
+  {
+    "variant": "with_skill",
+    "id": "B08",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B08/work/generated/logistics-events-ba65b843bbb6422bac52d7fa1a8f2034/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B08/work/generated/logistics-events-ba65b843bbb6422bac52d7fa1a8f2034"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.15808141601155512,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "bef70031030180611d4fdf6ba2d08f31a726770c22f2a9f26d7f7e8a55749399",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  },
+  {
+    "variant": "with_skill",
+    "id": "B09",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B09/work/generated/tenant-rbac-07a433bd98a845c1a5a59e837c83e8b2/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B09/work/generated/tenant-rbac-07a433bd98a845c1a5a59e837c83e8b2"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.16449716698843986,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "b1a02d04f2a5f0b67f9e9ca9e7427b896ca6dce6670de37bc0947b4c601b0489",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  },
+  {
+    "variant": "with_skill",
+    "id": "B12",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B12/work/generated/x-id-only-3e6c754f5ce843b38c7773d243f5b2b2/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B12/work/generated/x-id-only-3e6c754f5ce843b38c7773d243f5b2b2"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.15482229099143296,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "abe66cdc6a1d03d4ce895c1298c4fa77d47f5614a56d13fa95a60bc32a8e1183",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  },
+  {
+    "variant": "baseline",
+    "id": "B01",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B01/output/demo-order-e22f13b72c484efebaeb0345dbd3b322/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B01/output/demo-order-e22f13b72c484efebaeb0345dbd3b322"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.9589267089904752,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "fc74cc16d16133b0a23cd6c1583b68abfa4803413f6f85efc725121f5e89124e",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  },
+  {
+    "variant": "baseline",
+    "id": "B05",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B05/output/basic-fields-a697e3148c714a2186d4f94f343f9c0a/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B05/output/basic-fields-a697e3148c714a2186d4f94f343f9c0a"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.15936754099675454,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "1bb88c34aecdb765dceb9d888bbe44ac61255e2e4dd32ac09ee025a87172db0e",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  },
+  {
+    "variant": "baseline",
+    "id": "B06",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B06/evidence-output/decimal-negative-fixture-ddb6e2a46ee644b68fd0c1aef0c86722/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B06/evidence-output/decimal-negative-fixture-ddb6e2a46ee644b68fd0c1aef0c86722"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.16343295900151134,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "542acc5bb0abda46f3be11b777602bdfc2645a3b04a80e00b6374038f13a859a",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  },
+  {
+    "variant": "baseline",
+    "id": "B08",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B08/output/logistics-events-253d2666eb2d43b8a94758cdf6e6a033/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B08/output/logistics-events-253d2666eb2d43b8a94758cdf6e6a033"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.17972812498919666,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "bef70031030180611d4fdf6ba2d08f31a726770c22f2a9f26d7f7e8a55749399",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  },
+  {
+    "variant": "baseline",
+    "id": "B09",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B09/output/tenant-rbac-708cf2ccf9cb4b3aa065aecb5a73b1b4/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B09/output/tenant-rbac-708cf2ccf9cb4b3aa065aecb5a73b1b4"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.1714412919827737,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "b1a02d04f2a5f0b67f9e9ca9e7427b896ca6dce6670de37bc0947b4c601b0489",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  },
+  {
+    "variant": "baseline",
+    "id": "B12",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+      "validate",
+      "--profile",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B12/output/x-id-only-375627d9151747989bfa2b0de0288c82/profile.normalized.json",
+      "--dataset",
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B12/output/x-id-only-375627d9151747989bfa2b0de0288c82"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.16324333401280455,
+    "validation_status": "passed",
+    "unexecuted_checks": [],
+    "dataset_id": "abe66cdc6a1d03d4ce895c1298c4fa77d47f5614a56d13fa95a60bc32a8e1183",
+    "implementation_commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540"
+  }
+]

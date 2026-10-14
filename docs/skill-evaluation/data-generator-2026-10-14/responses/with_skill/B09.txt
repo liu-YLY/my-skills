@@ -1,0 +1,11 @@
+已按 tenant-rbac 示例完成权限项目数据生成与独立校验。
+
+[数据与报告目录](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B09/work/generated/tenant-rbac-07a433bd98a845c1a5a59e837c83e8b2)
+
+正常数据为 2 条租户、4 条角色、8 条用户，提供同源 JSON、JSONL、CSV。每租户有 2 个角色；用户使用 (tenant_id, role_id) 整组引用角色复合键，两个租户分别有 4 个用户。另有 2 条跨租户角色引用异常：以 tenant-A 的合法用户为基准，将 tenant_id 改为 T002，保留原角色。
+
+实际 inspect、generate、独立 validate 均退出 0。validation_status 为 passed：36 个声明检查全部实现并执行，正常数据错误 0、不可检查项 0；两个异常实际均只违反 user-role，与预期严格匹配。全量扫描、导出复核及完整性检查通过，错误明细未截断。
+
+本次 profile 和产物只包含 tenant、role、user 及对应键字段；没有订单实体、金额、支付时间或订单状态。seed 42；profile tenant-rbac 1.0.0；engine 1.0.0。配置、版本、哈希、规则统计及异常结果在输出目录，原始命令输出在本项 logs。
+
+system_execution_status 为 not_run；未执行权限接口或实际越权请求，异常的系统响应仍为 pending-confirmation。

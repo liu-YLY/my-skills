@@ -1,0 +1,5 @@
+这五条样例不能还原全部业务规则，因此现在不能交付“完整合法”的一万条订单。样例只能证明这五条数据的形态，不能证明金额范围、全部状态、会员合法性、必填字段或其他关联规则。
+
+已保存 [草案和待确认项](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B02/draft.json)，保留原始五条样例及目标数量 10,000。草案明确区分观察结果与业务契约，没有把 ORD 前缀、paid 状态或样例金额区间升级为规则。
+
+目前 `generation_status=blocked`、`validation_status=not_run`。缺少完整字段契约、编号规则、金额约束、会员来源及完整状态规则；没有生成或声称合法的数据文件。

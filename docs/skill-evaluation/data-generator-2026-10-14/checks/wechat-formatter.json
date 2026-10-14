@@ -1,0 +1,14 @@
+{
+  "name": "wechat-formatter",
+  "command": [
+    "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+    "-m",
+    "pytest",
+    "plugins/wechat-formatter/skills/wechat-formatter/scripts/tests",
+    "-q"
+  ],
+  "cwd": "/Users/lyle/myfile/python_project/my-skills",
+  "returncode": 0,
+  "duration_seconds": 2.4227532079967204,
+  "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/wechat-formatter.txt"
+}

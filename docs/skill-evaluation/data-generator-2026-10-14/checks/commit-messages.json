@@ -1,0 +1,62 @@
+[
+  {
+    "commit": "7ed57b46cd9fbeb6398523c6f07206edfab9cdf4",
+    "message": "feat(test-data): 新增配置协议与只读检查接口\n\n",
+    "returncode": 0
+  },
+  {
+    "commit": "aab269c819622fe01c68ab19f5afcdd8cd8609b1",
+    "message": "feat(test-data): 实现可重复字段生成与精确场景分配\n\n",
+    "returncode": 0
+  },
+  {
+    "commit": "411fffc73ed38e2a62a09c208bbb456595d18f77",
+    "message": "feat(test-data): 实现复合关联与父子数量分配\n\n",
+    "returncode": 0
+  },
+  {
+    "commit": "bbbd7d6482f4a5c8e031d86561b8fda30be0af1c",
+    "message": "fix(test-data): 优先识别实体依赖环再检查关联容量\n\n",
+    "returncode": 0
+  },
+  {
+    "commit": "44f1b1e39afbe6c5d032084eed3467a8b1bbdd12",
+    "message": "feat(test-data): 新增独立规则校验与检查证据\n\n",
+    "returncode": 0
+  },
+  {
+    "commit": "9d00e1103a8106b50842df3ef9f6820ac463a731",
+    "message": "feat(test-data): 构造异常输入并核对预期违规集合\n\n",
+    "returncode": 0
+  },
+  {
+    "commit": "69153069365cff917ba608895bc92234dd34ba1a",
+    "message": "feat(test-data): 完成多格式文件交付与独立校验命令\n\n",
+    "returncode": 0
+  },
+  {
+    "commit": "676e35df134f8c2055d55ffb493fb811d7cff490",
+    "message": "fix(test-data): 修复唯一容量与资源时限并严格核对输入证据\n\n",
+    "returncode": 0
+  },
+  {
+    "commit": "ef18d5f2086f270c9234bd7a3ce5b1a7facba5f6",
+    "message": "fix(test-data): 限定十进制表示并拒绝异常指数配置\n\n",
+    "returncode": 0
+  },
+  {
+    "commit": "58ffa643d9216aff92459427e8f0ddd66a722af7",
+    "message": "feat(test-data): 接入通用造数技能示例与安装及持续检查\n\n",
+    "returncode": 0
+  },
+  {
+    "commit": "2813d5e922f2c6bb9052ea93407ca404134182c4",
+    "message": "fix(test-data): 按空值语义与场景覆盖检查唯一容量\n\n",
+    "returncode": 0
+  },
+  {
+    "commit": "a64686cf8ce9f86fdb8de3fdb1a433480fdb5540",
+    "message": "test(test-data): 核对完整安装资源并保护已有技能目录\n\n",
+    "returncode": 0
+  }
+]

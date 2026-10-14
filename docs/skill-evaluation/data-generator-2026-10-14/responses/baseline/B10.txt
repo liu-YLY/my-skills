@@ -1,0 +1,5 @@
+当前不能直接写入真实数据库：连接、目标库表、事务和具体写入均未确定，也没有对明确写入方案的确认。
+
+已保存 [导入交接草案与待确认项](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B10/import-handoff.json)，列出数据集选择、目标环境、字段映射、关联写入顺序、冲突处理、事务回滚和导入核对所需的信息。最近生成的权限数据只记录为候选源，未自动决定导入范围或把异常输入用于数据库写入。
+
+下一步由数据库操作流程整理确切项目、实例、库表、写入操作及影响，供执行前确认。无需提供明文密码或密钥。本次没有尝试连接、执行SQL、修改基础设施或写入数据库，状态为 `pending-confirmation`、`database_execution_status=not_run`。
