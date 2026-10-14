@@ -1,0 +1,9 @@
+已生成 20 条 JSON，每条只有字符串 id，实际为 X001–X020。
+
+[record.json](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B12/work/generated/x-id-only-3e6c754f5ce843b38c7773d243f5b2b2/data/record.json)
+
+实际 inspect、generate、独立 validate 均退出 0，validation_status 为 passed。11 个声明检查全部实现并执行，包括字符串类型、长度、X 加三位数字格式、主键唯一和数量 20；全量检查错误 0、不可检查项 0，完整性通过，错误明细未截断。没有异常输入。
+
+配置只包含单个 record 实体和 id 字段；本项没有加载订单、状态机或关联示例。seed 0；profile x-id-only 1.0.0；engine 1.0.0；配置、验证报告与版本/哈希档案位于同一输出目录，原始命令输出位于本项 logs。
+
+本次只执行离线生成和本地数据校验，system_execution_status 为 not_run。

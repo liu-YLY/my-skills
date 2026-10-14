@@ -1,0 +1,11 @@
+已按 `basic-fields.yaml` 生成同源的 20 条数据：
+
+- [JSON](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B05/output/basic-fields-a697e3148c714a2186d4f94f343f9c0a/data/record.json)
+- [JSONL](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B05/output/basic-fields-a697e3148c714a2186d4f94f343f9c0a/data/record.jsonl)
+- [CSV](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B05/output/basic-fields-a697e3148c714a2186d4f94f343f9c0a/data/record.csv)
+
+生成、独立校验和三格式对照检查均实际执行并退出 0。三者按字段类型解码后逐条相同，`code` 的字符串 `0012` 保留；整数与布尔值类型正确。`note` 包含 6 个null、4 个空串、3 个字面量反斜杠N、7 个含换行字符串。
+
+CSV 用 `\N` 表示null，空字段表示空串，字符串中的反斜杠加倍转义，因此字面量 `\N` 与null可以区分；CSV读取时应依随附字段契约恢复布尔和整数类型。
+
+例子规定的 1 个布尔类型异常输入也已生成，违规项匹配预期。检查详情在 [format-check.json](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B05/format-check.json) 及产物目录的 `validation-report.json`，原始stdout/stderr在本项目录。未执行业务系统。

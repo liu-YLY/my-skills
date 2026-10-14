@@ -69,7 +69,7 @@ if ($Uninstall) {
 
 # Pre-install validation
 Write-Host "Install testing-bundle ($($BundleSkills.Count) skills) -> $TargetDir" -ForegroundColor Green
-foreach ($required in @("testing-bundle", "test-case-engineer", "bug-analyzer", "test-strategy-engineer", "performance-test-engineer", "state-machine-test-engineer", "change-impact-analyzer")) {
+foreach ($required in @("testing-bundle", "test-case-engineer", "bug-analyzer", "test-strategy-engineer", "performance-test-engineer", "state-machine-test-engineer", "change-impact-analyzer", "test-data-generator")) {
     if ($required -notin $BundleSkills) { throw "Missing required skill: $required" }
 }
 foreach ($resource in @("convert_docs.py", "requirements.txt")) {
@@ -80,6 +80,16 @@ foreach ($resource in @("convert_docs.py", "requirements.txt")) {
 }
 function Assert-RuntimeResources([string]$Root) {
     $prefix = [IO.Path]::GetFullPath($Root) + [IO.Path]::DirectorySeparatorChar
+    $dataResources = @(
+        "scripts/run_data.py", "scripts/requirements.txt", "scripts/requirements-faker.txt", "schemas/profile.schema.json", "schemas/report.schema.json",
+        "scripts/engine/__init__.py", "scripts/engine/common.py", "scripts/engine/profile.py",
+        "scripts/engine/generators.py", "scripts/engine/relations.py", "scripts/engine/validator.py",
+        "scripts/engine/negative.py", "scripts/engine/exporters.py", "scripts/engine/pipeline.py", "scripts/engine/runner.py"
+    )
+    foreach ($resource in $dataResources) {
+        $path = Join-Path $Root "test-data-generator/$resource"
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing data generation resource: $path" }
+    }
     foreach ($resource in @("convert_docs.py", "requirements.txt")) {
         $path = Join-Path $Root "test-case-engineer/scripts/$resource"
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing conversion resource: $path" }

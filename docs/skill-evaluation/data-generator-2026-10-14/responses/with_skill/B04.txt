@@ -1,0 +1,7 @@
+造数规则使用需求下限 0.01，已由产品明确确认。0.01 是合法下边界；0.00 属于金额下限异常，不能因 current_min=0.00 就放入合法基准。
+
+已保存 [规则及冲突记录](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B04/work/rules.json)，分别记录需求、产品确认和你提供的代码行为。业务规则的依据已确定，代码与需求的冲突仍为 conflict，修复状态为未修复；我没有检查实际代码文件，因此当前代码值仅按你提供的信息记录。
+
+金额上限、精度、数量及其他字段尚未提供，本次不补齐成可执行的完整订单 profile。0.00 的离线预期违规可定义为 R-order-amount-min，但接口如何响应仍为 pending-confirmation。
+
+本次只整理规则，生成与校验均为 not_run；未运行接口，system_execution_status 为 not_run。

@@ -1,0 +1,7 @@
+这五条样例不足以自动还原全部业务规则，因此目前不能交付“完整合法”的一万条订单。它们只能说明样例里出现了四列、ORD 编号、三个会员标识、五个两位小数金额和 paid，不能证明完整字段、状态全集、金额范围或会员关联是否合法。
+
+已保存 [候选配置草案](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B02/work/profile.preview-draft.yaml) 和 [待确认项](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B02/work/pending-confirmation.md)。草案采用 preview，所有来自样例的结构与约束保留 candidate；它可用于后续讨论探索数据，不能当作完整业务契约。
+
+关键缺口包括字段全集、ID 唯一性和编号边界、会员引用、金额范围及币种、状态与空值约定、时间字段和联动规则。你已说明没有更多资料，本次保留这些缺口，不要求补充或凭常识填入。
+
+生成、校验、系统执行均为 not_run。未生成一万条“合法”数据，也没有获得合法性结论。

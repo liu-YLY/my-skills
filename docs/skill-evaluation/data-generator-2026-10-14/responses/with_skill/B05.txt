@@ -1,0 +1,11 @@
+已按 basic-fields 示例生成同源 JSON、JSONL、CSV，三种格式各 20 条记录，另有示例规定的 1 条布尔类型异常输入。
+
+[数据与报告目录](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B05/work/generated/basic-fields-bbb4eb4dedc74ab9800222e74d8f3f9d)
+
+实际 inspect、generate、独立 validate 和额外的格式保真复核均退出 0。校验为 passed：22 个声明检查已实现并执行，错误 0，不可检查项 0，异常预期 F-record.enabled-type 与实际一致，扫描全量且错误明细未截断。
+
+重新读取三种格式并恢复 CSV 类型后，20 条记录完全一致；code 均保持字符串 "0012"。note 中实际有 null 6 条、空串 4 条、字面反斜线 N 3 条、包含中文/逗号/引号/换行的字符串 7 条。CSV 使用 \N 代表 null，字符串反斜线翻倍，因此空值、空串和字面 \N 可区分。其他导入器需遵循同一约定或显式转换。
+
+种子 42；profile basic-fields 1.0.0；引擎 1.0.0；Python 3.11.16；依赖及哈希保存在 manifest。保真复核详见 work/preservation-check.json，原始命令输出见 logs。
+
+system_execution_status 为 not_run；本次结论只覆盖声明的离线数据约束。

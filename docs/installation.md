@@ -52,13 +52,13 @@ npx skills add liu-YLY/my-skills --list
 
 **场景 1：安装所有 skill（推荐）**
 ```bash
-# 包含 testing-bundle + 6 个子 skill + wechat-formatter
+# 包含 testing-bundle、7 个专业子 skill 和 wechat-formatter，共 9 个 skill
 npx skills add liu-YLY/my-skills --skill '*' -g -y
 ```
 
 **场景 2：仅安装测试能力 bundle**
 ```bash
-# 安装 7 个 skill：testing-bundle + test-strategy-engineer + test-case-engineer + performance-test-engineer + bug-analyzer + state-machine-test-engineer + change-impact-analyzer
+# 安装 8 个 skill：testing-bundle 与 7 个专业子 skill
 npx skills add liu-YLY/my-skills \
   --skill 'testing-bundle' \
   --skill 'test-strategy-engineer' \
@@ -67,6 +67,7 @@ npx skills add liu-YLY/my-skills \
   --skill 'bug-analyzer' \
   --skill 'state-machine-test-engineer' \
   --skill 'change-impact-analyzer' \
+  --skill 'test-data-generator' \
   -g -y
 ```
 
@@ -104,7 +105,7 @@ Claude Code 用户可通过原生 `/plugin` 命令，按 plugin 粒度一键安�
 /plugin marketplace add liu-YLY/my-skills
 
 # 步骤 2：安装测试能力 bundle
-# 含 testing-bundle + 6 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer）
+# 含 testing-bundle + 7 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer / test-data-generator）
 /plugin install testing-bundle@my-skill-marketplace
 
 # 步骤 3：安装微信公众号排版 skill（可选）
@@ -148,6 +149,7 @@ cp -r plugins/testing/skills/performance-test-engineer ~/.claude/skills/
 cp -r plugins/testing/skills/bug-analyzer ~/.claude/skills/
 cp -r plugins/testing/skills/state-machine-test-engineer ~/.claude/skills/
 cp -r plugins/testing/skills/change-impact-analyzer ~/.claude/skills/
+cp -r plugins/testing/skills/test-data-generator ~/.claude/skills/
 
 # 示例：复制 wechat-formatter
 cp -r plugins/wechat-formatter/skills/wechat-formatter ~/.claude/skills/
@@ -169,6 +171,8 @@ pip install -r requirements.txt
 ```
 
 #### 步骤 2：重启运行环境
+
+test-data-generator 的离线引擎需要 Python 3.11 或以上；复制 Skill 后另行安装其 scripts/requirements.txt，使用方式见 [运行指南](../plugins/testing/skills/test-data-generator/integrations/quickstart.md)。安装 Skill 本身不会自动安装这些依赖。
 
 重启你的 runtime（Claude Code / Cursor / Codex 等），让其重新扫描 skills 目录，技能会自动识别并注册。
 

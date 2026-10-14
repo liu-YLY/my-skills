@@ -8,16 +8,16 @@
 
 | Plugin | 版本 | 类别 | 简介 | 包含 skill 数 |
 |---|---|---|---|---|
-| [testing](./testing/) | v3.0.0 | testing | 测试能力 bundle：策略 / 用例 / 性能 / Bug 根因 / 状态机测试 | 6（1 bundle + 5 子 skill）+ 1 独立 skill + 1 可选 MCP Server |
-| [wechat-formatter](./wechat-formatter/) | v2.0.0 | content | 微信公众号排版：6 种风格 + 高级排版模块 + HTML 生成 | 1 |
+| [testing](./testing/) | v3.4.0 | testing | 策略 / 用例 / 性能 / Bug 根因 / 状态机 / 变更影响 / 离线测试数据 | 8（1 bundle + 7 子 skill），另含 2 个可选 MCP Server |
+| [wechat-formatter](./wechat-formatter/) | v3.0.16 | content | 微信公众号排版：6 种风格 + 高级排版模块 + HTML 生成 | 1 |
 
 ## 安装方式
 
-详细安装步骤见根目录 [README.md](../README.md#安装与配置) 的「安装与配置」章节。三种方式概览：
+详细安装步骤见 [安装指南](../docs/installation.md)。三种方式概览：
 
 | 方式 | 适用 | 命令示例 |
 |---|---|---|
-| `npx skills add` | 跨 runtime（推荐） | `npx skills add liu-YLY/my-skills --skill 'testing-bundle' -g -y` |
+| `npx skills add` | 跨 runtime（推荐） | `npx skills add liu-YLY/my-skills --skill '*' -g -y` |
 | Plugin Marketplace | Claude Code 原生 | `/plugin install testing-bundle@my-skill-marketplace` |
 | 本地脚本 | 离线 / 兜底 | `.\scripts\install-testing-bundle.ps1` |
 
