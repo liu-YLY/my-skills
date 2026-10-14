@@ -340,6 +340,7 @@ def inspect_profile(profile):
     total = sum(spec["count"] for spec in entities.values()) + sum(case["count"] for case in profile["negative_scenarios"])
     if total > profile["generation"]["limits"]["max_total_rows"]:
         raise ProfileError("total record limit exceeded")
+    entity_order = order_graph(entities, dependencies, "entity")
     if issues and profile["generation"]["mode"] == "strict":
         raise ProfileError(f"unconfirmed constraints: {canonical(issues)}")
     if relations:
@@ -347,7 +348,7 @@ def inspect_profile(profile):
         for relation in relations.values():
             check_capacity(profile, relation)
     return {"schema_version": "1.0", "profile_id": profile["profile_id"], "profile_hash": digest(profile),
-            "entity_order": order_graph(entities, dependencies, "entity"), "total_rows": total,
+            "entity_order": entity_order, "total_rows": total,
             "entity_counts": {name: spec["count"] for name, spec in entities.items()},
             "check_ids": sorted(check_ids), "issues": issues, "generation_status": "not_run",
             "validation_status": "not_run", "system_execution_status": "not_run"}
