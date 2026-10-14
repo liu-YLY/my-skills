@@ -109,6 +109,14 @@ def test_requirement_and_sample_sources_do_not_become_sample_only(profile):
     assert not inspect_profile(profile)["issues"]
 
 
+def test_validation_contract_needs_no_executable_generator(profile):
+    del profile["entities"]["item"]["fields"]["id"]["generator"]
+    profile = normalize(profile)
+    assert inspect_profile(profile, for_generation=False)["total_rows"] == 3
+    with pytest.raises(ProfileError, match="generator"):
+        inspect_profile(profile)
+
+
 def test_case_insensitive_entity_names_are_rejected_before_export(profile):
     profile["entities"]["Item"] = copy.deepcopy(profile["entities"]["item"])
     with pytest.raises(ProfileError, match="file name"):

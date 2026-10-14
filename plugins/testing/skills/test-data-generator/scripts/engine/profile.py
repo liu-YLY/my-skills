@@ -129,7 +129,7 @@ def order_graph(nodes, dependencies, label):
     return result
 
 
-def check_generator(profile, entity, name, field, generator):
+def check_generator(profile, entity, name, field, generator, for_generation=True):
     fields = profile["entities"][entity]["fields"]
     kind = generator["kind"]
     required_type = {"sequence": "string", "integer": "integer", "decimal": "decimal",
@@ -146,7 +146,7 @@ def check_generator(profile, entity, name, field, generator):
             raise ProfileError(f"{entity}.{name}: choice requires compatible values or enum")
     if kind in ("integer", "decimal") and not {"min", "max"} <= field.keys():
         raise ProfileError(f"{entity}.{name}: numeric generator needs min and max")
-    if kind == "sequence":
+    if kind == "sequence" and for_generation:
         last = generator.get("start", 1) + profile["entities"][entity]["count"] - 1
         if last >= 10 ** generator["width"]:
             raise ProfileError(f"{entity}.{name}: sequence capacity exhausted")
@@ -196,7 +196,7 @@ def field_check_ids(entity, name, field):
     return ids
 
 
-def inspect_profile(profile):
+def inspect_profile(profile, for_generation=True):
     entities = profile["entities"]
     if len({name.casefold() for name in entities}) != len(entities):
         raise ProfileError("entity file names conflict on case-insensitive filesystems")
@@ -224,6 +224,7 @@ def inspect_profile(profile):
     for entity, spec in entities.items():
         source_ids = provenance(spec, entity)
         fields = spec["fields"]
+        entity_scenarios = [item for item in scenarios.values() if item["entity"] == entity]
         for key in [spec["primary_key"], *spec.get("unique_keys", [])]:
             if any(name not in fields for name in key):
                 raise ProfileError(f"{entity}: unknown key field")
@@ -268,9 +269,13 @@ def inspect_profile(profile):
                     raise ProfileError(f"{entity}.{name}: invalid pattern") from error
             if "enum" in field and any(not typed(value, field) for value in field["enum"]):
                 raise ProfileError(f"{entity}.{name}: incompatible enum")
-            check_generator(profile, entity, name, field, field["generator"])
-            values = field["generator"].get("values", field.get("enum"))
-            if field.get("unique") or name in spec["primary_key"] and len(spec["primary_key"]) == 1:
+            if for_generation and "generator" not in field:
+                raise ProfileError(f"{entity}.{name}: generation requires a generator")
+            uses_default = not entity_scenarios or any(name not in item.get("set", {}) and name not in item.get("generators", {}) for item in entity_scenarios)
+            if for_generation and uses_default:
+                check_generator(profile, entity, name, field, field["generator"])
+            values = field.get("generator", {}).get("values", field.get("enum"))
+            if for_generation and (field.get("unique") or name in spec["primary_key"] and len(spec["primary_key"]) == 1):
                 capacity = len(values) if values else None
                 if field["generator"]["kind"] == "constant" and field["generator"]["value"] is not None:
                     capacity = 1
@@ -290,7 +295,8 @@ def inspect_profile(profile):
                 if capacity is not None and capacity < spec["count"] and not overridden and not allows_null:
                     raise ProfileError(f"{entity}.{name}: unique capacity exhausted")
             check_ids.extend(field_check_ids(entity, name, field))
-        field_order(profile, entity)
+        if for_generation and not entity_scenarios:
+            field_order(profile, entity)
     occupied = set()
     for relation in relations.values():
         provenance(relation, relation["id"])
@@ -309,7 +315,7 @@ def inspect_profile(profile):
             raise ProfileError(f"{relation['id']}: parent fields must be a declared unique key")
         for left, right in zip(child["fields"], parent["fields"]):
             target = (child["entity"], left)
-            if target in occupied:
+            if for_generation and target in occupied:
                 raise ProfileError(f"{relation['id']}: overlapping relation fields are unsupported")
             occupied.add(target)
             if entities[child["entity"]]["fields"][left]["type"] != parent_spec["fields"][right]["type"]:
@@ -333,8 +339,9 @@ def inspect_profile(profile):
             if not typed(value, fields[name]):
                 raise ProfileError(f"{scenario['id']}: incompatible value for {name}")
         for name, generator in overrides.items():
-            check_generator(profile, entity, name, fields[name], generator)
-        field_order(profile, entity, scenario)
+            check_generator(profile, entity, name, fields[name], generator, for_generation)
+        if for_generation:
+            field_order(profile, entity, scenario)
         scenario_counts[entity] = scenario_counts.get(entity, 0) + scenario["count"]
     for entity, count in scenario_counts.items():
         if count != entities[entity]["count"]:
@@ -374,15 +381,17 @@ def inspect_profile(profile):
     total = sum(spec["count"] for spec in entities.values()) + sum(case["count"] for case in profile["negative_scenarios"])
     if total > profile["generation"]["limits"]["max_total_rows"]:
         raise ProfileError("total record limit exceeded")
-    entity_order = order_graph(entities, dependencies, "entity")
+    entity_order = order_graph(entities, dependencies, "entity") if for_generation else sorted(entities)
     if issues and profile["generation"]["mode"] == "strict":
         raise ProfileError(f"unconfirmed constraints: {canonical(issues)}")
-    if relations:
+    if for_generation and relations:
         from .relations import check_capacity
         for relation in relations.values():
             check_capacity(profile, relation)
     return {"schema_version": "1.0", "profile_id": profile["profile_id"], "profile_hash": digest(profile),
             "entity_order": entity_order, "total_rows": total,
             "entity_counts": {name: spec["count"] for name, spec in entities.items()},
-            "check_ids": sorted(check_ids), "issues": issues, "generation_status": "not_run",
+            "check_ids": sorted(check_ids), "issues": issues,
+            "operation": "generate" if for_generation else "validate",
+            "generation_status": "not_run",
             "validation_status": "not_run", "system_execution_status": "not_run"}

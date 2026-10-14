@@ -74,7 +74,7 @@
       ]
     },
     "field": {
-      "type": "object", "additionalProperties": false, "required": ["type", "generator"],
+      "type": "object", "additionalProperties": false, "required": ["type"],
       "properties": {
         "type": {"enum": ["string", "integer", "decimal", "boolean", "datetime"]},
         "nullable": {"type": "boolean"}, "unique": {"type": "boolean"},

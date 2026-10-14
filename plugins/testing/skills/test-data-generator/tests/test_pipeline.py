@@ -105,6 +105,13 @@ def test_external_csv_without_manifest_is_validated_using_declared_types(tmp_pat
     assert report["validation_status"] == "failed" and "N-item-count" in report["violation_ids"]
 
 
+def test_existing_data_is_not_blocked_by_generator_capacity(tmp_path):
+    profile = simple({}, 2)
+    profile["entities"]["item"]["fields"]["id"]["generator"] = {"kind": "constant", "value": "dummy"}
+    (tmp_path / "item.json").write_text('[{"id":"A"},{"id":"B"}]')
+    assert validate_bundle(profile, tmp_path)["validation_status"] == "passed"
+
+
 def test_cli_missing_dependency_has_structured_runtime_error(tmp_path):
     result = subprocess.run([sys.executable, "-S", str(ROOT / "scripts/run_data.py"), "inspect",
                              "--profile", str(tmp_path / "missing.json")], text=True, capture_output=True)

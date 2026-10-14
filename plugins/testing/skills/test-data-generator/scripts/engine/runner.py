@@ -12,8 +12,8 @@ def worker(connection, command, profile, location):
         if not isinstance(profile, dict):
             profile = load_profile(profile)
         connection.send(("ready", profile["generation"]["limits"]["timeout_seconds"]))
-        if command == "inspect":
-            result = inspect_profile(profile)
+        if command.startswith("inspect"):
+            result = inspect_profile(profile, for_generation=command == "inspect")
         elif command == "generate":
             result = generate_bundle(profile, location, on_start=lambda staging, target:
                                      connection.send(("started", staging, target)))

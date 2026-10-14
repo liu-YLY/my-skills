@@ -30,7 +30,7 @@ def changed_record(record, mutations):
 def build_negative_cases(profile, data, scenario_ids, budget=None):
     budget = budget or Budget(profile["generation"]["limits"])
     baseline = validate_data(profile, data, budget)
-    if baseline["error_count"]:
+    if baseline["error_count"] or baseline["incomplete_checks"] or baseline["unexecuted_checks"]:
         raise ProfileError("negative samples require a validated legal baseline")
     dataset_id = digest(data)
     cases = []

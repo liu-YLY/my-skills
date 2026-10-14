@@ -11,6 +11,8 @@ def main():
     for name in ("inspect", "generate", "validate"):
         command = commands.add_parser(name)
         command.add_argument("--profile", required=True)
+        if name == "inspect":
+            command.add_argument("--operation", choices=("generate", "validate"), default="generate")
         if name == "generate":
             command.add_argument("--output-root", required=True)
         elif name == "validate":
@@ -19,7 +21,7 @@ def main():
     try:
         from engine.runner import run_isolated
         if args.command == "inspect":
-            result = run_isolated("inspect", args.profile, None)
+            result = run_isolated("inspect" if args.operation == "generate" else "inspect-validate", args.profile, None)
         elif args.command == "generate":
             result = run_isolated("generate", args.profile, args.output_root)
         else:

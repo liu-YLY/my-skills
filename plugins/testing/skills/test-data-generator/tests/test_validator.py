@@ -8,6 +8,42 @@ from test_generators import simple
 from test_relations import linked
 
 
+def test_partially_unevaluable_rule_cannot_pass():
+    profile = simple({"left": {"type": "integer", "generator": {"kind": "constant", "value": 1}},
+                      "right": {"type": "integer", "nullable": True,
+                                "generator": {"kind": "constant", "value": 1}}}, 2)
+    profile["rules"] = [{"id": "ordered", "entity": "item",
+                         "assert": {"field": "left", "op": "gte", "other_field": "right"}}]
+    report = validate_data(profile, {"item": [{"id": "0001", "left": 1, "right": None},
+                                             {"id": "0002", "left": 1, "right": 1}]})
+    assert report["validation_status"] == "incomplete"
+    assert report["incomplete_checks"] == ["ordered"]
+
+
+def test_scenario_generator_constants_and_time_offsets_are_checked():
+    profile = simple({"label": {"type": "string", "generator": {"kind": "constant", "value": "A"}},
+                      "created": {"type": "datetime", "generator": {"kind": "constant", "value": "2026-10-14T00:00:00Z"}},
+                      "expires": {"type": "datetime", "generator": {"kind": "relative_datetime", "field": "created",
+                                                                           "min_seconds": 3600, "max_seconds": 3600}}}, 1)
+    profile["scenarios"] = [{"id": "one-hour", "entity": "item", "kind": "boundary", "count": 1,
+                             "generators": {"label": {"kind": "constant", "value": "A"},
+                                            "expires": {"kind": "relative_datetime", "field": "created",
+                                                        "min_seconds": 3600, "max_seconds": 3600}}}]
+    rows, _ = generate_entity(profile, "item")
+    rows[0].update(label="B", expires="2026-10-14T02:00:00Z")
+    report = validate_data(profile, {"item": rows})
+    assert report["validation_status"] == "failed"
+    assert "S-item-distribution" in report["violation_ids"]
+
+
+def test_s_prefix_business_rule_is_not_skipped_with_scenario_checks_disabled():
+    profile = simple({"left": {"type": "integer", "generator": {"kind": "constant", "value": 1}},
+                      "right": {"type": "integer", "nullable": True, "generator": {"kind": "constant", "value": 1}}}, 1)
+    profile["rules"] = [{"id": "S-business", "entity": "item", "assert": {"field": "left", "op": "gte", "other_field": "right"}}]
+    report = validate_data(profile, {"item": [{"id": "0001", "left": 1, "right": None}]}, check_scenarios=False)
+    assert report["validation_status"] == "incomplete" and report["incomplete_checks"] == ["S-business"]
+
+
 def test_independent_validator_finds_range_type_precision_and_duplicates():
     profile = simple({"amount": {"type": "decimal", "min": "0.01", "max": "9.99", "scale": 2, "generator": {"kind": "decimal"}}}, 4)
     rows, _ = generate_entity(profile, "item")

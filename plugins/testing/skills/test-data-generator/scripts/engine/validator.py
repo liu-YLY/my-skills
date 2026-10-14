@@ -3,7 +3,7 @@ import re
 from collections import Counter
 from decimal import Decimal, localcontext
 
-from .common import Budget, comparable, typed
+from .common import Budget, comparable, json_equal, timestamp, typed
 from .generators import schedule
 from .profile import inspect_profile
 
@@ -72,8 +72,37 @@ def predicate_matches(predicate, row, fields):
     return left >= right if op == "gte" else left <= right
 
 
+def scenario_matches(profile, scenario, row, fields, index):
+    for name, value in (scenario or {}).get("set", {}).items():
+        if name not in row or not json_equal(row[name], value):
+            return False
+    for name, generator in (scenario or {}).get("generators", {}).items():
+        if name not in row:
+            return False
+        value, kind = row[name], generator["kind"]
+        if kind == "constant" and not json_equal(value, generator["value"]):
+            return False
+        if kind == "choice":
+            candidates = generator.get("values", fields[name].get("enum", [False, True]))
+            if not any(json_equal(value, item) for item in candidates):
+                return False
+        if kind == "sequence":
+            expected = generator.get("prefix", "") + str(generator.get("start", 1) + index).zfill(generator["width"])
+            if value != expected:
+                return False
+        if kind in ("datetime_window", "relative_datetime"):
+            base = profile["generation"].get("reference_datetime") if kind == "datetime_window" else row.get(generator["field"])
+            if not typed(value, {"type": "datetime"}) or not typed(base, {"type": "datetime"}):
+                return None
+            low, high = ((generator["min_offset_seconds"], generator["max_offset_seconds"]) if kind == "datetime_window"
+                         else (generator["min_seconds"], generator["max_seconds"]))
+            if not low <= (timestamp(value) - timestamp(base)).total_seconds() <= high:
+                return False
+    return True
+
+
 def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=True):
-    plan = inspect_profile(profile)
+    plan = inspect_profile(profile, for_generation=False)
     results = Results(plan["check_ids"], detail_limit)
     budget = budget or Budget(profile["generation"]["limits"])
     entities = profile["entities"]
@@ -146,11 +175,10 @@ def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=
                 seen[key_id].add(key)
             if check_scenarios:
                 scenario = expected_scenarios[index] if index < len(expected_scenarios) else None
-                fixed = (scenario or {}).get("set", {})
-                results.add(f"S-{entity}-distribution", index < len(expected_scenarios) and all(
-                    name in row and row[name] == value for name, value in fixed.items()), entity, index,
-                    expected={"scenario": (scenario or {}).get("id"), "set": fixed}, actual="matched" if all(
-                        row.get(name) == value for name, value in fixed.items()) else "scenario values differ")
+                match = scenario_matches(profile, scenario, row, fields, index) if index < len(expected_scenarios) else False
+                results.add(f"S-{entity}-distribution", match, entity, index,
+                            expected={"scenario": (scenario or {}).get("id"), "set": (scenario or {}).get("set", {}),
+                                      "generators": (scenario or {}).get("generators", {})}, actual="matched" if match else "scenario constraints differ")
             for rule in profile["rules"]:
                 if rule["entity"] != entity:
                     continue
@@ -177,7 +205,8 @@ def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=
         keys = set()
         for row in parent_rows:
             if isinstance(row, dict) and all(name in row and row[name] is not None and typed(row[name], parent_fields[name]) for name in parent["fields"]):
-                keys.add(tuple(row[name] for name in parent["fields"]))
+                key = tuple(row[name] for name in parent["fields"])
+                keys.add(key)
         counts = Counter()
         for index, row in enumerate(child_rows):
             budget.check()
@@ -196,9 +225,12 @@ def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=
         for key in sorted(keys, key=str):
             results.add(relation["id"], counts[key] >= low and (high is None or counts[key] <= high),
                         parent["entity"], field=parent["fields"], expected={"min_children": low, "max_children": high}, actual=counts[key])
+    scenario_ids = {f"S-{entity}-distribution" for entity in entities}
     unexecuted = [key for key, counts in results.checks.items() if not counts["evaluated"]
-                  and (check_scenarios or not key.startswith("S-"))]
-    status = "failed" if results.error_count else "incomplete" if plan["issues"] or unexecuted else "passed"
+                  and (check_scenarios or key not in scenario_ids)]
+    incomplete = sorted(key for key, counts in results.checks.items() if counts["not_evaluable"]
+                        and (check_scenarios or key not in scenario_ids))
+    status = "failed" if results.error_count else "incomplete" if plan["issues"] or unexecuted or incomplete else "passed"
     budget.check()
     return {"schema_version": "1.0", "profile_id": profile["profile_id"], "profile_hash": plan["profile_hash"],
             "generation_status": "not_run", "validation_status": status, "system_execution_status": "not_run",
@@ -206,6 +238,7 @@ def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=
             "errors_truncated": results.error_count > len(results.errors), "violation_ids": sorted(results.violation_ids),
             "checks": results.checks, "issues": plan["issues"],
             "unexecuted_checks": sorted(unexecuted),
+            "incomplete_checks": incomplete,
             "rule_summary": {"declared": len(results.checks), "implemented": len(results.checks),
                              "executed": sum(item["evaluated"] > 0 for item in results.checks.values()),
                              "not_evaluable": sum(item["not_evaluable"] for item in results.checks.values()),

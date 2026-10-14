@@ -22,14 +22,14 @@ REPORT_CHECKER = Draft202012Validator(REPORT_SCHEMA)
 
 def combined_report(profile, data, cases, scenario_ids, budget, integrity=None):
     report = validate_data(profile, data, budget)
-    if not report["error_count"]:
+    if not report["error_count"] and not report["incomplete_checks"] and not report["unexecuted_checks"]:
         report["negative_summary"] = validate_negative_cases(profile, data, scenario_ids, cases, budget)
     else:
         report["negative_summary"] = {"validation_status": "not_run", "expected_cases": sum(
             case["count"] for case in profile["negative_scenarios"]), "completed_cases": 0,
-            "mismatches": 0, "issues": ["legal baseline validation failed"], "cases": []}
+            "mismatches": 0, "issues": ["legal baseline validation failed or incomplete"], "cases": []}
     report["integrity_issues"] = integrity or []
-    if report["negative_summary"]["validation_status"] != "passed" or report["integrity_issues"]:
+    if report["negative_summary"]["validation_status"] == "failed" or report["integrity_issues"]:
         report["validation_status"] = "failed"
     REPORT_CHECKER.validate(report)
     budget.check()
@@ -37,7 +37,7 @@ def combined_report(profile, data, cases, scenario_ids, budget, integrity=None):
 
 
 def validate_bundle(profile, directory):
-    inspect_profile(profile)
+    inspect_profile(profile, for_generation=False)
     budget = Budget(profile["generation"]["limits"])
     data, cases, scenario_ids, issues = read_bundle(profile, directory, budget)
     return combined_report(profile, data, cases, scenario_ids, budget, issues)
@@ -50,6 +50,7 @@ def human_report(report):
              f"异常样本完成数：{report['negative_summary']['completed_cases']}",
              f"异常预期不匹配数：{report['negative_summary']['mismatches']}", "",
              f"未执行检查数：{len(report['unexecuted_checks'])}", "",
+             f"部分记录未完成检查数：{len(report.get('incomplete_checks', []))}", "",
              "规则统计和错误定位见 validation-report.json。", "",
              "数据校验结果不代表业务接口执行或业务测试通过。", ""]
     if report["issues"]:
@@ -87,7 +88,7 @@ def generate_bundle(profile, output_root, on_start=None):
     try:
         data, scenario_ids, plan = generate_dataset(profile, budget)
         baseline = validate_data(profile, data, budget)
-        cases = build_negative_cases(profile, data, scenario_ids, budget) if not baseline["error_count"] else []
+        cases = build_negative_cases(profile, data, scenario_ids, budget) if not baseline["error_count"] and not baseline["incomplete_checks"] and not baseline["unexecuted_checks"] else []
         writer.json("profile.normalized.json", profile)
         writer.json("generation-plan.json", plan)
         entity_files = export_data(writer, profile, data, cases)
