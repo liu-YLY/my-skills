@@ -102,7 +102,7 @@ def normalize(raw):
     settings.setdefault("output_formats", ["json"])
     limits = settings.setdefault("limits", {})
     for key, value in {"max_total_rows": 100000, "max_output_bytes": 104857600,
-                       "max_relation_candidates": 200000,
+                       "max_validation_rows": 5000000, "max_relation_candidates": 200000,
                        "timeout_seconds": 120}.items():
         limits.setdefault(key, value)
     return profile
@@ -414,11 +414,16 @@ def inspect_profile(profile, for_generation=True):
                         if single_key:
                             raise ProfileError(f"{entity}.{name}: unique constant capacity exhausted")
             planned.extend(rule["id"] for rule in planned_rules(profile, entity))
+    normal_rows = sum(spec["count"] for spec in entities.values())
+    negative_rows = sum(case["count"] for case in profile["negative_scenarios"])
+    validation_rows = normal_rows * (negative_rows + (3 if for_generation else 1))
+    if validation_rows > profile["generation"]["limits"].get("max_validation_rows", 5000000):
+        raise ProfileError("estimated validation row budget exceeded")
     return {"schema_version": "1.0", "profile_id": profile["profile_id"], "profile_hash": digest(profile),
             "entity_order": entity_order, "total_rows": total,
             "entity_counts": {name: spec["count"] for name, spec in entities.items()},
             "check_ids": sorted(check_ids), "issues": issues,
-            "operation": "generate" if for_generation else "validate",
+            "operation": "generate" if for_generation else "validate", "estimated_validation_rows": validation_rows,
             "planned_rule_ids": sorted(planned), "validation_only_rule_ids": sorted(set(rules) - set(planned)),
             "generation_status": "not_run",
             "validation_status": "not_run", "system_execution_status": "not_run"}

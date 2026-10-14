@@ -105,6 +105,7 @@ class Budget:
         self.started = time.monotonic()
         self.limits = limits
         self.generated_bytes = 0
+        self.validation_rows = 0
         self.relation_candidates = 0
 
     def check(self):
@@ -115,6 +116,11 @@ class Budget:
         self.generated_bytes += len(canonical(row).encode("utf-8"))
         if self.generated_bytes > self.limits["max_output_bytes"]:
             raise ResourceError("generated data byte limit exceeded")
+
+    def consume_validation_rows(self, count):
+        self.validation_rows += count
+        if self.validation_rows > self.limits.get("max_validation_rows", 5000000):
+            raise ResourceError("validation row budget exceeded")
 
     def consume_relation_candidates(self, count):
         self.relation_candidates += count

@@ -111,6 +111,7 @@ def validate_data(profile, data, budget=None, detail_limit=200, check_scenarios=
     results.add("N-dataset-entities", isinstance(data, dict) and set(data) == set(entities),
                 expected=sorted(entities), actual=sorted(data) if isinstance(data, dict) else "not an object")
     data = data if isinstance(data, dict) else {}
+    budget.consume_validation_rows(sum(len(rows) for rows in data.values() if isinstance(rows, list)))
     for entity, spec in entities.items():
         raw = data.get(entity)
         rows = raw if isinstance(raw, list) else []

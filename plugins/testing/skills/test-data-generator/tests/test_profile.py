@@ -134,3 +134,14 @@ def test_yaml_aliases_and_deep_profiles_are_bounded(tmp_path, profile):
     profile["unexpected"] = value
     with pytest.raises(ProfileError, match="depth"):
         normalize(profile)
+
+
+def test_negative_scan_work_is_bounded_before_execution(profile):
+    profile["scenarios"] = [{"id": "base", "entity": "item", "kind": "normal", "count": 3}]
+    profile["negative_scenarios"] = [{"id": "missing", "base_scenario": "base", "count": 3,
+                                     "mutations": [{"op": "remove", "field": "id"}],
+                                     "expected_rule_violations": ["F-item.id-required"]}]
+    profile["generation"]["limits"]["max_validation_rows"] = 12
+    with pytest.raises(ProfileError, match="validation row budget"):
+        inspect_profile(profile)
+    assert inspect_profile(profile, for_generation=False)["estimated_validation_rows"] == 12

@@ -108,23 +108,37 @@ def checked_path(root, relative):
     return resolved
 
 
-def read_rows(path, kind, fields):
+def read_rows(path, kind, fields, budget=None):
+    maximum = budget.limits["max_total_rows"] if budget else 100000
     with path.open(encoding="utf-8", newline="") as handle:
         if kind == "json":
             rows = strict_json(handle.read())
         elif kind == "jsonl":
-            rows = [strict_json(line) for line in handle if line.strip()]
+            rows = []
+            for line in handle:
+                if budget:
+                    budget.check()
+                if line.strip():
+                    if len(rows) >= maximum:
+                        raise ResourceError("input record limit exceeded")
+                    rows.append(strict_json(line))
         else:
             reader = csv.DictReader(handle)
             if reader.fieldnames is None or len(reader.fieldnames) != len(set(reader.fieldnames)):
                 raise ValueError("missing or duplicate CSV headers")
             rows = []
             for row in reader:
+                if budget:
+                    budget.check()
+                if len(rows) >= maximum:
+                    raise ResourceError("input record limit exceeded")
                 if None in row or any(value is None for value in row.values()):
                     raise ValueError("CSV row does not match its headers")
                 rows.append({name: decode_csv(value, fields[name]) if name in fields else value for name, value in row.items()})
     if not isinstance(rows, list):
         raise ValueError("entity data must be an array")
+    if len(rows) > maximum:
+        raise ResourceError("input record limit exceeded")
     return rows
 
 
@@ -186,7 +200,7 @@ def read_bundle(profile, directory, budget):
             if manifest is not None and relative not in manifest["files"]:
                 issues.append(f"unregistered artifact: {relative}")
             measure(path)
-            current = read_rows(path, kind, profile["entities"][entity]["fields"])
+            current = read_rows(path, kind, profile["entities"][entity]["fields"], budget)
             if parsed is not None and canonical(current) != canonical(parsed):
                 issues.append(f"representations differ: {entity}")
             parsed = current if parsed is None else parsed
