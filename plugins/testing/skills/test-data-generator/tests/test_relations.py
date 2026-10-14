@@ -1,9 +1,10 @@
 import copy
 from collections import Counter
+from itertools import permutations, product
 
 import pytest
 
-from engine.common import ProfileError
+from engine.common import Budget, ProfileError, ResourceError
 from engine.profile import inspect_profile, normalize
 from engine.relations import generate_dataset
 
@@ -34,6 +35,18 @@ def test_keys_exist_and_cardinality_is_constructed(composite):
     assert set(counts) <= parents
     assert all(2 <= counts[key] <= 4 for key in parents)
     assert data == generate_dataset(copy.deepcopy(profile))[0]
+
+
+def test_relation_candidate_budget_is_cumulative_across_relations():
+    profile = linked()
+    profile["generation"]["limits"]["max_relation_candidates"] = 7
+    profile["entities"]["child2"] = copy.deepcopy(profile["entities"]["child"])
+    profile["entities"]["child2"]["fields"]["id"]["generator"]["relation"] = "belongs2"
+    relation = copy.deepcopy(profile["relations"][0])
+    relation["id"], relation["child"]["entity"] = "belongs2", "child2"
+    profile["relations"].append(relation)
+    with pytest.raises(ResourceError, match="relation candidate budget"):
+        generate_dataset(profile, Budget(profile["generation"]["limits"]))
 
 
 @pytest.mark.parametrize("count", [1, 17])
@@ -74,3 +87,34 @@ def test_nullable_reference_does_not_count_as_a_child():
     assert sum(row["id"] is None for row in data["child"]) == 4
     counts = Counter(row["id"] for row in data["child"] if row["id"] is not None)
     assert all(1 <= counts[row["id"]] <= 4 for row in data["parent"])
+
+
+def restricted_matching(restrictions, minimum=1):
+    profile = linked(True)
+    profile["entities"]["parent"]["count"] = profile["entities"]["child"]["count"] = 3
+    profile["entities"]["parent"]["fields"]["tenant"]["enum"] = ["a", "d"]
+    profile["relations"][0].update(min_children=minimum, max_children=1)
+    profile["scenarios"] = [
+        {"id": f"parent{i}", "entity": "parent", "kind": "normal", "count": 1, "set": dict(zip(["tenant", "id"], key))}
+        for i, key in enumerate([("a", "b"), ("a", "c"), ("d", "b")])]
+    profile["scenarios"].extend({"id": f"child{i}", "entity": "child", "kind": "normal", "count": 1, "set": fixed}
+                                for i, fixed in enumerate(restrictions))
+    return profile
+
+
+@pytest.mark.parametrize("minimum", [0, 1])
+def test_constrained_matching_agrees_with_small_exhaustive_oracle(minimum):
+    parents = [{"tenant": "a", "id": "b"}, {"tenant": "a", "id": "c"}, {"tenant": "d", "id": "b"}]
+    for restrictions in product([{}, {"tenant": "a"}, {"id": "b"}], repeat=3):
+        feasible = any(all(all(parent[name] == value for name, value in fixed.items())
+                           for parent, fixed in zip(order, restrictions)) for order in permutations(parents))
+        profile = restricted_matching(restrictions, minimum)
+        if not feasible:
+            with pytest.raises(ProfileError, match="infeasible"):
+                generate_dataset(profile)
+            continue
+        data, _, _ = generate_dataset(profile)
+        counts = Counter((row["tenant"], row["id"]) for row in data["child"])
+        assert len(counts) == 3 and set(counts.values()) == {1}
+        assert all(all(row[name] == value for name, value in fixed.items())
+                   for row, fixed in zip(data["child"], restrictions))

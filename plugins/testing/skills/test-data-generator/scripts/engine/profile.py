@@ -102,6 +102,7 @@ def normalize(raw):
     settings.setdefault("output_formats", ["json"])
     limits = settings.setdefault("limits", {})
     for key, value in {"max_total_rows": 100000, "max_output_bytes": 104857600,
+                       "max_relation_candidates": 200000,
                        "timeout_seconds": 120}.items():
         limits.setdefault(key, value)
     return profile
