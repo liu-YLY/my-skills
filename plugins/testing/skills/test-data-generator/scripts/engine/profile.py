@@ -178,7 +178,7 @@ def inspect_profile(profile):
     scenarios = unique_ids(profile["scenarios"], "scenario")
     unique_ids(profile["negative_scenarios"], "negative scenario")
     dependencies = {}
-    check_ids = []
+    check_ids = ["N-dataset-entities"]
     issues = []
 
     def provenance(item, label, inherited=None):
@@ -201,7 +201,8 @@ def inspect_profile(profile):
                 raise ProfileError(f"{entity}: unknown key field")
         if any(fields[name].get("nullable", False) for name in spec["primary_key"]):
             raise ProfileError(f"{entity}: primary keys cannot be nullable")
-        check_ids.extend([f"N-{entity}-count", f"K-{entity}-primary", f"S-{entity}-distribution"])
+        check_ids.extend([f"N-{entity}-count", f"K-{entity}-primary", f"S-{entity}-distribution",
+                          f"F-{entity}-record", f"F-{entity}-fields"])
         check_ids.extend(f"K-{entity}-unique-{i}" for i, _ in enumerate(spec.get("unique_keys", [])))
         for name, field in fields.items():
             provenance(field, f"{entity}.{name}", source_ids)
