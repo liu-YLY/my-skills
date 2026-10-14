@@ -1,0 +1,10 @@
+已生成并校验，交付均为JSON：
+
+- [baseline.json](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B06/delivery/baseline.json)：3 条合法记录，金额覆盖 0.01、5.00、9.99。
+- [amount-zero.json](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B06/delivery/amount-zero.json)：从合法基准仅将金额改为字符串 `0.00`。
+- [missing-id.json](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B06/delivery/missing-id.json)：从另一条合法基准仅删除id。
+- [check-report.json](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B06/delivery/check-report.json)：实际检查结果。
+
+合法基准的id非空、唯一，amount为两位小数字符串且在范围内。独立引擎校验及JSON交付检查均退出 0；两条异常分别观察到金额越界、id缺失，与预期匹配。异常文件是分别替换基准记录的输入，不能追加到合法基准中作为合法数据。
+
+删除id的输入无法进行主键唯一性检查，该项为 `not_evaluable=1`；缺失id的必填违规已确认。未执行接口或数据库，业务系统响应仍待确认。

@@ -1,0 +1,149 @@
+[
+  {
+    "name": "yaml",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/yamllint",
+      "-d",
+      "{extends: default, rules: {line-length: disable, document-start: disable}}",
+      ".pre-commit-config.yaml",
+      ".github/workflows/ci.yml"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.17916258299374022,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/yaml.txt",
+    "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "markdown",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/node-checks/node_modules/.bin/markdownlint",
+      "-c",
+      ".markdownlint.jsonc",
+      "--ignore",
+      ".git",
+      "--ignore",
+      "node_modules",
+      "--ignore",
+      ".venv-tools",
+      "*.md",
+      "plugins/**/*.md",
+      "docs/**/*.md",
+      ".github/**/*.md"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.5981434580171481,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/markdown.txt",
+    "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "check-version-sync",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "scripts/check-version-sync.py"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.035910500009777024,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/check-version-sync.txt",
+    "output_sha256": "386ad3d1bcc42d3e58d0b2c7010e86c712bc0f48f9c45a97fa4e3872c2c991b1"
+  },
+  {
+    "name": "check-knowledge-count",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "scripts/check-knowledge-count.py"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.03187383300974034,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/check-knowledge-count.txt",
+    "output_sha256": "4f4b0f04ccaee708c39878d20db83b2b6a13553ece5a482fe6a39485eac5d795"
+  },
+  {
+    "name": "check-md-links",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "scripts/check-md-links.py"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.8390421659860294,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/check-md-links.txt",
+    "output_sha256": "d63ad37f843ce639ee54fd8e05aa1413615e339945a3229972cc368fa5b2caf1"
+  },
+  {
+    "name": "check-skill-consistency",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "scripts/check-skill-consistency.py"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.07448816701071337,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/check-skill-consistency.txt",
+    "output_sha256": "91cb203c067b5ea2af54849fb8f23e3cfd18e50719d2380af46eda41917c7a14"
+  },
+  {
+    "name": "check-project-inventory",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "scripts/check-project-inventory.py"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.022864291997393593,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/check-project-inventory.txt",
+    "output_sha256": "99a1bc4f17f5c1bc88b31318cc3b88d692de15451019b4360bf4ac885a1deba5"
+  },
+  {
+    "name": "skill-evals",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "scripts/skill-evals.py"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.027704292006092146,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/skill-evals.txt",
+    "output_sha256": "f6823118ef97dbd20b4fbc2fc188fca32dee519a53ac4b4abc4215e2d3b2d7f9"
+  },
+  {
+    "name": "dependencies",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+      "-m",
+      "pip",
+      "check"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.3908309169928543,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/dependencies.txt",
+    "output_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09"
+  },
+  {
+    "name": "pre-commit",
+    "command": [
+      "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/pre-commit",
+      "run",
+      "--all-files"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.6630983749928419,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/pre-commit.txt",
+    "output_sha256": "34c66e5f80317741ff2655105e2c7d96982983198df5f2775c3776e984b13381"
+  },
+  {
+    "name": "diff-whitespace",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "returncode": 0,
+    "duration_seconds": 0.014624875009758398,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/diff-whitespace.txt",
+    "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "json",
+    "command": "json.loads for git inventory JSON files",
+    "returncode": 0,
+    "files_checked": 46,
+    "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/json.txt"
+  }
+]

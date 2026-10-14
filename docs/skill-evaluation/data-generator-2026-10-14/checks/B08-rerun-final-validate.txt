@@ -1,0 +1,224 @@
+{
+  "schema_version": "1.0",
+  "profile_id": "logistics-preconditions",
+  "profile_hash": "246c6f4d78a7e57d61b303b88ee57ce30c7c347fca1f91715d3cf15ec2f1e60b",
+  "generation_status": "not_run",
+  "validation_status": "passed",
+  "system_execution_status": "not_run",
+  "error_count": 0,
+  "errors": [],
+  "errors_truncated": false,
+  "violation_ids": [],
+  "checks": {
+    "F-event-fields": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event-record": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.created_at-nullable": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.created_at-required": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.created_at-type": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.event_id-nullable": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.event_id-required": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.event_id-type": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.event_type-enum": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.event_type-nullable": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.event_type-required": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.event_type-type": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.occurred_at-nullable": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.occurred_at-required": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.occurred_at-type": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.shipment_id-nullable": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.shipment_id-required": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-event.shipment_id-type": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-shipment-fields": {
+      "evaluated": 8,
+      "applicable": 8,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-shipment-record": {
+      "evaluated": 8,
+      "applicable": 8,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-shipment.shipment_id-nullable": {
+      "evaluated": 8,
+      "applicable": 8,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-shipment.shipment_id-required": {
+      "evaluated": 8,
+      "applicable": 8,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "F-shipment.shipment_id-type": {
+      "evaluated": 8,
+      "applicable": 8,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "K-event-primary": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "K-shipment-primary": {
+      "evaluated": 8,
+      "applicable": 8,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "N-dataset-entities": {
+      "evaluated": 1,
+      "applicable": 1,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "N-event-count": {
+      "evaluated": 1,
+      "applicable": 1,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "N-shipment-count": {
+      "evaluated": 1,
+      "applicable": 1,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "R-event-time": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "S-event-distribution": {
+      "evaluated": 16,
+      "applicable": 16,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "S-shipment-distribution": {
+      "evaluated": 8,
+      "applicable": 8,
+      "failed": 0,
+      "not_evaluable": 0
+    },
+    "shipment-event": {
+      "evaluated": 24,
+      "applicable": 24,
+      "failed": 0,
+      "not_evaluable": 0
+    }
+  },
+  "issues": [],
+  "unexecuted_checks": [],
+  "rule_summary": {
+    "declared": 32,
+    "implemented": 32,
+    "executed": 32,
+    "not_evaluable": 0,
+    "pending": 0
+  },
+  "negative_summary": {
+    "validation_status": "passed",
+    "expected_cases": 0,
+    "completed_cases": 0,
+    "mismatches": 0,
+    "issues": [],
+    "cases": []
+  },
+  "integrity_issues": []
+}

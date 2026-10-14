@@ -95,6 +95,7 @@ def test_every_skill_has_complete_trigger_coverage():
         "performance-test-engineer",
         "state-machine-test-engineer",
         "test-case-engineer",
+        "test-data-generator",
         "test-strategy-engineer",
         "testing-bundle",
         "wechat-formatter",

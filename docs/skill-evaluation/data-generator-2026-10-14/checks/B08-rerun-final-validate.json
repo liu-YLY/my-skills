@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+    "/Users/lyle/myfile/python_project/my-skills/plugins/testing/skills/test-data-generator/scripts/run_data.py",
+    "validate",
+    "--profile",
+    "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B08-rerun/work/generated/logistics-preconditions-81cb80cceafb493c8155155fc470e2db/profile.normalized.json",
+    "--dataset",
+    "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B08-rerun/work/generated/logistics-preconditions-81cb80cceafb493c8155155fc470e2db"
+  ],
+  "returncode": 0,
+  "validation_status": "passed",
+  "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/B08-rerun-final-validate.txt"
+}

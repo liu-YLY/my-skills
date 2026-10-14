@@ -1,0 +1,42 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.16, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/lyle/myfile/python_project/my-skills/plugins/testing/mcp-servers/review-checker
+configfile: pyproject.toml
+testpaths: tests
+plugins: platformdirs-4.13.0, cov-7.1.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 104 items
+
+tests/test_business_review.py ................                           [ 15%]
+tests/test_mcp_protocol.py .                                             [ 16%]
+tests/test_server.py ..........................                          [ 41%]
+tests/test_validators.py ............................................... [ 86%]
+..............                                                           [100%]
+
+=============================== warnings summary ===============================
+src/review_checker_mcp/schemas.py:46
+  /Users/lyle/myfile/python_project/my-skills/plugins/testing/mcp-servers/review-checker/src/review_checker_mcp/schemas.py:46: PytestCollectionWarning: cannot collect test class 'TestCase' because it has a __init__ constructor (from: tests/test_business_review.py)
+    class TestCase(BaseModel):
+
+src/review_checker_mcp/schemas.py:62
+  /Users/lyle/myfile/python_project/my-skills/plugins/testing/mcp-servers/review-checker/src/review_checker_mcp/schemas.py:62: PytestCollectionWarning: cannot collect test class 'TestCaseSet' because it has a __init__ constructor (from: tests/test_business_review.py)
+    class TestCaseSet(BaseModel):
+
+src/review_checker_mcp/schemas.py:46
+  /Users/lyle/myfile/python_project/my-skills/plugins/testing/mcp-servers/review-checker/src/review_checker_mcp/schemas.py:46: PytestCollectionWarning: cannot collect test class 'TestCase' because it has a __init__ constructor (from: tests/test_server.py)
+    class TestCase(BaseModel):
+
+src/review_checker_mcp/schemas.py:62
+  /Users/lyle/myfile/python_project/my-skills/plugins/testing/mcp-servers/review-checker/src/review_checker_mcp/schemas.py:62: PytestCollectionWarning: cannot collect test class 'TestCaseSet' because it has a __init__ constructor (from: tests/test_server.py)
+    class TestCaseSet(BaseModel):
+
+src/review_checker_mcp/schemas.py:46
+  /Users/lyle/myfile/python_project/my-skills/plugins/testing/mcp-servers/review-checker/src/review_checker_mcp/schemas.py:46: PytestCollectionWarning: cannot collect test class 'TestCase' because it has a __init__ constructor (from: tests/test_validators.py)
+    class TestCase(BaseModel):
+
+src/review_checker_mcp/schemas.py:62
+  /Users/lyle/myfile/python_project/my-skills/plugins/testing/mcp-servers/review-checker/src/review_checker_mcp/schemas.py:62: PytestCollectionWarning: cannot collect test class 'TestCaseSet' because it has a __init__ constructor (from: tests/test_validators.py)
+    class TestCaseSet(BaseModel):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 104 passed, 6 warnings in 1.10s ========================

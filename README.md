@@ -1,6 +1,6 @@
 # My Skill - AI 技能集合项目
 
-> 基于 AI 的智能技能系统，提供测试策略、测试用例生成、性能测试、Bug 根因分析、状态机测试、变更影响分析、微信公众号排版等专业技能
+> 基于 AI 的智能技能系统，提供测试策略、测试用例生成、性能测试、Bug 根因分析、状态机测试、变更影响分析、离线测试数据生成与校验、微信公众号排版等专业技能
 
 ## 项目简介
 
@@ -22,15 +22,16 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 
 | Skill | 版本 | 功能 | MCP Server |
 |---|---|---|---|
-| **testing-bundle** | v3.2.2 | bundle 入口，6-way 路由（5 核心 + 1 协同）+ 7 条混合意图链 | - |
+| **testing-bundle** | v3.4.0 | bundle 入口，7 个专业子 skill 路由 + 8 条混合意图链 | - |
 | test-strategy-engineer | v1.3.0 | 项目级测试策略（风险矩阵/分层/准入准出） | - |
-| test-case-engineer | v9.4.1 | 功能用例生成 + 10 维度评审模式 | review-checker v0.8.5（可选） |
+| test-case-engineer | v9.4.1 | 功能用例生成 + 10 维度评审模式 | review-checker v0.3.1（可选） |
 | performance-test-engineer | v1.2.3 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
 | bug-analyzer | v1.2.3 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
 | state-machine-test-engineer | v1.7.5 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.8.5（可选） |
-| change-impact-analyzer | v1.4.0 | 从代码改动生成影响范围与测试内容，需求和用例可选 | - |
+| change-impact-analyzer | v1.5.0 | 从实际业务解释改动影响，生成测试内容与方式，需求和用例可选 | - |
+| test-data-generator | v1.1.0 | 可重复离线造数、边界配方、关联与场景验收、JSON/JSONL/CSV 独立校验 | - |
 
-**7 条混合意图链**：
+**8 条混合意图链**：
 - 链 1：Bug 分析 + 补充用例 → bug-analyzer → case-engineer
 - 链 2：测试策略 + 分层用例 → strategy → case-engineer
 - 链 3：性能测试 + 瓶颈定位 → performance（内部完成）
@@ -38,6 +39,9 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 - 链 5：状态机建模 + 用例生成 → state-machine → case-engineer
 - 链 6：评审→覆盖缺口验证 → case-engineer 评审模式 → change-impact-analyzer
 - 链 7：评审→风险用例根因反推 → case-engineer 评审模式 → bug-analyzer
+- 链 8：编写/修订用例→离线数据准备 → case-engineer → test-data-generator
+
+已有用例或组合矩阵只需准备数据时，直接使用 test-data-generator，保留用例编号与固定维度。数据校验通过只表示已声明约束通过，系统执行仍为 `not_run`。
 
 ### Wechat Formatter（微信公众号排版）
 
@@ -56,15 +60,16 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | Skill | 入口行数 | 配套 Markdown 文件数 |
 |---|---:|---:|
 | bug-analyzer | 232 | 5 |
-| change-impact-analyzer | 150 | 5 |
+| change-impact-analyzer | 155 | 5 |
 | performance-test-engineer | 119 | 5 |
 | state-machine-test-engineer | 169 | 13 |
 | test-case-engineer | 147 | 13 |
+| test-data-generator | 54 | 4 |
 | test-strategy-engineer | 141 | 5 |
-| testing-bundle | 162 | 2 |
+| testing-bundle | 173 | 2 |
 | wechat-formatter | 169 | 29 |
 
-2 个插件共包含 8 个 Skills，测试插件包含 7 个 Skills 和 2 个可选 MCP 服务。
+2 个插件共包含 9 个 Skills，测试插件包含 8 个 Skills 和 2 个可选 MCP 服务。
 模式需要的参考文件按需读取；模型耗时与 token 应以实际运行记录为准。
 
 ## 快速开始
@@ -106,6 +111,8 @@ for skill_dir in plugins/testing/skills/*; do cp -R "$skill_dir" "$SKILLS_DIR/";
 | 评审已有用例 | "评审 docs/test-cases.md 的用例质量" | 10 维度评审报告 + 度量报告 |
 | Bug 根因分析 | "线上重复扣款，帮我分析根因" | 五步定位法 + 根因报告 |
 | 性能瓶颈定位 | "支付接口 RT 飙升，帮我定位瓶颈" | USE 方法 + 瓶颈报告 |
+| 离线测试数据 | "按已有用户组合用例生成 200 条 JSON 数据，保留用例编号" | profile 配置 + 数据文件 + 独立校验报告 |
+| 用例与数据准备 | "为会员订单编写边界用例，再生成对应离线数据" | 用例集 + 场景/数据映射 + 数据文件与校验报告 |
 | 微信排版 | "用 tech-blog 风格排版这篇文章" | 格式化 Markdown + HTML |
 
 更多示例见 [docs/skills-overview.md](docs/skills-overview.md)。
@@ -125,7 +132,7 @@ for skill_dir in plugins/testing/skills/*; do cp -R "$skill_dir" "$SKILLS_DIR/";
 
 | MCP Server | 版本 | 配套 skill | 功能 |
 |---|---|---|---|
-| [review-checker](plugins/testing/mcp-servers/review-checker/README.md) | v0.8.5 | test-case-engineer 评审模式 | 10 维度检查 + 候选问题及未评估范围 + 度量报告 |
+| [review-checker](plugins/testing/mcp-servers/review-checker/README.md) | v0.3.1 | test-case-engineer 评审模式 | 10 维度检查 + 候选问题及未评估范围 + 度量报告 |
 | [state-machine-testing](plugins/testing/mcp-servers/state-machine-testing/README.md) | v0.8.5 | state-machine-test-engineer | Schema 校验 + 场景穷举 + 覆盖度报告 |
 
 > MCP Server 为可选增强组件，未安装时 skill 降级为纯 LLM 推理，不影响核心能力。
@@ -168,4 +175,4 @@ for skill_dir in plugins/testing/skills/*; do cp -R "$skill_dir" "$SKILLS_DIR/";
 
 ---
 
-**最后更新**：2026 年 7 月 22 日
+**最后更新**：2026 年 10 月 14 日

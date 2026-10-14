@@ -1,0 +1,71 @@
+{
+  "status": "evaluated",
+  "variants": {
+    "baseline": {
+      "runs": 18,
+      "expected_runs": 18,
+      "repetitions_per_case": 1,
+      "repetitions_per_kind": {
+        "task": 1,
+        "trigger": 1
+      },
+      "completed_runs": 18,
+      "run_completion_rate": 1.0,
+      "missing_runs": [],
+      "unpaired_runs": [],
+      "unexpected_runs": [],
+      "invalid_runs": [],
+      "expected_cases": 18,
+      "completed_cases": 18,
+      "completion_rate": 1.0,
+      "missing_cases": [],
+      "task_runs": 12,
+      "checks_passed": 35,
+      "checks_total": 36,
+      "trigger_runs": 6,
+      "trigger_confusion": {
+        "true_positive": 2,
+        "false_positive": 0,
+        "true_negative": 4,
+        "false_negative": 0
+      },
+      "trigger_precision": 1.0,
+      "trigger_recall": 1.0,
+      "mean_duration_seconds": 42.442331930667734,
+      "mean_output_characters": 458.22222222222223
+    },
+    "with_skill": {
+      "runs": 18,
+      "expected_runs": 18,
+      "repetitions_per_case": 1,
+      "repetitions_per_kind": {
+        "task": 1,
+        "trigger": 1
+      },
+      "completed_runs": 18,
+      "run_completion_rate": 1.0,
+      "missing_runs": [],
+      "unpaired_runs": [],
+      "unexpected_runs": [],
+      "invalid_runs": [],
+      "expected_cases": 18,
+      "completed_cases": 18,
+      "completion_rate": 1.0,
+      "missing_cases": [],
+      "task_runs": 12,
+      "checks_passed": 35,
+      "checks_total": 36,
+      "trigger_runs": 6,
+      "trigger_confusion": {
+        "true_positive": 2,
+        "false_positive": 0,
+        "true_negative": 4,
+        "false_negative": 0
+      },
+      "trigger_precision": 1.0,
+      "trigger_recall": 1.0,
+      "mean_duration_seconds": 33.78273443966464,
+      "mean_output_characters": 540.9444444444445
+    }
+  }
+}

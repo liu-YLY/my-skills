@@ -1,0 +1,7 @@
+当前引擎不支持跨表 sum，无法在保留“每个订单退款合计不大于支付额”的前提下完成本次生成与完整校验。它的有限断言只支持单记录字段比较；扩展边界文档明确将跨表求和列为不支持项。
+
+已把这条规则按 confirmed 原样保存在 [扩展请求](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/with_skill/B07/work/extension-request.json)，状态为 unsupported，generation_status 为 blocked、validation_status 为 not_run。没有删掉求和规则，也没有用“每笔退款不超过支付额”替代它。
+
+可在项目中新增带版本的本地适配器：依据确认后的金额精度为每订单分配退款预算，再由独立检查器读取实际退款文件，用 Decimal 按订单聚合并比较支付额。至少验证合计等于支付额、低于支付额以及“单笔均不超额、合计却超额”的反例。该方案尚未实现或执行。
+
+订单/退款数量、金额契约及关联键仍未给出，已存为待确认项。本次未连接数据库、未执行 SQL，system_execution_status 为 not_run。

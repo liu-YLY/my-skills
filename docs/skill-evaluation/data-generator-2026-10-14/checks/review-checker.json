@@ -1,0 +1,13 @@
+{
+  "name": "review-checker",
+  "command": [
+    "/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/bin/python",
+    "-m",
+    "pytest",
+    "-q"
+  ],
+  "cwd": "/Users/lyle/myfile/python_project/my-skills/plugins/testing/mcp-servers/review-checker",
+  "returncode": 0,
+  "duration_seconds": 1.5202025419857819,
+  "output_path": "docs/skill-evaluation/data-generator-2026-10-14/checks/review-checker.txt"
+}

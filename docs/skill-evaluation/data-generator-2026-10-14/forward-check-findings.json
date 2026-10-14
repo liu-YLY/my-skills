@@ -1,0 +1,69 @@
+{
+  "cli_calls": 42,
+  "function_timing_calls": 1,
+  "findings": [
+    {
+      "id": "F01",
+      "kind": "confirmed_defect",
+      "title": "Unique integer generation fails for a feasible full range",
+      "evidence": [
+        "profiles/unique-int-0.json",
+        "unique-integer-summary.json"
+      ],
+      "observed": "All four seeds 0,1,2,42: inspect exit 0; generate exit 4 after 128 retries at row indices 984,991,977,983"
+    },
+    {
+      "id": "F02",
+      "kind": "confirmed_defect",
+      "title": "Regex validation exceeds timeout and still passes",
+      "evidence": [
+        "profiles/regex-budget.json",
+        "datasets/regex-budget-26/row.json",
+        "regex-timer-receipt.json"
+      ],
+      "observed": "timeout 0.03s; validate_bundle 1.424489s; passed"
+    },
+    {
+      "id": "F03",
+      "kind": "confirmed_defect",
+      "title": "Boolean base_key metadata accepted for integer primary key",
+      "evidence": [
+        "profiles/integer-key.json",
+        "datasets/external-integer-key/negative/cases.jsonl",
+        "commands/integer-key-metadata-boolean/receipt.json"
+      ],
+      "observed": "base_key [true] against integer id 1: exit 0, passed, metadata_valid true"
+    },
+    {
+      "id": "F04",
+      "kind": "confirmed_defect",
+      "title": "NaN input produces nonstandard CLI JSON report",
+      "evidence": [
+        "datasets/nonfinite-json/row.json",
+        "commands/nonfinite-json/stdout.json",
+        "strict-json-check.json"
+      ],
+      "observed": "Data failure exit 3, report contains NaN and fails strict JSON decoding"
+    },
+    {
+      "id": "S01",
+      "kind": "recommendation",
+      "title": "Clarify duplicate field policy for external JSON",
+      "evidence": [
+        "commands/duplicate-json-key/receipt.json"
+      ],
+      "observed": "last duplicate field wins; passed"
+    },
+    {
+      "id": "L01",
+      "kind": "declared_support_boundary",
+      "title": "Feasible fixed-field relation can fail greedy allocation",
+      "evidence": [
+        "profiles/allocation.json",
+        "commands/allocation-generate/receipt.json",
+        "commands/allocation-feasible-validate/receipt.json"
+      ],
+      "observed": "inspect succeeds; generate fails; manually constructed valid allocation passes validate"
+    }
+  ]
+}

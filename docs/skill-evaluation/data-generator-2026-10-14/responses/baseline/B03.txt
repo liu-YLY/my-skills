@@ -1,0 +1,7 @@
+方案是先确认两种状态的支付时间规则，再生成总计 100 条订单。当前不能把“已支付必有pay_time”或“待支付必须为空”当成已给定规则。
+
+已交付 [最小配置草案](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B03/profile.draft.yaml) 和 [待确认项及处理方案](/Users/lyle/myfile/python_project/my-skills/.venv-tools/data-generator/evidence/behavior/baseline/B03/pending.json)。字段只有 id、status、create_time、pay_time；数量为 100。编号、状态编码、时间窗口及pay_time生成方式均明确标记为草案，尚未加任何支付时间业务断言。
+
+待确认内容包括：每种状态是否允许pay_time为空或缺失、非空pay_time是否不得早于create_time，以及状态分配和字段格式。确认后才添加对应场景、断言及生成器。
+
+已实际执行配置 `inspect`，退出 2，原因为 `unconfirmed constraints`；严格模式因此阻止未确认配置被当成合法规则执行。没有运行生成或数据校验，没有数据产物；原始输出保存在 `inspect.stdout.log` 和 `inspect.stderr.log`。

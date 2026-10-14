@@ -4,12 +4,12 @@
 
 ### 1. Testing Bundle (testing-bundle)
 
-**版本**：v3.2.2
-**功能**：测试能力 bundle 入口，统一路由到 6 个子 skill（5 核心 + 1 协同）：test-strategy-engineer（项目级策略）/ test-case-engineer（功能用例生成）/ performance-test-engineer（性能测试）/ bug-analyzer（Bug 根因分析）/ state-machine-test-engineer（状态机测试）/ change-impact-analyzer（变更影响分析，协同）。
+**版本**：v3.4.0
+**功能**：测试能力 bundle 入口，统一路由到 7 个专业子 skill：test-strategy-engineer（项目级策略）/ test-case-engineer（功能用例生成）/ performance-test-engineer（性能测试）/ bug-analyzer（Bug 根因分析）/ state-machine-test-engineer（状态机测试）/ change-impact-analyzer（变更影响分析）/ test-data-generator（离线数据生成与校验）。
 
 > Bundle 是元 skill，本身不实现具体能力，而是根据用户意图自动路由到对应子 skill。
 
-**路由规则**（6-way 路由（5 核心 + 1 协同）+ 7 条混合意图链）：
+**路由规则**（七路路由 + 8 条混合意图链）：
 
 | 用户意图关键词 | 路由到 | 说明 |
 |---------------|--------|------|
@@ -18,10 +18,12 @@
 | 性能测试、负载测试、压力测试、TPS、响应时间、瓶颈、容量评估 | performance-test-engineer | 性能场景 + 瓶颈分析 |
 | Bug 根因分析、缺陷定位、5 Whys、鱼骨图、防御性用例反推 | bug-analyzer | 功能缺陷根因 |
 | 状态机、状态流转、状态转换、生命周期、非法跳转、幂等、并发冲突、消息乱序、终态吸收 | state-machine-test-engineer | 状态机建模 + 10 类场景穷举 |
-| 混合意图（7 条链） | 见 SKILL.md 混合意图链 | 转交披露依据，按既有授权继续 |
-| 意图不明确 | 追问用户 | 列出 5 个子 skill 让用户选择 |
+| 变更影响、diff 分析、改动影响范围与测试内容 | change-impact-analyzer | 从实际业务解释改动影响，需求与用例可选 |
+| 造测试数据、生成关联数据、按规则校验 JSON/JSONL/CSV | test-data-generator | 离线文件与独立校验，系统执行保持 not_run |
+| 混合意图（8 条链） | 见 SKILL.md 混合意图链 | 转交披露依据，按既有授权继续 |
+| 意图不明确 | 追问用户 | 列出 7 个子 skill 让用户选择 |
 
-**7 条混合意图链**：
+**8 条混合意图链**：
 - 链 1：Bug 分析 + 补充用例 → bug-analyzer → case-engineer
 - 链 2：测试策略 + 分层用例 → strategy → case-engineer
 - 链 3：性能测试 + 瓶颈定位 → performance（内部完成）
@@ -29,9 +31,12 @@
 - 链 5：状态机建模 + 用例生成 → state-machine → case-engineer（v3.0.0 新增）
 - 链 6：评审→覆盖缺口验证 → case-engineer 评审模式 → change-impact-analyzer
 - 链 7：评审→风险用例根因反推 → case-engineer 评审模式 → bug-analyzer
+- 链 8：编写/修订用例→离线数据准备 → case-engineer → test-data-generator
+
+已有用例或组合矩阵仅准备数据时，直接调用 test-data-generator；链 8 只在明确要求新编/修订用例并交付对应数据时触发。
 
 **安装方式**：
-- **整体安装（推荐）**：安装 testing-bundle + 6 个子 skill 共 7 个 skill
+- **整体安装（推荐）**：安装 testing-bundle 与 7 个专业子 skill，共 8 个 skill
 - **按需安装**：仅安装需要的子 skill（bug-analyzer 单独安装时缺陷模式库引用会降级；state-machine-test-engineer 可选再装配套 MCP Server 进入增强模式）
 
 **使用场景**：
@@ -76,7 +81,8 @@ AI（testing-bundle）：
    C. 性能测试方案/瓶颈定位（performance-test-engineer）
    D. 分析 Bug 根因（bug-analyzer）
    E. 状态机驱动的状态型需求测试（state-machine-test-engineer）
-   F. 变更影响分析（change-impact-analyzer）"
+   F. 变更影响分析（change-impact-analyzer）
+   G. 离线测试数据生成/校验（test-data-generator）"
 ```
 
 ### 1a. 测试策略工程师 (test-strategy-engineer)
@@ -440,17 +446,18 @@ AI（testing-bundle）：
 
 ### 1f. 变更影响分析师 (change-impact-analyzer)
 
-**版本**：v1.4.0
-**功能**：从 git diff、patch、前后片段或具体改动点生成影响范围和测试内容；旧用例与需求可选，有材料时追加影响、覆盖和实现对照。
+**版本**：v1.5.0
+**功能**：从 git diff、patch、前后片段或具体改动点，按实际业务解释调用链、影响条件与后果，生成测试内容和方式；旧用例与需求可选，有材料时追加影响、覆盖和实现对照。
 
-> testing plugin 内第 6 个协同 skill（链 6 使用），随 plugin 整体安装，也可单独使用。
+> testing plugin 内的专业子 skill（链 6 使用），随 plugin 整体安装，也可单独使用。
 
 **核心能力**：
 - **四阶段工作流**：收集输入 → Diff 解析 → 交叉分析 → 生成报告
 - **七种 diff 模式**：工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Diff 或外部 Patch，自动推断
 - **两类问题检测**：行为变更影响（代码改动导致用例预期不成立）+ 覆盖缺口（改动功能无用例覆盖）
 - **灵活用例输入**：支持 Markdown/CSV/JSON/YAML；无用例仍交付范围与场景，既有覆盖未评估
-- **证据分离**：代码观察与业务预期分开，实现、覆盖和执行结果独立；工作表优先，复杂变更追加详情
+- **证据分离**：代码观察与业务预期分开，实现、覆盖和执行结果独立；业务工作表优先，复杂变更追加详情
+- **业务链路与测试方式**：区分直接、间接与候选影响，按证明目标选择业务入口、单元/数据库、跨服务或迁移验证；核对最终提交、依赖版本与部分失败状态
 
 **适用场景**：
 - ✅ PR/MR 前检查：分析分支改动对现有用例的影响
@@ -513,6 +520,18 @@ AI（change-impact-analyzer）：
 - 覆盖缺口：0 处（所有改动功能均有用例覆盖）
 - 回归风险：低，建议执行相关用例验证
 ```
+
+### 1g. 通用测试数据生成 (test-data-generator)
+
+**版本**：v1.1.0
+
+根据项目字段、关联、场景和业务约束生成可重复的离线测试数据，输出 JSON、JSONL、CSV 与独立校验报告。正常和边界数据满足已声明规则，异常输入从合法基准构造并核对预期违规。
+
+支持边界配方、可选 Faker、有限规则生成规划与场景验收映射。已有数据契约可不提供生成器；报告保留部分未执行检查和未覆盖目标，避免将不完整检查记为 passed。
+
+直接调用即可使用，不依赖 MCP，不自动读取生产数据或执行数据库、业务 API。状态关联表示静态快照；数据校验通过不代表业务测试通过。复杂聚合、循环依赖和额外输出格式需要项目扩展。
+
+输入说明见 [Skill 入口](../plugins/testing/skills/test-data-generator/SKILL.md)，运行与依赖见 [运行指南](../plugins/testing/skills/test-data-generator/integrations/quickstart.md)。
 
 ### 2. 微信公众号排版 (wechat-formatter)
 
