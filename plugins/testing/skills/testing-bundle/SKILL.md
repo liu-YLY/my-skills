@@ -1,6 +1,6 @@
 ---
 name: testing-bundle
-version: 3.2.2
+version: 3.3.0
 description: >-
   Use when user has mixed, ambiguous, or explicitly routing-required testing requests —
   e.g. "analyze bug AND generate test cases", "design strategy AND generate layered cases",
@@ -23,6 +23,8 @@ keywords:
 # Testing Bundle
 
 测试能力 bundle 入口：统一路由到 5 个核心子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer），另含第 6 个协同 skill change-impact-analyzer（链 6 协同使用，亦可单独使用，随 testing plugin 整体安装获得）。
+
+插件另提供独立的 [test-data-generator](../test-data-generator/SKILL.md)，用于离线造数与校验；直接调用该 Skill，保留下面的六路路由和七条混合链。
 
 ## 适用范围
 

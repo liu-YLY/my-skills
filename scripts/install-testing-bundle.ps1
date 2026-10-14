@@ -69,7 +69,7 @@ if ($Uninstall) {
 
 # Pre-install validation
 Write-Host "Install testing-bundle ($($BundleSkills.Count) skills) -> $TargetDir" -ForegroundColor Green
-foreach ($required in @("testing-bundle", "test-case-engineer", "bug-analyzer", "test-strategy-engineer", "performance-test-engineer", "state-machine-test-engineer", "change-impact-analyzer")) {
+foreach ($required in @("testing-bundle", "test-case-engineer", "bug-analyzer", "test-strategy-engineer", "performance-test-engineer", "state-machine-test-engineer", "change-impact-analyzer", "test-data-generator")) {
     if ($required -notin $BundleSkills) { throw "Missing required skill: $required" }
 }
 foreach ($resource in @("convert_docs.py", "requirements.txt")) {
@@ -80,6 +80,10 @@ foreach ($resource in @("convert_docs.py", "requirements.txt")) {
 }
 function Assert-RuntimeResources([string]$Root) {
     $prefix = [IO.Path]::GetFullPath($Root) + [IO.Path]::DirectorySeparatorChar
+    foreach ($resource in @("scripts/run_data.py", "scripts/requirements.txt", "schemas/profile.schema.json", "schemas/report.schema.json")) {
+        $path = Join-Path $Root "test-data-generator/$resource"
+        if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing data generation resource: $path" }
+    }
     foreach ($resource in @("convert_docs.py", "requirements.txt")) {
         $path = Join-Path $Root "test-case-engineer/scripts/$resource"
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Missing conversion resource: $path" }

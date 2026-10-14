@@ -4,7 +4,7 @@
 
 ### 1. Testing Bundle (testing-bundle)
 
-**版本**：v3.2.2
+**版本**：v3.3.0
 **功能**：测试能力 bundle 入口，统一路由到 6 个子 skill（5 核心 + 1 协同）：test-strategy-engineer（项目级策略）/ test-case-engineer（功能用例生成）/ performance-test-engineer（性能测试）/ bug-analyzer（Bug 根因分析）/ state-machine-test-engineer（状态机测试）/ change-impact-analyzer（变更影响分析，协同）。
 
 > Bundle 是元 skill，本身不实现具体能力，而是根据用户意图自动路由到对应子 skill。
@@ -31,7 +31,7 @@
 - 链 7：评审→风险用例根因反推 → case-engineer 评审模式 → bug-analyzer
 
 **安装方式**：
-- **整体安装（推荐）**：安装 testing-bundle + 6 个子 skill 共 7 个 skill
+- **整体安装（推荐）**：安装 testing-bundle、6 个专业 skill 和独立 test-data-generator，共 8 个 skill
 - **按需安装**：仅安装需要的子 skill（bug-analyzer 单独安装时缺陷模式库引用会降级；state-machine-test-engineer 可选再装配套 MCP Server 进入增强模式）
 
 **使用场景**：
@@ -513,6 +513,16 @@ AI（change-impact-analyzer）：
 - 覆盖缺口：0 处（所有改动功能均有用例覆盖）
 - 回归风险：低，建议执行相关用例验证
 ```
+
+### 1g. 通用测试数据生成 (test-data-generator)
+
+**版本**：v1.0.0
+
+根据项目字段、关联、场景和业务约束生成可重复的离线测试数据，输出 JSON、JSONL、CSV 与独立校验报告。正常和边界数据满足已声明规则，异常输入从合法基准构造并核对预期违规。
+
+直接调用即可使用，不依赖 MCP，不自动读取生产数据或执行数据库、业务 API。状态关联表示静态快照；数据校验通过不代表业务测试通过。复杂聚合、循环依赖和额外输出格式需要项目扩展。
+
+输入说明见 [Skill 入口](../plugins/testing/skills/test-data-generator/SKILL.md)，运行与依赖见 [运行指南](../plugins/testing/skills/test-data-generator/integrations/quickstart.md)。
 
 ### 2. 微信公众号排版 (wechat-formatter)
 

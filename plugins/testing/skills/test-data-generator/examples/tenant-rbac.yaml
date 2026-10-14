@@ -1,0 +1,117 @@
+schema_version: '1.0'
+profile_id: tenant-rbac
+profile_version: 1.0.0
+purpose: example
+default_source_ids:
+- example-contract
+sources:
+- id: example-contract
+  kind: example
+  reference: Explicit synthetic example contract
+  version: 1.0.0
+generation:
+  seed: 42
+  reference_datetime: '2026-10-14T00:00:00Z'
+  output_formats:
+  - json
+  - csv
+  - jsonl
+entities:
+  tenant:
+    count: 2
+    primary_key:
+    - tenant_id
+    fields:
+      tenant_id:
+        type: string
+        generator:
+          kind: sequence
+          prefix: T
+          width: 3
+  role:
+    count: 4
+    primary_key:
+    - tenant_id
+    - role_id
+    fields:
+      tenant_id:
+        type: string
+        generator:
+          kind: reference
+          relation: role-tenant
+      role_id:
+        type: string
+        generator:
+          kind: sequence
+          prefix: R
+          width: 3
+  user:
+    count: 8
+    primary_key:
+    - user_id
+    fields:
+      user_id:
+        type: string
+        generator:
+          kind: sequence
+          prefix: U
+          width: 3
+      tenant_id:
+        type: string
+        generator:
+          kind: reference
+          relation: user-role
+      role_id:
+        type: string
+        generator:
+          kind: reference
+          relation: user-role
+relations:
+- id: role-tenant
+  child:
+    entity: role
+    fields:
+    - tenant_id
+  parent:
+    entity: tenant
+    fields:
+    - tenant_id
+  min_children: 2
+  max_children: 2
+- id: user-role
+  child:
+    entity: user
+    fields:
+    - tenant_id
+    - role_id
+  parent:
+    entity: role
+    fields:
+    - tenant_id
+    - role_id
+  min_children: 0
+  max_children: null
+scenarios:
+- id: tenant-A
+  entity: user
+  kind: normal
+  count: 4
+  set:
+    tenant_id: T001
+- id: tenant-B
+  entity: user
+  kind: normal
+  count: 4
+  set:
+    tenant_id: T002
+negative_scenarios:
+- id: cross-tenant-role
+  base_scenario: tenant-A
+  count: 2
+  mutations:
+  - op: set
+    field: tenant_id
+    value: T002
+  expected_rule_violations:
+  - user-role
+rules: []

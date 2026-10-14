@@ -1,0 +1,135 @@
+schema_version: "1.0"
+profile_id: demo-order
+profile_version: "1.0.0"
+purpose: example
+default_source_ids: [demo-contract]
+generation:
+  mode: strict
+  seed: 20261014
+  reference_datetime: "2026-10-14T00:00:00Z"
+  output_formats: [json, csv]
+  limits:
+    max_total_rows: 100000
+    max_output_bytes: 104857600
+    timeout_seconds: 120
+sources:
+  - id: demo-contract
+    kind: example
+    reference: "本节虚构订单约定"
+    version: "1.0.0"
+entities:
+  member:
+    count: 1000
+    primary_key: [member_id]
+    fields:
+      member_id:
+        type: string
+        nullable: false
+        max_length: 7
+        generator: {kind: sequence, prefix: M, start: 1, width: 6}
+  order:
+    count: 10000
+    primary_key: [order_id]
+    fields:
+      order_id:
+        type: string
+        nullable: false
+        max_length: 17
+        pattern: "^ORD20261014[0-9]{6}$"
+        generator: {kind: sequence, prefix: ORD20261014, start: 1, width: 6}
+      member_id:
+        type: string
+        nullable: false
+        generator: {kind: reference, relation: order-member}
+      amount:
+        type: decimal
+        nullable: false
+        min: "0.01"
+        max: "99999.99"
+        scale: 2
+        generator: {kind: decimal}
+      status:
+        type: string
+        nullable: false
+        enum: [pending, paid, cancelled]
+        generator: {kind: choice}
+      create_time:
+        type: datetime
+        nullable: false
+        generator: {kind: datetime_window, min_offset_seconds: 0, max_offset_seconds: 86400}
+      pay_time:
+        type: datetime
+        nullable: true
+        generator: {kind: constant, value: null}
+relations:
+  - id: order-member
+    child: {entity: order, fields: [member_id]}
+    parent: {entity: member, fields: [member_id]}
+    min_children: 0
+    max_children: null
+    confirmation: confirmed
+    source_ids: [demo-contract]
+rules:
+  - id: R-paid-time-required
+    entity: order
+    when: {field: status, op: eq, value: paid}
+    assert: {field: pay_time, op: not_null}
+    confirmation: confirmed
+    source_ids: [demo-contract]
+  - id: R-payment-time-order
+    entity: order
+    when: {field: pay_time, op: not_null}
+    assert: {field: pay_time, op: gte, other_field: create_time}
+    confirmation: confirmed
+    source_ids: [demo-contract]
+  - id: R-unpaid-time-empty
+    entity: order
+    when: {field: status, op: in, value: [pending, cancelled]}
+    assert: {field: pay_time, op: is_null}
+    confirmation: confirmed
+    source_ids: [demo-contract]
+scenarios:
+  - id: pending-orders
+    kind: normal
+    entity: order
+    count: 3000
+    set: {status: pending, pay_time: null}
+  - id: paid-orders
+    kind: normal
+    entity: order
+    count: 4998
+    set: {status: paid}
+    generators:
+      pay_time: {kind: relative_datetime, field: create_time, min_seconds: 0, max_seconds: 3600}
+  - id: paid-min-amount
+    kind: boundary
+    entity: order
+    count: 1
+    set: {status: paid, amount: "0.01"}
+    generators:
+      pay_time: {kind: relative_datetime, field: create_time, min_seconds: 0, max_seconds: 0}
+  - id: paid-max-amount
+    kind: boundary
+    entity: order
+    count: 1
+    set: {status: paid, amount: "99999.99"}
+    generators:
+      pay_time: {kind: relative_datetime, field: create_time, min_seconds: 0, max_seconds: 0}
+  - id: cancelled-orders
+    kind: normal
+    entity: order
+    count: 2000
+    set: {status: cancelled, pay_time: null}
+negative_scenarios:
+  - id: paid-without-pay-time
+    base_scenario: paid-orders
+    count: 2
+    mutations:
+      - {op: set, field: pay_time, value: null}
+    expected_rule_violations: [R-paid-time-required]
+  - id: order-with-unknown-member
+    base_scenario: pending-orders
+    count: 2
+    mutations:
+      - {op: set, field: member_id, value: M999999}
+    expected_rule_violations: [order-member]
