@@ -1,8 +1,8 @@
 # Testing Bundle Plugin
 
-> 测试能力 plugin，提供项目级测试策略、功能用例生成、性能测试、Bug 根因分析、状态机驱动的状态型需求测试、变更影响分析与离线测试数据生成/校验能力。
+> 测试能力 plugin，提供项目级测试策略、功能用例生成、性能测试、Bug 根因分析、状态机驱动的状态型需求测试、变更影响分析、前端测试准备与离线测试数据生成/校验能力。
 >
-> 通过 testing-bundle 元 skill 统一路由，按用户意图自动分发到对应子 skill。
+> testing-bundle 按用户意图路由到 7 个专业子 skill；前端测试准备直接调用 `$frontend-test-preparation`。
 
 ## 版本
 
@@ -22,6 +22,8 @@
 | [test-data-generator](skills/test-data-generator/) | v1.1.0 | 子 skill | 项目规则配置 → 可重复数据、边界与异常配方 → 场景验收与独立文件校验 |
 
 test-data-generator 可独立调用，也可经 bundle 路由或链 8 协同；使用 Python 3.11 和其 scripts/requirements.txt，Faker 使用可选 requirements-faker.txt，无需 MCP。数据校验通过只表示已声明约束通过，系统执行保持 not_run。使用方式见 [运行指南](skills/test-data-generator/integrations/quickstart.md)（v1.1.0）。
+
+[frontend-test-preparation](skills/frontend-test-preparation/SKILL.md) 从本机定制版原样迁入，保留入口与交接模板两个文件，未单独标记版本。用于读取前端代码、增量维护分层索引，再按单需求准备入口、角色、数据与检查点；运行核实遵循当次授权。
 
 **可选配套**：[state-machine-testing MCP Server](mcp-servers/state-machine-testing/) v0.8.5 — 为 state-machine-test-engineer 提供 5 个工具（build / validate / generate / export / coverage，协议层 stdio + HTTP 已端到端联调验证），未安装时降级为纯 LLM 推理。
 
@@ -73,6 +75,7 @@ testing/
     ├── performance-test-engineer/    # 性能测试
     ├── bug-analyzer/                 # Bug 根因（bug-patterns-index 指向 test-case-engineer）
     ├── state-machine-test-engineer/  # 状态机测试
+    ├── frontend-test-preparation/    # 前端测试准备（独立调用，含 references/handoff-template.md）
     ├── change-impact-analyzer/       # 协同 skill（链 6，随 plugin 整体安装）
     └── test-data-generator/          # 离线数据生成/校验（链 8，含 Python 脚本与 Schema）
 ```

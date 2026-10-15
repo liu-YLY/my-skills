@@ -1,6 +1,6 @@
 {
   "name": "testing-bundle",
-  "description": "Testing capability bundle v3.4.0: testing-bundle (7-way router + 8 mixed-intent chains) + test-strategy-engineer (project-level strategy) + test-case-engineer (test case generation) + performance-test-engineer (performance testing) + bug-analyzer (bug root cause) + state-machine-test-engineer (state-machine-driven testing) + change-impact-analyzer (change impact analysis) + test-data-generator (offline test-data generation and validation) + state-machine-testing MCP Server (optional enhancement). Use when user needs any testing capability.",
+  "description": "Testing capability bundle v3.4.0: testing-bundle (7-way router + 8 mixed-intent chains) + test-strategy-engineer (project-level strategy) + test-case-engineer (test case generation) + performance-test-engineer (performance testing) + bug-analyzer (bug root cause) + state-machine-test-engineer (state-machine-driven testing) + change-impact-analyzer (change impact analysis) + test-data-generator (offline test-data generation and validation) + frontend-test-preparation (frontend navigation indexing and test preparation; direct invocation) + state-machine-testing MCP Server (optional enhancement). Use when user needs any testing capability.",
   "version": "3.4.0",
   "author": {
     "name": "lyle"

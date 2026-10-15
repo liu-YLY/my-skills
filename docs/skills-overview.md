@@ -533,6 +533,14 @@ AI（change-impact-analyzer）：
 
 输入说明见 [Skill 入口](../plugins/testing/skills/test-data-generator/SKILL.md)，运行与依赖见 [运行指南](../plugins/testing/skills/test-data-generator/integrations/quickstart.md)。
 
+### 1h. 前端测试准备 (frontend-test-preparation)
+
+从本机定制版原样迁入，保留 [Skill 入口](../plugins/testing/skills/frontend-test-preparation/SKILL.md) 与[交接模板](../plugins/testing/skills/frontend-test-preparation/references/handoff-template.md)，未单独标记版本。
+
+在需求评审之后、用例编写或执行之前，读取前端代码建立分层导航索引，再把单需求映射到页面入口、角色、数据、操作与检查点。后续按代码差异增量更新相关页面。具备环境、身份、浏览器工具及当次授权时核实运行页面，结论区分代码推断、运行已验证与待确认。
+
+直接调用示例：“用 $frontend-test-preparation 理解当前前端仓库，为本次需求准备测试。先读取已有索引并增量更新，暂不访问业务环境。”主索引默认保存在业务仓库 `docs/testing/frontend-navigation.md`，模块索引放在同级 `frontend-index/`；项目数据不写回全局 Skill。
+
 ### 2. 微信公众号排版 (wechat-formatter)
 
 **版本**：v3.0.16
