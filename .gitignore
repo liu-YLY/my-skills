@@ -215,3 +215,5 @@ __marimo__/
 /.patches/
 /.darwin-results/
 .claude/skills/darwin-skill/results.tsv
+# TRAE 上传目录（避免快照提交上传文件）
+.uploads/
