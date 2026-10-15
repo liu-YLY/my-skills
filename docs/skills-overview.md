@@ -446,7 +446,7 @@ AI（testing-bundle）：
 
 ### 1f. 变更影响分析师 (change-impact-analyzer)
 
-**版本**：v1.5.0
+**版本**：v1.5.1
 **功能**：从 git diff、patch、前后片段或具体改动点，按实际业务解释调用链、影响条件与后果，生成测试内容和方式；旧用例与需求可选，有材料时追加影响、覆盖和实现对照。
 
 > testing plugin 内的专业子 skill（链 6 使用），随 plugin 整体安装，也可单独使用。
