@@ -1,6 +1,6 @@
 ---
 name: change-impact-analyzer
-version: 1.5.0
+version: 1.5.1
 description: >-
   Derives business impact scope and actionable test content from git diffs, patches,
   or code change points, even without existing test cases. Explains each affected
@@ -58,6 +58,7 @@ keywords:
 | [knowledge/cross-impact-analysis.md](knowledge/cross-impact-analysis.md) | 阶段 2 链路追踪与契约检查、阶段 3 交叉分析时 | 跨层影响链路追踪 / 前后端契约两侧检查 / 变更固有风险三档清单 / Mode A 与 Mode B 双模式规则 |
 | [knowledge/cross-analysis-guide.md](knowledge/cross-analysis-guide.md) | 阶段 3 有用例基线时 | 行为变更影响 / 覆盖缺口 / 覆盖证据与执行状态 |
 | [knowledge/report-template.md](knowledge/report-template.md) | 阶段 4 交付时 | 工作表 / 可选详情 / P0/P1/P2 / 场景与预期来源 / 输出路径 |
+| [templates/business-impact-test-scope.md](templates/business-impact-test-scope.md) | 阶段 4 交付完整业务影响与测试方案时 | 实际业务范围 / 改动链与原因 / 业务测试点 / 测试方式与数据 / 相关发布阶段 / 验收与追溯 |
 | [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | 贯穿阶段 1-4 执行时查阅 | 7 条核心反例（取自 SKILL.md）+ 7 条扩展项（README.md 对齐）+ 触发检查时机 + 自检清单 |
 
 ---
@@ -120,7 +121,7 @@ keywords:
 
 ## 阶段 4：生成报告
 
-读取 [knowledge/report-template.md](knowledge/report-template.md)，先交付「实际业务操作 → 为什么受影响/边界 → 测试内容 → 测试方式与证据 → 优先级」工作表。复杂变更按业务场景展开，主链写在该场景下，文件/函数/提交和需求矩阵放技术追溯部分；不重复展开同一场景。测试内容包含前置、操作、可观察预期、预期来源和变更证据；禁止只写“验证正常”。默认只在用户要求写文件时输出到 `docs/change-impact-report.md` 或指定路径。
+读取 [knowledge/report-template.md](knowledge/report-template.md)，简单变更先交付「实际业务操作 → 为什么受影响/边界 → 测试内容 → 测试方式与证据 → 优先级」工作表；完整方案使用 [templates/business-impact-test-scope.md](templates/business-impact-test-scope.md)，按实际业务说明改动链、原因、具体测试点和怎么测，再附共用准备、相关发布阶段、待确认与技术追溯。正文用测试人员能直接理解的操作和结果描述，保留条件及确定程度；写作规则见报告模板。不重复展开同一场景，不只写“验证正常”。默认只在用户要求写文件时输出到 `docs/change-impact-report.md` 或指定路径；Notion 等外部文档按用户指定目标和已有授权写入，并回读核对。
 
 ## 证据与安全边界
 

@@ -28,7 +28,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | performance-test-engineer | v1.2.3 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
 | bug-analyzer | v1.2.3 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
 | state-machine-test-engineer | v1.7.5 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.8.5（可选） |
-| change-impact-analyzer | v1.5.0 | 从实际业务解释改动影响，生成测试内容与方式，需求和用例可选 | - |
+| change-impact-analyzer | v1.5.1 | 从实际业务解释改动影响，生成测试内容与方式，需求和用例可选 | - |
 | test-data-generator | v1.1.0 | 可重复离线造数、边界配方、关联与场景验收、JSON/JSONL/CSV 独立校验 | - |
 
 **8 条混合意图链**：
@@ -60,7 +60,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | Skill | 入口行数 | 配套 Markdown 文件数 |
 |---|---:|---:|
 | bug-analyzer | 232 | 5 |
-| change-impact-analyzer | 155 | 5 |
+| change-impact-analyzer | 156 | 6 |
 | performance-test-engineer | 119 | 5 |
 | state-machine-test-engineer | 169 | 13 |
 | test-case-engineer | 147 | 13 |
@@ -74,34 +74,113 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 
 ## 快速开始
 
+### 环境要求
+
+| 项 | 要求 | 说明 |
+|---|---|---|
+| 操作系统 | Windows / macOS / Linux | 跨平台支持 |
+| 运行环境 | Claude Code / Cursor / Codex / OpenCode 等 | 能够读取 skills 目录的 AI runtime |
+| Node.js | v18+（可选） | 仅在方式 1（npx skills add）时需要 |
+| Python | 3.8+（可选） | 运行技能内附带的工具脚本时需要；test-data-generator 离线引擎需 Python 3.11+ |
+
 ### 安装
 
-三种安装方式任选其一，详细步骤见 [docs/installation.md](docs/installation.md)：
+三种方式任选其一，完整步骤与故障排查见 [docs/installation.md](docs/installation.md)。
+
+#### 方式 1（推荐）：npx skills add
+
+通过 [skills CLI](https://skills.sh) 安装，自动适配 Claude Code / Cursor / Codex / OpenCode 等 70+ runtime。
 
 ```bash
-# 方式 1（推荐）：npx skills add，跨 runtime 自动适配
+# 前置：安装 Node.js v18+
+
+# 步骤 1（可选）：查看仓库内所有可安装的 skill
+npx skills add liu-YLY/my-skills --list
+
+# 步骤 2：按需安装
+# 2a. 安装全部 9 个 skill（testing-bundle + 7 个专业子 skill + wechat-formatter）
 npx skills add liu-YLY/my-skills --skill '*' -g -y
 
-# 方式 2：Claude Code 原生 plugin marketplace
+# 2b. 仅安装测试能力 bundle（8 个 skill）
+npx skills add liu-YLY/my-skills \
+  --skill 'testing-bundle' --skill 'test-strategy-engineer' \
+  --skill 'test-case-engineer' --skill 'performance-test-engineer' \
+  --skill 'bug-analyzer' --skill 'state-machine-test-engineer' \
+  --skill 'change-impact-analyzer' --skill 'test-data-generator' -g -y
+
+# 2c. 仅安装微信公众号排版 skill
+npx skills add liu-YLY/my-skills --skill 'wechat-formatter' -g -y
+
+# 2d. 指定目标 runtime（示例：同时装到 Claude Code 与 Cursor）
+npx skills add liu-YLY/my-skills --skill 'testing-bundle' -a claude-code -a cursor -g -y
+```
+
+常用参数：
+
+| 参数 | 说明 |
+|---|---|
+| `-g, --global` | 全局安装（`~/<agent>/skills/`）；不加则装到项目级（`./<agent>/skills/`） |
+| `-a, --agent` | 指定目标 runtime（`claude-code` / `cursor` / `codex` / `opencode` 等） |
+| `-s, --skill` | 按 skill 名选择，支持通配符（如 `test-*`），`'*'` 表示全部 |
+| `-y, --yes` | 跳过确认提示（CI/CD 友好） |
+| `--copy` | 复制文件而非 symlink（默认 symlink，便于后续更新） |
+
+#### 方式 2：Plugin Marketplace（Claude Code 原生）
+
+Claude Code 用户可通过原生 `/plugin` 命令按 plugin 粒度一键安装。
+
+```text
+# 步骤 1：注册 marketplace（只需执行一次）
 /plugin marketplace add liu-YLY/my-skills
+
+# 步骤 2：安装测试能力 bundle（含 testing-bundle + 7 个子 skill）
 /plugin install testing-bundle@my-skill-marketplace
 
-# 方式 3：手动复制（离线兜底）
-# 按实际 runtime 修改目标目录，例如 ~/.claude/skills、~/.cursor/skills、~/.codex/skills
+# 步骤 3：安装微信公众号排版 skill（可选）
+/plugin install wechat-formatter@my-skill-marketplace
+```
+
+#### 方式 3：手动复制（离线兜底）
+
+适用于未安装 Node.js 或需要离线安装的场景。先确认目标 runtime 的 skills 目录（Claude Code：`~/.claude/skills/`，Cursor：`~/.cursor/skills/`，Codex：`~/.codex/skills/`），再复制对应 plugin 下的 skill 子目录。
+
+```bash
+# 步骤 1：按实际 runtime 修改目标目录
 SKILLS_DIR="$HOME/.codex/skills"
 mkdir -p "$SKILLS_DIR"
+
+# 步骤 2：复制 testing plugin 下全部子 skill（testing-bundle + 7 个专业子 skill）
 for skill_dir in plugins/testing/skills/*; do cp -R "$skill_dir" "$SKILLS_DIR/"; done
+
+# 步骤 3：复制 wechat-formatter（可选）
+cp -R plugins/wechat-formatter/skills/wechat-formatter "$SKILLS_DIR/"
 ```
 
-安装后重启 runtime，技能自动识别注册。
+Windows 用户可直接运行仓库内的 PowerShell 脚本：
 
-### 验证
+```powershell
+# 默认装到 ~\.claude\skills
+.\scripts\install-testing-bundle.ps1
+
+# 指定安装目录
+.\scripts\install-testing-bundle.ps1 -TargetDir "C:\Users\<用户名>\.cursor\skills"
+
+# 卸载
+.\scripts\install-testing-bundle.ps1 -Uninstall
+```
+
+### 安装后配置与验证
+
+1. **重启 runtime**：完全重启（而非新建终端窗口），让其重新扫描 skills 目录，技能会自动识别注册。
+2. **（可选）安装脚本依赖**：安装 skill 本身不会自动安装依赖脚本。使用 test-data-generator 离线引擎需 Python 3.11+，并安装其 `scripts/requirements.txt`；使用 test-case-engineer 的文档转换脚本需 `pip install -r plugins/testing/skills/test-case-engineer/scripts/requirements.txt`。
+3. **验证安装**：在 runtime 中输入技能名称或直接描述需求即可触发，正常激活会显示技能名称与版本信息。
 
 ```
-# 直接输入技能名称或描述需求即可触发
 测试用例工程师
 我有一个用户登录功能需要测试...
 ```
+
+> **依赖提示**：单独安装 bug-analyzer 时，因缺少 `test-case-engineer/knowledge/bug-patterns.md`，其「对照缺陷模式库」能力会降级（仍有通用模式兜底），**建议与 test-case-engineer 一起安装**。review-checker / state-machine-testing 为可选 MCP Server，未安装时对应 skill 降级为纯 LLM 推理，详见 [docs/installation.md](docs/installation.md)。
 
 ### 使用示例
 
