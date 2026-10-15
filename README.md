@@ -1,6 +1,6 @@
 # My Skill - AI 技能集合项目
 
-> 基于 AI 的智能技能系统，提供测试策略、测试用例生成、性能测试、Bug 根因分析、状态机测试、变更影响分析、离线测试数据生成与校验、微信公众号排版等专业技能
+> 基于 AI 的智能技能系统，提供测试策略、测试用例生成、性能测试、Bug 根因分析、状态机测试、变更影响分析、前端测试准备、离线测试数据生成与校验、微信公众号排版等专业技能
 
 ## 项目简介
 
@@ -30,6 +30,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | state-machine-test-engineer | v1.7.5 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.8.5（可选） |
 | change-impact-analyzer | v1.5.1 | 从实际业务解释改动影响，生成测试内容与方式，需求和用例可选 | - |
 | test-data-generator | v1.1.0 | 可重复离线造数、边界配方、关联与场景验收、JSON/JSONL/CSV 独立校验 | - |
+| [frontend-test-preparation](plugins/testing/skills/frontend-test-preparation/SKILL.md) | 未单独标记 | 前端导航索引、增量维护与单需求测试准备，直接调用 | - |
 
 **8 条混合意图链**：
 - 链 1：Bug 分析 + 补充用例 → bug-analyzer → case-engineer
@@ -61,6 +62,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 |---|---:|---:|
 | bug-analyzer | 232 | 5 |
 | change-impact-analyzer | 156 | 6 |
+| frontend-test-preparation | 92 | 1 |
 | performance-test-engineer | 119 | 5 |
 | state-machine-test-engineer | 169 | 13 |
 | test-case-engineer | 147 | 13 |
@@ -69,7 +71,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | testing-bundle | 173 | 2 |
 | wechat-formatter | 169 | 29 |
 
-2 个插件共包含 9 个 Skills，测试插件包含 8 个 Skills 和 2 个可选 MCP 服务。
+2 个插件共包含 10 个 Skills，测试插件包含 9 个 Skills 和 2 个可选 MCP 服务。
 模式需要的参考文件按需读取；模型耗时与 token 应以实际运行记录为准。
 
 ## 快速开始
@@ -98,15 +100,16 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 npx skills add liu-YLY/my-skills --list
 
 # 步骤 2：按需安装
-# 2a. 安装全部 9 个 skill（testing-bundle + 7 个专业子 skill + wechat-formatter）
+# 2a. 安装全部 10 个 skill（testing-bundle + 7 个专业子 skill + 前端测试准备 + wechat-formatter）
 npx skills add liu-YLY/my-skills --skill '*' -g -y
 
-# 2b. 仅安装测试能力 bundle（8 个 skill）
+# 2b. 仅安装测试插件全部 9 个 skill（含独立调用的前端测试准备）
 npx skills add liu-YLY/my-skills \
   --skill 'testing-bundle' --skill 'test-strategy-engineer' \
   --skill 'test-case-engineer' --skill 'performance-test-engineer' \
   --skill 'bug-analyzer' --skill 'state-machine-test-engineer' \
-  --skill 'change-impact-analyzer' --skill 'test-data-generator' -g -y
+  --skill 'change-impact-analyzer' --skill 'test-data-generator' \
+  --skill 'frontend-test-preparation' -g -y
 
 # 2c. 仅安装微信公众号排版 skill
 npx skills add liu-YLY/my-skills --skill 'wechat-formatter' -g -y
@@ -133,7 +136,7 @@ Claude Code 用户可通过原生 `/plugin` 命令按 plugin 粒度一键安装�
 # 步骤 1：注册 marketplace（只需执行一次）
 /plugin marketplace add liu-YLY/my-skills
 
-# 步骤 2：安装测试能力 bundle（含 testing-bundle + 7 个子 skill）
+# 步骤 2：安装测试插件（含 testing-bundle + 7 个子 skill + 前端测试准备）
 /plugin install testing-bundle@my-skill-marketplace
 
 # 步骤 3：安装微信公众号排版 skill（可选）
@@ -149,7 +152,7 @@ Claude Code 用户可通过原生 `/plugin` 命令按 plugin 粒度一键安装�
 SKILLS_DIR="$HOME/.codex/skills"
 mkdir -p "$SKILLS_DIR"
 
-# 步骤 2：复制 testing plugin 下全部子 skill（testing-bundle + 7 个专业子 skill）
+# 步骤 2：复制 testing plugin 下全部 9 个 skill（含前端测试准备）
 for skill_dir in plugins/testing/skills/*; do cp -R "$skill_dir" "$SKILLS_DIR/"; done
 
 # 步骤 3：复制 wechat-formatter（可选）
@@ -254,4 +257,4 @@ Windows 用户可直接运行仓库内的 PowerShell 脚本：
 
 ---
 
-**最后更新**：2026 年 10 月 14 日
+**最后更新**：2026 年 10 月 15 日

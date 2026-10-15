@@ -8,7 +8,7 @@
 
 | Plugin | 版本 | 类别 | 简介 | 包含 skill 数 |
 |---|---|---|---|---|
-| [testing](./testing/) | v3.4.0 | testing | 策略 / 用例 / 性能 / Bug 根因 / 状态机 / 变更影响 / 离线测试数据 | 8（1 bundle + 7 子 skill），另含 2 个可选 MCP Server |
+| [testing](./testing/) | v3.4.0 | testing | 策略 / 用例 / 性能 / Bug 根因 / 状态机 / 变更影响 / 前端测试准备 / 离线测试数据 | 9（1 bundle + 7 子 skill + 1 独立准备 skill），另含 2 个可选 MCP Server |
 | [wechat-formatter](./wechat-formatter/) | v3.0.16 | content | 微信公众号排版：6 种风格 + 高级排版模块 + HTML 生成 | 1 |
 
 ## 安装方式
