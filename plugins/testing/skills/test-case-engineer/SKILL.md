@@ -1,6 +1,6 @@
 ---
 name: test-case-engineer
-version: 9.7.2
+version: 9.8.0
 description: >-
   Use when generating, reviewing, or designing test cases and single-feature
   test strategies.
@@ -96,7 +96,7 @@ keywords:
 | [knowledge/review-plan.md](knowledge/review-plan.md) | **评审会面向产品/UI/前端/后端或要求覆盖度汇报时必读**（评审类型与角色 + 需求追溯矩阵 + 覆盖度画像 + 测试思路 + 材料与议程 + 结论与闭环） |
 | [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **阶段 3/4 自检时对照**（反例黑名单） |
 | [knowledge/writing-examples.md](knowledge/writing-examples.md) | **阶段 3 写用例拿不准格式时查阅**（title/steps/expected_results 好坏写法对照示例；铁律条文本体在 writing-rules.md） |
-| [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（写作风格与信息密度 / 通用格式 / ID 生成规则 / 字段说明 / 编写铁律 / 拆分合并策略） |
+| [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（通用格式 / ID 生成规则 / 字段说明 / 写作风格与人类易读性 / 编写铁律 / 拆分合并策略） |
 | [knowledge/case-arrangement.md](knowledge/case-arrangement.md) | **阶段 3 输出完整用例集前必读**（用户旅程编排 / 模块分组编排 / 排序规则） |
 | [knowledge/failure-semantics.md](knowledge/failure-semantics.md) | **涉及失败语义/安全属性/进展属性时读**（超时、重试、幂等、部分成功、结果未知） |
 | [knowledge/efficiency-metrics.md](knowledge/efficiency-metrics.md) | **阶段 4 生成效率报告时读**（报告模板与工时估算基准） |
