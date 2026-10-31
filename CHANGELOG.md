@@ -16,6 +16,7 @@
 ## [Unreleased]
 
 ### Added
+- test-case-engineer 升级到 v9.7.2：统一用例可读性判定口径——「校验」不再列为禁用抽象名词并同步 3 处正例；紧凑表格示例优先级改为 P2 并补充组内不少于 5 行的说明；完整用例示例改写为「测试步骤 + 关键检查点 + 业务结果」现行格式；新增可选「后置条件」字段（改状态或共用环境时必填），同步字段标准、示例与阶段 4 自检
 - 新增实施计划文档：`docs/superpowers/plans/2026-07-21-skill-consistency-and-infra.md`
 - test-case-engineer 升级到 v9.7.1：参考文件按真实读取路径重新切分——`writing-rules` 由 478 行降至 329 行，编排排序、失败语义、效率度量拆为 `case-arrangement` / `failure-semantics` / `efficiency-metrics` 三个按需文件；分层策略与默认输出类型并入 `test-levels`，消除分层双源；阶段 3 主读量减少约 30%
 - state-machine-test-engineer 升级到 v1.7.6：MCP 探测与增强/独立/降级细则从 `state-machine-core.md` 拆到 `knowledge/mcp-enhancement.md`，core 由 347 行降至 299 行，必读路径不再包含可选增强细节
