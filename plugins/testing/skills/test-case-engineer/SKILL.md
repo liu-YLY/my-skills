@@ -75,7 +75,7 @@ keywords:
 
 **AI 赋能模式**：AI 生成 → 人工审核 → 轻量维护，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
-**用例输出约束**：通用结构化格式 + 编排排序 + 编写铁律，详见 [knowledge/writing-rules.md](knowledge/writing-rules.md)（core.md 阶段 3 有转发引用）。
+**用例输出约束**：通用结构化格式 + 编写铁律见 [knowledge/writing-rules.md](knowledge/writing-rules.md)；完整用例集编排见 [knowledge/case-arrangement.md](knowledge/case-arrangement.md)（core.md 阶段 3 有转发引用）。
 
 ---
 
@@ -86,7 +86,7 @@ keywords:
 | 文件 | 何时查阅 |
 |------|---------|
 | [test-case-engineer-core.md](test-case-engineer-core.md) | **默认/快速/探索式/回归验证清单模式必读**（四阶段核心流程 + 7 维度扫描 + 模式切换）。**评审模式不读**——评审流程独立于四阶段生成，详见 review-mode.md |
-| [knowledge/test-levels.md](knowledge/test-levels.md) | **默认阶段 2/3 查阅**（含 strategy 三层映射与 writing-rules 编排分组对应关系） |
+| [knowledge/test-levels.md](knowledge/test-levels.md) | **默认阶段 2/3 查阅**（五层定义 / 编排组占比 / 默认输出类型 / strategy 三层映射） |
 | [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（优先级/类型/模糊词权威源）；评审模式 R2 必要时查阅业务风险原则 |
 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **默认阶段 2 查阅**（防御性测试点补充，含领域特定模式 + 安全专项检查清单） |
 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | **阶段 1 强制读** + Office/PDF 转换 |
