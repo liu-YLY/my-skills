@@ -1,6 +1,6 @@
 ---
 name: testing-bundle
-version: 3.5.0
+version: 3.5.1
 description: >-
   Use when user has mixed, ambiguous, or explicitly routing-required testing requests —
   e.g. "analyze bug AND generate test cases", "design strategy AND generate layered cases",
@@ -121,60 +121,15 @@ keywords:
 
 安装方式、依赖关系和 MCP 配置属于部署文档，见 [../../README.md](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/README.md)，不参与运行时路由判断。复制安装只交付 Skill 资源，不安装 MCP 服务；缺 MCP 时由专业 Skill 进入独立模式并如实标记。
 
-## 失败模式与 Fallback
+## 失败模式与降级
 
-| 触发条件 | 一线修复 | 仍失败兜底 |
-|----------|----------|------------|
-| 意图判断不明确（用户请求含"测试"但未指明策略/用例/性能/Bug/状态机/变更影响/前端准备/测试数据） | 追问用户：列出 8 个子 skill 的能力让用户选择（🔴 CHECKPOINT） | 持续追问，不默认路由。仅当用户明确授权"你来决定"时，可路由到 test-case-engineer，并在输出首行标注「已默认路由到用例生成，如需其他能力请说明」 |
-| 混合意图判定争议（如"防御性用例反推"既属 bug-analyzer 又与 test-case-engineer 边界模糊） | 有实际故障证据时先诊断，再转交生成用例；只有用例质量问题时直接进入用例修订 | 若用户明确只需用例不需根因分析，直接路由到 test-case-engineer |
-| 子 skill 未安装（路由目标 skill 不存在） | 检测到子 skill 不可用，提示用户安装对应 skill，并给出安装命令 | 标注「子 skill 不可用」，输出 bundle 层方向性指导模板（按目标 skill 选一）：bug-analyzer→「按五步定位法：复现→隔离→定位→验证→报告」；case-engineer→「按四阶段：理解需求→提取测试点→编写用例→自检补全」；strategy→「按五阶段：项目特征→风险矩阵→分层→范围准入准出→资源附录」；performance→「按四阶段：需求理解→场景设计→瓶颈定位→转交判断」；state-machine→「按五阶段：状态型需求识别→状态机建模→完整性检查→10类场景穷举→MCP增强」；frontend→「按五步：读项目说明与已有索引→分层导航索引→单需求映射→运行核实（条件具备时）→交接产物」 |
-| 评审类意图歧义（用例评审 / 评审方案 / 覆盖度汇报 / 规模化评审） | 按交付物区分：要问题清单 → R2 评审；要对外材料 → 评审方案子模式；用例数 >100 或要排期 → 规模化评审子模式 | 交付物仍不明确时追问：要评审意见、评审会材料，还是分批抽样方案（🔴 CHECKPOINT） |
-| 混合意图协同失败（上游 skill 完成但下游 skill 不可用） | 输出上游 skill 的中间产物（防御性测试点清单 / 分层策略 / 瓶颈定位报告），提示用户手动转交下游 skill 或自行处理 | 标注「协同中断」，仅输出上游 skill 报告，中间产物按上下文 schema 格式作为附录 |
-| 子 skill 执行失败（路由后子 skill 内部错误） | 捕获子 skill 错误信息，回退到 bundle 层向用户报告失败原因 | 提示用户直接调用子 skill 重试，或降级为 bundle 层方向性指导模板（同上） |
-| 上下文传递丢失（路由后子 skill 未收到原始请求） | 在路由调用时按上下文 schema 显式传递（见下方 schema 定义） | 标注「上下文不完整」，要求子 skill 主动向用户确认缺失信息 |
-| "性能 Bug"路由歧义（既属 bug-analyzer 又属 performance） | 默认路由到 performance（资源/架构层优先排查），performance 内部判断是否转交 bug-analyzer | 若用户明确指明为代码逻辑缺陷（如死锁/N+1），直接路由到 bug-analyzer |
-| "测试计划"/"测试策略"一词双义（项目级 strategy vs 单功能 case-engineer） | 关键词限定：含"项目级/测试计划/分层/风险矩阵/准入准出"→ strategy；含"单功能/某功能/某模块"→ case-engineer | 追问用户：明确是项目级策略还是单功能用例策略（🔴 CHECKPOINT） |
-| 转交可能重复请求确认 | 展示转交依据，继续已授权的分析 | 仅缺关键信息、改变范围或未授权写操作时询问；用户要求逐阶段确认时遵循其要求 |
-| 多链同时命中（两条及以上混合意图链的触发信号并存，如"分析订单退款 bug 根因并补用例"同时命中链 1 与链 5） | 按 mixed-intent-chains.md「链冲突裁定」优先级执行最高优先链 | 优先级无法判定时，🔴 CHECKPOINT 列出候选链请用户选择；用户明确"你来决定"时按默认顺序（先根因/建模，后用例生成） |
-| strategy 与 case-engineer 协同失败（strategy 完成但 case-engineer 不可用） | 输出 strategy 的分层策略与优先级，提示用户手动转交 case-engineer 生成对应层用例 | 标注「协同中断」，仅输出测试策略报告，分层策略作为用例生成依据附录 |
-| test-data-generator 未安装、缺少依赖或数据规则未确认 | 保留上游用例、规则来源与数据需求，报告具体缺口并按目标 Skill 说明处理 | 不用少量手写样例替代批量执行；生成和校验未运行时标 not_run，受影响规则无法检查时保留 incomplete；数据校验通过不代表系统测试通过 |
+路由歧义、子 skill 缺失、协同中断、上下文丢失等情况的完整处置表、上下文传递 schema 与路由/安装反例，见 [knowledge/routing-fallbacks.md](knowledge/routing-fallbacks.md)（需要降级、冲突裁定或核对反例时按需加载）。
 
-**上下文传递 schema**（路由/转交时必须按此 JSON 结构传递）：
-```json
-{
-  "original_request": "用户原始请求全文",
-  "upstream_artifacts": "上游 skill 输出（如防御性测试点清单 / 分层策略 / 瓶颈定位报告）",
-  "completed_steps": ["已完成步骤摘要数组"],
-  "downstream_task": "下游 skill 需执行的任务描述"
-}
-```
+**入口必须守住的三条**：
 
-转交 test-data-generator 时，upstream_artifacts 需保留用例编号/文件位置、固定组合维度、字段与关联约束及其来源、数量、种子、输出位置和未决规则；仅传递已获得的资料。数据报告中的系统执行状态保持 not_run。
-
-## 反例与黑名单
-
-> **设计依据**：基于 SkillLens 论文（arXiv 2605.23899）实证——只写"应该做 X"没有"不要做 Y"会导致 LLM judge 准确率下降。
-
-### 路由反模式
-
-> 以下反模式聚焦"常见误用场景"。异常触发与恢复路径见上方"失败模式与 Fallback"表，此处不重复。
-
-| # | 反模式 | 为什么不要做 | 替代做法 |
-|---|--------|------------|---------|
-| 1 | 不判断意图直接调用某个子 skill | 跳过路由会导致用户请求被错误 skill 处理，违反 bundle 职责 | 必须按路由决策表判断意图，意图不明确时追问用户（🔴 CHECKPOINT） |
-| 2 | 在 bundle 层重复实现子 skill 的能力 | 破坏职责边界，导致内容冗余和维护成本翻倍 | bundle 只做路由，具体能力由子 skill 承载 |
-| 3 | 路由后不传递上下文 | 用户需重新描述需求，体验差且信息丢失 | 路由时显式传递：原始请求 + 已收集上下文 + 已完成步骤摘要 |
-| 4 | 混合意图不按"先上游后下游"顺序 | 跳过上游直接下游，下游缺乏上游输入，输出缺乏针对性 | strategy → case-engineer；performance → bug-analyzer（当瓶颈定位到代码缺陷时） |
-| 5 | 已授权协同仍默认逐段暂停 | 重复确认阻断完整交付 | 报告转交依据；既有授权覆盖的只读分析连续执行，仅缺关键信息、范围变化或未授权写操作时询问 |
-
-> 路由方向性反例（"性能 Bug 路由到 bug-analyzer""项目级策略路由到 case-engineer"等）已编码在失败模式表第 7/8 行，此处不重复。
-
-### 安装反模式
-
-| # | 反模式 | 为什么不要做 | 替代做法 |
-|---|--------|------------|---------|
-| 1 | 只装 bundle 不装子 skill | bundle 无法独立完成任何任务，所有请求都会失败 | 整体安装 testing plugin（含 bundle + 7 个子 skill） |
-| 2 | bug-analyzer 单独安装不告知降级 | 用户不知缺陷模式库引用失效，根因分析能力打折 | 安装时显式提示「缺陷模式库会降级，同时安装 test-case-engineer 获得完整能力」 |
+1. 意图不明确 → 追问，不默认路由；仅当用户明确授权"你来决定"时才可默认到 test-case-engineer
+2. 子 skill 不可用 → 标注「子 skill 不可用」，交付上游产物与方向性指导，不假装完成
+3. 转交 → 按上下文 schema 显式传递原始请求、上游产物、已完成步骤与下游任务
 
 ## 约束规则
 
