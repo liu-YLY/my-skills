@@ -1,6 +1,6 @@
 ---
 name: test-case-engineer
-version: 9.6.0
+version: 9.7.0
 description: >-
   Use when generating, reviewing, or designing test cases and single-feature
   test strategies.
@@ -96,7 +96,7 @@ keywords:
 | [knowledge/review-plan.md](knowledge/review-plan.md) | **评审会面向产品/UI/前端/后端或要求覆盖度汇报时必读**（评审类型与角色 + 需求追溯矩阵 + 覆盖度画像 + 测试思路 + 材料与议程 + 结论与闭环） |
 | [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **阶段 3/4 自检时对照**（反例黑名单） |
 | [knowledge/writing-examples.md](knowledge/writing-examples.md) | **阶段 3 写用例拿不准格式时查阅**（title/steps/expected_results 好坏写法对照示例；铁律条文本体在 writing-rules.md） |
-| [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（分层测试策略 / 通用格式 / ID 生成规则 / 字段说明 / 编写铁律 / 拆分合并策略 / 用例编排与排序 / 效率度量模板） |
+| [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（写作风格与信息密度 / 分层测试策略 / 通用格式 / ID 生成规则 / 字段说明 / 编写铁律 / 拆分合并策略 / 用例编排与排序 / 效率度量模板） |
 | [knowledge/products/](knowledge/products/) | **阶段 1 必须加载**（产品专项业务知识，若存在对应产品知识文件） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
 
