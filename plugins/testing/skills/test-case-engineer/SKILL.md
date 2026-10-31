@@ -112,7 +112,7 @@ keywords:
 | 快速生成 | 入口 + core.md 最小测试点框架 | writing-rules.md（业务结果、格式与关键检查点）、test-standards.md（优先级）、readability.md（句长与结构拿不准时）；领域资料仅按实际风险补读 |
 | 回归验证清单 | 入口 + core.md 模式切换章节 | 无（直接基于变更范围输出回归验证清单） |
 | 探索式 | 入口 + core.md 探索章程模板 | 领域检查表（bug-patterns.md 对应章节） |
-| 评审 | 入口 + review-mode.md + test-standards.md（业务风险原则） | large-scale-review.md（用例数 >100 或要求评审方案时）、review-plan.md（面向需求相关方或要求覆盖度汇报时）、prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅授权包含修订时读 core.md 生成流程） |
+| 评审 | 入口 + review-mode.md + test-standards.md（业务风险原则） | readability.md（R2 字段规范的可读性子项）、large-scale-review.md（用例数 >100 或要求评审方案时）、review-plan.md（面向需求相关方或要求覆盖度汇报时）、prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅授权包含修订时读 core.md 生成流程） |
 
 > **评审模式隔离原则**：评审模式首轮只读 review-mode.md，不读 core.md 四阶段生成流程。仅当授权包含修订闭环（V2 步骤）后，才读取 core.md 中的生成模式流程。
 
