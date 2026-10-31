@@ -149,12 +149,27 @@ testing-bundle:
   → 未确认的关键规则不补猜；受影响部分保留 incomplete，不声称系统测试通过
 ```
 
+### 示例 11：前端准备 + 用例编写（链 9 协同）
+
+```
+用户：先读这个前端仓库，把「列表支持按状态筛选」需求的入口、账号和数据条件准备好，再写测试用例
+
+testing-bundle:
+  → 路由到 frontend-test-preparation，增量更新导航索引并映射本次需求
+  → 交付入口、角色/开关条件、数据方案、步骤与检查点，标注代码推断/运行已验证/待确认
+  → 缺少环境和账号时标注「运行未验证」，不阻断用例编写
+  → 转交 test-case-engineer 基于上述上下文生成用例
+  → 输出索引、需求准备记录与完整用例
+```
+
+只含「测这个页面」等普通用例信号时不进入链 9，直接路由 test-case-engineer。
+
 ## 快速上手
 
-1. 确认已安装 7 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer / test-data-generator）
+1. 确认已安装 8 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer / frontend-test-preparation / test-data-generator）
 2. 混合、模糊或明确要求路由的请求触发 testing-bundle；单一意图直接使用对应 Skill
-3. bundle 按七路路由决策表判断意图并路由到对应子 skill
-4. 混合意图按对应链路执行（8 条链），转交点披露依据并按既有授权继续
+3. bundle 按意图三要素与八路路由决策表判断意图并路由到对应子 skill
+4. 混合意图按对应链路执行（9 条链），转交点披露依据并按既有授权继续
 5. 子 skill 执行具体任务并输出结果
 6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（v0.8.5 协议层 stdio + HTTP 已端到端联调验证，安装后增强模式可用；详见 [state-machine-test-engineer/integrations/quickstart.md](../../state-machine-test-engineer/integrations/quickstart.md)）
 7. test-case-engineer 评审模式可选安装配套 review-checker MCP Server 进入增强模式（详见 [review-checker README](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/mcp-servers/review-checker/README.md)）

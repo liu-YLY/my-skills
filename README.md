@@ -22,7 +22,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 
 | Skill | 版本 | 功能 | MCP Server |
 |---|---|---|---|
-| **testing-bundle** | v3.4.0 | bundle 入口，7 个专业子 skill 路由 + 8 条混合意图链 | - |
+| **testing-bundle** | v3.5.0 | bundle 入口，8 个专业子 skill 路由 + 9 条混合意图链 | - |
 | test-strategy-engineer | v1.3.0 | 项目级测试策略（风险矩阵/分层/准入准出） | - |
 | test-case-engineer | v9.7.0 | 功能用例生成 + 10 维度评审 + 规模化/干系人评审方案 | review-checker v0.3.1（可选） |
 | performance-test-engineer | v1.2.3 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
@@ -30,11 +30,11 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | state-machine-test-engineer | v1.7.5 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.8.5（可选） |
 | change-impact-analyzer | v1.5.1 | 从实际业务解释改动影响，生成测试内容与方式，需求和用例可选 | - |
 | test-data-generator | v1.1.0 | 可重复离线造数、边界配方、关联与场景验收、JSON/JSONL/CSV 独立校验 | - |
-| [frontend-test-preparation](plugins/testing/skills/frontend-test-preparation/SKILL.md) | 未单独标记 | 前端导航索引、增量维护与单需求测试准备，直接调用 | - |
+| [frontend-test-preparation](plugins/testing/skills/frontend-test-preparation/SKILL.md) | 未单独标记 | 前端导航索引、增量维护与单需求测试准备（链 9 协同，亦可单独调用） | - |
 
-> 上表中 **testing-bundle** 为 bundle 入口，按用户意图把请求路由到 7 个专业子 skill；**frontend-test-preparation** 不参与路由，直接以 `$frontend-test-preparation` 调用，用于需求评审之后、用例编写或执行之前的前端测试准备。
+> 上表中 **testing-bundle** 为 bundle 入口，按用户意图把请求路由到 8 个专业子 skill；**frontend-test-preparation** 仅在明确要求读前端代码、定位入口或维护页面索引时接入，普通「测试前端功能」仍由 test-case-engineer 处理。
 
-**8 条混合意图链**：
+**9 条混合意图链**：
 - 链 1：Bug 分析 + 补充用例 → bug-analyzer → case-engineer
 - 链 2：测试策略 + 分层用例 → strategy → case-engineer
 - 链 3：性能测试 + 瓶颈定位 → performance（内部完成）
@@ -43,6 +43,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 - 链 6：评审→覆盖缺口验证 → case-engineer 评审模式 → change-impact-analyzer
 - 链 7：评审→风险用例根因反推 → case-engineer 评审模式 → bug-analyzer
 - 链 8：编写/修订用例→离线数据准备 → case-engineer → test-data-generator
+- 链 9：前端测试准备→用例编写 → frontend-test-preparation → case-engineer
 
 已有用例或组合矩阵只需准备数据时，直接使用 test-data-generator，保留用例编号与固定维度。数据校验通过只表示已声明约束通过，系统执行仍为 `not_run`。
 
@@ -70,7 +71,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | test-case-engineer | 151 | 15 |
 | test-data-generator | 54 | 4 |
 | test-strategy-engineer | 141 | 5 |
-| testing-bundle | 173 | 2 |
+| testing-bundle | 200 | 2 |
 | wechat-formatter | 169 | 29 |
 
 2 个插件共包含 10 个 Skills，测试插件包含 9 个 Skills 和 2 个可选 MCP 服务。
@@ -102,10 +103,10 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 npx skills add liu-YLY/my-skills --list
 
 # 步骤 2：按需安装
-# 2a. 安装全部 10 个 skill（testing-bundle + 7 个专业子 skill + 前端测试准备 + wechat-formatter）
+# 2a. 安装全部 10 个 skill（testing-bundle + 8 个专业子 skill + wechat-formatter）
 npx skills add liu-YLY/my-skills --skill '*' -g -y
 
-# 2b. 仅安装测试插件全部 9 个 skill（含独立调用的前端测试准备）
+# 2b. 仅安装测试插件全部 9 个 skill（bundle + 8 个专业子 skill）
 npx skills add liu-YLY/my-skills \
   --skill 'testing-bundle' --skill 'test-strategy-engineer' \
   --skill 'test-case-engineer' --skill 'performance-test-engineer' \
@@ -138,7 +139,7 @@ Claude Code 用户可通过原生 `/plugin` 命令按 plugin 粒度一键安装�
 # 步骤 1：注册 marketplace（只需执行一次）
 /plugin marketplace add liu-YLY/my-skills
 
-# 步骤 2：安装测试插件（含 testing-bundle + 7 个子 skill + 前端测试准备）
+# 步骤 2：安装测试插件（含 testing-bundle + 8 个子 skill）
 /plugin install testing-bundle@my-skill-marketplace
 
 # 步骤 3：安装微信公众号排版 skill（可选）
