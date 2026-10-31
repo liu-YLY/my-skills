@@ -23,7 +23,7 @@
 
 test-data-generator 可独立调用，也可经 bundle 路由或链 8 协同；使用 Python 3.11 和其 scripts/requirements.txt，Faker 使用可选 requirements-faker.txt，无需 MCP。数据校验通过只表示已声明约束通过，系统执行保持 not_run。使用方式见 [运行指南](skills/test-data-generator/integrations/quickstart.md)（v1.1.0）。
 
-[frontend-test-preparation](skills/frontend-test-preparation/SKILL.md) 从本机定制版原样迁入，保留入口与交接模板两个文件，未单独标记版本。用于读取前端代码、增量维护分层索引，再按单需求准备入口、角色、数据与检查点；运行核实遵循当次授权。作为 bundle 第 8 个子 skill 接入（链 9 协同），普通「测试前端功能」仍走用例生成。
+[frontend-test-preparation](skills/frontend-test-preparation/SKILL.md) v1.0.0：从本机定制版迁入，保留入口与交接模板两个文件。用于读取前端代码、增量维护分层索引，再按单需求准备入口、角色、数据与检查点；运行核实遵循当次授权。作为 bundle 第 8 个子 skill 接入（链 9 协同），普通「测试前端功能」仍走用例生成。
 
 **可选配套**：[state-machine-testing MCP Server](mcp-servers/state-machine-testing/) v0.8.5 — 为 state-machine-test-engineer 提供 5 个工具（build / validate / generate / export / coverage，协议层 stdio + HTTP 已端到端联调验证），未安装时降级为纯 LLM 推理。
 
@@ -76,7 +76,7 @@ testing/
     ├── performance-test-engineer/    # 性能测试
     ├── bug-analyzer/                 # Bug 根因（bug-patterns-index 指向 test-case-engineer）
     ├── state-machine-test-engineer/  # 状态机测试
-    ├── frontend-test-preparation/    # 前端测试准备（独立调用，含 references/handoff-template.md）
+    ├── frontend-test-preparation/    # 前端测试准备（链 9 协同，含 references/handoff-template.md）
     ├── change-impact-analyzer/       # 协同 skill（链 6，随 plugin 整体安装）
     └── test-data-generator/          # 离线数据生成/校验（链 8，含 Python 脚本与 Schema）
 ```

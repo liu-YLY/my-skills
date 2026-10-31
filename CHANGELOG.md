@@ -17,6 +17,7 @@
 
 ### Added
 - 新增实施计划文档：`docs/superpowers/plans/2026-07-21-skill-consistency-and-infra.md`
+- 修复测试 skill 基线：state-machine-test-engineer 入口移除硬编码版本 v1.2.1（与 frontmatter 1.7.5 漂移）；frontend-test-preparation 补齐 version 1.0.0、CHANGELOG 与 10 条行为 + 4 条触发评估用例，纳入版本同步与 CI 校验；同步根 README、testing README、技能总览与项目结构的版本引用
 - testing-bundle 升级到 v3.5.0：接入 frontend-test-preparation 为第 8 个专业子 skill，新增八路单意图路由与链 9（前端测试准备 → 用例编写）；新增「意图解析」三要素判定，禁止只凭单个关键词路由；单意图路由表补充评审组织信号（评审方案/覆盖度汇报/规模化评审），失败模式新增评审类歧义处置；同步 README、技能总览、安装说明、插件清单、使用示例与评估用例，混合链由 8 条增至 9 条
 - test-case-engineer 升级到 v9.7.0：新增「写作风格与信息密度」——用例优先面向人类可读，标题需一眼定位测试点，步骤只保留改变状态或提供输入的操作并删除复述前置条件/无信息量导航/解释性文字，预期结果统一为「位置 + 对象 + 状态/值」并禁止评价词、愿望式与无关事实；writing-examples 新增语气与信息密度对照及啰嗦版/精简版示例，anti-patterns 新增 6 条反模式，阶段 3/4 自检与 Prompt 模板同步更新
 - test-case-engineer 升级到 v9.6.0：新增评审方案子模式 `knowledge/review-plan.md`——面向产品/UI/前端/后端组织评审材料，包含评审类型与角色分工（参考 ISO/IEC 20246 / IEEE 1028）、需求追溯矩阵、覆盖度画像（需求覆盖率/场景覆盖率/高风险覆盖率）、业务语言的测试思路说明、会前材料与 60 分钟议程、结论三态与行动项闭环，并附按角色检查清单与度量口径误用表
