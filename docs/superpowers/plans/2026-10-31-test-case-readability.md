@@ -195,7 +195,7 @@
 | 2026-11-01 | E3 | `f1973ed` | README 补 readability.md：能力列表、文件结构、知识库路由三处 | 5 个校验脚本 PASS |
 | 2026-11-01 | E4 | `4727888` | 判据数量 18 → 20（7+6+5+2），回填 E3 提交号 | md-links PASS |
 | 2026-11-01 | E5 | `1bf6f99` | 评测 #32 新增 3 项期望：句长 ≤40 与单决策点、术语动作一致、检查点就近 | JSON + skill-evals + md-links PASS |
-| 2026-11-01 | E6 | 本提交 | `.gitignore` 增加 `.workbuddy/`，清理 git status 噪音 | 待校验 |
+| 2026-11-01 | E6 | `1edfbd4` | `.gitignore` 增加 `.workbuddy/`，清理 git status 噪音 | 5 个校验脚本 PASS |
 
 ---
 
@@ -243,4 +243,4 @@ git status --short
 | E3 | P2 | skill README 文件结构、知识库路由、能力列表缺 `readability.md` | 已完成 `f1973ed` |
 | E4 | P2 | 计划执行记录写「判据表 18 条」，实际 20 条（7+6+5+2） | 已完成（本提交） |
 | E5 | P2 | `test-prompts.json` #32 未覆盖句长、术语、结构规则 | 已完成（本提交） |
-| E6 | P2 | `.workbuddy/` 未加入 `.gitignore`（可选） | 已完成（本提交） |
+| E6 | P2 | `.workbuddy/` 未加入 `.gitignore`（可选） | 已完成 `1edfbd4` |
