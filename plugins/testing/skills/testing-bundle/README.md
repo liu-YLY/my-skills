@@ -88,6 +88,7 @@ testing-bundle/
 ├── CHANGELOG.md                   # 版本变更记录
 ├── knowledge/
 │   ├── mixed-intent-chains.md     # 9 条混合意图链详细步骤流
+│   ├── routing-fallbacks.md       # 失败模式、上下文 schema 与路由/安装反例
 │   └── usage-examples.md          # 11 个典型路由演示对话与首次上手引导
 └── test-prompts.json              # 路由验证 prompt
 ```
