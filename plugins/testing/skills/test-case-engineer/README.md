@@ -9,7 +9,7 @@ Test Case Engineer 是一个 AI 驱动的测试技能，扮演资深测试工程
 - **需求分析**：深入理解需求文档，提取业务规则和测试点
 - **测试点提取**：系统性扫描 7 个维度，确保测试覆盖无遗漏
 - **用例生成**：AI 生成 70%-90% 的基础用例，人工审核补充
-- **用例评审**：10 维度评审已有用例的质量与覆盖度
+- **用例评审**：10 维度评审已有用例的质量与覆盖度，用例数量过大时输出规模化评审方案
 - **产品知识库**：按产品维度沉淀业务知识，增强测试针对性
 
 > Bug 根因分析能力已迁移至独立的 bug-analyzer skill。
@@ -90,7 +90,7 @@ test-case-engineer/
 ├── SKILL.md                    # 入口索引（触发条件 + 知识库路由 + 模式读取矩阵）
 ├── test-case-engineer-core.md  # 核心流程（四阶段 + 模式切换 + CHECKPOINT）
 ├── README.md                   # 本说明文档
-├── test-prompts.json           # 评估用例（25 条行为测试 + 10 条触发测试）
+├── test-prompts.json           # 评估用例（30 条行为测试 + 11 条触发测试）
 │
 ├── knowledge/                  # 知识库
 │   ├── writing-rules.md        # 用例编写规则（格式/字段/铁律/编排排序/拆分合并/效率度量）
@@ -101,6 +101,7 @@ test-case-engineer/
 │   ├── prompt-strategy.md      # AI 生成 Prompt 策略
 │   ├── anti-patterns.md        # 反模式黑名单（阶段 3/4 自检）
 │   ├── review-mode.md          # 评审模式（10 维度评审）
+│   ├── large-scale-review.md   # 规模化评审方案（>100 条时的分批/抽样/聚合）
 │   ├── writing-examples.md     # 用例编写示例（铁律教学示例表）
 │   └── products/               # 产品专项知识
 │       ├── README.md           # 产品知识索引
@@ -122,6 +123,7 @@ test-case-engineer/
 | test-case-engineer-core.md | 默认/快速/探索式/回归验证清单模式必读 |
 | knowledge/writing-rules.md | 阶段 3 编写用例时必读 |
 | knowledge/review-mode.md | 评审模式必读 |
+| knowledge/large-scale-review.md | 用例数 >100 或要求评审方案/排期时查阅 |
 | knowledge/anti-patterns.md | 阶段 3/4 自检时对照 |
 
 ## 常见问题
@@ -143,6 +145,7 @@ A: 使用回归验证清单模式，直接基于变更范围输出回归验证�
 
 ## 版本历史
 
+- v9.5.0: 新增规模化评审子模式——用例数 >100 或用户要求评审方案/排期时加载 knowledge/large-scale-review.md：规模画像 → 策略选择（全量分批/分层抽样/增量/混合）→ 强制全量清单（P0 与主流程不可抽样）→ 确定性分层抽样（模块 × 优先级、每层 20%、固定 sample_seed）→ 评审方案模板（批次计划/抽样计划/维度分工/日程/收敛指标）→ 分批执行与聚合；明确未评审清单不得计入通过率
 - v9.4.1: 区分AI规则核对与真人审核来源
 - v9.4.0: 按四层基线报告覆盖并分离设计与真实执行
 - v9.3.0: 消费稳定产物引用并保留来源与业务结果的独立状态
