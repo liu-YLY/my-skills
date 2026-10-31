@@ -17,6 +17,8 @@
 
 ### Added
 - 新增实施计划文档：`docs/superpowers/plans/2026-07-21-skill-consistency-and-infra.md`
+- 测试 skill 基线补强：state-machine 评估用例增至 15 条（补非法跳转建模缺口、幂等、消息乱序、超时重试），test-strategy 增至 15 条（补准入阈值口径与资源估算缺基线）；新增 `docs/skill-evaluation/reports/2026-10-31-baseline.md` 记录版本、体量与用例基线，并明确未执行模型评测
+- 测试 skill 文档一致性：performance / strategy 的 SKILL 末尾版本历史改为指向 README，消除与 frontmatter 的双源与陈旧列表；test-data-generator 补 CHANGELOG；bundle 入口新增「7 维度 / 10 类场景 / 10 维度」计数术语消歧
 - testing-bundle 升级到 v3.5.1：失败模式表、上下文传递 schema 与路由/安装反例下沉到 `knowledge/routing-fallbacks.md`，入口由 200 行降至 155 行，只保留三条降级底线与引用；路由行为不变
 - 修复测试 skill 基线：state-machine-test-engineer 入口移除硬编码版本 v1.2.1（与 frontmatter 1.7.5 漂移）；frontend-test-preparation 补齐 version 1.0.0、CHANGELOG 与 10 条行为 + 4 条触发评估用例，纳入版本同步与 CI 校验；同步根 README、testing README、技能总览与项目结构的版本引用
 - testing-bundle 升级到 v3.5.0：接入 frontend-test-preparation 为第 8 个专业子 skill，新增八路单意图路由与链 9（前端测试准备 → 用例编写）；新增「意图解析」三要素判定，禁止只凭单个关键词路由；单意图路由表补充评审组织信号（评审方案/覆盖度汇报/规模化评审），失败模式新增评审类歧义处置；同步 README、技能总览、安装说明、插件清单、使用示例与评估用例，混合链由 8 条增至 9 条

@@ -136,6 +136,4 @@ keywords:
 
 ---
 
-**版本历史**：
-- v1.0.1: 测试集补充降级与对抗用例；同步版本检查覆盖
-- v1.0.0: 初始版本，作为 testing-bundle 的项目级测试策略方向子 skill
+版本历史以 [README.md](README.md) 的「版本历史」章节为准，版本号以 SKILL.md frontmatter 为准。
