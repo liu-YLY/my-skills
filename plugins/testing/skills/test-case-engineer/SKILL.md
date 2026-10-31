@@ -1,6 +1,6 @@
 ---
 name: test-case-engineer
-version: 9.5.0
+version: 9.6.0
 description: >-
   Use when generating, reviewing, or designing test cases and single-feature
   test strategies.
@@ -48,6 +48,7 @@ keywords:
 - 用户要求快速 → 必须使用快速模式（压缩阶段 1/4，但必须输出测试点清单）
 - 用户输入为已有用例 或 触发词「评审/review/检查质量」→ 必须使用评审模式（不走四阶段生成流程）
 - 评审模式下用例数 > 100 条，或用户要求评审方案/排期 → 叠加规模化评审子模式（见 [knowledge/large-scale-review.md](knowledge/large-scale-review.md)）
+- 评审会面向产品/UI/前端/后端，或用户要求「评审方案/覆盖度汇报/向需求方说明」→ 叠加评审方案子模式（见 [knowledge/review-plan.md](knowledge/review-plan.md)）
 - **简单功能自动路由**：被测功能为单字段纯校验类（如昵称/手机号/邮箱修改、单个开关）且无跨模块联动/状态机/资金属性 → 默认使用快速模式；用户明确要求完整流程时才走默认模式
 
 **复杂度判定依据**（满足任一即为复杂功能，走默认模式）：
@@ -92,6 +93,7 @@ keywords:
 | [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板）；评审模式 R2 第 10 维度 SemanticFacts 抽取提示词 |
 | [knowledge/review-mode.md](knowledge/review-mode.md) | **评审模式触发时必读**（10 维度评审工作流 + 评审度量报告 + 评审修订闭环 + 增量评审子模式 + 多格式输入 + 评审报告文件化 + 语义一致性维度） |
 | [knowledge/large-scale-review.md](knowledge/large-scale-review.md) | **用例数 > 100 或用户要求评审方案/排期时必读**（规模画像 + 策略选择 + 强制全量清单 + 分层抽样 + 评审方案模板 + 分批执行与聚合） |
+| [knowledge/review-plan.md](knowledge/review-plan.md) | **评审会面向产品/UI/前端/后端或要求覆盖度汇报时必读**（评审类型与角色 + 需求追溯矩阵 + 覆盖度画像 + 测试思路 + 材料与议程 + 结论与闭环） |
 | [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **阶段 3/4 自检时对照**（反例黑名单） |
 | [knowledge/writing-examples.md](knowledge/writing-examples.md) | **阶段 3 写用例拿不准格式时查阅**（title/steps/expected_results 好坏写法对照示例；铁律条文本体在 writing-rules.md） |
 | [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（分层测试策略 / 通用格式 / ID 生成规则 / 字段说明 / 编写铁律 / 拆分合并策略 / 用例编排与排序 / 效率度量模板） |
@@ -106,7 +108,7 @@ keywords:
 | 快速生成 | 入口 + core.md 最小测试点框架 | writing-rules.md（业务结果、格式与关键检查点）、test-standards.md（优先级）；领域资料仅按实际风险补读 |
 | 回归验证清单 | 入口 + core.md 模式切换章节 | 无（直接基于变更范围输出回归验证清单） |
 | 探索式 | 入口 + core.md 探索章程模板 | 领域检查表（bug-patterns.md 对应章节） |
-| 评审 | 入口 + review-mode.md + test-standards.md（业务风险原则） | large-scale-review.md（用例数 >100 或要求评审方案时）、prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅授权包含修订时读 core.md 生成流程） |
+| 评审 | 入口 + review-mode.md + test-standards.md（业务风险原则） | large-scale-review.md（用例数 >100 或要求评审方案时）、review-plan.md（面向需求相关方或要求覆盖度汇报时）、prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅授权包含修订时读 core.md 生成流程） |
 
 > **评审模式隔离原则**：评审模式首轮只读 review-mode.md，不读 core.md 四阶段生成流程。仅当授权包含修订闭环（V2 步骤）后，才读取 core.md 中的生成模式流程。
 
