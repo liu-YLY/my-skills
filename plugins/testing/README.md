@@ -14,10 +14,10 @@
 |---|---|---|---|
 | [testing-bundle](skills/testing-bundle/) | v3.5.1 | 元 skill / 路由入口 | 8 个专业子 skill 路由 + 9 条混合意图链 |
 | [test-strategy-engineer](skills/test-strategy-engineer/) | v1.3.0 | 子 skill | 项目级测试策略：风险矩阵 / 分层 / 范围优先级 / 准入准出 |
-| [test-case-engineer](skills/test-case-engineer/) | v9.7.0 | 子 skill | 功能用例生成：需求分析 / 测试点提取 / 用例编写 / 自检补全 |
+| [test-case-engineer](skills/test-case-engineer/) | v9.7.1 | 子 skill | 功能用例生成：需求分析 / 测试点提取 / 用例编写 / 自检补全 |
 | [performance-test-engineer](skills/performance-test-engineer/) | v1.2.3 | 子 skill | 性能测试方案 + 瓶颈定位（资源/架构层）|
 | [bug-analyzer](skills/bug-analyzer/) | v1.2.3 | 子 skill | Bug 根因分析（代码逻辑层）：五步定位法 / 鱼骨图 / 5 Whys |
-| [state-machine-test-engineer](skills/state-machine-test-engineer/) | v1.7.5 | 子 skill | 状态机驱动的状态型需求测试：10 类场景穷举 |
+| [state-machine-test-engineer](skills/state-machine-test-engineer/) | v1.7.6 | 子 skill | 状态机驱动的状态型需求测试：10 类场景穷举 |
 | [change-impact-analyzer](skills/change-impact-analyzer/) | v1.5.1 | 协同 skill | 实际业务 → 改动影响与测试内容/方式，需求和用例可选（链 6 协同，亦可独立使用） |
 | [test-data-generator](skills/test-data-generator/) | v1.1.0 | 子 skill | 项目规则配置 → 可重复数据、边界与异常配方 → 场景验收与独立文件校验 |
 
