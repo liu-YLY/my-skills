@@ -9,6 +9,7 @@ Test Case Engineer 是一个 AI 驱动的测试技能，扮演资深测试工程
 - **需求分析**：深入理解需求文档，提取业务规则和测试点
 - **测试点提取**：系统性扫描 7 个维度，确保测试覆盖无遗漏
 - **用例生成**：AI 生成 70%-90% 的基础用例，人工审核补充
+- **可读性规范**：句式、结构与术语约束，保证执行人一遍读懂、结果可判定
 - **用例评审**：10 维度评审已有用例的质量与覆盖度，用例数量过大时输出规模化评审方案
 - **产品知识库**：按产品维度沉淀业务知识，增强测试针对性
 
@@ -94,6 +95,7 @@ test-case-engineer/
 │
 ├── knowledge/                  # 知识库
 │   ├── writing-rules.md        # 用例编写规则（写作风格/格式/字段/铁律/拆分合并）
+│   ├── readability.md          # 人类易读性细则（句式/结构/术语/认知负荷）
 │   ├── case-arrangement.md     # 用例编排与排序（用户旅程/模块分组）
 │   ├── failure-semantics.md    # 失败语义、安全属性与进展属性
 │   ├── efficiency-metrics.md   # 效率度量报告模板与工时基准
@@ -126,6 +128,7 @@ test-case-engineer/
 |------|---------|
 | test-case-engineer-core.md | 默认/快速/探索式/回归验证清单模式必读 |
 | knowledge/writing-rules.md | 阶段 3 编写用例时必读 |
+| knowledge/readability.md | 阶段 3 拿不准句式、结构或术语时查阅 |
 | knowledge/review-mode.md | 评审模式必读 |
 | knowledge/large-scale-review.md | 用例数 >100 或要求评审方案/排期时查阅 |
 | knowledge/review-plan.md | 面向产品/UI/前端/后端的评审会或覆盖度汇报时查阅 |
