@@ -113,7 +113,4 @@ keywords:
 
 ---
 
-**版本历史**：
-- v1.1.1: 修正固定排查顺序和数据缺口边界；阶段细则下沉到 knowledge 并保留证据、授权和转交门禁
-- v1.1.0: 新增默认值兜底与意图切换（plan/diagnose/plan-and-diagnose）；阈值以 metrics-framework.md 为权威源
-- v1.0.0: 初始版本，作为 testing-bundle 的性能测试方向子 skill
+版本历史以 [README.md](README.md) 的「版本历史」章节为准，版本号以 SKILL.md frontmatter 为准。
