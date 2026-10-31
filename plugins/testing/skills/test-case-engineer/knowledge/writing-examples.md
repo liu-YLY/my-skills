@@ -56,11 +56,12 @@
 - 已打开「Add webhook」弹窗
 
 **测试步骤**:
-1. 填写 Version 为 v4，Trigger 选择「订单创建」，Endpoint URL 填入 `https://example.com/hooks/orders`
-2. 清空「Endpoint URL」输入框
+1. 「Version」下拉框选择 v4，Trigger 选择「订单创建」
+2. 在「Endpoint URL」输入框输入 `https://example.com/hooks/orders`
+3. 清空「Endpoint URL」输入框
 
 **关键检查点**:
-- 步骤 1 后：「Add endpoint」按钮由置灰变为可点击
+- 步骤 2 后：「Add endpoint」按钮由置灰变为可点击
 
 **业务结果**:
 - 「Endpoint URL」输入框下方显示红色提示「Wrong URL format!」
@@ -117,7 +118,7 @@
 | 确认当前已登录系统 | （删除） | 复述前置条件 |
 | 打开浏览器，访问 Webhook 配置页面 | （删除） | 无信息量导航，已在前置条件中 |
 | 找到「Add webhook」按钮并点击 | 点击「Add webhook」 | 「找到」不是业务动作 |
-| 填写相关信息 | 填写 Version 为 v4，Trigger 选择「订单创建」 | 空泛动作，缺少字段与值 |
+| 填写相关信息 | 「Version」下拉框选择 v4，Trigger 选择「订单创建」 | 空泛动作，缺少字段与值 |
 | 点击保存并确认结果 | 点击「保存」 | 验证动作混入操作 |
 | 由于金额不足，因此点击提交 | 点击「提交」 | 原因属于业务背景 |
 
@@ -149,7 +150,7 @@
 1. 确认当前已登录系统
 2. 打开浏览器并访问 Webhook 配置页面
 3. 找到「Add webhook」按钮并点击
-4. 填写 Version 和至少 1 个 Trigger
+4. 在「Version」下拉框中选择 v4，并选择至少 1 个 Trigger
 5. 清空「Endpoint URL」输入框
 6. 查看页面上的提示信息
 7. 确认「Add endpoint」按钮是否可用
@@ -173,7 +174,7 @@
 - 已打开「Add webhook」弹窗
 
 **测试步骤**:
-1. 填写 Version 为 v4，Trigger 选择「订单创建」
+1. 「Version」下拉框选择 v4，Trigger 选择「订单创建」
 2. 清空「Endpoint URL」输入框
 
 **业务结果**:
