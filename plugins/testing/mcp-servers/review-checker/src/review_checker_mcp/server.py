@@ -177,7 +177,7 @@ def main() -> int:
     """命令行入口。"""
     parser = argparse.ArgumentParser(
         prog="review-checker-mcp",
-        description="Review Checker MCP Server v0.3.1",
+        description="Review Checker MCP Server v0.4.0",
     )
     parser.add_argument(
         "--transport",
@@ -193,7 +193,7 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.help_tools:
-        print("Review Checker MCP Server v0.3.1 - 3 工具")
+        print("Review Checker MCP Server v0.4.0 - 3 工具")
         print()
         print("1. review_test_cases(case_set)")
         print("   - 对用例集执行 9 维度评审，返回全部 Issue")

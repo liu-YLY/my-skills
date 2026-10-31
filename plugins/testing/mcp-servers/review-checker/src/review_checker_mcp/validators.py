@@ -48,6 +48,17 @@ UI_ABSOLUTE_PATTERN = re.compile(
 # 可自动化维度：模糊断言（P2）
 VAGUE_ASSERT_PATTERN = re.compile(r"(页面显示正确|布局正常|界面正常|显示正确|展示正确)")
 
+# 可读性（字段规范子项）：阈值与词表对齐 skill 的 knowledge/readability.md
+READABILITY_CLAUSE_LIMIT = 40
+READABILITY_TITLE_PREFIX = re.compile(r"^\s*(?:验证|测试)")
+CLAUSE_SPLIT_PATTERN = re.compile(r"[，,；;。]")
+INLINE_CODE_PATTERN = re.compile(r"`[^`]*`")
+VERB_VARIANT_PAIRS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("点击", ("点选", "单击")),
+    ("输入", ("录入", "键入")),
+    ("选择", ("选中",)),
+)
+
 def check_coverage(case_set: TestCaseSet) -> list[Issue]:
     """仅校验需求明确要求的适用场景，不从标题猜测覆盖率。"""
     if case_set.required_scenarios is None:
@@ -148,6 +159,65 @@ def check_field_completeness(case: TestCase) -> list[Issue]:
                     suggestion="精简标题或在 notes 记录保留原因（如「场景可区分」「环境标识」）",
                 )
             )
+    return issues
+
+
+def _readability_texts(case: TestCase) -> list[tuple[str, str]]:
+    """可读性检查覆盖的文本：步骤与全部预期结果。"""
+    items = [(f"steps[{index}]", step) for index, step in enumerate(case.steps, 1)]
+    items.extend(("expected_results", result) for result in _expectations(case))
+    return items
+
+
+def _first_long_clause(text: str) -> str | None:
+    """返回首个超过阈值的分句（忽略行内代码），没有则返回 None。"""
+    cleaned = INLINE_CODE_PATTERN.sub("", text)
+    for clause in CLAUSE_SPLIT_PATTERN.split(cleaned):
+        clause = clause.strip()
+        if len(clause) > READABILITY_CLAUSE_LIMIT:
+            return clause
+    return None
+
+
+def check_readability(case: TestCase) -> list[Issue]:
+    """字段规范的可读性子项：长句、动词混用、标题前缀。
+
+    全部按 P2 候选输出，需人工确认；不新增维度，不影响 10 维度统计口径。
+    """
+    issues: list[Issue] = []
+
+    if READABILITY_TITLE_PREFIX.match(case.title):
+        issues.append(Issue(
+            case_id=case.id, dimension="字段规范", severity=Severity.P2,
+            confirmation="candidate",
+            rule="可读性：标题以「验证」「测试」开头 → P2",
+            evidence=f"title「{case.title}」缺少被测对象与条件",
+            suggestion="改为「对象 - 条件 - 预期行为」，见 readability.md 标题规则",
+        ))
+
+    for label, text in _readability_texts(case):
+        clause = _first_long_clause(text)
+        if clause is not None:
+            issues.append(Issue(
+                case_id=case.id, dimension="字段规范", severity=Severity.P2,
+                confirmation="candidate",
+                rule=f"可读性：单句构件 > {READABILITY_CLAUSE_LIMIT} 字 → P2",
+                evidence=f"{label} 含 {len(clause)} 字构件：{clause[:20]}…",
+                suggestion="拆成两句或删修饰，保持信息不变",
+            ))
+
+    all_text = " ".join([case.title, *case.steps, *case.preconditions, *_expectations(case)])
+    for preferred, variants in VERB_VARIANT_PAIRS:
+        hit = next((variant for variant in variants if variant in all_text), None)
+        if preferred in all_text and hit is not None:
+            issues.append(Issue(
+                case_id=case.id, dimension="字段规范", severity=Severity.P2,
+                confirmation="candidate",
+                rule="可读性：同一动作混用多种说法 → P2",
+                evidence=f"同时出现「{preferred}」与「{hit}」",
+                suggestion=f"统一使用「{preferred}」，见 readability.md 动词首选表",
+            ))
+
     return issues
 
 
@@ -511,6 +581,7 @@ def validate_all(case_set: TestCaseSet) -> list[Issue]:
     # 单用例级维度
     for case in case_set.cases:
         issues.extend(check_field_completeness(case))
+        issues.extend(check_readability(case))
         issues.extend(check_executability(case))
         issues.extend(check_traceability(case, case_set.test_point_ids))
         issues.extend(check_maintainability(case))

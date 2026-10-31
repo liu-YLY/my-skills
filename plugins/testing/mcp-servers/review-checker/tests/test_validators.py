@@ -914,3 +914,53 @@ class TestCheckSemanticConflicts:
         ]
         issues = check_semantic_conflicts(facts)
         assert issues == []
+
+
+class TestReadability:
+    """字段规范的可读性子项：长句 / 动词混用 / 标题前缀。"""
+
+    def test_long_clause_reported(self):
+        from review_checker_mcp.validators import check_readability
+
+        case = _make_case(
+            steps=["在「Endpoint URL」输入框中输入一个用于接收订单创建事件通知并且可以被外部系统访问的测试地址"]
+        )
+        issues = check_readability(case)
+        assert any("单句构件" in issue.rule for issue in issues)
+
+    def test_inline_code_does_not_trigger_long_clause(self):
+        from review_checker_mcp.validators import check_readability
+
+        long_url = "https://example.com/" + "a" * 60
+        case = _make_case(steps=[f"在「Endpoint URL」输入框输入 `{long_url}`"])
+        issues = check_readability(case)
+        assert not any("单句构件" in issue.rule for issue in issues)
+
+    def test_mixed_verbs_reported(self):
+        from review_checker_mcp.validators import check_readability
+
+        case = _make_case(steps=["点击「保存」", "点选「取消」"])
+        issues = check_readability(case)
+        assert any("混用" in issue.rule for issue in issues)
+
+    def test_title_prefix_reported(self):
+        from review_checker_mcp.validators import check_readability
+
+        case = _make_case(title="验证 Webhook 功能")
+        issues = check_readability(case)
+        assert any("标题以" in issue.rule for issue in issues)
+
+    def test_clean_case_returns_empty(self):
+        from review_checker_mcp.validators import check_readability
+
+        assert check_readability(_make_case()) == []
+
+    def test_issues_are_p2_candidates(self):
+        from review_checker_mcp.validators import check_readability
+
+        case = _make_case(title="验证 Webhook 功能", steps=["点击「保存」", "点选「取消」"])
+        issues = check_readability(case)
+        assert issues
+        assert all(issue.severity.value == "P2" for issue in issues)
+        assert all(issue.confirmation == "candidate" for issue in issues)
+        assert all(issue.dimension == "字段规范" for issue in issues)
