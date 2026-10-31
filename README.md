@@ -24,10 +24,10 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 |---|---|---|---|
 | **testing-bundle** | v3.5.1 | bundle 入口，8 个专业子 skill 路由 + 9 条混合意图链 | - |
 | test-strategy-engineer | v1.3.0 | 项目级测试策略（风险矩阵/分层/准入准出） | - |
-| test-case-engineer | v9.7.0 | 功能用例生成 + 10 维度评审 + 规模化/干系人评审方案 | review-checker v0.3.1（可选） |
+| test-case-engineer | v9.7.1 | 功能用例生成 + 10 维度评审 + 规模化/干系人评审方案 | review-checker v0.3.1（可选） |
 | performance-test-engineer | v1.2.3 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
 | bug-analyzer | v1.2.3 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
-| state-machine-test-engineer | v1.7.5 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.8.5（可选） |
+| state-machine-test-engineer | v1.7.6 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.8.5（可选） |
 | change-impact-analyzer | v1.5.1 | 从实际业务解释改动影响，生成测试内容与方式，需求和用例可选 | - |
 | test-data-generator | v1.1.0 | 可重复离线造数、边界配方、关联与场景验收、JSON/JSONL/CSV 独立校验 | - |
 | [frontend-test-preparation](plugins/testing/skills/frontend-test-preparation/SKILL.md) | v1.0.0 | 前端导航索引、增量维护与单需求测试准备（链 9 协同，亦可单独调用） | - |
@@ -67,8 +67,8 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | change-impact-analyzer | 156 | 6 |
 | frontend-test-preparation | 93 | 1 |
 | performance-test-engineer | 116 | 5 |
-| state-machine-test-engineer | 169 | 13 |
-| test-case-engineer | 151 | 15 |
+| state-machine-test-engineer | 171 | 14 |
+| test-case-engineer | 154 | 18 |
 | test-data-generator | 54 | 4 |
 | test-strategy-engineer | 139 | 5 |
 | testing-bundle | 157 | 3 |

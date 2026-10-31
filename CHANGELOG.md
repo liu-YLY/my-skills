@@ -17,6 +17,8 @@
 
 ### Added
 - 新增实施计划文档：`docs/superpowers/plans/2026-07-21-skill-consistency-and-infra.md`
+- test-case-engineer 升级到 v9.7.1：参考文件按真实读取路径重新切分——`writing-rules` 由 478 行降至 329 行，编排排序、失败语义、效率度量拆为 `case-arrangement` / `failure-semantics` / `efficiency-metrics` 三个按需文件；分层策略与默认输出类型并入 `test-levels`，消除分层双源；阶段 3 主读量减少约 30%
+- state-machine-test-engineer 升级到 v1.7.6：MCP 探测与增强/独立/降级细则从 `state-machine-core.md` 拆到 `knowledge/mcp-enhancement.md`，core 由 347 行降至 299 行，必读路径不再包含可选增强细节
 - 测试 skill 基线补强：state-machine 评估用例增至 15 条（补非法跳转建模缺口、幂等、消息乱序、超时重试），test-strategy 增至 15 条（补准入阈值口径与资源估算缺基线）；新增 `docs/skill-evaluation/reports/2026-10-31-baseline.md` 记录版本、体量与用例基线，并明确未执行模型评测
 - 测试 skill 文档一致性：performance / strategy 的 SKILL 末尾版本历史改为指向 README，消除与 frontmatter 的双源与陈旧列表；test-data-generator 补 CHANGELOG；bundle 入口新增「7 维度 / 10 类场景 / 10 维度」计数术语消歧
 - testing-bundle 升级到 v3.5.1：失败模式表、上下文传递 schema 与路由/安装反例下沉到 `knowledge/routing-fallbacks.md`，入口由 200 行降至 155 行，只保留三条降级底线与引用；路由行为不变

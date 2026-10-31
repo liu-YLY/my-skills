@@ -1,6 +1,6 @@
 # State Machine Test Engineer Skill
 
-> 状态机驱动的状态型需求测试 skill v1.7.5：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
+> 状态机驱动的状态型需求测试 skill：基于 MAE + State Machine 方法论，为状态型业务对象构建状态机模型并穷举 10 类测试场景。
 
 ## 简介
 
@@ -136,6 +136,7 @@ state-machine-test-engineer/
 │   ├── scenario-types.md             # 10 类场景穷举规则
 │   ├── completeness-check.md         # 完整性检查清单（9 项）
 │   ├── anti-patterns.md              # 反模式黑名单
+│   ├── mcp-enhancement.md            # MCP 探测、增强/独立/降级模式细则
 │   ├── industry-templates/           # 行业状态机模板
 │   │   ├── order-refund.md
 │   │   ├── approval-flow.md
@@ -164,6 +165,7 @@ state-machine-test-engineer/
 
 ## 版本历史
 
+- v1.7.6: MCP 探测与增强/独立/降级模式细则从 core 拆到 knowledge/mcp-enhancement.md，core 由 347 行降至 287 行，必读路径不再包含可选增强细节
 - v1.7.5: 校验失败场景的唯一转换关联与允许目标
 - v1.7.4: 沿映射依据来源传播需复核结论
 - v1.7.3: 禁止撤去失败运行证据后提升已确认通过率

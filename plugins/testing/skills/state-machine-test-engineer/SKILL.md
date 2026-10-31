@@ -1,6 +1,6 @@
 ---
 name: state-machine-test-engineer
-version: 1.7.5
+version: 1.7.6
 description: >-
   Use when user needs state-machine-driven testing for stateful business objects
   (orders, approvals, tickets, membership, etc.). Triggers on: 状态机、状态流转、状态转换、
@@ -107,6 +107,7 @@ MCP 配置方式见 [integrations/quickstart.md](integrations/quickstart.md)。
 | [knowledge/industry-templates/](knowledge/industry-templates/) | **仅用户指定行业对象时读**（订单退款/审批流/会员/工单，按需加载对应模板） |
 | [knowledge/products/](knowledge/products/) | **仅产品可识别且知识文件存在时读**（产品专项知识） |
 | [knowledge/usage-examples.md](knowledge/usage-examples.md) | **仅用户想看演示对话或首次使用时读**（3 个使用示例 + 快速上手） |
+| [knowledge/mcp-enhancement.md](knowledge/mcp-enhancement.md) | **宿主暴露 MCP 工具或用户要求增强时读**（探测、增强/独立/降级模式细则） |
 | [integrations/quickstart.md](integrations/quickstart.md) | **仅用户要求安装/配置 MCP 时读**（MCP 配置、工具注册与兼容性核对） |
 
 ### 阶段读取矩阵
@@ -119,6 +120,7 @@ MCP 配置方式见 [integrations/quickstart.md](integrations/quickstart.md)。
 | 阶段 4 场景穷举 | — | scenario-types.md（10 类场景细则） |
 | 输出前自检 | — | anti-patterns.md（反模式黑名单） |
 | 用户指定行业 | — | industry-templates/{对应行业}.md |
+| 宿主已暴露 MCP | — | mcp-enhancement.md（增强/独立/降级模式细则） |
 | 用户要求 MCP | — | integrations/quickstart.md |
 
 > **阶段隔离原则**：建模阶段（阶段 2）不预读完整性检查规则和场景穷举细则。CHECKPOINT 前的知识资料不得在 CHECKPOINT 前加载。MCP 配置资料仅在用户明确要求时读取。

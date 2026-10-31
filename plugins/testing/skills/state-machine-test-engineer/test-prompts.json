@@ -1,7 +1,7 @@
 {
   "skill": "state-machine-test-engineer",
-  "version": "1.7.5",
-  "description": "darwin-skill 验证用 prompts，覆盖 6 类验证场景（订单退款/审批流/歧义暴露/降级模式/转交协同/误路由）",
+  "version": "1.7.6",
+  "description": "darwin-skill 验证用 prompts，覆盖建模、完整性、非法跳转、幂等、乱序、超时、降级、转交与对抗场景",
   "prompts": [
     {
       "id": "SM-TP-01",

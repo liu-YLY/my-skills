@@ -389,10 +389,10 @@
 - 步骤只保留改变状态或提供输入的操作，无复述前置条件、无信息量导航与解释性文字
 - 每条预期为「位置 + 对象 + 状态/值」，无评价词与愿望式表达
 - 按语境检查结果是否可判定，参见 test-standards.md「模糊词禁用清单」；业务术语中的单字不判违规
-- 用例编排符合编排规范：默认按用户旅程时序（入口 → 创建 → 查询 → 编辑 → 删除 → 恢复）；需求庞大时按功能模块分组、组内按用户旅程（详见 writing-rules.md「用例编排与排序规范」）
+- 用例编排符合编排规范：默认按用户旅程时序（入口 → 创建 → 查询 → 编辑 → 删除 → 恢复）；需求庞大时按功能模块分组、组内按用户旅程（详见 [knowledge/case-arrangement.md](knowledge/case-arrangement.md)）
 - 待确认场景与可执行用例分开交付，审核状态如实标记
 
-> **编写用例的格式、字段、铁律、拆分合并策略详见 [knowledge/writing-rules.md](knowledge/writing-rules.md)。阶段 3 编写用例时必读。**
+> **编写用例的格式、字段、铁律与拆分合并策略见 [knowledge/writing-rules.md](knowledge/writing-rules.md)；完整用例集的编排规则见 [knowledge/case-arrangement.md](knowledge/case-arrangement.md)；涉及超时、重试、幂等或结果未知时读 [knowledge/failure-semantics.md](knowledge/failure-semantics.md)。阶段 3 编写用例时必读。**
 
 ---
 
@@ -465,7 +465,7 @@
 **阶段 4 交付**：自检后输出用例及未评估项；生成任务完成不等于人工审核通过或用例已执行。
 ```
 
-> **效率度量报告模板与工时估算基准详见 [knowledge/writing-rules.md](knowledge/writing-rules.md)「效率度量输出」章节。**
+> **效率度量报告模板与工时估算基准详见 [knowledge/efficiency-metrics.md](knowledge/efficiency-metrics.md)。**
 
 ---
 
