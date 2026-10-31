@@ -25,8 +25,8 @@ my-skill/
 │   │   ├── .codex-plugin/
 │   │   │   └── plugin.json        # Codex plugin manifest
 │   │   ├── skills/                # runtime 扫描此目录加载 skill
-│   │   │   ├── testing-bundle/    # 测试能力 Bundle（七路路由入口）
-│   │   │   │   ├── SKILL.md       # 入口（路由规则 + 8 条混合意图链）
+│   │   │   ├── testing-bundle/    # 测试能力 Bundle（八路路由入口）
+│   │   │   │   ├── SKILL.md       # 入口（路由规则 + 9 条混合意图链）
 │   │   │   │   ├── README.md      # Bundle 说明文档
 │   │   │   │   ├── CHANGELOG.md   # bundle 版本变更记录
 │   │   │   │   └── test-prompts.json

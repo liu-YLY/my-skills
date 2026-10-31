@@ -1,6 +1,6 @@
 # Testing Bundle Skill
 
-> 测试能力 bundle 入口：统一路由到 7 个专业子 skill，覆盖策略、用例、性能、缺陷根因、状态机、变更影响和离线测试数据。
+> 测试能力 bundle 入口：统一路由到 8 个专业子 skill，覆盖策略、用例、性能、缺陷根因、状态机、变更影响、前端测试准备和离线测试数据。
 
 ## 简介
 
@@ -8,18 +8,19 @@ Testing Bundle 是一个元 skill（meta skill），本身不实现具体测试�
 
 ### 为什么需要 Bundle
 
-插件包含 7 个可独立使用的专业 skill：
+插件包含 8 个可独立使用的专业 skill：
 - `test-strategy-engineer`：专注项目级测试策略
-- `test-case-engineer`：专注功能用例生成
+- `test-case-engineer`：专注功能用例生成与用例评审（含规模化评审与干系人评审方案）
 - `performance-test-engineer`：专注性能测试方案与瓶颈定位
 - `bug-analyzer`：专注功能缺陷根因
 - `state-machine-test-engineer`：专注状态机驱动的状态型需求测试（订单/审批/工单/会员等生命周期）
 - `change-impact-analyzer`：从实际业务解释代码改动影响，生成测试内容与方式，需求和用例可选
+- `frontend-test-preparation`：读前端代码建立导航索引，把需求映射到入口、角色、数据与检查点
 - `test-data-generator`：根据项目字段、规则、关联与场景生成离线数据，或独立校验已有 JSON/JSONL/CSV
 
 用户提出"测试相关"请求时，可能需要其中任何一个，也可能多个协同。Bundle 解决三个问题：
 1. **统一入口**：用户无需预先判断该用哪个 skill
-2. **混合意图协同**：自动编排多 skill 协同流程（8 条混合意图链）
+2. **混合意图协同**：自动编排多 skill 协同流程（9 条混合意图链）
 3. **依赖关系管理**：显式声明 bug-analyzer 对 test-case-engineer 知识库的依赖、state-machine-test-engineer 对可选 state-machine MCP Server 的依赖、test-case-engineer 评审模式对可选 review-checker MCP Server 的依赖
 
 ## 子 skill 说明
@@ -32,11 +33,12 @@ Testing Bundle 是一个元 skill（meta skill），本身不实现具体测试�
 | [bug-analyzer](../bug-analyzer/) | 功能缺陷根因 | 五步定位法：复现 → 隔离 → 定位 → 验证 → 报告 |
 | [state-machine-test-engineer](../state-machine-test-engineer/) | 状态机建模+场景穷举 | 五阶段：状态型需求识别 → 状态机建模 → 完整性检查 → 10类场景穷举 →（可选）MCP 增强 |
 | [change-impact-analyzer](../change-impact-analyzer/) | 代码变更影响分析 | 业务路径 → 改动影响 → 测试内容与方式 → 报告 |
+| [frontend-test-preparation](../frontend-test-preparation/) | 前端测试准备 | 导航索引 → 单需求映射 → 运行核实（条件具备时）→ 交接 |
 | [test-data-generator](../test-data-generator/) | 离线数据生成与校验 | 整理 profile → inspect → generate/validate → 文件与独立校验报告 |
 
 ## 路由规则
 
-完整路由规则、8 条混合意图链、使用示例与反例黑名单见 [SKILL.md](SKILL.md)（唯一权威源，不在本 README 重复维护）。单一意图直接调用专业 Skill；已有用例仅准备数据时直接调用 test-data-generator，不重新生成用例。
+完整路由规则、意图解析三要素、9 条混合意图链、使用示例与反例黑名单见 [SKILL.md](SKILL.md)（唯一权威源，不在本 README 重复维护）。单一意图直接调用专业 Skill；已有用例仅准备数据时直接调用 test-data-generator，不重新生成用例。
 
 ## 安装方式
 
@@ -51,6 +53,7 @@ skills/
 ├── bug-analyzer/                ← 子 skill（Bug 分析）
 ├── state-machine-test-engineer/ ← 子 skill（状态机测试）
 ├── change-impact-analyzer/      ← 子 skill（变更影响分析，链 6 协同）
+├── frontend-test-preparation/   ← 子 skill（前端测试准备，链 9 协同）
 └── test-data-generator/         ← 子 skill（离线数据生成/校验，链 8 协同）
 ```
 
@@ -64,6 +67,7 @@ skills/
 - 只需 Bug 分析 → 仅安装 `bug-analyzer`（缺陷模式库引用会降级）
 - 只需状态机测试 → 仅安装 `state-machine-test-engineer`（可选再装配套 MCP Server 进入增强模式）
 - 只需变更影响分析 → 仅安装 `change-impact-analyzer`
+- 只需前端测试准备 → 仅安装 `frontend-test-preparation`
 - 只需离线造数/校验 → 仅安装 `test-data-generator`，按其 [运行指南](../test-data-generator/integrations/quickstart.md) 准备 Python 依赖；无需 MCP
 - 不安装 `testing-bundle` 时，用户需自行判断该用哪个子 skill
 
@@ -83,8 +87,8 @@ testing-bundle/
 ├── README.md                      # 本说明文档
 ├── CHANGELOG.md                   # 版本变更记录
 ├── knowledge/
-│   ├── mixed-intent-chains.md     # 8 条混合意图链详细步骤流
-│   └── usage-examples.md          # 10 个典型路由演示对话与首次上手引导
+│   ├── mixed-intent-chains.md     # 9 条混合意图链详细步骤流
+│   └── usage-examples.md          # 11 个典型路由演示对话与首次上手引导
 └── test-prompts.json              # 路由验证 prompt
 ```
 
@@ -101,4 +105,5 @@ testing-bundle/
 - [bug-analyzer](../bug-analyzer/) - 功能缺陷根因分析子 skill
 - [state-machine-test-engineer](../state-machine-test-engineer/) - 状态机测试子 skill
 - [change-impact-analyzer](../change-impact-analyzer/) - 变更影响分析子 skill（链 6 协同使用，亦可单独使用）
+- [frontend-test-preparation](../frontend-test-preparation/) - 前端测试准备子 skill（链 9 协同使用，亦可单独使用）
 - [test-data-generator](../test-data-generator/) - 离线测试数据生成与校验子 skill（链 8 协同使用，亦可单独使用）

@@ -4,26 +4,27 @@
 
 ### 1. Testing Bundle (testing-bundle)
 
-**版本**：v3.4.0
-**功能**：测试能力 bundle 入口，统一路由到 7 个专业子 skill：test-strategy-engineer（项目级策略）/ test-case-engineer（功能用例生成）/ performance-test-engineer（性能测试）/ bug-analyzer（Bug 根因分析）/ state-machine-test-engineer（状态机测试）/ change-impact-analyzer（变更影响分析）/ test-data-generator（离线数据生成与校验）。
+**版本**：v3.5.0
+**功能**：测试能力 bundle 入口，统一路由到 8 个专业子 skill：test-strategy-engineer（项目级策略）/ test-case-engineer（功能用例生成与用例评审）/ performance-test-engineer（性能测试）/ bug-analyzer（Bug 根因分析）/ state-machine-test-engineer（状态机测试）/ change-impact-analyzer（变更影响分析）/ frontend-test-preparation（前端测试准备）/ test-data-generator（离线数据生成与校验）。
 
 > Bundle 是元 skill，本身不实现具体能力，而是根据用户意图自动路由到对应子 skill。
 
-**路由规则**（七路路由 + 8 条混合意图链）：
+**路由规则**（意图三要素 + 八路路由 + 9 条混合意图链）：
 
 | 用户意图关键词 | 路由到 | 说明 |
 |---------------|--------|------|
 | 测试策略、测试计划、测试分层、风险矩阵、准入准出、测试范围与优先级 | test-strategy-engineer | 项目级策略 |
-| 生成/评审测试用例、需求分析、单功能测试策略 | test-case-engineer | 功能用例生成 |
+| 生成/评审测试用例、需求分析、单功能测试策略、评审方案/覆盖度汇报 | test-case-engineer | 功能用例生成；评审含规模化与干系人评审方案 |
+| 前端代码准备测试、页面索引、入口定位、账号与数据状态 | frontend-test-preparation | 导航索引 + 单需求上下文映射 |
 | 性能测试、负载测试、压力测试、TPS、响应时间、瓶颈、容量评估 | performance-test-engineer | 性能场景 + 瓶颈分析 |
 | Bug 根因分析、缺陷定位、5 Whys、鱼骨图、防御性用例反推 | bug-analyzer | 功能缺陷根因 |
 | 状态机、状态流转、状态转换、生命周期、非法跳转、幂等、并发冲突、消息乱序、终态吸收 | state-machine-test-engineer | 状态机建模 + 10 类场景穷举 |
 | 变更影响、diff 分析、改动影响范围与测试内容 | change-impact-analyzer | 从实际业务解释改动影响，需求与用例可选 |
 | 造测试数据、生成关联数据、按规则校验 JSON/JSONL/CSV | test-data-generator | 离线文件与独立校验，系统执行保持 not_run |
-| 混合意图（8 条链） | 见 SKILL.md 混合意图链 | 转交披露依据，按既有授权继续 |
-| 意图不明确 | 追问用户 | 列出 7 个子 skill 让用户选择 |
+| 混合意图（9 条链） | 见 SKILL.md 混合意图链 | 转交披露依据，按既有授权继续 |
+| 意图不明确 | 追问用户 | 列出 8 个子 skill 让用户选择 |
 
-**8 条混合意图链**：
+**9 条混合意图链**：
 - 链 1：Bug 分析 + 补充用例 → bug-analyzer → case-engineer
 - 链 2：测试策略 + 分层用例 → strategy → case-engineer
 - 链 3：性能测试 + 瓶颈定位 → performance（内部完成）
@@ -32,11 +33,12 @@
 - 链 6：评审→覆盖缺口验证 → case-engineer 评审模式 → change-impact-analyzer
 - 链 7：评审→风险用例根因反推 → case-engineer 评审模式 → bug-analyzer
 - 链 8：编写/修订用例→离线数据准备 → case-engineer → test-data-generator
+- 链 9：前端测试准备→用例编写 → frontend-test-preparation → case-engineer
 
 已有用例或组合矩阵仅准备数据时，直接调用 test-data-generator；链 8 只在明确要求新编/修订用例并交付对应数据时触发。
 
 **安装方式**：
-- **整体安装（推荐）**：安装 testing-bundle 与 7 个专业子 skill，共 8 个 skill
+- **整体安装（推荐）**：安装 testing-bundle 与 8 个专业子 skill，共 9 个 skill
 - **按需安装**：仅安装需要的子 skill（bug-analyzer 单独安装时缺陷模式库引用会降级；state-machine-test-engineer 可选再装配套 MCP Server 进入增强模式）
 
 **使用场景**：
