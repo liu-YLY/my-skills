@@ -47,6 +47,47 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 
 已有用例或组合矩阵只需准备数据时，直接使用 test-data-generator，保留用例编号与固定维度。数据校验通过只表示已声明约束通过，系统执行仍为 `not_run`。
 
+#### 路由型 Skill：testing-bundle 的任务转发场景
+
+`testing-bundle` 自身不产出测试内容，只负责**意图判断与上下文转交**。8 个子 skill 都能独立使用，因此并非所有请求都需要经过 bundle。
+
+| 场景 | 由谁处理 | 说明 |
+|---|---|---|
+| 意图单一且明确（只想生成用例 / 只想分析 Bug / 只想定位瓶颈） | 直连对应子 skill | runtime 直接命中子 skill，bundle 不介入 |
+| 请求同时包含多个动作（如「分析 Bug 并补充用例」「评审用例并验证覆盖缺口」） | bundle 按混合意图链串联 | 按业务依赖顺序转交，一次授权内连续执行 |
+| 目标模糊或用户明确要求路由（"不确定用哪个测试能力"） | bundle 追问后路由 | 先列出 8 个能力与适用场景，不默认选择 |
+| 只给了代码改动，要影响范围 / 回归测试内容 | bundle 路由到 change-impact-analyzer | 不因出现「测试内容」自动转为完整用例生成 |
+| 只说了「测试前端功能 / 测这个页面」 | bundle 路由到 test-case-engineer | 仅明确要求读前端代码、定位入口或维护页面索引时才转 frontend-test-preparation |
+| 已有用例只要求造数或校验文件 | bundle 路由到 test-data-generator | 出现「用例 / 状态 / 并发」不自动触发用例生成、状态机建模或性能测试 |
+
+**路由判定顺序**：提取意图三要素（对象 / 动作 / 交付物）→ 命中混合意图链则按链执行 → 未命中查单意图路由表 → 仍无法判断则追问（🔴 CHECKPOINT）。
+
+**转交行为约定**：
+
+- 转交时携带用户原始请求、上游产物、已完成步骤与下游待办，不丢失上下文
+- 混合链结束时列出转交依据与未决事项，便于用户确认
+- 子 skill 不可用时标注「子 skill 不可用」，只交付上游产物与方向性建议，不假装完成
+- bundle 只做路由，不重复实现专业流程；单意图请求直接命中子 skill，无需经过 bundle
+
+典型说法与转发目标：
+
+| 用户说法 | 转发到 | 类型 |
+|---|---|---|
+| "制定项目测试策略 / 风险矩阵 / 准入准出" | test-strategy-engineer | 单意图 |
+| "写用例 / 评审用例 / 梳理测试点" | test-case-engineer | 单意图 |
+| "Bug 根因 / 复现 / 5 Whys" | bug-analyzer | 单意图 |
+| "性能测试 / 压测 / RT 飙升定位瓶颈" | performance-test-engineer | 单意图 |
+| "订单状态流转测试 / 非法跳转 / 幂等" | state-machine-test-engineer | 单意图 |
+| "分析这次改动影响哪些业务" | change-impact-analyzer | 单意图 |
+| "先读前端代码准备测试 / 维护页面索引" | frontend-test-preparation | 单意图 |
+| "按已有用例生成离线数据 / 校验 JSON" | test-data-generator | 单意图 |
+| "分析 Bug 并补充用例" | bug-analyzer → test-case-engineer | 链 1 |
+| "状态机建模 + 生成完整用例" | state-machine-test-engineer → test-case-engineer | 链 5 |
+| "评审用例 + 验证覆盖缺口" | test-case-engineer → change-impact-analyzer | 链 6 |
+| "编写用例 + 生成对应测试数据" | test-case-engineer → test-data-generator | 链 8 |
+| "读前端代码准备 + 编写用例" | frontend-test-preparation → test-case-engineer | 链 9 |
+| "我要做测试，但不知道该用哪个能力" | 追问，列出 8 个能力供选择 | 模糊意图 |
+
 ### Wechat Formatter（微信公众号排版）
 
 | Skill | 版本 | 功能 |
@@ -104,22 +145,24 @@ npx skills add liu-YLY/my-skills --list
 
 # 步骤 2：按需安装
 # 2a. 安装全部 10 个 skill（testing-bundle + 8 个专业子 skill + wechat-formatter）
-npx skills add liu-YLY/my-skills --skill '*' -g -y
+npx skills add liu-YLY/my-skills --skill "*" -g -y
 
 # 2b. 仅安装测试插件全部 9 个 skill（bundle + 8 个专业子 skill）
 npx skills add liu-YLY/my-skills \
-  --skill 'testing-bundle' --skill 'test-strategy-engineer' \
-  --skill 'test-case-engineer' --skill 'performance-test-engineer' \
-  --skill 'bug-analyzer' --skill 'state-machine-test-engineer' \
-  --skill 'change-impact-analyzer' --skill 'test-data-generator' \
-  --skill 'frontend-test-preparation' -g -y
+  --skill testing-bundle --skill test-strategy-engineer \
+  --skill test-case-engineer --skill performance-test-engineer \
+  --skill bug-analyzer --skill state-machine-test-engineer \
+  --skill change-impact-analyzer --skill test-data-generator \
+  --skill frontend-test-preparation -g -y
 
 # 2c. 仅安装微信公众号排版 skill
-npx skills add liu-YLY/my-skills --skill 'wechat-formatter' -g -y
+npx skills add liu-YLY/my-skills --skill wechat-formatter -g -y
 
 # 2d. 指定目标 runtime（示例：同时装到 Claude Code 与 Cursor）
-npx skills add liu-YLY/my-skills --skill 'testing-bundle' -a claude-code -a cursor -g -y
+npx skills add liu-YLY/my-skills --skill testing-bundle -a claude-code -a cursor -g -y
 ```
+
+> **Windows cmd 引号注意**：cmd.exe 不识别单引号，`--skill 'state-machine-test-engineer'` 会把两个单引号原样传给 CLI，导致报 `No matching skills found`，而下方 Available skills 里明明列出了该名字。cmd 下请用双引号或不加引号（名字无空格时可不加）；PowerShell / bash 下单双引号均可。含通配符时必须加引号（如 `--skill "*"`），否则会被 shell 提前展开。
 
 常用参数：
 
@@ -127,7 +170,7 @@ npx skills add liu-YLY/my-skills --skill 'testing-bundle' -a claude-code -a curs
 |---|---|
 | `-g, --global` | 全局安装（`~/<agent>/skills/`）；不加则装到项目级（`./<agent>/skills/`） |
 | `-a, --agent` | 指定目标 runtime（`claude-code` / `cursor` / `codex` / `opencode` 等） |
-| `-s, --skill` | 按 skill 名选择，支持通配符（如 `test-*`），`'*'` 表示全部 |
+| `-s, --skill` | 按 skill 名选择，支持通配符（如 `"test-*"`，需加引号），`"*"` 表示全部 |
 | `-y, --yes` | 跳过确认提示（CI/CD 友好） |
 | `--copy` | 复制文件而非 symlink（默认 symlink，便于后续更新） |
 
@@ -264,4 +307,4 @@ Windows 用户可直接运行仓库内的 PowerShell 脚本：
 
 ---
 
-**最后更新**：2026 年 10 月 15 日
+**最后更新**：2026 年 10 月 31 日
