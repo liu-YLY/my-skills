@@ -537,7 +537,8 @@ AI（change-impact-analyzer）：
 
 ### 1h. 前端测试准备 (frontend-test-preparation)
 
-从本机定制版原样迁入，保留 [Skill 入口](../plugins/testing/skills/frontend-test-preparation/SKILL.md) 与[交接模板](../plugins/testing/skills/frontend-test-preparation/references/handoff-template.md)，未单独标记版本。
+**版本**：v1.0.0
+**功能**：从本机定制版迁入，保留 [Skill 入口](../plugins/testing/skills/frontend-test-preparation/SKILL.md) 与[交接模板](../plugins/testing/skills/frontend-test-preparation/references/handoff-template.md)；作为 bundle 第 8 个子 skill 接入链 9。
 
 在需求评审之后、用例编写或执行之前，读取前端代码建立分层导航索引，再把单需求映射到页面入口、角色、数据、操作与检查点。后续按代码差异增量更新相关页面。具备环境、身份、浏览器工具及当次授权时核实运行页面，结论区分代码推断、运行已验证与待确认。
 

@@ -27,7 +27,7 @@ integrations:
 
 # State Machine Test Engineer
 
-状态机驱动的状态型需求测试 skill v1.2.1：基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
+状态机驱动的状态型需求测试 skill：基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
 
 > ✅ **MCP Server 状态说明**：本仓库 MCP 协议层（stdio + streamable-http）已有真实调用回归；当前宿主须暴露兼容工具才可使用增强模式。`build_state_machine` 为确定性实现（行业模板加载，不内置 LLM）。未安装或调用失败时 skill 仍自动降级为独立模式（输出首行标 `⚠ 独立模式（未校验）`）。
 

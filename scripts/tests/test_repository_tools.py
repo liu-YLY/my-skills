@@ -92,6 +92,7 @@ def test_every_skill_has_complete_trigger_coverage():
     assert set(trigger_counts) == {
         "bug-analyzer",
         "change-impact-analyzer",
+        "frontend-test-preparation",
         "performance-test-engineer",
         "state-machine-test-engineer",
         "test-case-engineer",

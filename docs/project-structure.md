@@ -63,7 +63,7 @@ my-skill/
 │   │   │   │   ├── knowledge/     # state-modeling / scenario-types / completeness-check / anti-patterns + 4 行业模板
 │   │   │   │   ├── integrations/  # quickstart.md（含 state-machine-testing MCP Server 安装）
 │   │   │   │   └── test-prompts.json
-│   │   │   ├── frontend-test-preparation/  # 前端测试准备（独立调用）
+│   │   │   ├── frontend-test-preparation/  # 前端测试准备（链 9 协同）
 │   │   │   │   ├── SKILL.md       # 分层索引、增量更新与单需求映射
 │   │   │   │   └── references/handoff-template.md
 │   │   │   ├── change-impact-analyzer/  # 变更影响分析师 v1.5.0（链 6 协同，亦可独立使用）
