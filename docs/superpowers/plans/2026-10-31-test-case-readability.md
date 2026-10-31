@@ -266,3 +266,5 @@ git status --short
 | 6 | `pr/6-mcp-bundle` | ..HEAD | MCP 可读性校验 + bundle 3.5.2 | ~200 |
 
 堆叠规则：PR2 基于 PR1 分支，依次类推；PR1 合并后 GitHub 会自动把后续 PR 重定向到 main。
+
+**已创建**：[#131](https://github.com/liu-YLY/my-skills/pull/131) → [#132](https://github.com/liu-YLY/my-skills/pull/132) → [#133](https://github.com/liu-YLY/my-skills/pull/133) → [#134](https://github.com/liu-YLY/my-skills/pull/134) → [#135](https://github.com/liu-YLY/my-skills/pull/135) → [#136](https://github.com/liu-YLY/my-skills/pull/136)。合并顺序必须从 #131 开始。
