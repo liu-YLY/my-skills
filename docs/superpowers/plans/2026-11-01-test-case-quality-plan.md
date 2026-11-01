@@ -1,9 +1,9 @@
-# 测试用例 Skill 四目标优化执行计划（待审批）
+# 测试用例 Skill 四目标优化执行计划与执行记录
 
-> **状态**：**阶段 0 已确认、阶段 A 已完成；停在停止点 A，等待用户决定阶段 B**
-> **执行方式**：每阶段结束写回本文件 §9.1 交接快照；每任务一个本地 commit；不自动跨阶段
+> **状态**：**阶段 0 / A / B / C / F 已完成；停在停止点 F，等待用户决定是否推送或进入 D/E**
+> **执行方式**：每阶段结束写回本文件最新交接快照（当前 §9.4）；每任务一个本地 commit；不自动跨阶段
 > **基线**：`main` @ `1557de5`（2026-11-01 21:00 实测），工作区干净，6 个仓库校验脚本全绿
-> **目标 skill**：`plugins/testing/skills/test-case-engineer` v9.10.0
+> **目标 skill**：`plugins/testing/skills/test-case-engineer` v9.10.0 → **v9.11.0**（阶段 F 发布）
 > **终局目标**：生成**准确、精简、覆盖面全、人类可读性强**的测试用例
 > **本文件同时是执行计划与执行记录**：每完成一个任务更新 §9，改动与记录放在同一个 commit 中
 
@@ -24,6 +24,8 @@
 **阶段 B 决策（2026-11-01 二次确认）**：① 按 B0→B1→B2 执行；② B2 对照干跑按推荐的最小规模（合法/问题/边界三组样例）；③ D3 阈值按推荐（8/15/25 条）写入阶段 C。三项均按推荐方案执行。
 
 **阶段 C 决策（2026-11-01 三次确认）**：按 C1→C2→C3→C4 执行；D3 阈值按推荐（8/15/25 条）写入；C 完成后**停在停止点 C**，不自动进入阶段 F，由用户决定下一阶段。
+
+**阶段 F 决策（2026-11-01 四次确认）**：按推荐进入阶段 F 发布；版本定为 **v9.11.0**（minor）；不升 `testing-bundle` 与 `review-checker`；F 完成后停在停止点 F，由用户决定是否推送或进入 D/E。
 
 **用户追加的工作方式**：每执行一个阶段就在本地保存执行状况，由用户决定下一阶段如何执行；目的是避免任务过长导致上下文反复压缩、目标漂移、质量下降。因此本计划以最新阶段的交接快照（当前为 §9.2）为唯一进度源，不依赖会话记忆；历史快照保留不覆盖。
 
@@ -120,7 +122,7 @@
 | E | E1–E2 | 覆盖矩阵 + MCP 升级 | 6 脚本 + MCP pytest 全绿 | 是 |
 | F | F1–F4 | 版本同步、提交、交付报告 | `git status` 干净 | 是 |
 
-> **当前位置**：阶段 0 / A / B / C 已完成；**停在停止点 C**，阶段 D/E/F 均未执行。
+> **当前位置**：阶段 0 / A / B / C / F 已完成；**停在停止点 F**，阶段 D/E 未执行，未推送、未建 PR。
 
 > **规则**：每个阶段结束输出「commit 列表 + 校验结果 + 下一阶段建议」，不自动跨阶段；每任务一个 commit，Conventional Commits 中文 subject。
 
@@ -260,7 +262,11 @@ python scripts/skill-evals.py --skill test-case-engineer \
 | 2026-11-01 | C2 | `e099e4a` | Prompt 加预算/去重/覆盖核对；删每批 20–30 条；覆盖率 80% → 100% 或显式原因 | 6 脚本 |
 | 2026-11-01 | C3 | `b387c3d` | 三档软预算（8/15/25）+ 合并优先 + 输出前去重；紧凑表格对齐 | 6 脚本 |
 | 2026-11-01 | C4 | `9824831` | 阶段 C 规则对照报告；如实记录 4 份交付物与未闭合断言 | 6 脚本 + md-links |
-| 2026-11-01 | 阶段 C 状态记录 | 本提交 | 回填 §0/§4/§9/新增 §9.3/§10 | 6 脚本 |
+| 2026-11-01 | 阶段 C 状态记录 | `938e96b` | 回填 §0/§4/§9/新增 §9.3/§10 | 6 脚本 |
+| 2026-11-01 | F1 全量校验 | — | 6 脚本全绿；review-checker 110 passed；冻结套件 SHA 一致；`scripts/tests` 4 失败均为缺 python-docx（CI 侧） | 见交付报告 |
+| 2026-11-01 | F2 | `044dbe3` | 发布 v9.11.0，同步 8 处版本引用；不升 bundle/MCP | 6 脚本 + 哈希比对 |
+| 2026-11-01 | F4 | `1109bcb` | 交付报告 + 10-31 基线状态更新 | 6 脚本 + md-links |
+| 2026-11-01 | 阶段 F 状态记录 | 本提交 | 回填头部/§0/§4/§9/新增 §9.4/§10 | 6 脚本 |
 
 ### 9.1 阶段 A 交接快照（新会话唯一进度源）
 
@@ -364,19 +370,44 @@ python scripts/skill-evals.py --skill test-case-engineer \
 
 **下一步需用户拍板**：① 是否进入阶段 F 发布（升版本 + 同步 8 处 + 交付报告）；② 还是先执行可选阶段 D（规则收敛）或 E（覆盖度可计算）；③ 或者直接停在 C 不再改动。
 
+### 9.4 阶段 F 交接快照（新会话唯一进度源）
+
+**目标**：生成准确、精简、覆盖面全、人类可读性强的测试用例；A+B+C 规则改动已发布为 v9.11.0。
+
+| 项 | 状态 |
+|---|---|
+| 分支 | `feat/test-case-quality-eval`，基于 `main` @ `1557de5`；**只本地提交，未推送、未建 PR** |
+| 阶段 A/B/C/F | 全部完成（A 6 / B 4 / C 5 / F 3 commit，共 18 个） |
+| 阶段 D/E | 未执行（可选） |
+| 当前停止点 | 停止点 F |
+| 版本 | `test-case-engineer` **v9.11.0**；testing-bundle 3.5.2、review-checker 0.4.0 未变 |
+| `core.md` | 487 行 |
+| 冻结套件 | SHA256 `a504f741…`，改版前后一致 |
+
+**已交付**：详见 `docs/skill-evaluation/reports/2026-11-01-test-case-quality-delivery.md`（8 处版本同步、F1 校验结果、未验证项、已知未完成 6 项、回滚方式）。
+
+**F1 校验**：6 个仓库脚本全绿；`42 task / 12 trigger`；review-checker 110 passed；冻结套件 SHA 一致。`scripts/tests` 47 passed / 4 failed（均因 venv 缺 `python-docx`，CI 会安装）；state-machine 测试缺 `yaml`、markdownlint 与 pre-commit 未安装 → **CI 侧未跑通前不声称全量验证通过**。
+
+**未验证 / 不得宣称**：模型行为评测未执行、无质量分数、token 未重测；宿主 MCP 调用与端到端生成流程未验证；A/B/C 三份报告均为 `dry_run`；历史 `runs.jsonl` 与新套件不兼容。
+
+**已知未完成**：交付物仍 4 份；#37 需求条目作分母未落地（阶段 E）；2 项残留机械表述（阶段 D）；根 README 的 `review-checker v0.3.1` 既有漂移。
+
+**下一步需用户拍板**：① 推送分支并创建 PR，让 CI 补跑 markdownlint / `python-docx` / `yaml` 测试组；② 执行可选阶段 D 或 E；③ 准备独立 runner 与 judge 跑 Tier 2/Tier 3 形成可比基线；④ 直接停在 v9.11.0 不再改动。
+
 ---
 
 ## 10. 上下文恢复指引
 
 新会话继续时按顺序读：
 
-1. **本文件 §9.3 阶段 C 交接快照（最新进度源，先读这一节）**；§9.1/§9.2 为阶段 A/B 历史快照
+1. **本文件 §9.4 阶段 F 交接快照（最新进度源，先读这一节）**；§9.1–§9.3 为 A/B/C 历史快照
 2. 本文件 §0（决策结果）、§4（阶段状态）、§9（已完成 commit）
-3. `docs/skill-evaluation/reports/2026-11-01-stage-c-conciseness-dryrun.md`（阶段 C 对照）
-4. `docs/skill-evaluation/reports/2026-11-01-stage-b-machine-check-dryrun.md`（阶段 B 对照）
-5. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-baseline.md`（阶段 A 基线）
-6. `docs/superpowers/plans/2026-10-31-test-case-readability.md`（上一专项，已全部合并）
-7. `.workbuddy/memory/2026-11-01.md`（诊断与阶段结论摘要）
+3. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-delivery.md`（v9.11.0 交付报告）
+4. `docs/skill-evaluation/reports/2026-11-01-stage-c-conciseness-dryrun.md`（阶段 C 对照）
+5. `docs/skill-evaluation/reports/2026-11-01-stage-b-machine-check-dryrun.md`（阶段 B 对照）
+6. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-baseline.md`（阶段 A 基线）
+7. `docs/superpowers/plans/2026-10-31-test-case-readability.md`（上一专项，已全部合并）
+8. `.workbuddy/memory/2026-11-01.md`（诊断与阶段结论摘要）
 
 继续前先执行：
 
