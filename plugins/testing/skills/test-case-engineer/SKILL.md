@@ -1,6 +1,6 @@
 ---
 name: test-case-engineer
-version: 9.9.0
+version: 9.10.0
 description: >-
   Use when generating, reviewing, or designing test cases and single-feature
   test strategies.
@@ -96,7 +96,8 @@ keywords:
 | [knowledge/review-plan.md](knowledge/review-plan.md) | **评审会面向产品/UI/前端/后端或要求覆盖度汇报时必读**（评审类型与角色 + 需求追溯矩阵 + 覆盖度画像 + 测试思路 + 材料与议程 + 结论与闭环） |
 | [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **阶段 3/4 自检时对照**（反例黑名单） |
 | [knowledge/writing-examples.md](knowledge/writing-examples.md) | **阶段 3 写用例拿不准格式时查阅**（title/steps/expected_results 好坏写法对照示例；铁律条文本体在 writing-rules.md） |
-| [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（通用格式 / ID 生成规则 / 字段说明 / 写作风格与人类易读性 / 编写铁律 / 术语与用词 / 拆分合并策略） |
+| [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（通用格式 / ID 生成规则 / 字段说明 / 写作风格与人类易读性要点 / 编写铁律 / 术语与用词 / 拆分合并策略） |
+| [knowledge/readability.md](knowledge/readability.md) | **阶段 3 按需查阅**（句式与句长、扫读结构、术语与用词、认知负荷的完整规则与对照表；阈值要点已在 writing-rules.md） |
 | [knowledge/case-arrangement.md](knowledge/case-arrangement.md) | **阶段 3 输出完整用例集前必读**（用户旅程编排 / 模块分组编排 / 排序规则） |
 | [knowledge/failure-semantics.md](knowledge/failure-semantics.md) | **涉及失败语义/安全属性/进展属性时读**（超时、重试、幂等、部分成功、结果未知） |
 | [knowledge/efficiency-metrics.md](knowledge/efficiency-metrics.md) | **阶段 4 生成效率报告时读**（报告模板与工时估算基准） |
@@ -107,11 +108,11 @@ keywords:
 
 | 模式 | 首轮可读取 | 延迟读取（进入对应阶段/步骤后） |
 |------|-----------|-------------------------------|
-| 默认生成 | 入口（本文件）+ core.md 阶段 1 需求理解规则 | test-levels.md（阶段 2）、bug-patterns.md（阶段 2）、writing-rules.md（阶段 3 必读）、test-standards.md（阶段 3）、prompt-strategy.md（阶段 3）、writing-examples.md（阶段 3，拿不准格式时）、case-arrangement.md（阶段 3 输出前）、failure-semantics.md（涉及失败语义时）、anti-patterns.md（阶段 4 自检）、efficiency-metrics.md（阶段 4 效率报告） |
-| 快速生成 | 入口 + core.md 最小测试点框架 | writing-rules.md（业务结果、格式与关键检查点）、test-standards.md（优先级）；领域资料仅按实际风险补读 |
+| 默认生成 | 入口（本文件）+ core.md 阶段 1 需求理解规则 | test-levels.md（阶段 2）、bug-patterns.md（阶段 2）、writing-rules.md（阶段 3 必读）、test-standards.md（阶段 3）、prompt-strategy.md（阶段 3）、writing-examples.md（阶段 3，拿不准格式时）、readability.md（阶段 3，句式/结构/术语拿不准时）、case-arrangement.md（阶段 3 输出前）、failure-semantics.md（涉及失败语义时）、anti-patterns.md（阶段 4 自检）、efficiency-metrics.md（阶段 4 效率报告） |
+| 快速生成 | 入口 + core.md 最小测试点框架 | writing-rules.md（业务结果、格式与关键检查点）、test-standards.md（优先级）、readability.md（句长与结构拿不准时）；领域资料仅按实际风险补读 |
 | 回归验证清单 | 入口 + core.md 模式切换章节 | 无（直接基于变更范围输出回归验证清单） |
 | 探索式 | 入口 + core.md 探索章程模板 | 领域检查表（bug-patterns.md 对应章节） |
-| 评审 | 入口 + review-mode.md + test-standards.md（业务风险原则） | large-scale-review.md（用例数 >100 或要求评审方案时）、review-plan.md（面向需求相关方或要求覆盖度汇报时）、prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅授权包含修订时读 core.md 生成流程） |
+| 评审 | 入口 + review-mode.md + test-standards.md（业务风险原则） | readability.md（R2 字段规范的可读性子项）、large-scale-review.md（用例数 >100 或要求评审方案时）、review-plan.md（面向需求相关方或要求覆盖度汇报时）、prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅授权包含修订时读 core.md 生成流程） |
 
 > **评审模式隔离原则**：评审模式首轮只读 review-mode.md，不读 core.md 四阶段生成流程。仅当授权包含修订闭环（V2 步骤）后，才读取 core.md 中的生成模式流程。
 
