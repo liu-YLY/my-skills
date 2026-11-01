@@ -99,3 +99,13 @@ python scripts/skill-evals.py --skill test-case-engineer \
 3. Tier 3 判定者与被测模型独立，或明确标注未盲评及置信度
 4. 报告中列出未评估维度、未覆盖 case 与 dry_run 项
 5. 未使用 `dry_run` 结果支撑任何提升类表述
+
+## 8. pilot 链路验证记录（2026-11-01）
+
+阶段 G 用 3 条 case（#35 / #37 / #39）跑通 `--json → 产物 → runs.jsonl → --results` 全链路：
+
+- 3 份产物的 `output_characters` 与 `output_sha256` 校验全部通过，`invalid_runs = []`
+- judge 判定 11/12；汇总 `status = partial`（3/54 cases）、`unpaired_runs = []`、`unexpected_runs = []`
+- 判定口径见 [eval-pilot-rubric.md](eval-pilot-rubric.md)，结果与边界见 [pilot 报告](reports/2026-11-01-eval-pilot.md)
+
+该记录**只证明工具链可跑通、`partial` 标记有效，不构成质量评测结论**。完整 Tier 2/3 的规模估算与外部依赖见 rubric §4。
