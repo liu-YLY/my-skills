@@ -1,0 +1,259 @@
+阶段 1：理解需求
+
+模式：默认模式（Webhook 创建，常规单功能）。
+功能概述：在 Webhook 创建页通过 Version、Trigger、Endpoint URL 与 Add endpoint 完成创建。
+复杂度与预算：常规单功能（单页表单、单角色主流程），用例集预算 ≤15 条；本集按风险裁剪为 9 条。
+
+需求条目（分母，来源：对话轮次#1 用户请求）：
+- R1 Version 下拉框可选版本
+- R2 Trigger 选择框选择触发事件
+- R3 Endpoint URL 输入框填写地址
+- R4 Add endpoint 按钮提交创建
+- R5 创建结果在列表与详情可查
+
+业务规则：Version、Trigger、Endpoint URL 为必填；Endpoint URL 接受 http / https 地址；三项必填均完成后 Add endpoint 才可点击（必填规则与候选项需求未给出，见待确认项）。
+风险分析：R4 创建主链路与 R3 地址校验为 P0 / P1；重复提交与脚本注入为防御性 P1；低风险维度按风险裁剪（见阶段 2）。
+待确认项 / 原文问题清单：
+- 对话轮次#1｜缺失｜Version / Trigger 的候选项、初始选中项与必填规则未给出；用例以 v2、push 为具体值，按钮可用性按「三项必填均完成才可点击」理解，待 UI 确认。
+- 对话轮次#1｜缺失｜URL 格式提示文案与格式错误时按钮是否可点击未给出；用例中「Wrong URL format!」为占位，按输入后即提示理解，待 UI 确认，判定以按钮状态与未创建为准。
+- 对话轮次#1｜缺失｜Webhook 名称字段未在控件清单中给出；创建记录以 Endpoint URL 与 Trigger 定位，不编造名称字段。
+信息来源：对话轮次#1 用户请求原文；未找到对应产品知识文件，按通用流程执行。
+
+阶段 2：提取测试点
+
+按 7 维度逐一扫描并判定适用性；裁剪项在「裁剪说明」列写明理由，不为凑齐维度补造用例。
+
+| 编号 | 测试点 | 维度 | 设计方法 | 优先级 | 用例数 | 需求引用 | 裁剪说明 |
+| TP01 | 打开创建页时四控件可见、Endpoint URL 为空、Add endpoint 不可用 | 正向功能 | 场景法 | P1 | 1 | R1 / R2 / R3 / R4 | 初始状态与四控件可见性合并为 1 条，不逐控件出用例 |
+| TP02 | 填写 Version、Trigger、Endpoint URL 后点击 Add endpoint 新增 1 条记录 | 正向功能 | 场景法 | P0 | 1 | R1 / R2 / R3 / R4 / R5 | 提交、列表新增、创建页关闭为同一操作触发的多个结果，用检查点汇总，不拆条 |
+| TP03 | Endpoint URL 为空（其余已填）时 Add endpoint 不可用 | 反向校验 | 等价类划分 | P0 | 1 | R3 / R4 | - |
+| TP04 | Trigger 未选（其余已填）时 Add endpoint 不可用 | 状态联动 | 等价类划分 | P1 | 1 | R2 / R4 | - |
+| TP05 | Endpoint URL 输入 not-a-url 时显示格式提示且不创建 | 反向校验 | 等价类划分 | P1 | 1 | R3 | - |
+| TP06 | Endpoint URL 输入 javascript:alert(1) 时拒绝创建且不执行脚本 | 异常与容错 | 安全模式 | P1 | 1 | R3 | XSS 与协议注入载荷合并为 1 条，不逐载荷出用例 |
+| TP07 | 连续 2 次点击 Add endpoint 后列表只新增 1 条 | 异常与容错 | 等价类划分 | P1 | 1 | R4 | 重复提交防御 |
+| TP08 | 创建后详情页 Version、Trigger、Endpoint URL 与提交值一致 | 正向功能 | 场景法 | P1 | 1 | R5 | - |
+| TP09 | 填写后关闭创建页再打开，不产生记录且 Endpoint URL 为空 | 辅助操作 | 场景法 | P2 | 1 | R4 | 取消 / 返回 / 刷新合并为 1 条关闭重开用例 |
+| - | Version 多候选项遍历 | 边界与限制 | - | - | 0 | R1 | 候选项需求未给出、低风险，裁剪 |
+| - | Endpoint URL 超长地址 | 边界与限制 | - | - | 0 | R3 | 无长度规则，裁剪并列入待确认 |
+| - | 权限 / 角色差异、越权创建 | 权限/角色 | - | - | 0 | - | 需求未明确角色差异，裁剪 |
+| - | 创建时网络中断、5xx、并发创建 | 异常与容错 | - | - | 0 | - | 创建动作不触发第三方回调、无异常口径，裁剪 |
+| - | 性能、兼容性 | 非功能 | - | - | 0 | - | 无指标与兼容要求，裁剪 |
+
+覆盖度自检：7 个维度均已扫描并判定适用性；缺陷模式（输入框 XSS、重复提交、表单残留、按钮状态）已对照并分别落到 TP06 / TP07 / TP09 / TP03；低风险维度裁剪理由已写明。
+
+阶段 3：编写测试用例
+
+编排策略：策略一（用户旅程）——入口与初始状态 → 创建正向 → 创建反向与边界 → 查询展示 → 辅助操作；每阶段先正向后反向，同级按 P0 → P3。本用例集按用户旅程编排。
+用例来源：ai-generated；人工审核状态：not-reviewed（未经人工审阅，不声称审核通过）。
+
+### TC_WEBHOOK_ADD_001: Webhook 创建页 - 打开后四控件可见、Endpoint URL 为空且 Add endpoint 不可用
+- 优先级: P1
+- 类型: functional
+- 需求追溯: R1 / R2 / R3 / R4 | TP01
+- 业务背景: 验证创建页初始状态与控件可用性
+- 前置条件:
+  - 账号已登录，处于 Webhook 列表页
+- 测试步骤:
+  1. 打开 Webhook 创建页
+- 关键检查点:
+  - 步骤 1 后：Add endpoint 按钮处于不可点击状态
+- 业务结果:
+  - 页面显示 Version 下拉框、Trigger 选择框、Endpoint URL 输入框、Add endpoint 按钮
+  - Endpoint URL 输入框内容为空
+- 标签: webhooks, create, initial-state
+
+### TC_WEBHOOK_ADD_002: Webhook 创建 - 选择 v2、push 与 https 地址并点击 Add endpoint 后列表新增 1 条
+- 优先级: P0
+- 类型: functional
+- 需求追溯: R1 / R2 / R3 / R4 / R5 | TP02
+- 业务背景: 验证三项必填完成后提交创建并落库
+- 前置条件:
+  - 账号已登录，Webhook 列表记录数为 0
+- 测试步骤:
+  1. 打开 Webhook 创建页
+  2. 在 Version 下拉框选择 v2
+  3. 在 Trigger 选择框选择 push
+  4. 在 Endpoint URL 输入框输入 https://example.com/hooks/orders
+  5. 点击 Add endpoint 按钮
+  6. 打开 Webhook 列表页
+- 关键检查点:
+  - 步骤 4 后：Add endpoint 按钮变为可点击状态
+  - 步骤 5 后：Webhook 创建页关闭
+- 业务结果:
+  - Webhook 列表页新增 1 条记录，Endpoint URL 为 https://example.com/hooks/orders，Trigger 为 push，Version 为 v2
+- 后置条件: 删除本次创建的 Webhook（Endpoint URL 为 https://example.com/hooks/orders）
+- 标签: webhooks, create, happy-path
+
+### TC_WEBHOOK_ADD_003: Webhook 创建 - Endpoint URL 为空时 Add endpoint 保持不可点击
+- 优先级: P0
+- 类型: functional
+- 需求追溯: R3 / R4 | TP03
+- 业务背景: 验证地址未填写时阻止提交
+- 前置条件:
+  - 账号已登录，Webhook 列表记录数为 0
+- 测试步骤:
+  1. 打开 Webhook 创建页
+  2. 在 Version 下拉框选择 v2
+  3. 在 Trigger 选择框选择 push
+  4. 打开 Webhook 列表页
+- 关键检查点:
+  - 步骤 3 后：Add endpoint 按钮处于不可点击状态
+- 业务结果:
+  - Webhook 列表记录数仍为 0
+- 标签: webhooks, validation, endpoint-url
+
+### TC_WEBHOOK_ADD_004: Webhook 创建 - Trigger 未选时 Add endpoint 保持不可点击
+- 优先级: P1
+- 类型: functional
+- 需求追溯: R2 / R4 | TP04
+- 业务背景: 验证触发事件未选择时阻止提交
+- 前置条件:
+  - 账号已登录，Webhook 列表记录数为 0
+- 测试步骤:
+  1. 打开 Webhook 创建页
+  2. 在 Version 下拉框选择 v2
+  3. 在 Endpoint URL 输入框输入 https://example.com/hooks/orders
+  4. 打开 Webhook 列表页
+- 关键检查点:
+  - 步骤 3 后：Add endpoint 按钮处于不可点击状态
+- 业务结果:
+  - Webhook 列表记录数仍为 0
+- 标签: webhooks, validation, trigger
+
+### TC_WEBHOOK_ADD_005: Webhook 创建 - Endpoint URL 输入 not-a-url 时显示 Wrong URL format!
+- 优先级: P1
+- 类型: functional
+- 需求追溯: R3 | TP05
+- 业务背景: 验证地址格式不合法时给出提示且不创建
+- 前置条件:
+  - 账号已登录，Webhook 列表记录数为 0
+- 测试步骤:
+  1. 打开 Webhook 创建页
+  2. 在 Version 下拉框选择 v2
+  3. 在 Trigger 选择框选择 push
+  4. 在 Endpoint URL 输入框输入 not-a-url
+  5. 打开 Webhook 列表页
+- 关键检查点:
+  - 步骤 4 后：Endpoint URL 输入框下方显示 Wrong URL format!
+- 业务结果:
+  - Webhook 列表记录数仍为 0
+- 标签: webhooks, validation, endpoint-url
+
+### TC_WEBHOOK_ADD_006: Webhook 创建 - Endpoint URL 输入 javascript:alert(1) 时拒绝创建且不执行脚本
+- 优先级: P1
+- 类型: security
+- 需求追溯: R3 | TP06
+- 业务背景: 验证地址协议与脚本载荷不被接受
+- 前置条件:
+  - 账号已登录，Webhook 列表记录数为 0
+- 测试步骤:
+  1. 打开 Webhook 创建页
+  2. 在 Version 下拉框选择 v2
+  3. 在 Trigger 选择框选择 push
+  4. 在 Endpoint URL 输入框输入 javascript:alert(1)
+  5. 打开 Webhook 列表页
+- 关键检查点:
+  - 步骤 4 后：Endpoint URL 输入框下方显示 Wrong URL format!
+  - 步骤 4 后：页面未弹出脚本对话框
+- 业务结果:
+  - Webhook 列表记录数仍为 0
+- 标签: webhooks, security, endpoint-url
+
+### TC_WEBHOOK_ADD_007: Webhook 创建 - 连续 2 次点击 Add endpoint 后列表只新增 1 条
+- 优先级: P1
+- 类型: functional
+- 需求追溯: R4 | TP07
+- 业务背景: 验证重复提交不产生重复记录
+- 前置条件:
+  - 账号已登录，Webhook 列表记录数为 0
+- 测试步骤:
+  1. 打开 Webhook 创建页
+  2. 在 Version 下拉框选择 v2
+  3. 在 Trigger 选择框选择 push
+  4. 在 Endpoint URL 输入框输入 https://example.com/hooks/orders
+  5. 连续 2 次点击 Add endpoint 按钮
+  6. 打开 Webhook 列表页
+- 关键检查点:
+  - 步骤 5 后：Webhook 创建页关闭
+- 业务结果:
+  - Webhook 列表页记录数为 1，Endpoint URL 为 https://example.com/hooks/orders
+- 后置条件: 删除本次创建的 Webhook（Endpoint URL 为 https://example.com/hooks/orders）
+- 标签: webhooks, create, duplicate-submit
+
+### TC_WEBHOOK_ADD_008: Webhook 创建 - 打开详情后 Version、Trigger、Endpoint URL 与提交值一致
+- 优先级: P1
+- 类型: functional
+- 需求追溯: R5 | TP08
+- 业务背景: 验证创建结果在详情页读取一致
+- 前置条件:
+  - 账号已登录，处于 Webhook 列表页
+  - 已存在 Webhook 记录（造数准备）：Version 为 v2、Trigger 为 push、Endpoint URL 为 https://example.com/hooks/invoices
+- 测试步骤:
+  1. 在 Webhook 列表页打开该记录的详情页
+- 关键检查点:
+  - 步骤 1 后：详情页显示 Version 为 v2
+  - 步骤 1 后：详情页显示 Trigger 为 push
+- 业务结果:
+  - 详情页 Endpoint URL 为 https://example.com/hooks/invoices
+- 标签: webhooks, create, consistency
+
+### TC_WEBHOOK_ADD_009: Webhook 创建 - 填写后关闭创建页再打开时不产生记录且 Endpoint URL 为空
+- 优先级: P2
+- 类型: functional
+- 需求追溯: R4 | TP09
+- 业务背景: 验证放弃创建不落库且表单不残留
+- 前置条件:
+  - 账号已登录，Webhook 列表记录数为 0
+- 测试步骤:
+  1. 打开 Webhook 创建页
+  2. 在 Version 下拉框选择 v2
+  3. 在 Trigger 选择框选择 push
+  4. 在 Endpoint URL 输入框输入 https://example.com/hooks/orders
+  5. 关闭 Webhook 创建页
+  6. 打开 Webhook 创建页
+  7. 打开 Webhook 列表页
+- 关键检查点:
+  - 步骤 6 后：Endpoint URL 输入框内容为空
+- 业务结果:
+  - Webhook 列表记录数仍为 0
+- 标签: webhooks, create, cancel
+
+阶段 4：自检与补全
+
+自检结论：
+- 9 条用例均在 ≤15 条预算内；ID 无重复；ID / 标题 / 优先级 / 类型 / 步骤 / 业务结果齐备。
+- 标题均不以「验证」「测试」开头，且对象 + 条件 + 预期可独立定位测试点。
+- 控件名保留界面原文 Version / Trigger / Endpoint URL / Add endpoint；术语与动词全文一致。
+- 关键检查点均标注所依赖步骤号（步骤 N 后）；步骤首词为动词、不复述前置条件。
+- 业务结果写「位置 + 值/状态」，无评价词、愿望式与模糊词，可直接判定 Pass/Fail；创建类用例已写后置条件。
+
+需求 → 测试点 → 用例对应关系：
+| 需求条目 | 测试点 | 用例 |
+| R1 Version 下拉框 | TP01 / TP02 / TP04 | TC_WEBHOOK_ADD_001 / 002 / 004 |
+| R2 Trigger 选择框 | TP01 / TP02 / TP04 / TP08 | TC_WEBHOOK_ADD_001 / 002 / 004 / 008 |
+| R3 Endpoint URL 输入框 | TP01 / TP02 / TP03 / TP05 / TP06 / TP08 | TC_WEBHOOK_ADD_001 / 002 / 003 / 005 / 006 / 008 |
+| R4 Add endpoint 按钮 | TP01 / TP02 / TP03 / TP07 / TP09 | TC_WEBHOOK_ADD_001 / 002 / 003 / 007 / 009 |
+| R5 创建结果可查 | TP02 / TP08 | TC_WEBHOOK_ADD_002 / 008 |
+
+覆盖情况（已设计，未执行）：
+- 覆盖分母：5 条需求条目，来源为对话轮次#1 用户请求（需求基线）。
+- 5/5 需求条目已设计用例，9 个测试点均有用例；无真实执行记录，不计算执行通过率；待确认场景不混入已设计结果。
+
+未覆盖项（单独列出并写明原因）：
+- 需求条目未覆盖：无。
+- Version 多候选项遍历（裁剪）：候选项需求未给出、低风险。
+- Endpoint URL 超长地址（裁剪）：无长度规则，口径待确认。
+- 权限 / 角色差异、越权创建（裁剪）：需求未明确角色差异。
+- 创建时网络中断、5xx、并发创建（裁剪）：创建动作不触发第三方回调、无异常口径。
+- 性能与兼容性（裁剪）：无指标与兼容要求。
+- Version / Trigger 候选项与初始选中项、格式错误时按钮可用性、提示文案（待确认）：判定口径未确认，不编造验收事实、不并列互斥结果，确认唯一口径后再补为可执行用例。
+
+等价场景合并与去重：
+- 初始状态与四控件可见性合并为 TC_WEBHOOK_ADD_001，不为每个控件各出 1 条。
+- 创建提交、列表新增、创建页关闭为同一操作触发的多个结果，用 TC_WEBHOOK_ADD_002 的关键检查点与业务结果汇总，不拆条。
+- 取消 / 返回 / 刷新合并为 TC_WEBHOOK_ADD_009 的关闭重开用例。
+- XSS 与协议注入载荷合并到 TC_WEBHOOK_ADD_006，不逐载荷出用例；TC_WEBHOOK_ADD_005（格式校验）与 TC_WEBHOOK_ADD_006（安全属性）验证目标不同，保留为 2 条。
+- TP03（Endpoint URL 为空）与 TP04（Trigger 未选）条件不同，不属等价场景，保留为 2 条以便失败隔离。
+- 输出前逐对核对标题、前置条件与关键输入，无重复用例。
+
+机器校验：独立模式（未校验）——review-checker MCP 未安装，仅执行自检清单；生成完成不等于人工审核通过或用例已执行。
