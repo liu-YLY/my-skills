@@ -111,3 +111,5 @@ python scripts/skill-evals.py --skill test-case-engineer \
 该记录**只证明工具链可跑通、`partial` 标记有效，不构成质量评测结论**。完整 Tier 2/3 的规模估算与外部依赖见 rubric §4。
 
 **2026-11-02 阶段 H 修订**：#32 第 4 条与 #39 第 2 条复合断言拆分，冻结套件更新为 v2（54 cases / 219 checks，SHA256 `aaf6fa42…`），v1（`a504f741…`，217 checks）保留为历史。pilot v2 判定 13/13、`invalid_runs = []`，见 [v2 报告](reports/2026-11-02-eval-pilot-v2.md)；该数字**不代表质量提升**，边界见 v2 报告 §5。完整 Tier 2/3 应使用 v2 套件，跨版本分数不可比。
+
+**2026-11-02 阶段 I（pilot v3）**：三条 case 用统一、无额外提示的 runner 指令重新生成，同一 judge 判定 **11/13**、`invalid_runs = []`，见 [v3 报告](reports/2026-11-02-eval-pilot-v3.md)。v3 是首个三轮一致、无提示污染的基线；三次 pilot 因 runner 指令与产物来源不同**互不可比**。v3 报告 §4 记录两处规则/断言一致性问题。
