@@ -4,7 +4,7 @@
 
 ### 1. Testing Bundle (testing-bundle)
 
-**版本**：v3.5.1
+**版本**：v3.5.2
 **功能**：测试能力 bundle 入口，统一路由到 8 个专业子 skill：test-strategy-engineer（项目级策略）/ test-case-engineer（功能用例生成与用例评审）/ performance-test-engineer（性能测试）/ bug-analyzer（Bug 根因分析）/ state-machine-test-engineer（状态机测试）/ change-impact-analyzer（变更影响分析）/ frontend-test-preparation（前端测试准备）/ test-data-generator（离线数据生成与校验）。
 
 > Bundle 是元 skill，本身不实现具体能力，而是根据用户意图自动路由到对应子 skill。

@@ -12,7 +12,7 @@
 
 | Skill | 版本 | 类型 | 职责 |
 |---|---|---|---|
-| [testing-bundle](skills/testing-bundle/) | v3.5.1 | 元 skill / 路由入口 | 8 个专业子 skill 路由 + 9 条混合意图链 |
+| [testing-bundle](skills/testing-bundle/) | v3.5.2 | 元 skill / 路由入口 | 8 个专业子 skill 路由 + 9 条混合意图链 |
 | [test-strategy-engineer](skills/test-strategy-engineer/) | v1.3.0 | 子 skill | 项目级测试策略：风险矩阵 / 分层 / 范围优先级 / 准入准出 |
 | [test-case-engineer](skills/test-case-engineer/) | v9.10.0 | 子 skill | 功能用例生成：需求分析 / 测试点提取 / 用例编写 / 自检补全 |
 | [performance-test-engineer](skills/performance-test-engineer/) | v1.2.3 | 子 skill | 性能测试方案 + 瓶颈定位（资源/架构层）|
