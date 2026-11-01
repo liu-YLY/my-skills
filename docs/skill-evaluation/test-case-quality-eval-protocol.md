@@ -1,6 +1,6 @@
 # 测试用例 Skill 四目标评测执行协议
 
-> 适用版本：`test-case-engineer` v9.10.0 起，评测集 42 task / 12 trigger
+> 适用版本：`test-case-engineer` v9.10.0 起（当前 v9.11.0），评测集 42 task / 12 trigger
 > 建立日期：2026-11-01（阶段 A）
 > 配套：[测评方法论](methodology.md)、[2026-10-31 基线](reports/2026-10-31-baseline.md)
 > 状态：**协议已就绪，尚未执行真实模型评测**
