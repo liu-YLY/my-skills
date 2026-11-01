@@ -3,7 +3,7 @@
 > **何时阅读**：阶段 3 编写用例时必读（格式 / 字段 / 写作风格 / 编写铁律 / 拆分合并策略）。
 > **覆盖范围**：通用用例格式 / ID 生成规则 / 字段说明 / 写作风格与信息密度 / 编写铁律 / 禁用模糊表达 / Tag 规范 / 拆分与合并策略 / 输出格式与证据边界。
 > **相邻文件**：完整用例集编排见 [case-arrangement.md](case-arrangement.md)；失败语义与安全属性见 [failure-semantics.md](failure-semantics.md)；效率度量见 [efficiency-metrics.md](efficiency-metrics.md)；分层与默认输出类型见 [test-levels.md](test-levels.md)；句长、结构、术语的完整细则见 [readability.md](readability.md)。
-> **与 core.md 的关系**：本文件从 core.md 拆分，承载阶段 3 编写用例所需的全部规则与格式标准。core.md 仅保留流程骨架与 CHECKPOINT。
+> **与 core.md 的关系**：本文件从 core.md 拆分，承载阶段 3 编写用例所需的全部规则与格式标准。core.md 仅保留流程骨架与阶段自检。
 
 ---
 
@@ -74,6 +74,7 @@
 - 组内共享的前置条件/元信息写在组头部，行内只保留变化部分
 - 单组行数不超过 10 行；跨验证逻辑的用例禁止合组
 - 每行仍必须有独立 ID（可用字母后缀 `006a/006b`）与可判定的预期结果
+- 组内用例计入用例集预算，不因合表而不计数；总量与去重规则见 [case-arrangement.md](case-arrangement.md)「用例集预算与等价场景合并」
 
 ## 补充用例 ID 生成规则（强制）
 
