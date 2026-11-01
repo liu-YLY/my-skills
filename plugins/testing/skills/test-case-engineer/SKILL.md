@@ -153,3 +153,5 @@ keywords:
 ## 能力约束
 
 始终可使用文件读取、代码搜索、终端命令等环境能力。若某项不可用，在输出中明确注明局限。
+
+> 阶段 4 生成流程的确定性复核与三模式降级见 [test-case-engineer-core.md](test-case-engineer-core.md)「阶段 4 机器校验」；review-checker MCP 为可选增强，未安装时如实标注独立模式。
