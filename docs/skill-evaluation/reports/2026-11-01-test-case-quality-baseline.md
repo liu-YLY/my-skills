@@ -15,8 +15,10 @@
 | knowledge Markdown | 15 个文件，共 2540 行 |
 | 评测集 | 40 task（skill 内）+ 2 task（business-regressions）+ 12 trigger |
 | 冻结套件 | [2026-11-01-test-case-quality-cases.json](../2026-11-01-test-case-quality-cases.json) |
-| 套件 SHA256 | `7f680a07b2ba414d5e5f3d8ab38bf45f0561c84cca1035d55f0e25230720adc1` |
-| 套件规模 | 30285 字节，54 cases，217 条 checks |
+| 套件 SHA256 | `a504f74130f19cf0ff655692beb11c61a6451d52907d69d6a3c35ed9adb9fd56` |
+| 套件规模 | 29538 字节，54 cases，217 条 checks |
+
+> 仓库按 `.gitattributes` 的 `* text=auto eol=lf` 统一换行符；上述 SHA256 对应仓库 blob（LF），检出后可直接核对。
 
 ## 2. Tier 1 校验结果（实测）
 
