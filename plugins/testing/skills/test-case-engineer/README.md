@@ -89,7 +89,7 @@ AI（test-case-engineer）：
 ```
 test-case-engineer/
 ├── SKILL.md                    # 入口索引（触发条件 + 知识库路由 + 模式读取矩阵）
-├── test-case-engineer-core.md  # 核心流程（四阶段 + 模式切换 + CHECKPOINT）
+├── test-case-engineer-core.md  # 核心流程（四阶段 + 模式切换 + 阶段自检）
 ├── README.md                   # 本说明文档
 ├── test-prompts.json           # 评估用例（32 条行为测试 + 12 条触发测试）
 │
