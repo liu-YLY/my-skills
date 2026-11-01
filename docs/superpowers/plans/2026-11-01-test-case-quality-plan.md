@@ -1,6 +1,6 @@
 # 测试用例 Skill 四目标优化执行计划与执行记录
 
-> **状态**：**阶段 0 / A / B / C / F 已完成；分支已推送、PR #137 已建且 CI 全绿；等待用户决定是否合并**
+> **状态**：**阶段 0 / A / B / C / F / G 已完成；PR #137 已合并；停在停止点 G，等待用户决定下一步**
 > **执行方式**：每阶段结束写回本文件最新交接快照（当前 §9.4）；每任务一个本地 commit；不自动跨阶段
 > **基线**：`main` @ `1557de5`（2026-11-01 21:00 实测），工作区干净，6 个仓库校验脚本全绿
 > **目标 skill**：`plugins/testing/skills/test-case-engineer` v9.10.0 → **v9.11.0**（阶段 F 发布）
@@ -99,7 +99,7 @@
 ## 4. 阶段与停止点
 
 ```text
-阶段 0  用户决策（D1–D5）  ← 当前位置
+阶段 0  用户决策（D1–D5）
    ↓ 确认后开分支
 阶段 A  建立可判定评测基线（不改动 skill 行为）
    ↓ 🔴 停止点 A：确认评测套件与干跑结论
@@ -122,7 +122,7 @@
 | E | E1–E2 | 覆盖矩阵 + MCP 升级 | 6 脚本 + MCP pytest 全绿 | 是 |
 | F | F1–F4 | 版本同步、提交、交付报告 | `git status` 干净 | 是 |
 
-> **当前位置**：阶段 0 / A / B / C / F 已完成；**停在停止点 F**，阶段 D/E 未执行，未推送、未建 PR。
+> **当前位置**：阶段 0 / A / B / C / F / G 已完成；**停在停止点 G**，阶段 D/E 未执行，本地未推送、未建 PR。
 
 > **规则**：每个阶段结束输出「commit 列表 + 校验结果 + 下一阶段建议」，不自动跨阶段；每任务一个 commit，Conventional Commits 中文 subject。
 
@@ -266,7 +266,12 @@ python scripts/skill-evals.py --skill test-case-engineer \
 | 2026-11-01 | F1 全量校验 | — | 6 脚本全绿；review-checker 110 passed；冻结套件 SHA 一致；`scripts/tests` 4 失败均为缺 python-docx（CI 侧） | 见交付报告 |
 | 2026-11-01 | F2 | `044dbe3` | 发布 v9.11.0，同步 8 处版本引用；不升 bundle/MCP | 6 脚本 + 哈希比对 |
 | 2026-11-01 | F4 | `1109bcb` | 交付报告 + 10-31 基线状态更新 | 6 脚本 + md-links |
-| 2026-11-01 | 阶段 F 状态记录 | 本提交 | 回填头部/§0/§4/§9/新增 §9.4/§10 | 6 脚本 |
+| 2026-11-01 | 阶段 F 状态记录 | `edb28a1` | 回填头部/§0/§4/§9/新增 §9.4/§10 | 6 脚本 |
+| 2026-11-01 | 推送与 PR 记录 | `97b2098` | 分支推送、PR #137、CI 6 项全绿 | 6 脚本 |
+| 2026-11-01 | G1 | `1596c34` | 评测判定口径与 Tier 2/3 执行清单；协议 §8 | 6 脚本 |
+| 2026-11-01 | G2 | `f13c7a2` | 3 份真实产物 + runs.jsonl；`--results` 链路验证 | 工具链跑通 |
+| 2026-11-01 | G3 | `837b873` | 阶段 G pilot 报告 | 6 脚本 + md-links |
+| 2026-11-01 | 阶段 G 状态记录 | 本提交 | 回填头部/流程图/§4/§9/新增 §9.5/§10 | 6 脚本 |
 
 ### 9.1 阶段 A 交接快照（新会话唯一进度源）
 
@@ -398,20 +403,48 @@ python scripts/skill-evals.py --skill test-case-engineer \
 
 **PR 规模备注**：1783 insertions / 76 deletions 超过 AGENTS.md 400 行/PR 上限；PR 描述中已按文档/生成物类申请豁免。如需严格合规，可改为按阶段拆分的堆叠 PR。
 
+### 9.5 阶段 G 交接快照（新会话唯一进度源）
+
+**目标**：生成准确、精简、覆盖面全、人类可读性强的测试用例；用户选择「先跑真实模型评测」，本阶段把评测工具链跑通并完成小规模 pilot。
+
+| 项 | 状态 |
+|---|---|
+| 基线 | PR #137 已合并，`main` @ `4c13cee`；新分支 `feat/test-case-eval-pilot` |
+| 本地旧分支 | `feat/test-case-quality-eval` 因 squash merge 被 `git branch -d` 拒绝，**保留未删**（未使用 `-D`） |
+| 阶段 A/B/C/F | 已合并进 main |
+| 阶段 G | **已完成**：rubric、3 份真实产物、judge 判定、`--results` 链路验证、pilot 报告 |
+| 当前停止点 | 停止点 G |
+| 版本 | 仍 v9.11.0，**未升版本、未改 skill 规则** |
+| 本地提交 | 未推送、未建 PR |
+
+**已交付**：`docs/skill-evaluation/eval-pilot-rubric.md`（判定口径 + 完整 Tier 2/3 执行清单）、`docs/skill-evaluation/pilot/outputs/`（3 份产物）、`docs/skill-evaluation/pilot/runs.jsonl`、`docs/skill-evaluation/reports/2026-11-01-eval-pilot.md`、评测协议 §8。
+
+**pilot 结果**：runner 子代理（`reasoning` 配置）生成 3 份产物，judge 子代理（`lite` 配置、不读 skill 文件）逐条判定 **11/12**；`--results` 返回 `status = partial`、`checks_passed 11/12`、`invalid_runs = []`、完成率 5.56%。工具链全链路跑通，字符数与 SHA256 确定性校验生效，`partial` 能正确阻止误发布结论。
+
+**暴露的问题**：#39 第 2 条断言把「长句」与「单决策点」合并、40 字计数口径含糊，judge 判 false 时无法区分「规则问题」与「断言歧义」；建议拆成两条并写明计数口径。三份产物平均 7557 字符，是否偏长需 baseline 对照才能归因。
+
+**不得宣称**：3/42 task、单 variant、1 次重复、无 baseline；judge 与 runner 同模型家族不同配置，未满足严格独立性；`duration_seconds = 0` 占位；**结果不可作 keep/revert 依据，不是整体通过率，不写入质量提升类结论**。
+
+**完整 Tier 2/3 外部依赖**：批量 runner、不同模型的独立 judge、产物存储与计费配额；三 variant 约 486 次调用。清单见 rubric §4。
+
+**下一步需用户拍板**：① 提供 runner/judge 环境跑完整 Tier 2/3；② 先修 #39 第 2 条断言并重跑 pilot；③ 回到可选阶段 D/E；④ 直接停在 v9.11.0。
+
 ---
 
 ## 10. 上下文恢复指引
 
 新会话继续时按顺序读：
 
-1. **本文件 §9.4 阶段 F 交接快照（最新进度源，先读这一节）**；§9.1–§9.3 为 A/B/C 历史快照
+1. **本文件 §9.5 阶段 G 交接快照（最新进度源，先读这一节）**；§9.1–§9.4 为 A/B/C/F 历史快照
 2. 本文件 §0（决策结果）、§4（阶段状态）、§9（已完成 commit）
-3. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-delivery.md`（v9.11.0 交付报告）
-4. `docs/skill-evaluation/reports/2026-11-01-stage-c-conciseness-dryrun.md`（阶段 C 对照）
-5. `docs/skill-evaluation/reports/2026-11-01-stage-b-machine-check-dryrun.md`（阶段 B 对照）
-6. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-baseline.md`（阶段 A 基线）
-7. `docs/superpowers/plans/2026-10-31-test-case-readability.md`（上一专项，已全部合并）
-8. `.workbuddy/memory/2026-11-01.md`（诊断与阶段结论摘要）
+3. `docs/skill-evaluation/reports/2026-11-01-eval-pilot.md`（阶段 G pilot 报告）
+4. `docs/skill-evaluation/eval-pilot-rubric.md`（判定口径与 Tier 2/3 执行清单）
+5. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-delivery.md`（v9.11.0 交付报告）
+6. `docs/skill-evaluation/reports/2026-11-01-stage-c-conciseness-dryrun.md`（阶段 C 对照）
+7. `docs/skill-evaluation/reports/2026-11-01-stage-b-machine-check-dryrun.md`（阶段 B 对照）
+8. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-baseline.md`（阶段 A 基线）
+9. `docs/superpowers/plans/2026-10-31-test-case-readability.md`（上一专项，已全部合并）
+10. `.workbuddy/memory/2026-11-01.md`（诊断与阶段结论摘要）
 
 继续前先执行：
 
