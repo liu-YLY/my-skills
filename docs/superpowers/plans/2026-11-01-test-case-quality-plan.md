@@ -1,6 +1,6 @@
 # 测试用例 Skill 四目标优化执行计划与执行记录
 
-> **状态**：**阶段 0 / A / B / C / F 已完成；停在停止点 F，等待用户决定是否推送或进入 D/E**
+> **状态**：**阶段 0 / A / B / C / F 已完成；分支已推送、PR #137 已建且 CI 全绿；等待用户决定是否合并**
 > **执行方式**：每阶段结束写回本文件最新交接快照（当前 §9.4）；每任务一个本地 commit；不自动跨阶段
 > **基线**：`main` @ `1557de5`（2026-11-01 21:00 实测），工作区干净，6 个仓库校验脚本全绿
 > **目标 skill**：`plugins/testing/skills/test-case-engineer` v9.10.0 → **v9.11.0**（阶段 F 发布）
@@ -376,23 +376,27 @@ python scripts/skill-evals.py --skill test-case-engineer \
 
 | 项 | 状态 |
 |---|---|
-| 分支 | `feat/test-case-quality-eval`，基于 `main` @ `1557de5`；**只本地提交，未推送、未建 PR** |
+| 分支 | `feat/test-case-quality-eval`，基于 `main` @ `1557de5`；**已推送到 `origin`** |
+| PR | **[#137](https://github.com/liu-YLY/my-skills/pull/137)**，open、非 draft，19 files / +1783 / −76；**尚未合并** |
+| CI | GitHub Actions **6 项全部 success**（含 repository-tools、Lint & Validate、三个功能测试组） |
 | 阶段 A/B/C/F | 全部完成（A 6 / B 4 / C 5 / F 3 commit，共 18 个） |
 | 阶段 D/E | 未执行（可选） |
-| 当前停止点 | 停止点 F |
+| 当前停止点 | 停止点 F；等待用户决定是否合并 PR |
 | 版本 | `test-case-engineer` **v9.11.0**；testing-bundle 3.5.2、review-checker 0.4.0 未变 |
 | `core.md` | 487 行 |
 | 冻结套件 | SHA256 `a504f741…`，改版前后一致 |
 
 **已交付**：详见 `docs/skill-evaluation/reports/2026-11-01-test-case-quality-delivery.md`（8 处版本同步、F1 校验结果、未验证项、已知未完成 6 项、回滚方式）。
 
-**F1 校验**：6 个仓库脚本全绿；`42 task / 12 trigger`；review-checker 110 passed；冻结套件 SHA 一致。`scripts/tests` 47 passed / 4 failed（均因 venv 缺 `python-docx`，CI 会安装）；state-machine 测试缺 `yaml`、markdownlint 与 pre-commit 未安装 → **CI 侧未跑通前不声称全量验证通过**。
+**F1 校验**：6 个仓库脚本全绿；`42 task / 12 trigger`；review-checker 110 passed；冻结套件 SHA 一致。本地 `scripts/tests` 47 passed / 4 failed（均因 venv 缺 `python-docx`）、state-machine 缺 `yaml`、markdownlint 与 pre-commit 未安装 —— **这些在 PR #137 的 CI 上 6 项全部 success，全量校验已补齐**。
 
 **未验证 / 不得宣称**：模型行为评测未执行、无质量分数、token 未重测；宿主 MCP 调用与端到端生成流程未验证；A/B/C 三份报告均为 `dry_run`；历史 `runs.jsonl` 与新套件不兼容。
 
 **已知未完成**：交付物仍 4 份；#37 需求条目作分母未落地（阶段 E）；2 项残留机械表述（阶段 D）；根 README 的 `review-checker v0.3.1` 既有漂移。
 
-**下一步需用户拍板**：① 推送分支并创建 PR，让 CI 补跑 markdownlint / `python-docx` / `yaml` 测试组；② 执行可选阶段 D 或 E；③ 准备独立 runner 与 judge 跑 Tier 2/Tier 3 形成可比基线；④ 直接停在 v9.11.0 不再改动。
+**下一步需用户拍板**：① **已完成**：分支已推送、PR #137 已建、CI 6 项全绿；待决定是否合并（建议 squash merge）并按 AGENTS.md 删除 feature 分支；② 执行可选阶段 D 或 E；③ 准备独立 runner 与 judge 跑 Tier 2/Tier 3 形成可比基线；④ 直接停在 v9.11.0 不再改动。
+
+**PR 规模备注**：1783 insertions / 76 deletions 超过 AGENTS.md 400 行/PR 上限；PR 描述中已按文档/生成物类申请豁免。如需严格合规，可改为按阶段拆分的堆叠 PR。
 
 ---
 

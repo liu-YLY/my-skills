@@ -55,7 +55,7 @@
 | markdownlint / pre-commit / YAML 校验 | 本地未安装，CI 侧验证 |
 | 新增 Markdown 格式自检 | 无行尾空格、单个一级标题、末尾单换行（实跑） |
 
-**CI 侧未跑通之前，本报告不声称全量验证通过。**
+**PR 创建后的 CI 结果（2026-11-01 实测）**：GitHub Actions 6 个检查全部 `completed / success`——`Offline test data generator`、`Functional tests (state-machine-testing)`、`repository-tools`、`Functional tests (wechat-formatter)`、`Functional tests (review-checker)`、`Lint & Validate`。本地缺失的 `python-docx`、`yaml`、markdownlint、pre-commit 相关测试组在 CI 侧全部通过；上表中「CI 侧验证」项至此已补齐。
 
 ## 4. 未验证项与 `dry_run` 边界
 
@@ -81,14 +81,15 @@
 
 ## 6. 发布边界与回滚
 
-- D4 决策：**只本地提交，未推送、未创建 PR**；是否推送/建 PR 由用户另行决定。
-- 每个任务一个 Conventional Commits 中文 commit，单个变更单元均远低于 400 行上限。
+- 发布状态（2026-11-01）：分支 `feat/test-case-quality-eval` 已推送到 `origin`，**PR [#137](https://github.com/liu-YLY/my-skills/pull/137)** 已创建，CI 6 项全绿；**尚未合并**，合并与删除分支由用户决定。
+- PR 规模：1783 insertions / 76 deletions，超过 AGENTS.md 的 400 行/PR 上限；PR 描述中已按文档/生成物类申请豁免（747 行冻结套件 JSON + 422 行执行计划 + 约 430 行评测文档，实际规则改动约 250 行）。如需严格合规，可改为按阶段拆分的堆叠 PR。
+- 每个任务一个 Conventional Commits 中文 commit；整体 PR 规模说明见上一条。
 - 回滚：按 commit 用 `git revert` 单任务回滚；`backup/pre-sync-20261031` 仍为整仓回滚点。
 - 版本回退需同时回退 §2 的 8 处引用，否则 `check-version-sync.py` 会失败。
 
 ## 7. 下一步（待用户决定）
 
-1. 推送分支并创建 PR，让 CI 补跑 markdownlint / `python-docx` / `yaml` 相关测试组
+1. **已完成**：分支已推送，PR [#137](https://github.com/liu-YLY/my-skills/pull/137) 已创建，CI 6 项全绿；待用户决定是否合并与删除分支
 2. 执行可选阶段 D（规则收敛）或 E（覆盖度可计算，补上需求条目分母）
 3. 准备独立 runner 与 judge，按 [评测执行协议](../test-case-quality-eval-protocol.md) 跑 Tier 2/Tier 3，形成可比基线
 4. 或者直接停在 v9.11.0，不再改动
