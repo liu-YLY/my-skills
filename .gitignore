@@ -225,3 +225,6 @@ __marimo__/
 docs/skill-evaluation/tier23/blind-map.json
 docs/skill-evaluation/tier23/judge-results.jsonl
 docs/skill-evaluation/tier23/runs.jsonl
+docs/skill-evaluation/tier23/full/judge-results.jsonl
+docs/skill-evaluation/tier23/full/runs.jsonl
+docs/skill-evaluation/tier23/full/trigger-results.jsonl

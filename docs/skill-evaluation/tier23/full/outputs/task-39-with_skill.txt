@@ -1,0 +1,255 @@
+## 需求理解
+
+**功能概述**：Webhook 创建——通过配置 Version、Trigger、Endpoint URL 并点击 Add endpoint 创建一条 Webhook。
+
+**业务系统类型**：第三方对接（Webhook 回调），含输入校验与安全风险。
+
+**需求追溯**：
+
+| 条目 | 需求ID/PRD章节/Story | 备注 |
+|------|----------------------|------|
+| Webhook 创建表单 | 待补充 | Version 下拉框、Trigger 选择框、Endpoint URL 输入框、Add endpoint 按钮 |
+
+**用户角色**：拥有创建 Webhook 权限的用户。
+
+**业务规则**：
+1. Version 为下拉框选项。
+2. Trigger 为选择框选项。
+3. Endpoint URL 为必填项，需为合法 URL 格式。
+4. 表单填写完整后 Add endpoint 按钮可用，点击后创建 Webhook。
+
+**风险分析**：
+- 高风险模块：Endpoint URL 校验（必填、格式）、URL 注入（XSS/SSRF）。
+- 高回归风险：Webhook 创建成功后的列表展示。
+- 必须重点测试范围：URL 必填/格式/注入、按钮状态联动、创建成功。
+
+**待确认项**：
+- Version 与 Trigger 的具体选项值未给出，按界面原文占位。
+- Endpoint URL 的合法格式判定口径未给出，按 `https://` 前缀 URL 理解。
+
+**原文问题清单**：
+
+| 序号 | 原文位置 | 问题类型 | 问题描述 | 影响范围 | 处置 |
+|------|---------|---------|---------|---------|------|
+| 1 | 对话轮次#39 | 缺失 | Version、Trigger 具体选项值未给出 | Version/Trigger 相关用例 | 已按界面原文占位设计 |
+
+**信息来源**：用户需求原文；未找到对应产品知识文件。
+
+## 测试点清单
+
+| 编号 | 测试点 | 维度 | 设计方法 | 优先级 | 用例数（估） | 需求引用 | 来源 | 裁剪说明 |
+|------|--------|------|----------|--------|-------------|----------|------|------|
+| 1 | Endpoint URL 为空时不可提交 | 反向校验 | 等价类 | P0 | 1 | 规则3 | 需求 | - |
+| 2 | Endpoint URL 格式非法时提示错误 | 反向校验 | 等价类 | P1 | 1 | 规则3 | 需求 | - |
+| 3 | Version 下拉框选择生效 | 正向功能 | 场景法 | P1 | 1 | 规则1 | 需求 | - |
+| 4 | Trigger 选择框选择生效 | 正向功能 | 场景法 | P1 | 1 | 规则2 | 需求 | - |
+| 5 | 表单填写完整后 Add endpoint 按钮可用并创建成功 | 状态联动 | 场景法 | P0 | 1 | 规则4 | 需求 | - |
+| 6 | Endpoint URL 注入 XSS 脚本被转义或拒绝 | 异常与容错 | 安全模式 | P1 | 1 | 规则3 | 缺陷模式库 | - |
+| 7 | 快速重复点击 Add endpoint 不重复创建 | 异常与容错 | 缺陷模式（重复提交） | P1 | 1 | 规则4 | 缺陷模式库 | - |
+
+**覆盖度自检**：
+- [x] 7 个维度已扫描（权限/角色、UI 交互按需求裁剪：需求无多角色，UI 不作为独立被测对象）
+- [x] 缺陷模式库已对照（XSS、重复提交已补充）
+- [x] 高风险字段（Endpoint URL）的必填/格式/注入已覆盖
+
+## 测试用例
+
+本用例集按用户旅程编排（入口 → 表单填写 → 创建 → 列表核验）。
+
+### TC_WEBHOOK_ADD_001: Endpoint URL 校验 - 为空时按钮置灰
+
+- **优先级**: P0
+- **类型**: functional
+- **需求追溯**: 规则3 / TP-01
+- **来源**: ai-generated
+- **人工审核状态**: not-reviewed
+- **业务背景**: 验证 Endpoint URL 为空时 Add endpoint 按钮不可用
+
+**前置条件**:
+- 测试账号已登录并拥有创建 Webhook 权限
+- 已打开「Add webhook」弹窗
+
+**测试步骤**:
+1. 「Version」下拉框选择 v4
+2. 「Trigger」选择「订单创建」
+3. 清空「Endpoint URL」输入框
+
+**业务结果**:
+- 「Add endpoint」按钮置灰，不可点击
+
+**标签**: webhooks, validation, endpoint-url, required
+
+### TC_WEBHOOK_ADD_002: Endpoint URL 校验 - 格式非法提示错误
+
+- **优先级**: P1
+- **类型**: functional
+- **需求追溯**: 规则3 / TP-02
+- **来源**: ai-generated
+- **人工审核状态**: not-reviewed
+- **业务背景**: 验证 Endpoint URL 格式非法时提示错误且不可提交
+
+**前置条件**:
+- 测试账号已登录并拥有创建 Webhook 权限
+- 已打开「Add webhook」弹窗
+
+**测试步骤**:
+1. 「Version」下拉框选择 v4
+2. 「Trigger」选择「订单创建」
+3. 在「Endpoint URL」输入框输入 `not-a-url`
+4. 点击「Add endpoint」
+
+**业务结果**:
+- 「Endpoint URL」输入框下方显示「Wrong URL format!」
+- 未创建 Webhook
+
+**标签**: webhooks, validation, endpoint-url, format
+
+### TC_WEBHOOK_ADD_003: Version 下拉框 - 选择版本生效
+
+- **优先级**: P1
+- **类型**: functional
+- **需求追溯**: 规则1 / TP-03
+- **来源**: ai-generated
+- **人工审核状态**: not-reviewed
+- **业务背景**: 验证 Version 下拉框可选择版本
+
+**前置条件**:
+- 测试账号已登录并拥有创建 Webhook 权限
+- 已打开「Add webhook」弹窗
+
+**测试步骤**:
+1. 点击「Version」下拉框
+2. 选择一个版本（如 v4）
+
+**业务结果**:
+- 「Version」下拉框显示所选版本 v4
+
+**标签**: webhooks, version, select
+
+### TC_WEBHOOK_ADD_004: Trigger 选择框 - 选择触发事件生效
+
+- **优先级**: P1
+- **类型**: functional
+- **需求追溯**: 规则2 / TP-04
+- **来源**: ai-generated
+- **人工审核状态**: not-reviewed
+- **业务背景**: 验证 Trigger 选择框可选择触发事件
+
+**前置条件**:
+- 测试账号已登录并拥有创建 Webhook 权限
+- 已打开「Add webhook」弹窗
+
+**测试步骤**:
+1. 点击「Trigger」选择框
+2. 选择「订单创建」
+
+**业务结果**:
+- 「Trigger」选择框显示所选「订单创建」
+
+**标签**: webhooks, trigger, select
+
+### TC_WEBHOOK_ADD_005: Webhook 创建 - 表单完整后创建成功
+
+- **优先级**: P0
+- **类型**: functional
+- **需求追溯**: 规则4 / TP-05
+- **来源**: ai-generated
+- **人工审核状态**: not-reviewed
+- **业务背景**: 验证表单填写完整后点击 Add endpoint 创建成功
+
+**前置条件**:
+- 测试账号已登录并拥有创建 Webhook 权限
+- 已打开「Add webhook」弹窗
+
+**测试步骤**:
+1. 「Version」下拉框选择 v4
+2. 「Trigger」选择「订单创建」
+3. 在「Endpoint URL」输入框输入 `https://example.com/hooks/orders`
+4. 点击「Add endpoint」
+5. 刷新 Webhook 列表
+
+**关键检查点**:
+- 步骤 4 后：弹窗关闭
+
+**业务结果**:
+- Webhook 列表出现一条记录，Endpoint URL 为 `https://example.com/hooks/orders`
+- 本次操作只新增一条记录
+
+**后置条件**:
+- 删除本次创建的 Webhook
+
+**标签**: webhooks, create, endpoint-url
+
+### TC_WEBHOOK_ADD_006: Endpoint URL 安全 - XSS脚本被拒绝或转义
+
+- **优先级**: P1
+- **类型**: security
+- **需求追溯**: 规则3 / TP-06
+- **来源**: ai-generated
+- **人工审核状态**: not-reviewed
+- **业务背景**: 验证 Endpoint URL 注入 XSS 脚本时被拒绝或转义，不执行脚本
+
+**前置条件**:
+- 测试账号已登录并拥有创建 Webhook 权限
+- 已打开「Add webhook」弹窗
+
+**测试步骤**:
+1. 「Version」下拉框选择 v4
+2. 「Trigger」选择「订单创建」
+3. 在「Endpoint URL」输入框输入 `<script>alert(1)</script>`
+4. 点击「Add endpoint」
+
+**业务结果**:
+- 输入被拒绝并提示「Wrong URL format!」，或列表按纯文本展示该值
+- 未弹出脚本对话框
+
+**标签**: webhooks, security, xss, endpoint-url
+
+### TC_WEBHOOK_ADD_007: Webhook 创建 - 快速重复点击不重复创建
+
+- **优先级**: P1
+- **类型**: functional
+- **需求追溯**: 规则4 / TP-07
+- **来源**: ai-generated
+- **人工审核状态**: not-reviewed
+- **业务背景**: 验证快速连续点击 Add endpoint 不重复创建多条 Webhook
+
+**前置条件**:
+- 测试账号已登录并拥有创建 Webhook 权限
+- 已打开「Add webhook」弹窗
+
+**测试步骤**:
+1. 「Version」下拉框选择 v4
+2. 「Trigger」选择「订单创建」
+3. 在「Endpoint URL」输入框输入 `https://example.com/hooks/orders`
+4. 在 1 秒内连续点击「Add endpoint」2 次
+5. 刷新 Webhook 列表
+
+**业务结果**:
+- Webhook 列表仅出现一条记录，Endpoint URL 为 `https://example.com/hooks/orders`
+
+**后置条件**:
+- 删除本次创建的 Webhook
+
+**标签**: webhooks, create, idempotent, duplicate-submit
+
+## 用例自检
+
+**可追溯性**：
+- [x] 主要用例与测试点编号可对应
+- [x] 追溯信息完整
+
+**覆盖度检查**：
+- [x] 所有测试点均已有对应用例
+- [x] Endpoint URL 必填/格式/注入全覆盖
+- [x] 按钮状态联动与创建成功全覆盖
+- [x] 重复提交防御全覆盖
+
+**质量检查**：
+- [x] 步骤按流程顺序编排
+- [x] 标题可独立定位测试点（对象 - 条件 - 预期）
+- [x] expected_results 无模糊描述
+- [x] ID 无重复
+
+**优先级比例检查**：
+- [x] P0 2 条（必填、创建成功）、P1 5 条，有业务风险依据

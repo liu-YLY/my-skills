@@ -1,0 +1,39 @@
+⚠ 独立模式（未校验）——本 Skill 未安装 review-checker MCP，R2/R3 按 LLM 规则核对执行。
+
+## 增量评审
+
+**评审范围**：git diff main...feat/order -- docs/test-cases/
+**评审日期**：2026-11-02
+**评审模式**：增量评审子模式
+
+### 步骤 R1：解析 diff 用例
+
+执行 `git diff main...feat/order -- docs/test-cases/` 提取变更用例，结果如下：
+
+```
+fatal: bad revision 'main...feat/order'
+```
+
+同时核对用例文件路径：`docs/test-cases/` 目录在当前工作区不存在（`ls docs/test-cases/` 报 No such file or directory）。
+
+**结论**：无法提取任何变更用例。增量评审成立的前提（有效的 diff 范围 + 存在的用例文件路径）均不满足。
+
+### 失败模式处理
+
+命中增量评审失败模式：
+- `feat/order` 分支不存在（`bad revision`），`main...feat/order` diff 范围无效；
+- `docs/test-cases/` 目录不存在。
+
+按 skill 兜底规则输出「无用例变更」结论：本次增量评审终止，无变更用例可评审，未进入 R2/R3，未产生评审意见表与度量报告。
+
+### 增量评审结论
+
+**无用例变更（无法提取 diff）**。
+
+**待确认项**：
+1. 分支名是否准确。当前工作区已有分支：main、feat/test-case-eval-pilot、feat/test-case-quality-eval、backup/pre-sync-20261031；远程有 origin/feat/large-scale-review；均无 feat/order。
+2. 用例文件路径是否准确。当前工作区无 docs/test-cases/ 目录。
+
+**待用户确认后**：若分支名或路径有误，修正后重新执行增量评审；若确无用例变更，则无需评审。
+
+**如实标注**：未编造任何变更用例数据；本次增量评审因 diff 范围无效与用例路径不存在而终止。

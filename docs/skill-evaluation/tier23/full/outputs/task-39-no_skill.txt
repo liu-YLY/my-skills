@@ -1,0 +1,84 @@
+Webhook 创建功能测试用例
+
+需求摘要
+- 功能：Webhook 创建。
+- 要求：用例标题能独立定位测试点。
+- 界面控件：Version 下拉框、Trigger 选择框、Endpoint URL 输入框、Add endpoint 按钮。
+
+用例清单
+
+用例 TC-01 创建：选择 Version 后创建 Webhook 成功
+前置条件：已进入 Webhook 创建页面；存在可选 Version 项。
+操作步骤：
+1. 在 Version 下拉框选择一个版本。
+2. 选择 Trigger。
+3. 输入合法 Endpoint URL。
+4. 点击 Add endpoint 按钮。
+预期结果：
+- Webhook 创建成功，返回成功提示，列表中可见新条目。
+
+用例 TC-02 Version 下拉框：默认值与选项展示
+操作步骤：
+1. 打开创建页，观察 Version 下拉框。
+预期结果：
+- 下拉框正常展开，选项完整，默认值合理（如默认最新版本或请选择）。
+
+用例 TC-03 Version 下拉框：必选校验
+操作步骤：
+1. 不选择 Version，填写其余字段，点击 Add endpoint。
+预期结果：
+- 若 Version 为必填，则提示必选，创建失败。
+
+用例 TC-04 Trigger 选择框：选择有效 Trigger 可保存
+操作步骤：
+1. 在 Trigger 选择框选择一个有效触发事件。
+2. 完成其余必填项，点击 Add endpoint。
+预期结果：
+- 创建成功，保存的 Trigger 与所选一致。
+
+用例 TC-05 Trigger 选择框：未选择 Trigger 的校验
+操作步骤：
+1. 不选择 Trigger，点击 Add endpoint。
+预期结果：
+- 若 Trigger 为必填，提示选择，创建失败。
+
+用例 TC-06 Endpoint URL：合法 URL 校验通过
+操作步骤：
+1. 输入合法 URL（如 https://example.com/hook）。
+2. 完成其余项，点击 Add endpoint。
+预期结果：
+- 校验通过，创建成功。
+
+用例 TC-07 Endpoint URL：非法格式校验失败
+操作步骤：
+1. 输入非法 URL（如「abc」或「example」）。
+2. 点击 Add endpoint。
+预期结果：
+- 提示 URL 格式错误，创建失败。
+
+用例 TC-08 Endpoint URL：空值校验
+操作步骤：
+1. 不输入 Endpoint URL，点击 Add endpoint。
+预期结果：
+- 提示必填，创建失败。
+
+用例 TC-09 Add endpoint 按钮：重复提交幂等
+操作步骤：
+1. 填写完整信息后，快速连续点击两次 Add endpoint。
+预期结果：
+- 不重复创建；或给出明确去重/重复提示。
+
+用例 TC-10 创建成功后可回显与复用
+前置条件：已创建 Webhook。
+操作步骤：
+1. 查看 Webhook 列表/详情。
+预期结果：
+- Version、Trigger、Endpoint URL 与创建时输入一致。
+
+覆盖说明
+- 主流程：TC-01。
+- Version 控件：TC-02、TC-03。
+- Trigger 控件：TC-04、TC-05。
+- Endpoint URL 控件：TC-06、TC-07、TC-08。
+- Add endpoint 按钮与回显：TC-09、TC-10。
+- 每条用例标题均已指明具体控件与测试点，可独立定位。
