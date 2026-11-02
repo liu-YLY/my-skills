@@ -121,3 +121,5 @@ python scripts/skill-evals.py --skill test-case-engineer \
 **2026-11-02 阶段 L（一致性排查）**：全量排查 42 条 task 的断言-规则一致性，产出 [排查报告](reports/2026-11-02-assertion-consistency-audit.md)。结论：A 类已修复 2 处；B 类仍有 4 处「软约束固化为硬阈值」（#32 第 4/5、#39 第 2/3，属阶段 H 为可判定性有意固化，非 bug）；D 类唯一残留的「可选字段必设」错配是 #32 第 7 条；另记录 `readability.md` L9 与 L12 的内部矛盾。只排查、未改任何 skill/评测集/断言。
 
 **2026-11-02 阶段 M（修 #32 第 7 条）**：#32 第 7 条由「检查点就近对应步骤，预期首词为位置而非评价」改为「若设有关键检查点，每项就近对应步骤并写步骤号；未设检查点时业务结果须完整可判定，预期首词为位置而非评价」，与 #39 第 5 条同口径（消除把可选检查点当必设的错配）；rubric 补注；冻结套件更新为 **v5**（54 cases / 219 checks，SHA256 `9a0520ed…`，与 v4 实测仅差 #32 第 7 条），v1–v4 保留为历史。完整 Tier 2/3 应使用 v5 套件。本阶段为一致性修复的收敛终点，未跑模型、未升版本、未推送。
+
+**2026-11-02 阶段 N/O（Tier 2/3 小规模真实对照）**：搭好小规模对照工具链（`tier23/` 下 runner/judge/汇总脚本 + 盲评协议），并由**独立 judge 实跑**。runner 用 WorkBuddy（DeepSeek reasoning 配置）生成 6 份产物（3 with_skill + 3 no_skill）；judge 由用户在 opencode 客户端用 **GLM 5.3 Flash（智谱，与 runner 不同厂商、思考强度最低）** 盲评 S1–S6。结果：**with_skill 11/13（84.6%）vs no_skill 5/13（38.5%），差 +46.2pp**，`status = partial`、`invalid_runs=[]`。这是**首次满足 judge/runner 独立性**的真实对照，第一次能给出「有 skill 是否更好」的方向性结论；但仍 3 条 case、1 次重复，不可外推，详见 [报告](reports/2026-11-02-eval-tier23-small-control.md)。
