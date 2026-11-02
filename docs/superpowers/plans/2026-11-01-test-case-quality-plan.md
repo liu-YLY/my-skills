@@ -1,7 +1,7 @@
 # 测试用例 Skill 四目标优化执行计划与执行记录
 
-> **状态**：**阶段 0 / A / B / C / F / G / H / I / J 已完成；停在停止点 J，等待用户决定下一步**
-> **执行方式**：每阶段结束写回本文件最新交接快照（当前 §9.8）；每任务一个本地 commit；不自动跨阶段
+> **状态**：**阶段 0 / A / B / C / F / G / H / I / J / K 已完成；停在停止点 K，等待用户决定下一步**
+> **执行方式**：每阶段结束写回本文件最新交接快照（当前 §9.9）；每任务一个本地 commit；不自动跨阶段
 > **基线**：`main` @ `1557de5`（2026-11-01 21:00 实测），工作区干净，6 个仓库校验脚本全绿
 > **目标 skill**：`plugins/testing/skills/test-case-engineer` v9.10.0 → **v9.11.0**（阶段 F 发布）
 > **终局目标**：生成**准确、精简、覆盖面全、人类可读性强**的测试用例
@@ -30,6 +30,8 @@
 **用户追加的工作方式**：每执行一个阶段就在本地保存执行状况，由用户决定下一阶段如何执行；目的是避免任务过长导致上下文反复压缩、目标漂移、质量下降。因此本计划以最新阶段的交接快照（当前为 §9.8）为唯一进度源，不依赖会话记忆；历史快照保留不覆盖。
 
 **阶段 J 决策（2026-11-02「继续继续」）**：按阶段 I §4 的优先项 ① 执行 —— 修两处规则/断言一致性问题再重跑 pilot；本阶段不擅自处理新暴露的第三处口径不一致、不改 `--cases-file` 工具链、不升版本、不推送。
+
+**阶段 K 决策（2026-11-02「按你推荐的来」）**：按阶段 J §6 推荐项 ① 执行 —— 修 #35 第 1 条断言对齐软预算后重跑；本阶段不改 skill 生成规则、不跑完整 Tier 2/3、不升版本、不推送。
 
 ---
 
@@ -117,7 +119,8 @@
 阶段 H  拆分复合断言 → pilot v2（冻结套件 v2，13/13）
 阶段 I  统一无提示重跑 → pilot v3 干净基线（11/13）
 阶段 J  规则/断言一致性修复 → pilot v4（冻结套件 v3，12/13）
-   ↓ 🔴 停止点 J：等待用户决定下一步
+阶段 K  软预算口径对齐 → pilot v5（冻结套件 v4，13/13；结论来自配对复核）
+   ↓ 🔴 停止点 K：等待用户决定下一步
 ```
 
 | 阶段 | 任务 | 主要产出 | 停止条件 | 需用户批准 |
@@ -130,7 +133,7 @@
 | E | E1–E2 | 覆盖矩阵 + MCP 升级 | 6 脚本 + MCP pytest 全绿 | 是 |
 | F | F1–F4 | 版本同步、提交、交付报告 | `git status` 干净 | 是 |
 
-> **当前位置**：阶段 0 / A / B / C / F / G / H / I / J 已完成；**停在停止点 J**，阶段 D/E 未执行。分支 `feat/test-case-eval-pilot` 仅本地提交，未推送、未建 PR；J1 修改了 skill 生成规则但**未升版本**（仍 v9.11.0）。
+> **当前位置**：阶段 0 / A / B / C / F / G / H / I / J / K 已完成；**停在停止点 K**，阶段 D/E 未执行。分支 `feat/test-case-eval-pilot` 仅本地提交，未推送、未建 PR；J1 的生成规则改动与 K1 的评测集断言改动均**未升版本**（仍 v9.11.0）。
 
 > **规则**：每个阶段结束输出「commit 列表 + 校验结果 + 下一阶段建议」，不自动跨阶段；每任务一个 commit，Conventional Commits 中文 subject。
 
@@ -292,7 +295,11 @@ python scripts/skill-evals.py --skill test-case-engineer \
 | 2026-11-02 | J2 | `ed84704` | 冻结套件 v3（SHA `70cdec7c…`，54 cases / 219 checks） | 6 脚本 + 哈希比对 |
 | 2026-11-02 | J3 | `733c1c2` | 3 份 v4 产物 + `runs-v4.jsonl`；judge 12/13 | `--results` partial / `invalid_runs=[]` |
 | 2026-11-02 | J4 | `60e8b9d` | pilot v4 报告 + 协议 §8 v4 记录 | 6 脚本 + md-links |
-| 2026-11-02 | 阶段 J 状态记录 | 本提交 | 回填头部/§0/§4/§9/新增 §9.8/§10 | 6 脚本 |
+| 2026-11-02 | 阶段 J 状态记录 | `1977fab` | 回填头部/§0/§4/§9/新增 §9.8/§10 | 6 脚本 |
+| 2026-11-02 | K1 | `ba23808` | #35 第 1 条断言对齐软预算、rubric 口径同步、冻结套件 v4（SHA `4a81d91f…`） | 6 脚本 + 差异比对 |
+| 2026-11-02 | K2 | `5932cc0` | 3 份 v5 产物 + `runs-v5.jsonl`；judge 13/13 | `--results` partial / `invalid_runs=[]` |
+| 2026-11-02 | K3 | `79dbc23` | pilot v5 报告（含配对复核与 runner 污染修正）+ 协议 §8 v5 记录 | 6 脚本 + md-links |
+| 2026-11-02 | 阶段 K 状态记录 | 本提交 | 回填头部/§0/§4/§9/新增 §9.9/§10 | 6 脚本 |
 
 ### 9.1 阶段 A 交接快照（新会话唯一进度源）
 
@@ -523,23 +530,54 @@ python scripts/skill-evals.py --skill test-case-engineer \
 
 ---
 
+### 9.9 阶段 K 交接快照（新会话唯一进度源）
+
+**目标**：生成准确、精简、覆盖面全、人类可读性强的测试用例；用户选择「按你推荐的来」= 修 #35 第 1 条断言对齐软预算后重跑。
+
+| 项 | 状态 |
+|---|---|
+| 基线 | `main` @ `4c13cee`（PR #137 已合并）；分支 `feat/test-case-eval-pilot`，阶段 J 收口 HEAD `1977fab` |
+| 阶段 K | **已完成**：断言/rubric 对齐、冻结套件 v4、pilot v5 产物/判定/汇总、配对复核、v5 报告、状态写回 |
+| 当前停止点 | 停止点 K |
+| 冻结套件 | **v4**（54 cases / 219 checks，SHA `4a81d91f…`）；v1 / v2 / v3 保留为历史 |
+| 版本 | 仍 v9.11.0；**未改 skill 生成规则**（K1 改的是评测集断言），J1 规则改动与 K1 断言改动均未升版本，未推送、未建 PR |
+
+**本阶段 4 个本地 commit**：`ba23808`（K1）、`5932cc0`（K2）、`79dbc23`（K3）、本提交（状态记录）。
+
+**已交付**：`2026-11-02-test-case-quality-cases-v4.json`、`pilot/outputs/case-{35,37,39}-v5.txt`、`pilot/runs-v5.jsonl`、`reports/2026-11-02-eval-pilot-v5.md`、协议 §8 v5 记录、rubric #35 第 1 行口径。
+
+**结果 13/13**：#35 `4/4`、#37 `4/4`、#39 `5/5`；`--results` `status = partial`、`checks_passed 13/13`、`invalid_runs = []`、`expected_runs 277`、`mean_output_characters 11245.0`。
+
+**唯一可作因果归因的结论是配对复核**：v5 的 #35 产物恰好 8 条（L5「共 8 条，符合 ≤8 预算」），旧口径同样判 `true`，故 **13/13 不可归因于断言改写**。同一份未改动的 `case-35-v4.txt`（10 条 + L71 写明具体超出理由 + 编排策略声明）在旧口径下 `false`、新口径下 judge 判 `true`，唯一变量是断言口径 → 证明「按 skill 软预算合规却被硬门槛判 false」的噪音已消除。
+
+**过程如实记录**：历史 v3/v4 runner 指令未落盘，本阶段按同一口径重构、未逐字复用；首次指令含「完整地按 skill 的四阶段流程」被产物解读为「用户明确要求完整流程」，使 #35 切到默认模式（384 行），识别为提示污染后弃用该批、改中性指令重跑覆盖（291 行 / 快速模式）。runner 两次均报告 `knowledge/writing-examples.md`、`review-mode.md` 读取审批超时被拦截，输入不完整。judge 对 #39 第 2 条的证据偏重标题、未逐段核对正文长句，标注证据强度偏弱。产物篇幅波动大（平均字符数 11245 vs v4 9296），1 次重复不足以支撑趋势判断。
+
+**不得宣称**：五次 pilot 互不可比（v2 提示污染；v3→v4 规则与口径同时变化；v4→v5 runner 指令重构 + 产物重生成 + 口径改写同时变化），13/13 **不是质量提升证据**。仍 3 条 case、单 `with_skill` variant、无 baseline、judge 独立性不足、`duration_seconds = 0` 占位、`partial`；完整 Tier 2/3 未执行、无质量分数、token 未重测；不可作 keep/revert 依据。
+
+**完整 Tier 2/3**：须使用冻结套件 v4（219 checks），外部 runner + 独立 judge + 配额 + baseline/no_skill 对照与盲评，清单见 rubric §4。
+
+**下一步需用户拍板**：①（推荐）外部 runner + 独立 judge 跑完整 Tier 2/3（v4 套件，三 variant ×3 次约 486 次调用）② 全量排查其它「断言假设 skill 未强制行为」的一致性 ③ 处理阶段 J §8 的 `--cases-file` 工具链语义 ④ 回可选阶段 D/E ⑤ 停在 v9.11.0，J1+K1 改动随下次发布升版本。
+
+---
+
 ## 10. 上下文恢复指引
 
 新会话继续时按顺序读：
 
-1. **本文件 §9.8 阶段 J 交接快照（最新进度源，先读这一节）**；§9.1–§9.7 为历史快照
+1. **本文件 §9.9 阶段 K 交接快照（最新进度源，先读这一节）**；§9.1–§9.8 为历史快照
 2. 本文件 §0（决策结果）、§4（阶段状态）、§9（已完成 commit）
-3. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v4.md`（pilot v4 报告）
+3. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v5.md`（pilot v5 报告，含配对复核）
 4. `docs/skill-evaluation/eval-pilot-rubric.md`（判定口径与 Tier 2/3 执行清单）
-5. `docs/skill-evaluation/2026-11-02-test-case-quality-cases-v3.json`（冻结套件 v3，219 checks）
-6. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v3.md`（v3 报告，历史）
-7. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v2.md`（v2 报告，历史）
-8. `docs/skill-evaluation/reports/2026-11-01-eval-pilot.md`（v1 报告，历史）
-9. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-delivery.md`（v9.11.0 交付报告）
-10. `docs/skill-evaluation/reports/2026-11-01-stage-c-conciseness-dryrun.md`（阶段 C 对照）
-11. `docs/skill-evaluation/reports/2026-11-01-stage-b-machine-check-dryrun.md`（阶段 B 对照）
-12. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-baseline.md`（阶段 A 基线）
-13. `.workbuddy/memory/2026-11-01.md`（诊断与阶段结论摘要）
+5. `docs/skill-evaluation/2026-11-02-test-case-quality-cases-v4.json`（冻结套件 v4，219 checks）
+6. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v4.md`（v4 报告，历史）
+7. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v3.md`（v3 报告，历史）
+8. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v2.md`（v2 报告，历史）
+9. `docs/skill-evaluation/reports/2026-11-01-eval-pilot.md`（v1 报告，历史）
+10. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-delivery.md`（v9.11.0 交付报告）
+11. `docs/skill-evaluation/reports/2026-11-01-stage-c-conciseness-dryrun.md`（阶段 C 对照）
+12. `docs/skill-evaluation/reports/2026-11-01-stage-b-machine-check-dryrun.md`（阶段 B 对照）
+13. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-baseline.md`（阶段 A 基线）
+14. `.workbuddy/memory/2026-11-01.md`（诊断与阶段结论摘要）
 
 继续前先执行：
 
@@ -552,4 +590,4 @@ python scripts/check-version-sync.py
 python scripts/skill-evals.py --skill test-case-engineer
 ```
 
-确认分支为 `feat/test-case-eval-pilot`、工作区干净、检查通过后，**先等用户对下一阶段的指示**，再按 §9.8「下一步需用户拍板」执行，不自动跨阶段。
+确认分支为 `feat/test-case-eval-pilot`、工作区干净、检查通过后，**先等用户对下一阶段的指示**，再按 §9.9「下一步需用户拍板」执行，不自动跨阶段。
