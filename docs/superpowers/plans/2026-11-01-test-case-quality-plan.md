@@ -1,7 +1,7 @@
 # 测试用例 Skill 四目标优化执行计划与执行记录
 
-> **状态**：**阶段 0 / A / B / C / F / G / H / I / J / K 已完成；停在停止点 K，等待用户决定下一步**
-> **执行方式**：每阶段结束写回本文件最新交接快照（当前 §9.9）；每任务一个本地 commit；不自动跨阶段
+> **状态**：**阶段 0 / A / B / C / F / G / H / I / J / K / L 已完成；停在停止点 L，等待用户决定下一步**
+> **执行方式**：每阶段结束写回本文件最新交接快照（当前 §9.10）；每任务一个本地 commit；不自动跨阶段
 > **基线**：`main` @ `1557de5`（2026-11-01 21:00 实测），工作区干净，6 个仓库校验脚本全绿
 > **目标 skill**：`plugins/testing/skills/test-case-engineer` v9.10.0 → **v9.11.0**（阶段 F 发布）
 > **终局目标**：生成**准确、精简、覆盖面全、人类可读性强**的测试用例
@@ -32,6 +32,8 @@
 **阶段 J 决策（2026-11-02「继续继续」）**：按阶段 I §4 的优先项 ① 执行 —— 修两处规则/断言一致性问题再重跑 pilot；本阶段不擅自处理新暴露的第三处口径不一致、不改 `--cases-file` 工具链、不升版本、不推送。
 
 **阶段 K 决策（2026-11-02「按你推荐的来」）**：按阶段 J §6 推荐项 ① 执行 —— 修 #35 第 1 条断言对齐软预算后重跑；本阶段不改 skill 生成规则、不跑完整 Tier 2/3、不升版本、不推送。
+
+**阶段 L 决策（2026-11-02「继续继续」）**：按阶段 K §9 推荐项 ② 执行 —— 全量排查 42 条 task 里「断言假设 skill 未强制行为」的一致性问题；只排查、只给建议，不改 skill 生成规则、不改断言、不跑模型，是否落地由用户拍板。
 
 ---
 
@@ -120,7 +122,8 @@
 阶段 I  统一无提示重跑 → pilot v3 干净基线（11/13）
 阶段 J  规则/断言一致性修复 → pilot v4（冻结套件 v3，12/13）
 阶段 K  软预算口径对齐 → pilot v5（冻结套件 v4，13/13；结论来自配对复核）
-   ↓ 🔴 停止点 K：等待用户决定下一步
+阶段 L  断言-规则一致性全量排查（42 条 task；只排查不落地）
+   ↓ 🔴 停止点 L：等待用户决定下一步
 ```
 
 | 阶段 | 任务 | 主要产出 | 停止条件 | 需用户批准 |
@@ -133,7 +136,7 @@
 | E | E1–E2 | 覆盖矩阵 + MCP 升级 | 6 脚本 + MCP pytest 全绿 | 是 |
 | F | F1–F4 | 版本同步、提交、交付报告 | `git status` 干净 | 是 |
 
-> **当前位置**：阶段 0 / A / B / C / F / G / H / I / J / K 已完成；**停在停止点 K**，阶段 D/E 未执行。分支 `feat/test-case-eval-pilot` 仅本地提交，未推送、未建 PR；J1 的生成规则改动与 K1 的评测集断言改动均**未升版本**（仍 v9.11.0）。
+> **当前位置**：阶段 0 / A / B / C / F / G / H / I / J / K / L 已完成；**停在停止点 L**，阶段 D/E 未执行。分支 `feat/test-case-eval-pilot` 仅本地提交，未推送、未建 PR；J1 的生成规则改动与 K1 的评测集断言改动均**未升版本**（仍 v9.11.0）。
 
 > **规则**：每个阶段结束输出「commit 列表 + 校验结果 + 下一阶段建议」，不自动跨阶段；每任务一个 commit，Conventional Commits 中文 subject。
 
@@ -299,7 +302,8 @@ python scripts/skill-evals.py --skill test-case-engineer \
 | 2026-11-02 | K1 | `ba23808` | #35 第 1 条断言对齐软预算、rubric 口径同步、冻结套件 v4（SHA `4a81d91f…`） | 6 脚本 + 差异比对 |
 | 2026-11-02 | K2 | `5932cc0` | 3 份 v5 产物 + `runs-v5.jsonl`；judge 13/13 | `--results` partial / `invalid_runs=[]` |
 | 2026-11-02 | K3 | `79dbc23` | pilot v5 报告（含配对复核与 runner 污染修正）+ 协议 §8 v5 记录 | 6 脚本 + md-links |
-| 2026-11-02 | 阶段 K 状态记录 | 本提交 | 回填头部/§0/§4/§9/新增 §9.9/§10 | 6 脚本 |
+| 2026-11-02 | 阶段 K 状态记录 | `b42f633` | 回填头部/§0/§4/§9/新增 §9.9/§10 | 6 脚本 |
+| 2026-11-02 | L1 | 本提交 | 断言-规则一致性排查报告（42 条 task，只排查不落地） | 6 脚本 + md-links |
 
 ### 9.1 阶段 A 交接快照（新会话唯一进度源）
 
@@ -560,24 +564,52 @@ python scripts/skill-evals.py --skill test-case-engineer \
 
 ---
 
+### 9.10 阶段 L 交接快照（新会话唯一进度源）
+
+**目标**：生成准确、精简、覆盖面全、人类可读性强的测试用例；用户「继续继续」= 执行阶段 K §9 推荐项 ②，全量排查 42 条 task 的断言-规则一致性。
+
+| 项 | 状态 |
+|---|---|
+| 基线 | `main` @ `4c13cee`（PR #137 已合并）；分支 `feat/test-case-eval-pilot`，阶段 K 收口 HEAD `b42f633` |
+| 阶段 L | **已完成**：排查 42 条 task，产出一致性排查报告 |
+| 当前停止点 | 停止点 L |
+| 冻结套件 | 仍 v4（SHA `4a81d91f…`）；本阶段未改动任何评测集/规则/断言 |
+| 版本 | 仍 v9.11.0；**未改 skill 生成规则、未改断言、未跑模型、未推送、未建 PR** |
+
+**本阶段 1 个 commit**：`docs(eval): 新增断言-规则一致性排查报告（阶段 L）`（含计划状态回填）。
+
+**排查结论（详见 `reports/2026-11-02-assertion-consistency-audit.md`）**：
+
+- **A 类（已修复）**：2 处 —— #39 第 5 条（可选检查点，阶段 J）、#35 第 1 条（软预算，阶段 K）。
+- **B 类（仍存在，软约束固化为硬阈值）**：4 处 —— #32 第 4/5 条、#39 第 2/3 条（40 字 / 一步一决策点）。规则源 `readability.md` L9「软预算、不作机械扣分」、`writing-rules.md` L354「认知负荷（软）」，但断言是硬门槛。**同根因**，但属阶段 H 为「可判定性」有意固化，非无意 bug；且 `readability.md` 内部 L9「不作机械扣分」与 L12「超过 40 字必须改写」自相矛盾。
+- **D 类（唯一残留的「可选字段必设」错配）**：1 处 —— #32 第 7 条「检查点就近对应步骤」默认用例有检查点，而 `writing-rules.md` L116 明确检查点「按需」。与 #39 第 5 条同型，建议同口径修正，但本阶段未改。
+- **C 类（正确硬约束，抽查确认无需改）**：ID 格式、术语一致、10 维度覆盖、评级阈值、防注入等，均与规则源硬性口径一致。
+
+**处理建议（三选一，需用户拍板）**：①（推荐最小）只修 #32 第 7 条，与 #39 第 5 条同口径；② 把 B 类四条也统一为软预算口径（会牺牲可判定性，与阶段 H 初衷冲突）；③ 修 `readability.md` 内部矛盾（归入阶段 D 范畴）。
+
+**下一步需用户拍板**：① 按建议修 #32 第 7 条（最小闭环）② 统一 B 类四条为软口径 ③ 修 `readability.md` 内部矛盾 ④ 不落地，直接进完整 Tier 2/3（v4 套件）或回阶段 D/E ⑤ 停在 v9.11.0。
+
+---
+
 ## 10. 上下文恢复指引
 
 新会话继续时按顺序读：
 
-1. **本文件 §9.9 阶段 K 交接快照（最新进度源，先读这一节）**；§9.1–§9.8 为历史快照
+1. **本文件 §9.10 阶段 L 交接快照（最新进度源，先读这一节）**；§9.1–§9.9 为历史快照
 2. 本文件 §0（决策结果）、§4（阶段状态）、§9（已完成 commit）
-3. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v5.md`（pilot v5 报告，含配对复核）
-4. `docs/skill-evaluation/eval-pilot-rubric.md`（判定口径与 Tier 2/3 执行清单）
-5. `docs/skill-evaluation/2026-11-02-test-case-quality-cases-v4.json`（冻结套件 v4，219 checks）
-6. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v4.md`（v4 报告，历史）
-7. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v3.md`（v3 报告，历史）
-8. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v2.md`（v2 报告，历史）
-9. `docs/skill-evaluation/reports/2026-11-01-eval-pilot.md`（v1 报告，历史）
-10. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-delivery.md`（v9.11.0 交付报告）
-11. `docs/skill-evaluation/reports/2026-11-01-stage-c-conciseness-dryrun.md`（阶段 C 对照）
-12. `docs/skill-evaluation/reports/2026-11-01-stage-b-machine-check-dryrun.md`（阶段 B 对照）
-13. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-baseline.md`（阶段 A 基线）
-14. `.workbuddy/memory/2026-11-01.md`（诊断与阶段结论摘要）
+3. `docs/skill-evaluation/reports/2026-11-02-assertion-consistency-audit.md`（断言-规则一致性排查报告）
+4. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v5.md`（pilot v5 报告，含配对复核）
+5. `docs/skill-evaluation/eval-pilot-rubric.md`（判定口径与 Tier 2/3 执行清单）
+6. `docs/skill-evaluation/2026-11-02-test-case-quality-cases-v4.json`（冻结套件 v4，219 checks）
+7. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v4.md`（v4 报告，历史）
+8. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v3.md`（v3 报告，历史）
+9. `docs/skill-evaluation/reports/2026-11-02-eval-pilot-v2.md`（v2 报告，历史）
+10. `docs/skill-evaluation/reports/2026-11-01-eval-pilot.md`（v1 报告，历史）
+11. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-delivery.md`（v9.11.0 交付报告）
+12. `docs/skill-evaluation/reports/2026-11-01-stage-c-conciseness-dryrun.md`（阶段 C 对照）
+13. `docs/skill-evaluation/reports/2026-11-01-stage-b-machine-check-dryrun.md`（阶段 B 对照）
+14. `docs/skill-evaluation/reports/2026-11-01-test-case-quality-baseline.md`（阶段 A 基线）
+15. `.workbuddy/memory/2026-11-01.md`（诊断与阶段结论摘要）
 
 继续前先执行：
 
@@ -590,4 +622,4 @@ python scripts/check-version-sync.py
 python scripts/skill-evals.py --skill test-case-engineer
 ```
 
-确认分支为 `feat/test-case-eval-pilot`、工作区干净、检查通过后，**先等用户对下一阶段的指示**，再按 §9.9「下一步需用户拍板」执行，不自动跨阶段。
+确认分支为 `feat/test-case-eval-pilot`、工作区干净、检查通过后，**先等用户对下一阶段的指示**，再按 §9.10「下一步需用户拍板」执行，不自动跨阶段。
