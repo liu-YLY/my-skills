@@ -221,3 +221,7 @@ __marimo__/
 
 # 工作区记忆（本地保留，不纳入版本控制）
 .workbuddy/
+# Tier 2/3 盲评敏感文件（本地保留，不纳入版本控制，避免泄露盲评映射）
+docs/skill-evaluation/tier23/blind-map.json
+docs/skill-evaluation/tier23/judge-results.jsonl
+docs/skill-evaluation/tier23/runs.jsonl
