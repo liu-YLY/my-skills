@@ -1,9 +1,9 @@
 # 评测判定口径与 Tier 2/3 执行清单
 
-> 建立日期：2026-11-01（阶段 G）；2026-11-02 修订（阶段 H 拆分复合断言、阶段 J 对齐规则与断言、阶段 K 对齐软预算口径）
-> 适用：`test-case-engineer` v9.11.0，冻结套件 v4 = 54 cases / 219 checks
+> 建立日期：2026-11-01（阶段 G）；2026-11-02 修订（阶段 H 拆分复合断言、阶段 J 对齐规则与断言、阶段 K 对齐软预算口径、阶段 M 对齐 #32 第 7 条可选检查点）
+> 适用：`test-case-engineer` v9.11.0，冻结套件 v5 = 54 cases / 219 checks
 > 边界：本文件是**判定口径与执行清单，不是评测结果**；v5 pilot 结果见 `reports/2026-11-02-eval-pilot-v5.md`，v4 见 `reports/2026-11-02-eval-pilot-v4.md`，v3/v2/v1 为历史
-> 配套：[评测执行协议](test-case-quality-eval-protocol.md)、[冻结套件 v4](2026-11-02-test-case-quality-cases-v4.json)（v1 / v2 / v3 保留为历史）
+> 配套：[评测执行协议](test-case-quality-eval-protocol.md)、[冻结套件 v5](2026-11-02-test-case-quality-cases-v5.json)（v1 / v2 / v3 / v4 保留为历史）
 
 ## 1. judge 通用判定原则
 
