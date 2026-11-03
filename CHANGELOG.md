@@ -16,6 +16,7 @@
 ## [Unreleased]
 
 ### Added
+- test-case-engineer 升级到 v9.12.0：评测集与断言一致性收口——`writing-rules.md` 新增「需求未给文案/数值/错误码时不写『待补充』占位，改用可观察结构化事实作预期并在『原文问题清单』标注缺失」；#39/#32 的「关键检查点」断言改为「若设则就近写、未设则业务结果须完整可判定」，#35 用例数软预算对齐「超出写明理由」；评测集为 11 条评审类 case 内嵌真实用例消除缺料。独立 judge（GLM 5.3 Flash）完整对照 42 task：with_skill 82.6% vs no_skill 47.5%（方向性观察，非质量结论），详见 `docs/skill-evaluation/reports/2026-11-03-eval-fix-suite-gaps.md`
 - test-case-engineer 升级到 v9.11.0：四目标评测与精简约束——评测集新增 8 条可判定用例并修正 CHECKPOINT 漂移；阶段 4 接入 review-checker 三模式机器校验约定；7 维度改按风险裁剪并新增「裁剪说明」列；新增用例集三档软预算（8/15/25）与输出前去重；覆盖率合格线由 80% 改为 100% 或显式未覆盖原因。模型行为评测未执行，三份阶段报告均为 dry_run，详见 `docs/skill-evaluation/reports/2026-11-01-test-case-quality-delivery.md`
 - testing-bundle 升级到 v3.5.2、review-checker MCP 升级到 v0.4.0：字段规范接入可读性校验（单句 >40 字、动词混用、标题以「验证/测试」开头，均为 P2 候选）；随 test-case-engineer 9.10.0 同步可读性规范，路由行为不变
 - test-case-engineer 升级到 v9.10.0：可读性闭环——易读性细则外迁 `knowledge/readability.md`，`writing-rules.md` 由 458 行回落至 378 行；评审「字段规范」纳入 4 项可读性检查（标题可定位、长句、术语一致、结构就近，统一 P2 提示）；阶段 4 自检与 Prompt 第 7 条同步；效率报告新增 4 个可读性观察指标（标题可定位率、长句占比、填充步骤占比、术语不一致处数，不设达标线）

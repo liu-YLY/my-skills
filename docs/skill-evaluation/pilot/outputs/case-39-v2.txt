@@ -1,0 +1,191 @@
+阶段 1：理解需求
+
+功能概述：创建一条 Webhook 配置。用户选定 Version 与 Trigger，填入 Endpoint URL，点击 Add endpoint 提交。
+界面控件：Version 下拉框、Trigger 选择框、Endpoint URL 输入框、Add endpoint 按钮。
+业务系统类型：通知订阅类配置（Webhook）。
+业务规则（据用户描述推断，标注待确认）：
+  - Endpoint URL 为必填项。
+  - Endpoint URL 需为 http 或 https 开头的地址。
+  - Version 与 Trigger 由选择框取值。
+  - Add endpoint 提交后生成一条 Webhook 记录。
+风险分析：
+  - 高风险字段：Endpoint URL，自由文本输入，涉及必填、格式与注入。
+  - 低风险字段：Version、Trigger，枚举选择，取值受控。
+  - 提交动作：Add endpoint，需防重复提交。
+复杂度判定：常规单功能。单页面、单角色主流程、少量规则约束。用例集预算 ≤15 条。
+信息来源：用户描述（对话轮次#1）；本次未加载产品知识文件。
+待确认项：
+  - 必填校验呈现方式（Add endpoint 置灰 / 提交后内联提示）待产品确认，本集按提交后内联提示设计。
+  - Endpoint URL 合法格式细则（是否仅 http 与 https）待产品确认。
+  - 相同 Endpoint URL 是否允许重复创建待产品确认，列入待确认场景，不生成可执行用例。
+  - Version 与 Trigger 是否存在联动、Trigger 是否多选待产品确认，本集按两者独立选择设计。
+  - 提示文案以产品最终文案为准，本集暂用「Endpoint URL is required」与「Wrong URL format!」。
+
+阶段 2：提取测试点
+
+风险粗分级：变更面为单页面，业务影响为配置数据，技术复杂度低。Endpoint URL 校验与提交动作为重点。
+7 维度扫描与裁剪说明：
+  - 正向功能：保留。控件填有效值后提交，覆盖 P0 主流程。
+  - 反向校验：仅保留 Endpoint URL 的空值与格式两类。Version 与 Trigger 的空值与无效输入裁剪，理由：两者为枚举选择框，取值受控且已有选中项，无自由输入路径。
+  - 权限/角色：裁剪。理由：需求未明确角色差异，按单角色覆盖。
+  - 状态联动：裁剪。理由：Version 与 Trigger 的联动关系需求未明确，列入待确认项。
+  - 边界与限制：裁剪 Endpoint URL 长度上限与数量上限。理由：上限值需求未给出，不编造阈值；相同地址重复创建列入待确认场景。
+  - UI 交互：裁剪初始选中态与提示文案的逐点覆盖。理由：低风险 UI 状态，随 TC_WEBHOOK_ADD_001 一并观察，不单列用例。
+  - 异常与容错：保留重复提交与脚本片段注入。裁剪网络断开与 5xx 响应，理由：需求未给出服务端错误约定，不编造响应。
+缺陷模式对照（通用）：有输入框，补充格式校验与脚本片段注入；有提交按钮，补充重复提交；有列表，空数据随主流程观察。
+兼容与性能：裁剪。理由：需求未提出兼容与性能指标。
+
+测试点清单：
+  TP-01（正向功能 / 场景法 / P0 / 1 条）有效值提交后 Add endpoint 新增一条记录；来源：用户描述；保留
+  TP-02（反向校验 / 等价类 / P1 / 1 条）Endpoint URL 为空时提交不新增记录；来源：用户描述；保留
+  TP-03（反向校验 / 等价类 / P1 / 1 条）Endpoint URL 格式不合规时提交不新增记录；来源：用户描述；保留
+  TP-04（异常与容错 / 缺陷模式 / P1 / 1 条）连续两次点击 Add endpoint 只新增一条记录；来源：通用缺陷模式；保留
+  TP-05（异常与容错 / 缺陷模式 / P2 / 1 条）Endpoint URL 含脚本片段时列表页不执行脚本；来源：通用缺陷模式；保留
+裁剪维度不生成用例；理由见上方扫描说明。
+
+阶段 3：编写测试用例
+
+编排策略：按用户旅程编排（初始状态 → 创建）。辅助操作阶段已裁剪。
+用例集预算：常规单功能，≤15 条；实际 5 条，未超预算。
+合并去重说明：
+  - 合法地址 http://example.com/hooks/orders、https://example.com/hooks/orders、https://example.com:8443/hooks/orders 触发同一创建规则，合并去重到 TC_WEBHOOK_ADD_001，不各出一条。
+  - 不合规地址 abc、ftp://example.com/hooks、http:// 触发同一格式校验，合并去重到 TC_WEBHOOK_ADD_003，不各出一条。
+  - TC_WEBHOOK_ADD_001 把一次提交的各项结果写入关键检查点与业务结果，不拆分；刷新后记录仍在并入该条，不另出一条。
+
+TC_WEBHOOK_ADD_001: Webhook 创建 - Version、Trigger、Endpoint URL 填有效值后 Add endpoint 新增一条记录
+优先级：P0
+类型：functional
+需求追溯：TP-01
+来源：ai-generated
+人工审核状态：not-reviewed
+前置条件：
+  已登录为可创建 Webhook 的用户
+  已打开创建 Webhook 页面
+  Webhook 列表记录数为 0
+测试步骤：
+  1. 在 Version 下拉框选择 Version 5.0
+  2. 在 Trigger 选择框选择 push
+  3. 在 Endpoint URL 输入框输入 https://example.com/hooks/orders
+  4. 点击 Add endpoint 按钮
+  5. 刷新 Webhook 列表
+关键检查点：
+  步骤 4 后：创建页面关闭
+  步骤 5 后：新建记录仍在列表中
+业务结果：
+  列表记录数由 0 变为 1
+  新记录 Version 为 Version 5.0
+  新记录 Trigger 为 push
+  新记录 Endpoint URL 为 https://example.com/hooks/orders
+后置条件：
+  删除本次创建的 Webhook
+标签：webhooks, creation, happy-path
+
+TC_WEBHOOK_ADD_002: Webhook 创建 - Endpoint URL 为空时 Add endpoint 不新增记录
+优先级：P1
+类型：functional
+需求追溯：TP-02
+来源：ai-generated
+人工审核状态：not-reviewed
+前置条件：
+  已登录为可创建 Webhook 的用户
+  已打开创建 Webhook 页面
+  Version 下拉框已选中 Version 5.0
+  Trigger 选择框已选中 push
+  Endpoint URL 输入框为空
+  Webhook 列表记录数为 0
+测试步骤：
+  1. 点击 Add endpoint 按钮
+关键检查点：
+  步骤 1 后：Endpoint URL 输入框下方显示「Endpoint URL is required」
+业务结果：
+  Webhook 列表记录数仍为 0
+标签：webhooks, creation, required-field, endpoint-url
+
+TC_WEBHOOK_ADD_003: Webhook 创建 - Endpoint URL 格式不合规时 Add endpoint 不新增记录
+优先级：P1
+类型：functional
+需求追溯：TP-03
+来源：ai-generated
+人工审核状态：not-reviewed
+前置条件：
+  已登录为可创建 Webhook 的用户
+  已打开创建 Webhook 页面
+  Version 下拉框已选中 Version 5.0
+  Trigger 选择框已选中 push
+  Webhook 列表记录数为 0
+测试步骤：
+  1. 在 Endpoint URL 输入框输入 abc
+  2. 点击 Add endpoint 按钮
+关键检查点：
+  步骤 2 后：Endpoint URL 输入框下方显示「Wrong URL format!」
+业务结果：
+  Webhook 列表记录数仍为 0
+标签：webhooks, creation, format, endpoint-url
+
+TC_WEBHOOK_ADD_004: Webhook 创建 - 连续两次点击 Add endpoint 只新增一条记录
+优先级：P1
+类型：functional
+需求追溯：TP-04
+来源：ai-generated
+人工审核状态：not-reviewed
+前置条件：
+  已登录为可创建 Webhook 的用户
+  已打开创建 Webhook 页面
+  Version 下拉框已选中 Version 5.0
+  Trigger 选择框已选中 push
+  Webhook 列表记录数为 0
+测试步骤：
+  1. 在 Endpoint URL 输入框输入 https://example.com/hooks/orders
+  2. 连续点击 Add endpoint 按钮 2 次
+关键检查点：
+  步骤 2 后：列表新增 1 条 Webhook 记录
+业务结果：
+  Webhook 列表记录数由 0 变为 1
+  未出现第二条 Endpoint URL 为 https://example.com/hooks/orders 的记录
+后置条件：
+  删除本次创建的 Webhook
+标签：webhooks, creation, idempotency, submit
+
+TC_WEBHOOK_ADD_005: Webhook 创建 - Endpoint URL 含脚本片段时列表页不弹出 alert 对话框
+优先级：P2
+类型：security
+需求追溯：TP-05
+来源：ai-generated
+人工审核状态：not-reviewed
+前置条件：
+  已登录为可创建 Webhook 的用户
+  已打开创建 Webhook 页面
+  Version 下拉框已选中 Version 5.0
+  Trigger 选择框已选中 push
+  Webhook 列表记录数为 0
+测试步骤：
+  1. 在 Endpoint URL 输入框输入 https://example.com/hooks?name=%3Cscript%3Ealert(1)%3C%2Fscript%3E
+  2. 点击 Add endpoint 按钮
+关键检查点：
+  步骤 2 后：创建页面关闭
+业务结果：
+  Webhook 列表记录数由 0 变为 1
+  列表页未弹出 alert 对话框
+后置条件：
+  删除本次创建的 Webhook
+标签：webhooks, creation, security, endpoint-url
+
+阶段 4：自检与补全
+
+自检清单：
+  [✓] 用例 5 条，在常规单功能 ≤15 条预算内
+  [✓] 7 维度已逐项扫描，裁剪项均写明理由
+  [✓] 等价场景已合并去重，逐对复核标题与前置条件，无重复用例
+  [✓] 标题含对象、条件、结果，可独立定位，不以「验证」「测试」开头
+  [✓] 控件名保留界面原文：Version、Trigger、Endpoint URL、Add endpoint
+  [✓] 关键检查点标注所依赖的步骤号
+  [✓] 业务结果可判定，字段值逐行分列，未堆入同一长句
+  [✓] 步骤一步一动作，不复述前置条件
+  [✓] 结果未使用评价词与模糊表达，ID 无重复
+  [✓] 每条测试点都有用例落地，来源与审核状态如实标注
+  [✓] 待确认场景与可执行用例分开交付
+机器校验：⚠ 独立模式（未校验）。review-checker MCP 未安装，仅执行自检清单，不代表人工审核通过或用例已执行。
+
+待确认场景清单（不生成可执行用例）：
+  - 相同 Endpoint URL 重复创建：输入 https://example.com/hooks/orders 两次。判定口径待产品确认，确认唯一规则后再落为可执行用例。
+  - Version 与 Trigger 联动、Trigger 多选：判定口径待产品确认。

@@ -99,3 +99,29 @@ python scripts/skill-evals.py --skill test-case-engineer \
 3. Tier 3 判定者与被测模型独立，或明确标注未盲评及置信度
 4. 报告中列出未评估维度、未覆盖 case 与 dry_run 项
 5. 未使用 `dry_run` 结果支撑任何提升类表述
+
+## 8. pilot 链路验证记录（2026-11-01）
+
+阶段 G 用 3 条 case（#35 / #37 / #39）跑通 `--json → 产物 → runs.jsonl → --results` 全链路：
+
+- 3 份产物的 `output_characters` 与 `output_sha256` 校验全部通过，`invalid_runs = []`
+- judge 判定 11/12；汇总 `status = partial`（3/54 cases）、`unpaired_runs = []`、`unexpected_runs = []`
+- 判定口径见 [eval-pilot-rubric.md](eval-pilot-rubric.md)，结果与边界见 [pilot 报告](reports/2026-11-01-eval-pilot.md)
+
+该记录**只证明工具链可跑通、`partial` 标记有效，不构成质量评测结论**。完整 Tier 2/3 的规模估算与外部依赖见 rubric §4。
+
+**2026-11-02 阶段 H 修订**：#32 第 4 条与 #39 第 2 条复合断言拆分，冻结套件更新为 v2（54 cases / 219 checks，SHA256 `aaf6fa42…`），v1（`a504f741…`，217 checks）保留为历史。pilot v2 判定 13/13、`invalid_runs = []`，见 [v2 报告](reports/2026-11-02-eval-pilot-v2.md)；该数字**不代表质量提升**，边界见 v2 报告 §5。完整 Tier 2/3 应使用 v2 套件，跨版本分数不可比。
+
+**2026-11-02 阶段 I（pilot v3）**：三条 case 用统一、无额外提示的 runner 指令重新生成，同一 judge 判定 **11/13**、`invalid_runs = []`，见 [v3 报告](reports/2026-11-02-eval-pilot-v3.md)。v3 是首个三轮一致、无提示污染的基线；三次 pilot 因 runner 指令与产物来源不同**互不可比**。v3 报告 §4 记录两处规则/断言一致性问题。
+
+**2026-11-02 阶段 J（pilot v4）**：修两处规则/断言一致性问题——`writing-rules.md` 补「需求未给文案时改用可观察结构化事实作预期」、`test-prompts.json` #39 第 5 条与 rubric 同步改为「若设有关键检查点，每项标注所依赖的步骤号并就近写；未设检查点时业务结果须完整可判定」；冻结套件更新为 **v3**（54 cases / 219 checks，SHA256 `70cdec7c…`，仅 #39 第 5 条文本变化），v1 / v2 保留为历史。三条 case 用与 v3 相同的统一无提示 runner 指令重新生成，judge 判定 **12/13**、`invalid_runs = []`，见 [v4 报告](reports/2026-11-02-eval-pilot-v4.md)。两处目标修复各自验证生效（#35 第 4 条、#39 第 5 条转 `true`），同时新暴露 #35 第 1 条「软预算 vs 硬门槛」的第三处口径不一致。四次 pilot 因 runner 指令、产物来源、skill 规则与判定口径差异**互不可比**，12/13 不是质量提升证据。完整 Tier 2/3 应使用 v3 套件；另注：`--cases-file` 期望源格式 `expectations`，不能直接回喂 `--json` 归一化格式（`checks`）的冻结套件，属既有接口语义差异、非 v3 回归，详见 v4 报告 §8。
+
+**2026-11-02 阶段 K（pilot v5）**：#35 第 1 条断言由「≤8 硬门槛」改为「≤8，或超出 8 条时在开头写明超出的具体理由；并写明编排策略」，与 `case-arrangement.md` 软预算对齐；rubric #35 第 1 行判据同步；冻结套件更新为 **v4**（54 cases / 219 checks，SHA256 `4a81d91f…`，与 v3 实测仅差 #35 第 1 条），v1 / v2 / v3 保留为历史。三条 case 重新生成，judge 判定 **13/13**、`invalid_runs = []`，见 [v5 报告](reports/2026-11-02-eval-pilot-v5.md)。**关键结论来自配对复核**：同一份未改动的 v4 产物（10 条但写明具体超出理由）在旧口径下 `false`、新口径下 `true`，唯一变量是断言口径，证明「合规却被判 false」噪音被消除；v5 产物恰好 8 条，新旧口径都会判 `true`，故 **13/13 本身不可归因于断言改写**。runner 指令按同一口径重构、未逐字复用，首次措辞造成模式切换污染已弃用重跑；五次 pilot 互不可比。完整 Tier 2/3 应使用 v4 套件。
+
+**2026-11-02 阶段 L（一致性排查）**：全量排查 42 条 task 的断言-规则一致性，产出 [排查报告](reports/2026-11-02-assertion-consistency-audit.md)。结论：A 类已修复 2 处；B 类仍有 4 处「软约束固化为硬阈值」（#32 第 4/5、#39 第 2/3，属阶段 H 为可判定性有意固化，非 bug）；D 类唯一残留的「可选字段必设」错配是 #32 第 7 条；另记录 `readability.md` L9 与 L12 的内部矛盾。只排查、未改任何 skill/评测集/断言。
+
+**2026-11-02 阶段 M（修 #32 第 7 条）**：#32 第 7 条由「检查点就近对应步骤，预期首词为位置而非评价」改为「若设有关键检查点，每项就近对应步骤并写步骤号；未设检查点时业务结果须完整可判定，预期首词为位置而非评价」，与 #39 第 5 条同口径（消除把可选检查点当必设的错配）；rubric 补注；冻结套件更新为 **v5**（54 cases / 219 checks，SHA256 `9a0520ed…`，与 v4 实测仅差 #32 第 7 条），v1–v4 保留为历史。完整 Tier 2/3 应使用 v5 套件。本阶段为一致性修复的收敛终点，未跑模型、未升版本、未推送。
+
+**2026-11-02 阶段 N/O（Tier 2/3 小规模真实对照）**：搭好小规模对照工具链（`tier23/` 下 runner/judge/汇总脚本 + 盲评协议），并由**独立 judge 实跑**。runner 用 WorkBuddy（DeepSeek reasoning 配置）生成 6 份产物（3 with_skill + 3 no_skill）；judge 由用户在 opencode 客户端用 **GLM 5.3 Flash（智谱，与 runner 不同厂商、思考强度最低）** 盲评 S1–S6。结果：**with_skill 11/13（84.6%）vs no_skill 5/13（38.5%），差 +46.2pp**，`status = partial`、`invalid_runs=[]`。这是**首次满足 judge/runner 独立性**的真实对照，第一次能给出「有 skill 是否更好」的方向性结论；但仍 3 条 case、1 次重复，不可外推，详见 [报告](reports/2026-11-02-eval-tier23-small-control.md)。
+
+**2026-11-03 阶段 P（完整 Tier 2/3 铺开）**：铺开 42 task × with_skill/no_skill × 1 次 = 84 份产物。runner 用 WorkBuddy（DeepSeek reasoning），judge 由用户在 **zcode 用 GLM 5.3 Flash** 盲评 438 条判定（opencode 额度用完后改用 zcode）。结果：**with_skill 165/219（75.3%）vs no_skill 96/219（43.8%），差 +31.5pp**，`status=partial`、`invalid_runs=[]`、`unpaired=[]`、`unexpected=[]`。**首次在完整规模满足独立性**。关键边界：约 29 条评审/安全类 case 的 checks 依赖 skill 特有流程术语，no_skill 天然低分，这部分差距不能归因于「skill 提升生成质量」；真正有说服力的是 13 条「产物客观质量」case。另发现**评测集缺料缺陷**：约 11 条评审类 case 的 prompt 里 `[附用例]` 是占位符或引用不存在文件，导致这些 case 无法产出有效判定，需单独修复评测集。详见 [报告](reports/2026-11-03-eval-tier23-full.md)。

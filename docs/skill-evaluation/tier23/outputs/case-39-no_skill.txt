@@ -1,0 +1,157 @@
+Webhook 创建功能测试用例
+
+需求说明
+- 功能：Webhook 创建
+- 界面控件：
+  1. Version 下拉框
+  2. Trigger 选择框
+  3. Endpoint URL 输入框
+  4. Add endpoint 按钮
+- 要求：每条用例标题能够独立定位测试点
+
+用例编号：TC39-001
+用例标题：Version 下拉框默认值展示正确
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 查看 Version 下拉框默认选中项
+预期结果：Version 下拉框显示默认选项（如最新版本），可正常展开
+
+用例编号：TC39-002
+用例标题：Version 下拉框可展开并选择具体版本
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 点击 Version 下拉框
+2. 选择某个版本
+预期结果：下拉框展开显示所有可选版本，选中后正确回显
+
+用例编号：TC39-003
+用例标题：Version 下拉框所有可选项均可见可选
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 展开 Version 下拉框，遍历所有选项
+预期结果：所有选项可正常展示且可选择，无缺项、错位
+
+用例编号：TC39-004
+用例标题：Trigger 选择框默认值展示正确
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 查看 Trigger 选择框默认状态
+预期结果：Trigger 选择框显示默认选项，可正常交互
+
+用例编号：TC39-005
+用例标题：Trigger 选择框可切换不同触发事件
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 点击 Trigger 选择框
+2. 切换选择不同的触发事件
+预期结果：可正常切换，选中项正确回显
+
+用例编号：TC39-006
+用例标题：Trigger 选择框支持多选（若支持）
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 点击 Trigger 选择框并尝试选择多个触发事件
+预期结果：若支持多选则多个选项均被选中并回显；若不支持则仅能单选且明确限制
+
+用例编号：TC39-007
+用例标题：Endpoint URL 输入框为空时点击 Add endpoint 失败
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. Endpoint URL 留空
+2. 选择 Version 和 Trigger
+3. 点击 Add endpoint 按钮
+预期结果：添加失败，提示 Endpoint URL 不能为空
+
+用例编号：TC39-008
+用例标题：Endpoint URL 格式非法时点击 Add endpoint 失败
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 输入非法 URL（如「abc」）
+2. 选择 Version 和 Trigger
+3. 点击 Add endpoint 按钮
+预期结果：添加失败，提示 URL 格式不正确
+
+用例编号：TC39-009
+用例标题：Endpoint URL 输入合法 URL 且控件齐全时添加成功
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 选择 Version
+2. 选择 Trigger
+3. 输入合法 URL（如 https://example.com/webhook）
+4. 点击 Add endpoint 按钮
+预期结果：添加成功，新 endpoint 出现在列表中
+
+用例编号：TC39-010
+用例标题：未选择 Version 时点击 Add endpoint 失败
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 不选择 Version
+2. 选择 Trigger，输入合法 URL
+3. 点击 Add endpoint 按钮
+预期结果：添加失败，提示请选择 Version
+
+用例编号：TC39-011
+用例标题：未选择 Trigger 时点击 Add endpoint 失败
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 选择 Version
+2. 不选择 Trigger，输入合法 URL
+3. 点击 Add endpoint 按钮
+预期结果：添加失败，提示请选择 Trigger
+
+用例编号：TC39-012
+用例标题：Endpoint URL 含空格时处理正确
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 输入含空格的 URL
+2. 填写其余必填项后点击 Add endpoint
+预期结果：按规则处理，若首尾空格应被忽略则添加成功；若含内部空格则提示 URL 格式不正确
+
+用例编号：TC39-013
+用例标题：Add endpoint 按钮添加成功后列表新增且数据正确
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 选择 Version V1、Trigger T1，输入 URL https://example.com/a
+2. 点击 Add endpoint
+3. 查看 endpoint 列表
+预期结果：列表新增一条记录，Version、Trigger、URL 均与输入一致
+
+用例编号：TC39-014
+用例标题：Add endpoint 按钮重复点击不产生重复记录（或按需允许）
+前置条件：进入 Webhook 创建页面，已填完整信息
+测试步骤：
+1. 填写完整信息
+2. 连续两次点击 Add endpoint 按钮
+预期结果：第二次点击按规则处理，不产生重复数据或给出明确提示
+
+用例编号：TC39-015
+用例标题：Endpoint URL 最大长度边界校验
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 输入超长 URL
+2. 点击 Add endpoint
+预期结果：添加失败或给出长度限制提示，不产生脏数据
+
+用例编号：TC39-016
+用例标题：添加成功后页面控件状态复位或保持（按需求）
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 填写信息并点击 Add endpoint 成功后
+2. 观察 Version、Trigger、URL 控件状态
+预期结果：控件状态符合预期（复位或保持），无残留异常状态
+
+用例编号：TC39-017
+用例标题：Version 与 Trigger 不同组合均可正常添加
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 依次尝试多个 Version 与 Trigger 组合
+2. 每次输入合法 URL 并点击 Add endpoint
+预期结果：各组合均能正常添加，记录正确
+
+用例编号：TC39-018
+用例标题：Add endpoint 按钮在必填项未填时不可用或给出提示
+前置条件：进入 Webhook 创建页面
+测试步骤：
+1. 检查 Add endpoint 按钮初始状态
+2. 逐步填写各必填项，观察按钮可用性
+预期结果：按钮在必填项未完成时为禁用或点击后给出明确提示
