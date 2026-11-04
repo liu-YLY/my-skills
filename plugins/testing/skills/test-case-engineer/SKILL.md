@@ -1,6 +1,6 @@
 ---
 name: test-case-engineer
-version: 9.12.0
+version: 9.13.0
 description: >-
   Use when generating, reviewing, or designing test cases and single-feature
   test strategies.
@@ -75,7 +75,7 @@ keywords:
 
 **AI 赋能模式**：AI 生成 → 人工审核 → 轻量维护，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
-**用例输出约束**：通用结构化格式 + 编写铁律见 [knowledge/writing-rules.md](knowledge/writing-rules.md)；完整用例集编排见 [knowledge/case-arrangement.md](knowledge/case-arrangement.md)（core.md 阶段 3 有转发引用）。
+**用例输出约束**：每条用例必须以 `### TC_模块_功能_序号: 标题` 块承载，**禁止用一张表罗列全部用例**（脚本会报 `FILE_FORMAT`）；表格只允许作为块内同构数据组。通用格式与编写铁律见 [knowledge/writing-rules.md](knowledge/writing-rules.md)；完整用例集编排见 [knowledge/case-arrangement.md](knowledge/case-arrangement.md)（core.md 阶段 3 有转发引用）。
 
 ---
 
@@ -103,6 +103,8 @@ keywords:
 | [knowledge/efficiency-metrics.md](knowledge/efficiency-metrics.md) | **阶段 4 生成效率报告时读**（报告模板与工时估算基准） |
 | [knowledge/products/](knowledge/products/) | **阶段 1 必须加载**（产品专项业务知识，若存在对应产品知识文件） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
+| [knowledge/review-rubric.md](knowledge/review-rubric.md) | **阶段 4 语义评审时必读**（J1–J8 判定标准 + 证据要求 + 输出格式；与 review-mode 的 10 维度全面评审不同） |
+| [scripts/validate_cases.py](scripts/validate_cases.py) | **阶段 4 必做**（D 类规则脚本校验，0 error 方可交付） |
 
 ### 模式读取矩阵
 
@@ -154,4 +156,4 @@ keywords:
 
 始终可使用文件读取、代码搜索、终端命令等环境能力。若某项不可用，在输出中明确注明局限。
 
-> 阶段 4 生成流程的确定性复核与三模式降级见 [test-case-engineer-core.md](test-case-engineer-core.md)「阶段 4 机器校验」；review-checker MCP 为可选增强，未安装时如实标注独立模式。
+> 阶段 4 的脚本校验闸门（`scripts/validate_cases.py`，0 error 方可交付）见 [test-case-engineer-core.md](test-case-engineer-core.md)「阶段 4 机器校验」；review-checker MCP 为可选增强，未安装不影响脚本校验。
