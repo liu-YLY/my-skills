@@ -104,6 +104,10 @@ class TestFalsePositives(unittest.TestCase):
         _, issues = run(md)
         self.assertNotIn("VAGUE_WORD", codes(issues))
 
+    def test_short_business_context_not_flagged(self):
+        _, issues = run(GOOD)
+        self.assertNotIn("BIZ_CONTEXT_LEN", codes(issues))
+
 
 class TestDetection(unittest.TestCase):
     def test_vague_word_detected(self):
@@ -141,6 +145,14 @@ class TestDetection(unittest.TestCase):
         )
         _, issues = run(md)
         self.assertIn("BRANCH_IN_STEP", codes(issues))
+
+    def test_long_business_context_detected(self):
+        md = GOOD.replace(
+            "- 业务背景: 验证账号本人把昵称改为合法中文值并保存后列表同步显示",
+            "- 业务背景: 验证在用户已完成登录且账号状态正常的前提下对昵称输入框输入超过长度限制的字符后点击保存系统给出校验提示",
+        )
+        _, issues = run(md)
+        self.assertIn("BIZ_CONTEXT_LEN", codes(issues))
 
     def test_nonfunc_must_be_last(self):
         md = GOOD + GOOD.replace(

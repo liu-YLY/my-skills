@@ -44,6 +44,7 @@ RULES: dict[str, tuple[str, str, str]] = {
     "BRANCH_IN_STEP": ("步骤内分支", "D", "error"),
     "STEP_VERB": ("步骤缺动作", "D", "warning"),
     "BIZ_CONTEXT_PREFIX": ("业务背景前缀", "D", "warning"),
+    "BIZ_CONTEXT_LEN": ("业务背景长度", "D", "warning"),
     "POSTCOND_VAGUE": ("后置条件模糊", "D", "error"),
     "CHECKPOINT_FORMAT": ("检查点格式", "D", "warning"),
     "STEP_GROUP": ("步骤分块", "D", "warning"),
@@ -62,12 +63,14 @@ PRIORITIES = {"P0", "P1", "P2", "P3"}
 # 显式列出，避免把「0 error」误读成「质量达标」。
 J_RULES = [
     ("业务结果可判定性", "执行人能否据此判 pass/fail"),
-    ("测试点覆盖度", "7 维度扫描是否完整落为用例"),
+    ("测试点覆盖度", "测试点是否全部落为用例，未覆盖的有裁剪说明"),
     ("术语全文一致", "同一概念是否全文只有一个说法"),
     ("步骤可执行性", "照做即可执行，无需追问"),
     ("预期与步骤对应", "是否存在 steps 未发生操作的断言"),
     ("拆分合并合理性", "是否混入独立目标，或该合未合"),
     ("优先级业务依据", "P0-P3 是否由业务影响推导"),
+    ("范围相关性", "是否存在需求无依据的故障/边界/非重点用例"),
+    ("需求追溯完整性", "填写了追溯时能否反查到真实条目"),
 ]
 
 TYPES = {
@@ -336,10 +339,14 @@ def check_case(c: Case) -> list[Issue]:
     if _measure(t) > 40:
         add("TITLE_LEN", c.line, f"标题 {_measure(t)} 字，超过 40 字软上限", t)
 
-    # 业务背景前缀
+    # 业务背景前缀与长度（一句话，超过 40 字须改写）
     bg = c.meta.get("业务背景")
-    if bg and not bg[0].startswith("验证"):
-        add("BIZ_CONTEXT_PREFIX", bg[1], "业务背景未以「验证」开头", bg[0])
+    if bg:
+        if not bg[0].startswith("验证"):
+            add("BIZ_CONTEXT_PREFIX", bg[1], "业务背景未以「验证」开头", bg[0])
+        elif _measure(bg[0]) > 40:
+            add("BIZ_CONTEXT_LEN", bg[1],
+                f"业务背景 {_measure(bg[0])} 字，超过 40 字须压缩为一句话", bg[0])
 
     # Tag
     tag = c.meta.get("标签")
