@@ -119,6 +119,7 @@ my-skill/
 │   ├── skills-overview.md        # 技能详细介绍
 │   ├── installation.md           # 安装指南
 │   ├── project-structure.md      # 项目结构（本文件）
+│   ├── skill-evaluation/         # 评测标准、数据与报告（入口见 README.md）
 │   └── superpowers/              # 设计 spec 与 plan
 │
 ├── .trae/                         # TRAE IDE 专用配置
@@ -126,12 +127,7 @@ my-skill/
 │       ├── git-commit-message.md  # Conventional Commits 提交信息硬约束
 │       └── git-workflow.md        # 分支保护/命名/PR流程/版本历史保护硬约束
 │
-├── rules/                         # 规则文档源（跨工具通用，不自动注入）
-│   ├── git-commit-message.md      # Git 提交信息规范（完整版）
-│   └── no-formatting.md           # 代码格式化规范
-│
-└── knowledge/                     # 全局知识库
-    └── products/                  # 产品知识
-        ├── README.md              # 产品知识索引
-        └── products-template.md   # 知识模板
+└── rules/                         # 规则文档源（跨工具通用，不自动注入）
+    ├── git-commit-message.md      # Git 提交信息规范（完整版）
+    └── no-formatting.md           # 代码格式化规范
 ```
