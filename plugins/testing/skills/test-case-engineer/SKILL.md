@@ -1,6 +1,6 @@
 ---
 name: test-case-engineer
-version: 9.12.0
+version: 9.14.0
 description: >-
   Use when generating, reviewing, or designing test cases and single-feature
   test strategies.
@@ -75,7 +75,7 @@ keywords:
 
 **AI 赋能模式**：AI 生成 → 人工审核 → 轻量维护，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
 
-**用例输出约束**：通用结构化格式 + 编写铁律见 [knowledge/writing-rules.md](knowledge/writing-rules.md)；完整用例集编排见 [knowledge/case-arrangement.md](knowledge/case-arrangement.md)（core.md 阶段 3 有转发引用）。
+**用例输出约束**：每条用例必须以 `### TC_模块_功能_序号: 标题` 块承载，**禁止用一张表罗列全部用例**（脚本会报 `FILE_FORMAT`）；表格只允许作为块内同构数据组。**用例范围**：焦点项写完整、非焦点内容只冒烟、服务故障类默认不写，越界候选写进「裁剪说明」（见 [knowledge/scope-discipline.md](knowledge/scope-discipline.md)）。通用格式与编写铁律见 [knowledge/writing-rules.md](knowledge/writing-rules.md)；完整用例集编排见 [knowledge/case-arrangement.md](knowledge/case-arrangement.md)（core.md 阶段 3 有转发引用）。
 
 ---
 
@@ -88,7 +88,8 @@ keywords:
 | [test-case-engineer-core.md](test-case-engineer-core.md) | **默认/快速/探索式/回归验证清单模式必读**（四阶段核心流程 + 7 维度扫描 + 模式切换）。**评审模式不读**——评审流程独立于四阶段生成，详见 review-mode.md |
 | [knowledge/test-levels.md](knowledge/test-levels.md) | **默认阶段 2/3 查阅**（五层定义 / 编排组占比 / 默认输出类型 / strategy 三层映射） |
 | [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（优先级/类型/模糊词权威源）；评审模式 R2 必要时查阅业务风险原则 |
-| [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **默认阶段 2 查阅**（防御性测试点补充，含领域特定模式 + 安全专项检查清单） |
+| [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **默认阶段 2 查阅**（防御性测试点补充，含领域特定模式 + 安全专项检查清单；按适用性补点，不是补点清单） |
+| [knowledge/scope-discipline.md](knowledge/scope-discipline.md) | **默认/快速模式阶段 2 必读**（需求焦点三档 / 范围闸门三问 / 服务故障·边界膨胀·非重点展开三类默认不写 / 描述深度分级 / 裁剪说明写法） |
 | [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | **阶段 1 强制读** + Office/PDF 转换 |
 | [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板）；评审模式 R2 第 10 维度 SemanticFacts 抽取提示词 |
 | [knowledge/review-mode.md](knowledge/review-mode.md) | **评审模式触发时必读**（10 维度评审工作流 + 评审度量报告 + 评审修订闭环 + 增量评审子模式 + 多格式输入 + 评审报告文件化 + 语义一致性维度） |
@@ -103,13 +104,15 @@ keywords:
 | [knowledge/efficiency-metrics.md](knowledge/efficiency-metrics.md) | **阶段 4 生成效率报告时读**（报告模板与工时估算基准） |
 | [knowledge/products/](knowledge/products/) | **阶段 1 必须加载**（产品专项业务知识，若存在对应产品知识文件） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
+| [knowledge/review-rubric.md](knowledge/review-rubric.md) | **阶段 4 语义评审时必读**（J1–J9 判定标准 + 证据要求 + 输出格式；与 review-mode 的 10 维度全面评审不同） |
+| [scripts/validate_cases.py](scripts/validate_cases.py) | **阶段 4 必做**（D 类规则脚本校验，0 error 方可交付） |
 
 ### 模式读取矩阵
 
 | 模式 | 首轮可读取 | 延迟读取（进入对应阶段/步骤后） |
 |------|-----------|-------------------------------|
-| 默认生成 | 入口（本文件）+ core.md 阶段 1 需求理解规则 | test-levels.md（阶段 2）、bug-patterns.md（阶段 2）、writing-rules.md（阶段 3 必读）、test-standards.md（阶段 3）、prompt-strategy.md（阶段 3）、writing-examples.md（阶段 3，拿不准格式时）、readability.md（阶段 3，句式/结构/术语拿不准时）、case-arrangement.md（阶段 3 输出前）、failure-semantics.md（涉及失败语义时）、anti-patterns.md（阶段 4 自检）、efficiency-metrics.md（阶段 4 效率报告） |
-| 快速生成 | 入口 + core.md 最小测试点框架 | writing-rules.md（业务结果、格式与关键检查点）、test-standards.md（优先级）、readability.md（句长与结构拿不准时）；领域资料仅按实际风险补读 |
+| 默认生成 | 入口（本文件）+ core.md 阶段 1 需求理解规则 | test-levels.md（阶段 2）、scope-discipline.md（阶段 2 裁剪测试点）、bug-patterns.md（阶段 2）、writing-rules.md（阶段 3 必读）、test-standards.md（阶段 3）、prompt-strategy.md（阶段 3）、writing-examples.md（阶段 3，拿不准格式时）、readability.md（阶段 3，句式/结构/术语拿不准时）、case-arrangement.md（阶段 3 输出前）、failure-semantics.md（涉及失败语义时）、anti-patterns.md（阶段 4 自检）、efficiency-metrics.md（阶段 4 效率报告） |
+| 快速生成 | 入口 + core.md 最小测试点框架 | scope-discipline.md（测试点裁剪）、writing-rules.md（业务结果、格式与关键检查点）、test-standards.md（优先级）、readability.md（句长与结构拿不准时）；领域资料仅按实际风险补读 |
 | 回归验证清单 | 入口 + core.md 模式切换章节 | 无（直接基于变更范围输出回归验证清单） |
 | 探索式 | 入口 + core.md 探索章程模板 | 领域检查表（bug-patterns.md 对应章节） |
 | 评审 | 入口 + review-mode.md + test-standards.md（业务风险原则） | readability.md（R2 字段规范的可读性子项）、large-scale-review.md（用例数 >100 或要求评审方案时）、review-plan.md（面向需求相关方或要求覆盖度汇报时）、prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅授权包含修订时读 core.md 生成流程） |
@@ -154,4 +157,4 @@ keywords:
 
 始终可使用文件读取、代码搜索、终端命令等环境能力。若某项不可用，在输出中明确注明局限。
 
-> 阶段 4 生成流程的确定性复核与三模式降级见 [test-case-engineer-core.md](test-case-engineer-core.md)「阶段 4 机器校验」；review-checker MCP 为可选增强，未安装时如实标注独立模式。
+> 阶段 4 的脚本校验闸门（`scripts/validate_cases.py`，0 error 方可交付）见 [test-case-engineer-core.md](test-case-engineer-core.md)「阶段 4 机器校验」；review-checker MCP 为可选增强，未安装不影响脚本校验。
