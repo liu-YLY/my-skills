@@ -33,6 +33,7 @@ keywords:
 
 - 纯重构无行为变更 → 回归验证清单模式
 - 用户要求快速 → 快速模式（压缩阶段 1/4，但必须输出测试点清单）
+- 输入为 PRD/需求文档，或触发「需求评审/PRD 评审/评审需求/需求文档检查」→ 需求评审模式（不走四阶段）
 - 输入为已有用例，或触发「评审/review/检查质量」→ 评审模式（不走四阶段）
 - 评审用例 >100 条或要求评审方案/排期 → 叠加 [knowledge/large-scale-review.md](knowledge/large-scale-review.md)
 - 评审面向产品/UI/前端/后端或要求覆盖度汇报 → 叠加 [knowledge/review-plan.md](knowledge/review-plan.md)
@@ -50,7 +51,7 @@ keywords:
 阶段 1 理解需求 → 阶段 2 提取测试点 → 阶段 3 编写用例 → 阶段 4 自检补全
 ```
 
-详细流程见 [test-case-engineer-core.md](test-case-engineer-core.md)。**模式切换**：默认/快速/回归验证清单/探索式/评审 五种模式，见 core.md。
+详细流程见 [test-case-engineer-core.md](test-case-engineer-core.md)。**模式切换**：默认/快速/回归验证清单/探索式/评审/需求评审 6 种模式，见 core.md。
 
 **输出约束**：每条用例必须用 `### TC_模块_功能_序号: 标题` 块承载，**禁止用一张表罗列全部用例**（脚本报 `FILE_FORMAT`）；表格只允许块内同构数据组。焦点项写完整、非焦点只冒烟、服务故障类默认不写（见 [knowledge/scope-discipline.md](knowledge/scope-discipline.md)）。格式与铁律见 [knowledge/writing-rules.md](knowledge/writing-rules.md)；编排见 [knowledge/case-arrangement.md](knowledge/case-arrangement.md)。
 
@@ -60,7 +61,8 @@ keywords:
 
 | 文件 | 用途 |
 |------|------|
-| [test-case-engineer-core.md](test-case-engineer-core.md) | 默认/快速/探索式/回归验证清单必读；评审模式不读 |
+| [test-case-engineer-core.md](test-case-engineer-core.md) | 默认/快速/探索式/回归验证清单必读；评审与需求评审模式不读 |
+| [knowledge/requirement-review.md](knowledge/requirement-review.md) | 需求评审模式必读：10 维度、P0–P3、问题 schema、报告模板 |
 | [knowledge/case-arrangement.md](knowledge/case-arrangement.md) | 阶段 2 分层/输出类型；阶段 3 输出前必读（编排、预算、去重） |
 | [knowledge/test-standards.md](knowledge/test-standards.md) | 阶段 3/4：优先级、类型、测试策略；模糊词以 writing-rules 为准 |
 | [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | 阶段 2：缺陷模式映射与防御性补点（按适用性，不是补点清单） |
@@ -80,6 +82,8 @@ keywords:
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
 | [knowledge/review-rubric.md](knowledge/review-rubric.md) | 阶段 4 语义评审 J1–J9 判定 |
 | [scripts/validate_cases.py](scripts/validate_cases.py) | 阶段 4 必做；0 error 方可交付 |
+| [scripts/validate_points.py](scripts/validate_points.py) | 阶段 2 测试点清单校验；0 error 方可进入阶段 3 |
+| [scripts/validate_requirement_review.py](scripts/validate_requirement_review.py) | 需求评审报告校验（需 `--prd`）；0 error 方可交付 |
 
 ### 模式读取矩阵
 
@@ -90,8 +94,9 @@ keywords:
 | 回归验证清单 | 入口 + core 模式切换 | 无 |
 | 探索式 | 入口 + core 探索章程 | bug-patterns 对应章节 |
 | 评审 | 入口 + review-mode + test-standards | readability、large-scale-review、review-plan、prompt-strategy、修订闭环资料（授权修订时才读 core） |
+| 需求评审 | 入口 + requirement-review | project-knowledge（有项目文档时）；不读 core 四阶段 |
 
-> **评审隔离**：评审首轮只读 review-mode，不读 core 四阶段；仅授权修订闭环后才读 core 生成流程。
+> **评审隔离**：评审首轮只读 review-mode，不读 core 四阶段；仅授权修订闭环后才读 core 生成流程。需求评审同样不读 core，问题清单作为后续阶段 1 输入。
 
 ## 产品知识库
 

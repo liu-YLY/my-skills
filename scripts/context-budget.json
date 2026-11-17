@@ -56,6 +56,16 @@
           ],
           "budget": 34200,
           "target": 25200
+        },
+        "requirement-review": {
+          "description": "需求评审模式（PRD/需求文档）",
+          "files": [
+            "SKILL.md",
+            "knowledge/requirement-review.md",
+            "knowledge/project-knowledge.md"
+          ],
+          "budget": 9700,
+          "target": 9600
         }
       }
     },

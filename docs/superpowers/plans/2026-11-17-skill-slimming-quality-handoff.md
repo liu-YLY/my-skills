@@ -1,9 +1,9 @@
 # Skill 瘦身与质量提升 · 执行交接
 
-> **当前阶段**：阶段 2（瘦身第一批）
-> **当前进度**：阶段 1 全部完成；v7.1 已冻结；阶段 2 全部完成，停在停止点 2 等确认
+> **当前阶段**：阶段 3（需求评审 + 测试点校验）
+> **当前进度**：阶段 1–3 全部完成；v7.2 已冻结；停在停止点 3 等确认
 > **计划文件**：[2026-11-17-skill-slimming-and-quality-plan.md](2026-11-17-skill-slimming-and-quality-plan.md)
-> **工作分支**：`trae/agent-WZBLh1`（未推送；未提交）
+> **工作分支**：`trae/agent-WZBLh1`（未推送；阶段 1+2 已提交 `5d57483`，阶段 3 改动未提交）
 > **更新方式**：每完成一个任务追加一节，最新状态置顶；恢复上下文时先读本文件
 
 ---
@@ -29,6 +29,118 @@
 | 2-7 review-mode 压缩 | 已完成 | 13,563 → 6,711；review 26,418 → 19,566 |
 | 2-8 project-knowledge 压缩 | 已完成 | 2,149 → 1,199；default 36,521 → 36,394 |
 | 2-9 testing-bundle 压缩 | 已完成 | 17,190 → 10,529；SKILL 7,486 → 5,039 |
+| 3-1 需求评审知识 | 已完成 | `knowledge/requirement-review.md` 2,961 |
+| 3-2 需求评审模式接入 | 已完成 | SKILL/core/README/预算新增模式 |
+| 3-3 bundle 需求评审路由 + 链 10 | 已完成 | 单意图路由、链 10、触发用例 |
+| 3-4 需求评审校验器 | 已完成 | `validate_requirement_review.py` 279 行 |
+| 3-5 测试点校验器 | 已完成 | `validate_points.py` 263 行 |
+| 3-6 5 个 PRD 干跑 | 已完成 | `reports/2026-11-17-phase3-dry-run.md` |
+
+---
+
+## 停止点 3：阶段 3 完成，待确认
+
+### 交付物
+
+| 项 | 文件/结果 |
+|---|---|
+| 需求评审知识 | `knowledge/requirement-review.md`（10 维度、P0–P3、问题 schema、报告模板、输出规则） |
+| 模式接入 | `SKILL.md` 模式选择/索引/读取矩阵；`core.md` 阶段 1 消费问题清单、阶段 2 校验闸门；`README.md` 同步 |
+| bundle 路由 | 单意图「需求评审/PRD 评审」→ test-case-engineer；新增链 10（需求评审 → 用例生成） |
+| 需求评审校验器 | `scripts/validate_requirement_review.py`：结构、9 列必填、枚举、原文回查、统计一致、10 维度覆盖 |
+| 测试点校验器 | `scripts/validate_points.py`：结构、ID/维度/优先级、单点单目标、重复、追溯、优先级分布、裁剪、预算、需求覆盖 |
+| gold 样例 | `docs/skill-evaluation/gold/`：5 PRD + 5 评审报告 + 5 测试点清单 |
+| 干跑报告 | `reports/2026-11-17-phase3-dry-run.md` |
+| 评测套件 | v7.2：70 task / 16 trigger / 354 checks，SHA `5c6bd2ef` |
+
+### 预算影响
+
+| 路径 | 阶段 2 后 | 阶段 3 后 | 目标 |
+|---|---:|---:|---:|
+| test-case-engineer / entry | 4,903 | 5,400 | ≤5,500 |
+| test-case-engineer / default | 36,394 | 36,990 | ≤44,800 |
+| test-case-engineer / review | 19,566 | 20,063 | ≤25,200 |
+| test-case-engineer / requirement-review | — | 9,560 | ≤9,600 |
+| testing-bundle / entry | 5,039 | 5,253 | ≤5,500 |
+| testing-bundle / route | 10,529 | 11,119 | ≤13,750 |
+
+### 校验结果
+
+| 项 | 结果 |
+|---|---|
+| 六个仓库脚本 | 全绿 |
+| 仓库 pytest + 新校验器测试 | 46 passed |
+| review-checker MCP | 110 passed |
+| state-machine MCP | 114 passed |
+| v7.2 套件输入校验 | 70 task / 16 trigger 通过 |
+| gold 需求评审 | 5/5 通过；25/25 种子缺陷；0 误报；证据完整率 100% |
+| gold 测试点 | 5/5 通过；34 测试点 / 43 用例 |
+
+### 未评估 / 限制
+
+- gold 干跑是「按种子缺陷构造的报告」，召回 100% 与误报 0 是构造结果，**不是模型召回率/误报率**。
+- 模型侧需求评审、测试点生成、独立 judge、A/A 一致率仍未执行；`status` 仍为 `blocked`。
+- 阶段 3 验收中的「误报 ≤25%」目前只有 gold 样例证据，不能替代模型评测。
+
+### 需要用户选择
+
+| 选项 | 内容 | 推荐 |
+|---|---|---|
+| A | 进入阶段 4：harness² 第一轮（INV / DOM / Compose） | **推荐**：阶段 3 工具与样例已就绪 |
+| B | 先补模型行为基线，再进阶段 4 | 稳妥但需外部 runner/judge |
+| C | 先调整需求评审模板/校验器，再进阶段 4 | 适合对字段或阈值有额外要求时 |
+
+---
+
+## 3-1 需求评审知识
+
+新增 `knowledge/requirement-review.md`（2,961 字符，≤5k）：
+
+- 10 维度检查表，每维带判定问句。
+- P0–P3 严重级别与处置。
+- 9 字段问题 schema：ID / 位置 / 原文 / 类型 / 级别 / 影响 / 问题 / 待确认 / 状态。
+- 报告模板：问题清单、维度覆盖、未评估项、原文回查。
+- 硬约束：原文逐字回查、一条一个问题、不虚构值、confirmed/candidate 分开、统计与表一致。
+
+## 3-2 需求评审模式接入
+
+- `SKILL.md`：模式选择新增「需求评审」；知识索引新增 requirement-review；读取矩阵新增一行；模式数改为 6 种。
+- `core.md`：阶段 1 新增「需求评审衔接」；阶段 2 新增 `validate_points.py` 机器校验闸门；模式切换新增需求评审；评审模式段落补需求评审指针。
+- `README.md`：模式表、快速开始、知识树、快速参考同步。
+- `context-budget.json`：新增 `requirement-review` 模式（SKILL + requirement-review + project-knowledge），预算 9,700 / 目标 9,600。
+
+## 3-3 bundle 路由与链 10
+
+- 单意图表新增：需求评审、PRD 评审、评审需求文档、需求文档检查、需求问题清单 → test-case-engineer（需求评审模式）。
+- 边界：撰写/润色 PRD 不进入需求评审。
+- 新增链 10：需求评审 → 用例生成；链冲突优先级把 6/7/10 归为「评审先于生成」。
+- `test-prompts.json` 新增 3 条（需求评审、非需求评审、链 10）。
+
+## 3-4 需求评审校验器
+
+`validate_requirement_review.py`（279 行）：
+
+- 解析 `## 问题清单` 与 `## 维度覆盖` 两张 Markdown 表。
+- 9 列必填、ID/类型/级别/状态枚举、位置格式提示。
+- `--prd` 原文逐字回查，矛盾引用按 ` / ` 分段回查。
+- 统计与表一致、维度合计 = confirmed、未评估维度必须有原因。
+- 输出 JSON/文本；error 退出 1，`--strict` 时 warning 也失败。
+
+## 3-5 测试点校验器
+
+`validate_points.py`（263 行）：
+
+- 解析 `## 测试点清单` 9 列表。
+- ID 格式/唯一、7 维度、P0–P3、单点单目标提示、重复、需求追溯。
+- 全 P0 / P0 占比 >80% 提示；用例数 0 必须有裁剪说明；预算超限提示。
+- `--requirements` 支持种子 case 或种子集 + `--case-id`，检查需求条目覆盖与范围外候选。
+
+## 3-6 5 个 PRD 干跑
+
+- gold 报告 5 份、PRD 5 份、测试点清单 5 份。
+- 需求评审：25 个种子缺陷全部覆盖（构造），0 误报（构造），证据完整率 100%，校验器 5/5 通过。
+- 测试点：34 个测试点、43 条估算用例，校验器 5/5 通过。
+- 结论仅证明模板与校验器可用；模型侧指标未执行。
 
 ---
 

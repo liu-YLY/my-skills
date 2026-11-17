@@ -1,6 +1,6 @@
 # Skill 瘦身与生成质量提升计划
 
-> **状态**：阶段 2 已完成；停在停止点 2（预算与确定性门禁通过，模型行为基线仍被外部依赖阻塞）
+> **状态**：阶段 3 已完成；停在停止点 3（需求评审与测试点校验器就绪，模型行为基线仍被外部依赖阻塞）
 > **执行记录**：[2026-11-17-skill-slimming-quality-handoff.md](2026-11-17-skill-slimming-quality-handoff.md)
 > **基线**：`main` @ `848b613`（2026-11-17）
 > **范围**：`plugins/testing` 下 9 个 skill（含 testing-bundle）为第一优先级；wechat-formatter 暂不纳入

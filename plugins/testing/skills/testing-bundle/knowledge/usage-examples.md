@@ -169,7 +169,7 @@ testing-bundle:
 1. 确认已安装 8 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer / frontend-test-preparation / test-data-generator）
 2. 混合、模糊或明确要求路由的请求触发 testing-bundle；单一意图直接使用对应 Skill
 3. bundle 按意图三要素与八路路由决策表判断意图并路由到对应子 skill
-4. 混合意图按对应链路执行（9 条链），转交点披露依据并按既有授权继续
+4. 混合意图按对应链路执行（10 条链），转交点披露依据并按既有授权继续
 5. 子 skill 执行具体任务并输出结果
 6. state-machine-test-engineer 可选安装配套 MCP Server 进入增强模式（v0.8.5 协议层 stdio + HTTP 已端到端联调验证，安装后增强模式可用；详见 [state-machine-test-engineer/integrations/quickstart.md](../../state-machine-test-engineer/integrations/quickstart.md)）
 7. test-case-engineer 评审模式可选安装配套 review-checker MCP Server 进入增强模式（详见 [review-checker README](https://github.com/liu-YLY/my-skills/blob/main/plugins/testing/mcp-servers/review-checker/README.md)）

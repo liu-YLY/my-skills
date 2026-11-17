@@ -34,16 +34,17 @@
 
 | 文件 | 规模 | 说明 |
 |---|---|---|
-| [2026-11-17-quality-suite-v7.1.json](2026-11-17-quality-suite-v7.1.json) | 70 task / 12 trigger / 354 checks | **现行冻结版本**。修复 #13 评级口径、#7/#19 抽样口径；其余同 v7。SHA `dd2f1b49` |
+| [2026-11-17-quality-suite-v7.2.json](2026-11-17-quality-suite-v7.2.json) | 70 task / 16 trigger / 354 checks | **现行冻结版本**。在 v7.1 基础上新增需求评审路由 4 条（positive/near_miss/skill_conflict/negative）。SHA `5c6bd2ef` |
 | [2026-11-17-test-point-cases.json](2026-11-17-test-point-cases.json) | 10 cases | 测试点种子集：需求条目、期望测试点、范围外项与结果型 checks。SHA `dc900b79` |
 | [2026-11-17-requirement-review-cases.json](2026-11-17-requirement-review-cases.json) | 12 cases / 61 seeded defects | 需求评审种子集：每个 PRD 预埋 5-6 个缺陷，附位置、原文、类型、严重级别与期望问题。SHA `aee2ed36` |
 
-> v7 / v7.1 使用 `task_cases` + `trigger_evals` 结构，`scripts/skill-evals.py --cases-file` 可直接读取；v6 及更早为 list 结构。
+> v7 / v7.1 / v7.2 使用 `task_cases` + `trigger_evals` 结构，`scripts/skill-evals.py --cases-file` 可直接读取；v6 及更早为 list 结构。
 
 ### 2.2 历史冻结套件（保留仅为复现历史报告，勿用于新评测）
 
 | 文件 | checks | 差异 | SHA256 前缀 |
 |---|---:|---|---|
+| [2026-11-17-quality-suite-v7.1.json](2026-11-17-quality-suite-v7.1.json) | 354 | v7.1 基线（70 task / 12 trigger） | `dd2f1b49` |
 | [2026-11-01-test-case-quality-cases.json](2026-11-01-test-case-quality-cases.json) | 217 | v1 初版 | `a504f741` |
 | [2026-11-02-test-case-quality-cases.json](2026-11-02-test-case-quality-cases.json) | 219 | v2，新增断言 | `aaf6fa42` |
 | [2026-11-02-test-case-quality-cases-v3.json](2026-11-02-test-case-quality-cases-v3.json) | 219 | v3，仅 #39 文本 | `70cdec7c` |
@@ -62,6 +63,13 @@
 | [data-generator-2026-10-14/](data-generator-2026-10-14/) | data-generator 完整证据链（38 份原始产物 + 26 项校验输出 + README 说明） | 强：产物落盘 + SHA 可核 |
 | [pilot/](pilot/) | 11-01 / 11-02 的 3-case pilot（runs.jsonl + v2–v5） | 单 case 试跑，用于调口径 |
 | [tier23/](tier23/) | N=40 配对 + 盲评（blind/ + full/），含原始产物 84 份；判分脚本锁定**套件 v5**（`full/judge_batch.py` 硬编码，属可复现设计，勿改为 v6） | 中等：配对完备，judge 未换族 |
+
+### 2.3 阶段 3 gold 样例
+
+| 路径 | 规模 | 说明 |
+|---|---|---|
+| [gold/requirement-review/](gold/requirement-review/) | 5 PRD + 5 报告 | 需求评审 gold：报告覆盖种子缺陷，用于模板与校验器干跑；非模型输出 |
+| [gold/test-points/](gold/test-points/) | 5 清单 / 34 测试点 | 测试点 gold：按种子需求生成，用于 `validate_points.py` 干跑 |
 
 ## 3. 报告
 
@@ -107,6 +115,7 @@
 | [2026-11-03-eval-tier23-full.md](reports/2026-11-03-eval-tier23-full.md) | **42 task × with/without 完整对照** | 中（当前最强单份） |
 | [2026-11-17-quality-baseline.md](reports/2026-11-17-quality-baseline.md) | 阶段 1 确定性基线；模型行为评测 `blocked` | 中（确定性）/ 模型行为未执行 |
 | [2026-11-17-eval-rule-consistency.md](reports/2026-11-17-eval-rule-consistency.md) | v7 断言-规则一致性扫描 | 中（静态审计） |
+| [2026-11-17-phase3-dry-run.md](reports/2026-11-17-phase3-dry-run.md) | 需求评审与测试点校验器 gold 干跑 | 弱（gold 样例，非模型） |
 
 ## 4. 执行档案
 
