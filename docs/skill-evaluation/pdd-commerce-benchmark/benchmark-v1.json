@@ -1,0 +1,988 @@
+{
+  "benchmark_id": "pdd-commerce-auth-cart-order",
+  "version": "1.0.0",
+  "status": "frozen",
+  "created_at": "2026-11-17",
+  "description": "拼多多风格电商交易域纵向评测集：登录注册、购物车、购买。用于需求评审、测试点提取、测试用例编写三类任务的版本间配对评测。",
+  "requirement_file": "requirements-pdd-auth-cart-order.md",
+  "requirement_sha256": "436606e439af995af3efb05f694423473939d8daa07d9f86602fb6f382788782",
+  "scoring_rubric": "scoring-rubric.md",
+  "plan": "benchmark-plan.md",
+  "output_contracts": {
+    "review": {
+      "format": "markdown",
+      "required_sections": [
+        "需求理解摘要",
+        "问题清单",
+        "风险清单",
+        "建议补充的验收标准"
+      ],
+      "item_fields": [
+        "Q_ID",
+        "涉及条款",
+        "问题类型",
+        "影响",
+        "建议决策"
+      ],
+      "forbidden": [
+        "虚构需求中不存在的规则",
+        "把开放问题写成确定规则",
+        "编写完整测试用例"
+      ]
+    },
+    "test_points": {
+      "format": "markdown_table",
+      "columns": [
+        "TP_ID",
+        "模块",
+        "关联需求ID",
+        "维度",
+        "优先级",
+        "测试点描述",
+        "预期结果"
+      ],
+      "forbidden": [
+        "执行步骤",
+        "同义重复条目",
+        "无具体条件与预期的空泛描述"
+      ]
+    },
+    "test_cases": {
+      "format": "markdown_blocks",
+      "block_header": "### TC_模块_功能_序号: 标题",
+      "required_fields": [
+        "前置条件",
+        "测试数据",
+        "步骤",
+        "预期结果",
+        "优先级",
+        "关联需求ID"
+      ],
+      "forbidden": [
+        "一张表罗列全部用例",
+        "准备相关数据",
+        "执行对应操作",
+        "功能正常",
+        "符合预期"
+      ]
+    }
+  },
+  "tasks": [
+    {
+      "id": "REV-AUTH",
+      "category": "requirement_review",
+      "module": "账号与登录注册",
+      "focus": "AUTH",
+      "input_files": [
+        "requirements-pdd-auth-cart-order.md"
+      ],
+      "output_contract": "review",
+      "must_cover_refs": [],
+      "prompt": "你是资深测试工程师。请仅基于附件《拼多多风格电商交易需求文档》v1.0.0，对「账号与登录注册」模块做需求评审。输出四部分：1）需求理解摘要（不超过 10 条）；2）问题清单（每条含 Q_ID、涉及条款、问题类型[冲突/歧义/缺失/不可测试]、影响、建议决策）；3）风险清单（资金、库存、并发、安全、隐私、异常路径）；4）建议补充的验收标准。必须分析文档第 14 节中与本模块相关的开放问题。文档未定义的行为标注「待确认」，不得虚构规则。不要编写测试用例。",
+      "repeat_default": 3
+    },
+    {
+      "id": "REV-CART",
+      "category": "requirement_review",
+      "module": "购物车",
+      "focus": "CART",
+      "input_files": [
+        "requirements-pdd-auth-cart-order.md"
+      ],
+      "output_contract": "review",
+      "must_cover_refs": [],
+      "prompt": "你是资深测试工程师。请仅基于附件《拼多多风格电商交易需求文档》v1.0.0，对「购物车」模块做需求评审。输出四部分：1）需求理解摘要（不超过 10 条）；2）问题清单（每条含 Q_ID、涉及条款、问题类型[冲突/歧义/缺失/不可测试]、影响、建议决策）；3）风险清单（资金、库存、并发、安全、隐私、异常路径）；4）建议补充的验收标准。必须分析文档第 14 节中与本模块相关的开放问题，并检查购物车与确认订单页的金额一致性。文档未定义的行为标注「待确认」，不得虚构规则。不要编写测试用例。",
+      "repeat_default": 3
+    },
+    {
+      "id": "REV-ORDER",
+      "category": "requirement_review",
+      "module": "购买、订单与支付",
+      "focus": "ORDER",
+      "input_files": [
+        "requirements-pdd-auth-cart-order.md"
+      ],
+      "output_contract": "review",
+      "must_cover_refs": [],
+      "prompt": "你是资深测试工程师。请仅基于附件《拼多多风格电商交易需求文档》v1.0.0，对「购买、订单与支付」模块做需求评审。输出四部分：1）需求理解摘要（不超过 10 条）；2）问题清单（每条含 Q_ID、涉及条款、问题类型[冲突/歧义/缺失/不可测试]、影响、建议决策）；3）风险清单（资金、库存、并发、安全、隐私、异常路径）；4）建议补充的验收标准。必须分析文档第 14 节中与本模块相关的开放问题，并重点检查支付幂等、库存锁定与拼单退款。文档未定义的行为标注「待确认」，不得虚构规则。不要编写测试用例。",
+      "repeat_default": 3
+    },
+    {
+      "id": "TP-AUTH",
+      "category": "test_points",
+      "module": "账号与登录注册",
+      "focus": "AUTH",
+      "input_files": [
+        "requirements-pdd-auth-cart-order.md"
+      ],
+      "output_contract": "test_points",
+      "must_cover_refs": [
+        "MC-AUTH-01",
+        "MC-AUTH-02",
+        "MC-AUTH-03",
+        "MC-AUTH-04",
+        "MC-AUTH-05",
+        "MC-AUTH-06",
+        "MC-AUTH-07",
+        "MC-AUTH-08",
+        "MC-AUTH-09",
+        "MC-AUTH-10",
+        "MC-AUTH-11",
+        "MC-AUTH-12",
+        "MC-AUTH-13",
+        "MC-AUTH-14",
+        "MC-AUTH-15"
+      ],
+      "prompt": "你是资深测试工程师。请仅基于附件需求文档，为「账号与登录注册」模块提取测试点。输出 Markdown 表格，列固定为：TP_ID｜模块｜关联需求ID｜维度｜优先级(P0-P3)｜测试点描述｜预期结果。要求：1）覆盖功能、边界、异常、状态、权限、并发、安全、兼容性；2）每个测试点只验证一个独立目标；3）不写执行步骤；4）不重复；5）对第 14 节开放问题只写「待确认」测试点，不虚构规则。",
+      "repeat_default": 3
+    },
+    {
+      "id": "TP-CART",
+      "category": "test_points",
+      "module": "购物车",
+      "focus": "CART",
+      "input_files": [
+        "requirements-pdd-auth-cart-order.md"
+      ],
+      "output_contract": "test_points",
+      "must_cover_refs": [
+        "MC-CART-01",
+        "MC-CART-02",
+        "MC-CART-03",
+        "MC-CART-04",
+        "MC-CART-05",
+        "MC-CART-06",
+        "MC-CART-07",
+        "MC-CART-08",
+        "MC-CART-09",
+        "MC-CART-10",
+        "MC-CART-11",
+        "MC-CART-12",
+        "MC-CART-13",
+        "MC-CART-14"
+      ],
+      "prompt": "你是资深测试工程师。请仅基于附件需求文档，为「购物车」模块提取测试点。输出 Markdown 表格，列固定为：TP_ID｜模块｜关联需求ID｜维度｜优先级(P0-P3)｜测试点描述｜预期结果。要求：1）覆盖功能、边界、异常、状态、权限、并发、安全、兼容性；2）每个测试点只验证一个独立目标；3）不写执行步骤；4）不重复；5）对第 14 节开放问题只写「待确认」测试点，不虚构规则。",
+      "repeat_default": 3
+    },
+    {
+      "id": "TP-ORDER",
+      "category": "test_points",
+      "module": "购买、订单与支付",
+      "focus": "ORDER",
+      "input_files": [
+        "requirements-pdd-auth-cart-order.md"
+      ],
+      "output_contract": "test_points",
+      "must_cover_refs": [
+        "MC-ORDER-01",
+        "MC-ORDER-02",
+        "MC-ORDER-03",
+        "MC-ORDER-04",
+        "MC-ORDER-05",
+        "MC-ORDER-06",
+        "MC-ORDER-07",
+        "MC-ORDER-08",
+        "MC-ORDER-09",
+        "MC-ORDER-10",
+        "MC-ORDER-11",
+        "MC-ORDER-12",
+        "MC-ORDER-13",
+        "MC-ORDER-14",
+        "MC-ORDER-15",
+        "MC-ORDER-16",
+        "MC-ORDER-17",
+        "MC-ORDER-18",
+        "MC-ORDER-19",
+        "MC-ORDER-20",
+        "MC-ORDER-21",
+        "MC-ORDER-22"
+      ],
+      "prompt": "你是资深测试工程师。请仅基于附件需求文档，为「购买、订单与支付」模块提取测试点。输出 Markdown 表格，列固定为：TP_ID｜模块｜关联需求ID｜维度｜优先级(P0-P3)｜测试点描述｜预期结果。要求：1）覆盖功能、边界、异常、状态、权限、并发、安全、兼容性；2）每个测试点只验证一个独立目标；3）不写执行步骤；4）不重复；5）对第 14 节开放问题只写「待确认」测试点，不虚构规则。",
+      "repeat_default": 3
+    },
+    {
+      "id": "TC-AUTH",
+      "category": "test_cases",
+      "module": "账号与登录注册",
+      "focus": "AUTH",
+      "input_files": [
+        "requirements-pdd-auth-cart-order.md"
+      ],
+      "output_contract": "test_cases",
+      "must_cover_refs": [
+        "MC-AUTH-01",
+        "MC-AUTH-02",
+        "MC-AUTH-03",
+        "MC-AUTH-04",
+        "MC-AUTH-05",
+        "MC-AUTH-06",
+        "MC-AUTH-07",
+        "MC-AUTH-08",
+        "MC-AUTH-09",
+        "MC-AUTH-10",
+        "MC-AUTH-11",
+        "MC-AUTH-12",
+        "MC-AUTH-13",
+        "MC-AUTH-14",
+        "MC-AUTH-15"
+      ],
+      "prompt": "你是资深测试工程师。请仅基于附件需求文档，为「账号与登录注册」模块编写可执行测试用例。输出格式：每条用例以 `### TC_AUTH_<功能>_<序号>: 标题` 开始，包含前置条件、测试数据、步骤、预期结果、优先级、关联需求ID。要求：1）步骤可执行，使用第 13 节固定数据；2）预期结果可观察、可判定；3）一条用例只验证一个独立目标；4）覆盖主流程、边界、异常、状态、权限、并发与安全；5）对开放问题写「待确认」用例，不虚构规则。",
+      "repeat_default": 3
+    },
+    {
+      "id": "TC-CART",
+      "category": "test_cases",
+      "module": "购物车",
+      "focus": "CART",
+      "input_files": [
+        "requirements-pdd-auth-cart-order.md"
+      ],
+      "output_contract": "test_cases",
+      "must_cover_refs": [
+        "MC-CART-01",
+        "MC-CART-02",
+        "MC-CART-03",
+        "MC-CART-04",
+        "MC-CART-05",
+        "MC-CART-06",
+        "MC-CART-07",
+        "MC-CART-08",
+        "MC-CART-09",
+        "MC-CART-10",
+        "MC-CART-11",
+        "MC-CART-12",
+        "MC-CART-13",
+        "MC-CART-14"
+      ],
+      "prompt": "你是资深测试工程师。请仅基于附件需求文档，为「购物车」模块编写可执行测试用例。输出格式：每条用例以 `### TC_CART_<功能>_<序号>: 标题` 开始，包含前置条件、测试数据、步骤、预期结果、优先级、关联需求ID。要求：1）步骤可执行，使用第 13 节固定数据；2）预期结果可观察、可判定；3）一条用例只验证一个独立目标；4）覆盖主流程、边界、异常、状态、权限、并发与安全；5）对开放问题写「待确认」用例，不虚构规则。",
+      "repeat_default": 3
+    },
+    {
+      "id": "TC-ORDER",
+      "category": "test_cases",
+      "module": "购买、订单与支付",
+      "focus": "ORDER",
+      "input_files": [
+        "requirements-pdd-auth-cart-order.md"
+      ],
+      "output_contract": "test_cases",
+      "must_cover_refs": [
+        "MC-ORDER-01",
+        "MC-ORDER-02",
+        "MC-ORDER-03",
+        "MC-ORDER-04",
+        "MC-ORDER-05",
+        "MC-ORDER-06",
+        "MC-ORDER-07",
+        "MC-ORDER-08",
+        "MC-ORDER-09",
+        "MC-ORDER-10",
+        "MC-ORDER-11",
+        "MC-ORDER-12",
+        "MC-ORDER-13",
+        "MC-ORDER-14",
+        "MC-ORDER-15",
+        "MC-ORDER-16",
+        "MC-ORDER-17",
+        "MC-ORDER-18",
+        "MC-ORDER-19",
+        "MC-ORDER-20",
+        "MC-ORDER-21",
+        "MC-ORDER-22"
+      ],
+      "prompt": "你是资深测试工程师。请仅基于附件需求文档，为「购买、订单与支付」模块编写可执行测试用例。输出格式：每条用例以 `### TC_ORDER_<功能>_<序号>: 标题` 开始，包含前置条件、测试数据、步骤、预期结果、优先级、关联需求ID。要求：1）步骤可执行，使用第 13 节固定数据；2）预期结果可观察、可判定；3）一条用例只验证一个独立目标；4）覆盖主流程、边界、异常、状态、权限、并发与安全；5）对开放问题写「待确认」用例，不虚构规则。",
+      "repeat_default": 3
+    },
+    {
+      "id": "TC-E2E",
+      "category": "test_cases",
+      "module": "端到端交易主链路",
+      "focus": "AUTH,CART,ORDER",
+      "input_files": [
+        "requirements-pdd-auth-cart-order.md"
+      ],
+      "output_contract": "test_cases",
+      "must_cover_refs": [
+        "MC-E2E-01",
+        "MC-E2E-02",
+        "MC-E2E-03",
+        "MC-E2E-04",
+        "MC-E2E-05",
+        "MC-E2E-06",
+        "MC-E2E-07"
+      ],
+      "prompt": "你是资深测试工程师。请仅基于附件需求文档，编写「登录→加购→确认订单→支付→订单结果」端到端测试用例。输出格式：每条用例以 `### TC_E2E_<场景>_<序号>: 标题` 开始，包含前置条件、测试数据、步骤、预期结果、优先级、关联需求ID。要求：1）使用第 13 节固定数据；2）预期结果可观察、可判定；3）覆盖新用户注册首单、老用户用券下单、拼单成团、拼单失败退款、支付超时关闭、重复提交/重复回调、库存不足、跨端购物车合并中的至少 8 个场景；4）一条用例只验证一个独立目标；5）不虚构规则。",
+      "repeat_default": 3
+    }
+  ],
+  "run_protocol": {
+    "variants": [
+      "no_skill",
+      "with_skill",
+      "reference"
+    ],
+    "default_repeats": 3,
+    "aa_check": {
+      "required": true,
+      "score_diff_max": 5,
+      "must_cover_agreement_min": 0.9,
+      "action_on_fail": "停止对照，先修断言、温度或评测环境"
+    },
+    "blind": {
+      "required": true,
+      "strip_fields": [
+        "skill_name",
+        "skill_version",
+        "model_name",
+        "created_at"
+      ],
+      "randomize_order": true
+    },
+    "judge": {
+      "different_family_required": true,
+      "temperature": 0,
+      "borderline_votes": 3,
+      "borderline_range": [
+        55,
+        65
+      ]
+    }
+  },
+  "must_cover": [
+    {
+      "id": "MC-AUTH-01",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-01"],
+      "dimension": "边界",
+      "priority": "high",
+      "criterion": "非 11 位、非 1[3-9] 开头、含非数字字符的手机号不发送验证码，并提示格式错误。"
+    },
+    {
+      "id": "MC-AUTH-02",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-02"],
+      "dimension": "边界",
+      "priority": "high",
+      "criterion": "验证码为 6 位数字，有效期 5 分钟，过期后校验失败。"
+    },
+    {
+      "id": "MC-AUTH-03",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-02", "BR-AUTH-17"],
+      "dimension": "异常",
+      "priority": "high",
+      "criterion": "同一手机号 60 秒内重复获取被拒绝；手机号、设备、IP 的每日发送上限生效；短信通道失败不计入次数。"
+    },
+    {
+      "id": "MC-AUTH-04",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-03"],
+      "dimension": "安全",
+      "priority": "high",
+      "criterion": "同一验证码最多校验 5 次，第 5 次失败后当前验证码失效，必须重新获取。"
+    },
+    {
+      "id": "MC-AUTH-05",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-05"],
+      "dimension": "功能",
+      "priority": "high",
+      "criterion": "未注册手机号验证码登录自动创建账号；已注册手机号直接登录；重复登录不产生重复账号。"
+    },
+    {
+      "id": "MC-AUTH-06",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-06"],
+      "dimension": "功能",
+      "priority": "high",
+      "criterion": "未勾选用户协议或隐私政策时无法登录/注册；勾选后可正常继续。"
+    },
+    {
+      "id": "MC-AUTH-07",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-07"],
+      "dimension": "边界",
+      "priority": "high",
+      "criterion": "密码 8-20 位且至少含字母和数字；纯数字、纯字母、与手机号相同、连续 6 位以上数字均被拒绝。"
+    },
+    {
+      "id": "MC-AUTH-08",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-08"],
+      "dimension": "安全",
+      "priority": "critical",
+      "criterion": "密码连续错误 5 次锁定 15 分钟；第 3 次失败起要求图形验证码；锁定期间正确密码也拒绝；提示不区分账号是否存在。"
+    },
+    {
+      "id": "MC-AUTH-09",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-09"],
+      "dimension": "权限",
+      "priority": "high",
+      "criterion": "微信登录未绑定手机号时必须先绑定；同一 unionid 只能绑定一个账号；同一手机号只能绑定一个微信账号。"
+    },
+    {
+      "id": "MC-AUTH-10",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-10"],
+      "dimension": "状态",
+      "priority": "critical",
+      "criterion": "登出后当前设备访问令牌和刷新令牌立即失效；其他设备登录态不受影响。"
+    },
+    {
+      "id": "MC-AUTH-11",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-12"],
+      "dimension": "状态",
+      "priority": "critical",
+      "criterion": "重置密码成功后，该账号所有设备会话失效，旧密码不可登录。"
+    },
+    {
+      "id": "MC-AUTH-12",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-11"],
+      "dimension": "状态",
+      "priority": "high",
+      "criterion": "同一账号最多 5 台设备在线；第 6 台登录踢出最早登录设备；被踢设备请求返回会话失效。"
+    },
+    {
+      "id": "MC-AUTH-13",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-14", "BR-AUTH-15"],
+      "dimension": "安全",
+      "priority": "critical",
+      "criterion": "手机号展示与日志均脱敏；验证码登录不泄露手机号是否已注册；密码登录统一错误提示。"
+    },
+    {
+      "id": "MC-AUTH-14",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-13"],
+      "dimension": "状态",
+      "priority": "medium",
+      "criterion": "账号注销有 7 天冷静期；冷静期内登录可撤销；注销完成后手机号可重新注册。"
+    },
+    {
+      "id": "MC-AUTH-15",
+      "module": "AUTH",
+      "requirement_ids": ["BR-AUTH-16"],
+      "dimension": "安全",
+      "priority": "high",
+      "criterion": "同一设备 1 小时内注册超过 5 个账号触发滑块；可疑 IP 或设备被拦截并返回 AUTH-1010。"
+    },
+    {
+      "id": "MC-CART-01",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-01"],
+      "dimension": "功能",
+      "priority": "high",
+      "criterion": "加购必须指定 SKU；SKU 不存在、已下架或库存为 0 时加购失败并返回明确错误。"
+    },
+    {
+      "id": "MC-CART-02",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-02"],
+      "dimension": "数据一致性",
+      "priority": "critical",
+      "criterion": "同一 SKU 重复加购合并为一行并累加数量；单 SKU 数量不超过 min(99, 库存)；超出部分被截断并提示。"
+    },
+    {
+      "id": "MC-CART-03",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-03"],
+      "dimension": "边界",
+      "priority": "medium",
+      "criterion": "购物车最多 100 个不同 SKU；第 101 个被拒绝并提示上限。"
+    },
+    {
+      "id": "MC-CART-04",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-06", "BR-CART-07"],
+      "dimension": "状态",
+      "priority": "high",
+      "criterion": "默认全选所有有效商品；失效商品不可选；取消全选和全选不改变失效商品状态。"
+    },
+    {
+      "id": "MC-CART-05",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-08"],
+      "dimension": "边界",
+      "priority": "high",
+      "criterion": "数量修改范围 1-99 且不超过库存；输入 0 弹出删除确认；超过库存截断并提示；库存 0 标记失效。"
+    },
+    {
+      "id": "MC-CART-06",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-07", "BR-CART-14"],
+      "dimension": "数据一致性",
+      "priority": "critical",
+      "criterion": "失效商品不计入合计、不可结算；结算前校验至少一件有效勾选商品且库存充足。"
+    },
+    {
+      "id": "MC-CART-07",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-10"],
+      "dimension": "异常",
+      "priority": "high",
+      "criterion": "结算前价格高于加购快照时必须让用户确认；价格下降时自动更新并提示；未确认不得按新价提交。"
+    },
+    {
+      "id": "MC-CART-08",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-11", "BR-CART-12"],
+      "dimension": "功能",
+      "priority": "critical",
+      "criterion": "优惠计算顺序为商品小计→店铺满减→优惠券→运费；优惠券一单一张；门槛按店铺满减后的金额计算；默认选最优券。"
+    },
+    {
+      "id": "MC-CART-09",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-13"],
+      "dimension": "功能",
+      "priority": "high",
+      "criterion": "商品实付满 99 元包邮，否则 6 元；偏远地区 12 元且不包邮；运费不参与优惠券门槛。"
+    },
+    {
+      "id": "MC-CART-10",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-14"],
+      "dimension": "异常",
+      "priority": "critical",
+      "criterion": "无有效勾选商品、库存不足或价格未确认时阻断结算，并定位到具体商品。"
+    },
+    {
+      "id": "MC-CART-11",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-15"],
+      "dimension": "数据一致性",
+      "priority": "medium",
+      "criterion": "游客购物车登录后合并；同 SKU 数量相加并受 min(99, 库存) 限制；合并后清空本地游客购物车。"
+    },
+    {
+      "id": "MC-CART-12",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-16"],
+      "dimension": "并发",
+      "priority": "medium",
+      "criterion": "同一账号多端购物车 5 秒内同步；冲突以服务端最后写入为准。"
+    },
+    {
+      "id": "MC-CART-13",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-17"],
+      "dimension": "功能",
+      "priority": "medium",
+      "criterion": "删除、批量删除、清空需二次确认；删除后 5 秒内可撤销并恢复商品与数量。"
+    },
+    {
+      "id": "MC-CART-14",
+      "module": "CART",
+      "requirement_ids": ["BR-CART-05", "BR-CART-06"],
+      "dimension": "功能",
+      "priority": "medium",
+      "criterion": "购物车按店铺分组；每组展示组小计；失效商品单独分组。"
+    },
+    {
+      "id": "MC-ORDER-01",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-01", "BR-ORDER-02"],
+      "dimension": "功能",
+      "priority": "critical",
+      "criterion": "确认订单页展示地址、商品、商品小计、店铺优惠、优惠券、运费、应付；金额公式和分位计算正确。"
+    },
+    {
+      "id": "MC-ORDER-02",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-03"],
+      "dimension": "异常",
+      "priority": "high",
+      "criterion": "无有效地址或地址不可配送时无法提交订单，并返回 ORDER-3001。"
+    },
+    {
+      "id": "MC-ORDER-03",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-04", "BR-ORDER-02"],
+      "dimension": "功能",
+      "priority": "critical",
+      "criterion": "优惠券仅可用券可选、一单一张、可与店铺满减叠加、不可与其它券叠加；应付金额最低 0.01 元。"
+    },
+    {
+      "id": "MC-ORDER-04",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-06"],
+      "dimension": "并发",
+      "priority": "critical",
+      "criterion": "同一用户加同一 Idempotency-Key 在 60 秒内重复提交只生成一个订单，只锁一次库存和优惠券。"
+    },
+    {
+      "id": "MC-ORDER-05",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-07"],
+      "dimension": "数据一致性",
+      "priority": "critical",
+      "criterion": "提交时锁定库存 15 分钟；任一 SKU 库存不足则不生成订单，并返回失败 SKU 列表。"
+    },
+    {
+      "id": "MC-ORDER-06",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-08"],
+      "dimension": "功能",
+      "priority": "medium",
+      "criterion": "订单号符合 PDD+14 位时间+6 位随机数字格式，全局唯一且随机部分不可预测。"
+    },
+    {
+      "id": "MC-ORDER-07",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-10"],
+      "dimension": "状态",
+      "priority": "critical",
+      "criterion": "创建后 15 分钟未支付自动关闭订单，释放库存与优惠券，状态变为已关闭。"
+    },
+    {
+      "id": "MC-ORDER-08",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-11"],
+      "dimension": "功能",
+      "priority": "critical",
+      "criterion": "仅支持微信支付和支付宝；支付金额必须等于订单应付金额；不支持余额和货到付款。"
+    },
+    {
+      "id": "MC-ORDER-09",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-12"],
+      "dimension": "安全",
+      "priority": "critical",
+      "criterion": "支付回调必须验签，并校验渠道流水号唯一、金额一致、订单状态可支付；失败记录异常并告警。"
+    },
+    {
+      "id": "MC-ORDER-10",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-13"],
+      "dimension": "并发",
+      "priority": "critical",
+      "criterion": "同一渠道流水号重复回调幂等返回成功；不重复更新订单；一个订单最多一条成功支付记录。"
+    },
+    {
+      "id": "MC-ORDER-11",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-14"],
+      "dimension": "状态",
+      "priority": "high",
+      "criterion": "支付成功后非拼单订单变为已支付/待发货；拼单订单变为拼单中或拼单成功；发送通知；支付记录为成功。"
+    },
+    {
+      "id": "MC-ORDER-12",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-15"],
+      "dimension": "异常",
+      "priority": "high",
+      "criterion": "支付失败或用户取消支付时订单保持待支付，可重新支付，不重复锁库存，超时后关闭。"
+    },
+    {
+      "id": "MC-ORDER-13",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-16"],
+      "dimension": "状态",
+      "priority": "high",
+      "criterion": "仅待支付订单可取消；取消后释放库存与优惠券；已支付订单不可直接取消。"
+    },
+    {
+      "id": "MC-ORDER-14",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-17"],
+      "dimension": "状态",
+      "priority": "high",
+      "criterion": "拼单为 2 人成团；24 小时未成团自动失败；成团后不可取消；拼单失败自动退款。"
+    },
+    {
+      "id": "MC-ORDER-15",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-18"],
+      "dimension": "数据一致性",
+      "priority": "critical",
+      "criterion": "开团和参团锁库存；成团后扣减；失败后释放；退款原路退回并生成退款单。"
+    },
+    {
+      "id": "MC-ORDER-16",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-20"],
+      "dimension": "数据一致性",
+      "priority": "critical",
+      "criterion": "购物车结算、确认订单页、支付金额三者一致；任一步价格变化必须重新确认；不一致拒绝支付。"
+    },
+    {
+      "id": "MC-ORDER-17",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-21"],
+      "dimension": "权限",
+      "priority": "critical",
+      "criterion": "用户只能查看和操作自己的订单；越权返回 ORDER-3008，不泄露订单是否存在。"
+    },
+    {
+      "id": "MC-ORDER-18",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-22"],
+      "dimension": "并发",
+      "priority": "critical",
+      "criterion": "并发下同一优惠券只能使用一次，同一库存不超卖，同一订单不重复支付。"
+    },
+    {
+      "id": "MC-ORDER-19",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-23"],
+      "dimension": "异常",
+      "priority": "high",
+      "criterion": "支付成功但订单未更新时，按渠道流水补偿；补偿幂等，差异告警。"
+    },
+    {
+      "id": "MC-ORDER-20",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-18", "BR-ORDER-25"],
+      "dimension": "功能",
+      "priority": "high",
+      "criterion": "拼单失败退款按实际支付金额原路退回，1-3 个工作日到账，退款单状态可查。"
+    },
+    {
+      "id": "MC-ORDER-21",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-24"],
+      "dimension": "安全",
+      "priority": "critical",
+      "criterion": "金额以服务端计算为准，客户端金额仅作展示；回调验签并防重放；敏感字段脱敏。"
+    },
+    {
+      "id": "MC-ORDER-22",
+      "module": "ORDER",
+      "requirement_ids": ["BR-ORDER-19"],
+      "dimension": "异常",
+      "priority": "medium",
+      "criterion": "拼单失败退款时，未过期优惠券返还，已过期不返还；退款金额为实际支付金额。"
+    },
+    {
+      "id": "MC-E2E-01",
+      "module": "E2E",
+      "requirement_ids": ["AUTH-F01", "CART-F01", "ORDER-F01", "ORDER-F05", "ORDER-F06"],
+      "dimension": "功能",
+      "priority": "high",
+      "criterion": "新用户注册→加购→确认订单→支付成功→订单已支付的完整主链路可走通。"
+    },
+    {
+      "id": "MC-E2E-02",
+      "module": "E2E",
+      "requirement_ids": ["BR-ORDER-06", "BR-ORDER-07"],
+      "dimension": "并发",
+      "priority": "critical",
+      "criterion": "并发重复提交同一幂等键只生成一个订单，库存只锁定一次。"
+    },
+    {
+      "id": "MC-E2E-03",
+      "module": "E2E",
+      "requirement_ids": ["BR-ORDER-13"],
+      "dimension": "并发",
+      "priority": "critical",
+      "criterion": "支付回调重放两次只产生一条成功支付记录，订单状态只更新一次。"
+    },
+    {
+      "id": "MC-E2E-04",
+      "module": "E2E",
+      "requirement_ids": ["BR-ORDER-22", "BR-CART-02"],
+      "dimension": "并发",
+      "priority": "critical",
+      "criterion": "多用户并发抢购同一 SKU 时不超卖，失败用户得到库存不足提示。"
+    },
+    {
+      "id": "MC-E2E-05",
+      "module": "E2E",
+      "requirement_ids": ["BR-ORDER-22"],
+      "dimension": "并发",
+      "priority": "critical",
+      "criterion": "同一优惠券并发用于两个订单时只有一个成功，另一个得到优惠券不可用。"
+    },
+    {
+      "id": "MC-E2E-06",
+      "module": "E2E",
+      "requirement_ids": ["BR-CART-10", "BR-ORDER-20"],
+      "dimension": "异常",
+      "priority": "high",
+      "criterion": "购物车到支付之间价格变化时，必须重新确认金额，未确认不能支付新金额。"
+    },
+    {
+      "id": "MC-E2E-07",
+      "module": "E2E",
+      "requirement_ids": ["BR-AUTH-11", "BR-AUTH-18", "BR-CART-15"],
+      "dimension": "状态",
+      "priority": "high",
+      "criterion": "结算过程中登录态过期，重新登录后购物车与未提交订单数据可恢复。"
+    }
+  ],
+  "open_findings": [
+    {
+      "id": "OF-01",
+      "topic": "购物车价格变化确认交互未定义",
+      "requirement_ids": ["BR-CART-10", "OQ-01"],
+      "weight": 2,
+      "expected": "识别交互形式未定义；说明对转化率和用户理解的影响；提出弹窗/行内提示/结算页阻断的候选方案与需产品确认的问题。"
+    },
+    {
+      "id": "OF-02",
+      "topic": "拼单失败退款遇节假日是否顺延未定义",
+      "requirement_ids": ["BR-ORDER-18", "OQ-02"],
+      "weight": 2,
+      "expected": "识别工作日口径不清；说明对退款时效承诺和客服口径的影响；提出是否顺延及最长到账时间的确认问题。"
+    },
+    {
+      "id": "OF-03",
+      "topic": "风控拦截后的申诉与解封流程未定义",
+      "requirement_ids": ["BR-AUTH-16", "OQ-03"],
+      "weight": 2,
+      "expected": "识别误伤用户缺少恢复路径；说明对登录成功率和客服成本的影响；提出申诉入口、时效和解封条件的确认问题。"
+    },
+    {
+      "id": "OF-04",
+      "topic": "短信通道故障降级方案未定义",
+      "requirement_ids": ["BR-AUTH-17", "OQ-04"],
+      "weight": 2,
+      "expected": "识别单一短信通道的可用性风险；说明对登录主链路的影响；提出备用通道、语音验证码或延迟重试的确认问题。"
+    },
+    {
+      "id": "OF-05",
+      "topic": "被踢设备提示与数据恢复未定义",
+      "requirement_ids": ["BR-AUTH-11", "OQ-05"],
+      "weight": 1,
+      "expected": "识别被踢设备缺少提示与恢复路径；说明对多端用户体验的影响；提出提示文案和未提交数据恢复的确认问题。"
+    },
+    {
+      "id": "OF-06",
+      "topic": "账号注销后订单与支付数据保留期限未量化",
+      "requirement_ids": ["BR-AUTH-13", "OQ-06"],
+      "weight": 1,
+      "expected": "识别「按法规保留」不可测试；说明合规与用户告知风险；提出保留年限和脱敏范围的确认问题。"
+    },
+    {
+      "id": "OF-07",
+      "topic": "不可配送区域清单维护机制未定义",
+      "requirement_ids": ["BR-ORDER-03", "OQ-07"],
+      "weight": 1,
+      "expected": "识别清单来源与生效时间缺失；说明对下单阻断和用户体验的影响；提出配置来源、更新频率和生效时间的确认问题。"
+    },
+    {
+      "id": "OF-08",
+      "topic": "同一用户同时参与拼单数量上限未定义",
+      "requirement_ids": ["BR-ORDER-17", "OQ-08"],
+      "weight": 1,
+      "expected": "识别缺少拼单并发上限；说明对库存占用和风控的影响；提出上限、超限提示和释放策略的确认问题。"
+    }
+  ],
+  "review_checks": [
+    {
+      "id": "RC-AUTH-01",
+      "module": "AUTH",
+      "criterion": "识别验证码登录与密码登录的账号枚举风险，并检查错误提示是否统一。"
+    },
+    {
+      "id": "RC-AUTH-02",
+      "module": "AUTH",
+      "criterion": "识别多设备会话上限、令牌轮换与重放撤销的资源与安全影响。"
+    },
+    {
+      "id": "RC-AUTH-03",
+      "module": "AUTH",
+      "criterion": "识别微信 unionid 与手机号绑定的唯一性冲突及解绑缺失。"
+    },
+    {
+      "id": "RC-CART-01",
+      "module": "CART",
+      "criterion": "识别购物车价格快照与确认订单页实时价的一致性风险。"
+    },
+    {
+      "id": "RC-CART-02",
+      "module": "CART",
+      "criterion": "检查店铺满减、优惠券、运费的计算顺序与门槛口径是否明确。"
+    },
+    {
+      "id": "RC-CART-03",
+      "module": "CART",
+      "criterion": "识别失效商品、部分勾选、全部失效时的结算与回退路径。"
+    },
+    {
+      "id": "RC-ORDER-01",
+      "module": "ORDER",
+      "criterion": "识别支付回调验签、金额校验、重复回调幂等与补偿链路的风险。"
+    },
+    {
+      "id": "RC-ORDER-02",
+      "module": "ORDER",
+      "criterion": "识别库存锁定、超时释放、拼单失败释放与并发超卖的风险。"
+    },
+    {
+      "id": "RC-ORDER-03",
+      "module": "ORDER",
+      "criterion": "检查拼单成团/失败/退款状态机与优惠券返还规则是否闭环。"
+    },
+    {
+      "id": "RC-ORDER-04",
+      "module": "ORDER",
+      "criterion": "识别订单越权、手机号与地址等敏感信息泄露风险。"
+    }
+  ],
+  "negative_scope": [
+    {
+      "id": "NS-01",
+      "criterion": "不生成完整售后、退货、换货流程用例；仅允许拼单失败自动退款。"
+    },
+    {
+      "id": "NS-02",
+      "criterion": "不生成发货、物流、评价、发票用例。"
+    },
+    {
+      "id": "NS-03",
+      "criterion": "不虚构需求未定义的规则；未定义行为只能标注「待确认」。"
+    },
+    {
+      "id": "NS-04",
+      "criterion": "不把 UI 视觉、像素级还原作为主要测试点。"
+    },
+    {
+      "id": "NS-05",
+      "criterion": "不生成海外手机号、邮箱注册、多币种支付用例。"
+    }
+  ],
+  "scoring_profiles": {
+    "review": {
+      "weights": {
+        "D1": 20,
+        "D2": 20,
+        "D3": 20,
+        "D4": 25,
+        "D5": 5,
+        "D6": 10
+      }
+    },
+    "test_points": {
+      "weights": {
+        "D1": 30,
+        "D2": 20,
+        "D3": 10,
+        "D4": 20,
+        "D5": 10,
+        "D6": 10
+      }
+    },
+    "test_cases": {
+      "weights": {
+        "D1": 30,
+        "D2": 20,
+        "D3": 20,
+        "D4": 10,
+        "D5": 10,
+        "D6": 10
+      }
+    }
+  },
+  "change_policy": {
+    "freeze_during_run": true,
+    "versioning": "semver",
+    "requires_reason": true,
+    "requires_rescore_archive": true,
+    "forbid_verbatim_benchmark_examples_in_skill": true
+  }
+}

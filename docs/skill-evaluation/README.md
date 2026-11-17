@@ -12,6 +12,7 @@
 | 第一次评测一个 skill | [methodology.md](methodology.md) §2 总览 → [scoring-template.md](scoring-template.md) |
 | 判断 skill 是积极还是消极 | [methodology.md](methodology.md) §13 归因判定 |
 | 给 test-case-engineer 跑评测 | [test-case-quality-eval-protocol.md](test-case-quality-eval-protocol.md) |
+| 评估 skill 在真实业务需求上的提升 | [pdd-commerce-benchmark/benchmark-plan.md](pdd-commerce-benchmark/benchmark-plan.md) |
 | 复现某个历史结论 | 在 §3 报告表中找到日期，按该报告引用的套件与 SHA 复跑 |
 | 写一份新报告 | 复制 [scoring-template.md](scoring-template.md)，元信息四项必填（套件 SHA / judge 族系 / A/A 一致率 / 净效应档位） |
 
@@ -56,6 +57,16 @@
 | [data-generator-2026-10-14/](data-generator-2026-10-14/) | data-generator 完整证据链（38 份原始产物 + 26 项校验输出 + README 说明） | 强：产物落盘 + SHA 可核 |
 | [pilot/](pilot/) | 11-01 / 11-02 的 3-case pilot（runs.jsonl + v2–v5） | 单 case 试跑，用于调口径 |
 | [tier23/](tier23/) | N=40 配对 + 盲评（blind/ + full/），含原始产物 84 份；判分脚本锁定**套件 v5**（`full/judge_batch.py` 硬编码，属可复现设计，勿改为 v6） | 中等：配对完备，judge 未换族 |
+
+### 2.4 纵向业务评测集
+
+| 文件 | 作用 | 状态 |
+|---|---|---|
+| [pdd-commerce-benchmark/requirements-pdd-auth-cart-order.md](pdd-commerce-benchmark/requirements-pdd-auth-cart-order.md) | 拼多多风格交易需求文档（登录注册/购物车/购买），冻结为评测输入 | v1.0.0 冻结 |
+| [pdd-commerce-benchmark/benchmark-v1.json](pdd-commerce-benchmark/benchmark-v1.json) | 10 个任务、58 条 must-cover、8 条开放问题、负向范围 | v1.0.0 冻结 |
+| [pdd-commerce-benchmark/scoring-rubric.md](pdd-commerce-benchmark/scoring-rubric.md) | 三类任务的评分维度、闸门、锚点、judge 契约 | v1.0.0 现行 |
+| [pdd-commerce-benchmark/benchmark-plan.md](pdd-commerce-benchmark/benchmark-plan.md) | 运行协议、人工到 AI 迁移、反向调整闭环、阶段计划 | v1.0.0 现行 |
+| [pdd-commerce-benchmark/assessment.md](pdd-commerce-benchmark/assessment.md) | 可行性、必要性、收益、成本与风险评估 | v1.0.0 现行 |
 
 ## 3. 报告
 
