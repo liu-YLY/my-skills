@@ -71,6 +71,14 @@
 | [gold/requirement-review/](gold/requirement-review/) | 5 PRD + 5 报告 | 需求评审 gold：报告覆盖种子缺陷，用于模板与校验器干跑；非模型输出 |
 | [gold/test-points/](gold/test-points/) | 5 清单 / 34 测试点 | 测试点 gold：按种子需求生成，用于 `validate_points.py` 干跑 |
 
+### 2.4 阶段 4 harness² 提案与经验
+
+| 路径 | 内容 | 状态 |
+|---|---|---|
+| [phase4/inv1-proposal.md](phase4/inv1-proposal.md) | INV1 输出契约闸门提案 | 未应用（Probe 阻塞） |
+| [phase4/dom1-proposal.md](phase4/dom1-proposal.md) | DOM1 需求缺陷高频模式提案 | 未应用（Probe 阻塞） |
+| [experience-library.md](experience-library.md) | 有证据、可迁移的经验库 | 现行 |
+
 ## 3. 报告
 
 > 判定强度标签：**强** = 产物落盘 + 多轮 + 判据可核；**中** = 配对完整但 judge 同族或未换族；**弱** = N=1 / dry_run / 方向性。
@@ -116,6 +124,7 @@
 | [2026-11-17-quality-baseline.md](reports/2026-11-17-quality-baseline.md) | 阶段 1 确定性基线；模型行为评测 `blocked` | 中（确定性）/ 模型行为未执行 |
 | [2026-11-17-eval-rule-consistency.md](reports/2026-11-17-eval-rule-consistency.md) | v7 断言-规则一致性扫描 | 中（静态审计） |
 | [2026-11-17-phase3-dry-run.md](reports/2026-11-17-phase3-dry-run.md) | 需求评审与测试点校验器 gold 干跑 | 弱（gold 样例，非模型） |
+| [2026-11-17-phase4-harness-round1.md](reports/2026-11-17-phase4-harness-round1.md) | harness² 第一轮：确定性代理基线 + INV/DOM 提案 | 弱（模型 Probe `blocked`） |
 
 ## 4. 执行档案
 

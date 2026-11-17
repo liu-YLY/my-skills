@@ -1,7 +1,7 @@
 # Skill 瘦身与质量提升 · 执行交接
 
-> **当前阶段**：阶段 3（需求评审 + 测试点校验）
-> **当前进度**：阶段 1–3 全部完成；v7.2 已冻结；停在停止点 3 等确认
+> **当前阶段**：阶段 4（harness² 第一轮）
+> **当前进度**：阶段 1–3 完成；阶段 4 在 4-4 阻塞（无 runner/judge/API key）；停在停止点 4
 > **计划文件**：[2026-11-17-skill-slimming-and-quality-plan.md](2026-11-17-skill-slimming-and-quality-plan.md)
 > **工作分支**：`trae/agent-WZBLh1`（未推送；阶段 1+2 已提交 `5d57483`，阶段 3 改动未提交）
 > **更新方式**：每完成一个任务追加一节，最新状态置顶；恢复上下文时先读本文件
@@ -35,6 +35,79 @@
 | 3-4 需求评审校验器 | 已完成 | `validate_requirement_review.py` 279 行 |
 | 3-5 测试点校验器 | 已完成 | `validate_points.py` 263 行 |
 | 3-6 5 个 PRD 干跑 | 已完成 | `reports/2026-11-17-phase3-dry-run.md` |
+| 4-1 确定性代理失败聚类 | 已完成 | `reports/2026-11-17-phase4-harness-round1.md` |
+| 4-2 INV1 提案 | 已完成（未应用） | `phase4/inv1-proposal.md` |
+| 4-3 DOM1 提案 | 已完成（未应用） | `phase4/dom1-proposal.md` |
+| 4-4 两路 Probe | 阻塞 | 无 runner / judge / API key |
+| 4-5 Compose | 阻塞 | 依赖 4-4 |
+| 4-6 采纳决策 + 经验库 | 部分完成 | 保留 base；`experience-library.md` 5 条 |
+
+---
+
+## 停止点 4：阶段 4 在 4-4 阻塞
+
+### 已完成
+
+| 项 | 结果 |
+|---|---|
+| 4-1 代理基线 | 42 份历史产物：20 可解析 / 153 用例 / 10 ERROR / 26 WARN |
+| 失败聚类 | `TITLE_SEPARATOR` 13、`ARRANGE_DECLARE` 7、`VAGUE_WORD` 7、`NONFUNC_TAIL` 3，均有 ≥3 条证据 |
+| 4-2 INV1 | 输出契约闸门提案：标题分隔符、编排策略声明、非功能置末尾；只改 core 工作流 |
+| 4-3 DOM1 | 需求缺陷高频模式 + 级别判例；只改 requirement-review 领域知识 |
+| 4-6 经验库 | 5 条：单一权威源、原文回查、阶段闸门、旧产物代理、无 Probe 不合并 |
+
+### 阻塞与未达成
+
+- 无 runner（opencode/zcode/codebuddy/claude/codex/ollama）、无模型 API key、无不同厂商 judge。
+- 4-4 base/inv1/dom1 全量 Probe 未执行；4-5 Compose 未执行。
+- 阶段 4 验收要求四列指标、有效样本数、A/A 一致率：均无法提供，**阶段 4 未通过验收**。
+- INV1/DOM1 未应用到 skill；base 保持不变。
+
+### 需要用户选择
+
+| 选项 | 内容 | 推荐 |
+|---|---|---|
+| A | 补 runner + 独立 judge + API key，再重跑 4-4 | **推荐**：这是唯一能通过阶段 4 验收的路径 |
+| B | 以「静态提案 + 确定性门禁」先应用 INV1/DOM1，标 `partial` | 可选：能推进，但不能宣称质量提升 |
+| C | 跳过阶段 4，直接进入阶段 5 瘦身第二批 | 可推进预算，但质量闭环继续缺失 |
+
+---
+
+## 4-1 确定性代理失败聚类
+
+对象：42 份历史 `with_skill` 产物（旧版本 skill）。方法：`validate_cases.py --json` 逐份校验。
+
+| 指标 | 数值 |
+|---|---:|
+| 可解析为用例 | 20 / 42 |
+| 用例 | 153 |
+| ERROR | 10 |
+| WARN | 26 |
+
+聚类：格式/结构占绝对多数（标题分隔符 13、编排声明 7、非功能置末尾 3、必填/前缀/ID 各 1）；可读性集中在「任意」「正常」（7）；覆盖类因无需求基线不可评估；未发现新的规则冲突类证据。
+
+## 4-2 INV1 提案（未应用）
+
+- 目标：`TITLE_SEPARATOR`、`ARRANGE_DECLARE`、`NONFUNC_TAIL`。
+- 改动范围：仅 `core.md` 阶段 3 自检与阶段 4 闸门；不触碰 knowledge、脚本、MCP。
+- 核心内容：标题强制 ` - ` 分隔；用例集开头声明编排策略；两类 warning 按阻断项处理。
+- 未应用原因：无 Probe 证据，不能证明模型收益或护栏不退化。
+
+## 4-3 DOM1 提案（未应用）
+
+- 目标：需求评审召回与级别判例。
+- 改动范围：仅 `knowledge/requirement-review.md` 领域知识；不触碰工作流。
+- 核心内容：6 类高频缺陷模式（模糊/数值矛盾/状态/权限/异常/验收口径）+ P0–P3 判例。
+- 未应用原因：同上；且模式表可能增加误报，需要原文回查与 Probe 验证。
+
+## 4-4 / 4-5 Probe 与 Compose
+
+未执行。所需条件：同模型、同参数、同套件；base/inv1/dom1 各全量；独立 judge；3 次重复；A/A 一致率 ≥70%。当前有效样本数 0。
+
+## 4-6 采纳与经验
+
+- 采纳：不采纳 INV1/DOM1/agg1；保留 base。
+- 经验库：`docs/skill-evaluation/experience-library.md`，E-001～E-005，均标注证据强度与边界。
 
 ---
 
