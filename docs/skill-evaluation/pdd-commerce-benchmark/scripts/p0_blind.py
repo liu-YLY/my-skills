@@ -93,7 +93,13 @@ def main() -> None:
 2. 按 `blind/S01.md` ~ `blind/S18.md` 逐份评分。
 3. 在 `score-sheet-R1.csv` 或 `score-sheet-R2.csv` 填写 D1-D6（0-4）、R1-R4（仅用例任务）、coverage_recall（0-1）、S1/S2/S3 数量与备注。
 4. 不要打开 `blind-key.json`；不要与其他评审员讨论分数。
-5. 评分完成后交给运行负责人，用 `p0_kappa.py` 计算一致性。
+5. 评分完成后交给运行负责人，用下面的命令计算一致性：
+
+```bash
+python3 scripts/p0_import_review.py \
+  --r1 runs/2026-11-17-p0/reviewer/score-sheet-R1.csv \
+  --r2 runs/2026-11-17-p0/reviewer/score-sheet-R2.csv
+```
 
 ## 评分口径
 
