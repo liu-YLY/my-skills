@@ -1,0 +1,65 @@
+[
+  {
+    "run_id": "REV-ORDER__with_skill__r1",
+    "task_id": "REV-ORDER",
+    "task_type": "requirement_review",
+    "variant": "with_skill",
+    "repeat": 1,
+    "output_path": "outputs/raw/REV-ORDER__with_skill__r1.md",
+    "prompt_path": "prompts/REV-ORDER__with_skill__r1.md"
+  },
+  {
+    "run_id": "REV-ORDER__no_skill__r1",
+    "task_id": "REV-ORDER",
+    "task_type": "requirement_review",
+    "variant": "no_skill",
+    "repeat": 1,
+    "output_path": "outputs/raw/REV-ORDER__no_skill__r1.md",
+    "prompt_path": "prompts/REV-ORDER__no_skill__r1.md"
+  },
+  {
+    "run_id": "TP-ORDER__with_skill__r1",
+    "task_id": "TP-ORDER",
+    "task_type": "test_points",
+    "variant": "with_skill",
+    "repeat": 1,
+    "output_path": "outputs/raw/TP-ORDER__with_skill__r1.md",
+    "prompt_path": "prompts/TP-ORDER__with_skill__r1.md"
+  },
+  {
+    "run_id": "TP-ORDER__no_skill__r1",
+    "task_id": "TP-ORDER",
+    "task_type": "test_points",
+    "variant": "no_skill",
+    "repeat": 1,
+    "output_path": "outputs/raw/TP-ORDER__no_skill__r1.md",
+    "prompt_path": "prompts/TP-ORDER__no_skill__r1.md"
+  },
+  {
+    "run_id": "TC-ORDER__with_skill__r1",
+    "task_id": "TC-ORDER",
+    "task_type": "test_cases",
+    "variant": "with_skill",
+    "repeat": 1,
+    "output_path": "outputs/raw/TC-ORDER__with_skill__r1.md",
+    "prompt_path": "prompts/TC-ORDER__with_skill__r1.md"
+  },
+  {
+    "run_id": "TC-ORDER__no_skill__r1",
+    "task_id": "TC-ORDER",
+    "task_type": "test_cases",
+    "variant": "no_skill",
+    "repeat": 1,
+    "output_path": "outputs/raw/TC-ORDER__no_skill__r1.md",
+    "prompt_path": "prompts/TC-ORDER__no_skill__r1.md"
+  },
+  {
+    "run_id": "REV-ORDER__with_skill__r2",
+    "task_id": "REV-ORDER",
+    "task_type": "requirement_review",
+    "variant": "with_skill",
+    "repeat": 2,
+    "output_path": "outputs/raw/REV-ORDER__with_skill__r2.md",
+    "prompt_path": "prompts/REV-ORDER__with_skill__r2.md"
+  }
+]

@@ -67,6 +67,10 @@
 | [pdd-commerce-benchmark/scoring-rubric.md](pdd-commerce-benchmark/scoring-rubric.md) | 三类任务的评分维度、闸门、锚点、judge 契约 | v1.0.0 现行 |
 | [pdd-commerce-benchmark/benchmark-plan.md](pdd-commerce-benchmark/benchmark-plan.md) | 运行协议、人工到 AI 迁移、反向调整闭环、阶段计划 | v1.0.0 现行 |
 | [pdd-commerce-benchmark/assessment.md](pdd-commerce-benchmark/assessment.md) | 可行性、必要性、收益、成本与风险评估 | v1.0.0 现行 |
+| [pdd-commerce-benchmark/reports/2026-11-17-p0-pilot.md](pdd-commerce-benchmark/reports/2026-11-17-p0-pilot.md) | P0-lite 最小闭环试跑报告（dry_run，不作效果结论） | 弱（N=3 / 单评 / 同源） |
+| [pdd-commerce-benchmark/scripts/](pdd-commerce-benchmark/scripts/) | P0 runner packet、G0 结构校验、评分汇总脚本 | 现行 |
+| [pdd-commerce-benchmark/runs/2026-11-17-p0/](pdd-commerce-benchmark/runs/2026-11-17-p0/) | P0 批次清单、runner packet、7 份原始产物、结构校验 | 运行时证据 |
+| [pdd-commerce-benchmark/scores/2026-11-17-p0/](pdd-commerce-benchmark/scores/2026-11-17-p0/) | P0 评分记录与汇总结果 | 运行时证据 |
 
 ## 3. 报告
 

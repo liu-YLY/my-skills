@@ -1,0 +1,151 @@
+{
+  "batch_id": "2026-11-17-p0",
+  "n_pairs": 3,
+  "macro_by_variant": {
+    "with_skill": 79.9,
+    "no_skill": 31.3
+  },
+  "pairs": [
+    {
+      "task_id": "REV-ORDER",
+      "with": 85.2,
+      "no": 37.8,
+      "diff": 47.4,
+      "result": "win"
+    },
+    {
+      "task_id": "TP-ORDER",
+      "with": 80.5,
+      "no": 35.5,
+      "diff": 45.0,
+      "result": "win"
+    },
+    {
+      "task_id": "TC-ORDER",
+      "with": 74.0,
+      "no": 20.5,
+      "diff": 53.5,
+      "result": "win"
+    }
+  ],
+  "wins": 3,
+  "losses": 0,
+  "ties": 0,
+  "sign_test_p_one_sided": 0.125,
+  "aa_rev_order_score_diff": 0.0,
+  "verdict": "?",
+  "verdict_note": "P0-lite: N<6 and single rater; pilot only, not an effectiveness conclusion.",
+  "rows": [
+    {
+      "run_id": "REV-ORDER__with_skill__r1",
+      "task_id": "REV-ORDER",
+      "variant": "with_skill",
+      "repeat": 1,
+      "weighted": 86.2,
+      "coverage_recall": 1.0,
+      "s1": 0,
+      "s2": 0,
+      "s3": 1,
+      "penalties": 1,
+      "caps": [],
+      "final": 85.2,
+      "g0_pass": true
+    },
+    {
+      "run_id": "REV-ORDER__with_skill__r2",
+      "task_id": "REV-ORDER",
+      "variant": "with_skill",
+      "repeat": 2,
+      "weighted": 86.2,
+      "coverage_recall": 1.0,
+      "s1": 0,
+      "s2": 0,
+      "s3": 1,
+      "penalties": 1,
+      "caps": [],
+      "final": 85.2,
+      "g0_pass": true
+    },
+    {
+      "run_id": "REV-ORDER__no_skill__r1",
+      "task_id": "REV-ORDER",
+      "variant": "no_skill",
+      "repeat": 1,
+      "weighted": 43.8,
+      "coverage_recall": 0.583,
+      "s1": 0,
+      "s2": 1,
+      "s3": 1,
+      "penalties": 6,
+      "caps": [
+        59
+      ],
+      "final": 37.8,
+      "g0_pass": true
+    },
+    {
+      "run_id": "TP-ORDER__with_skill__r1",
+      "task_id": "TP-ORDER",
+      "variant": "with_skill",
+      "repeat": 1,
+      "weighted": 82.5,
+      "coverage_recall": 1.0,
+      "s1": 0,
+      "s2": 0,
+      "s3": 2,
+      "penalties": 2,
+      "caps": [],
+      "final": 80.5,
+      "g0_pass": true
+    },
+    {
+      "run_id": "TP-ORDER__no_skill__r1",
+      "task_id": "TP-ORDER",
+      "variant": "no_skill",
+      "repeat": 1,
+      "weighted": 37.5,
+      "coverage_recall": 0.564,
+      "s1": 0,
+      "s2": 0,
+      "s3": 2,
+      "penalties": 2,
+      "caps": [
+        59
+      ],
+      "final": 35.5,
+      "g0_pass": true
+    },
+    {
+      "run_id": "TC-ORDER__with_skill__r1",
+      "task_id": "TC-ORDER",
+      "variant": "with_skill",
+      "repeat": 1,
+      "weighted": 75.0,
+      "coverage_recall": 1.0,
+      "s1": 0,
+      "s2": 0,
+      "s3": 1,
+      "penalties": 1,
+      "caps": [],
+      "final": 74.0,
+      "g0_pass": true
+    },
+    {
+      "run_id": "TC-ORDER__no_skill__r1",
+      "task_id": "TC-ORDER",
+      "variant": "no_skill",
+      "repeat": 1,
+      "weighted": 27.5,
+      "coverage_recall": 0.445,
+      "s1": 0,
+      "s2": 1,
+      "s3": 2,
+      "penalties": 7,
+      "caps": [
+        59
+      ],
+      "final": 20.5,
+      "g0_pass": true
+    }
+  ]
+}

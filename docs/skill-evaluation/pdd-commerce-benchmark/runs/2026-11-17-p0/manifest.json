@@ -1,0 +1,17 @@
+{
+  "batch_id": "2026-11-17-p0",
+  "benchmark_id": "pdd-commerce-auth-cart-order",
+  "benchmark_version": "1.0.0",
+  "requirement_file": "requirements-pdd-auth-cart-order.md",
+  "requirement_sha256": "436606e439af995af3efb05f694423473939d8daa07d9f86602fb6f382788782",
+  "benchmark_sha256": "5857d26544b97f8da847acd37152cec5bd7f11aa801b97ae50cc7ea4297c0e50",
+  "rubric_sha256": "dceb86bcdcb4b5eae264c2106a4204e719a01816ffbfebf1bc5a4d5a9cb084ff",
+  "skill_name": "test-case-engineer",
+  "skill_version": "9.14.0",
+  "model": "pending / external runner",
+  "status": "p0-lite: repeat=1, single rater, not blind",
+  "known_deviation": [
+    "P0 plan calls for 3 repeats and 2 independent reviewers; this batch uses repeat=1 and one rater.",
+    "Conclusions are pilot-only and must not be published as quality or improvement evidence."
+  ]
+}
