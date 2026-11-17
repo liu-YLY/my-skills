@@ -64,13 +64,13 @@
 |---|---|---|
 | [pdd-commerce-benchmark/requirements-pdd-auth-cart-order.md](pdd-commerce-benchmark/requirements-pdd-auth-cart-order.md) | 拼多多风格交易需求文档（登录注册/购物车/购买），冻结为评测输入 | v1.0.0 冻结 |
 | [pdd-commerce-benchmark/benchmark-v1.json](pdd-commerce-benchmark/benchmark-v1.json) | 10 个任务、58 条 must-cover、8 条开放问题、负向范围 | v1.0.0 冻结 |
-| [pdd-commerce-benchmark/scoring-rubric.md](pdd-commerce-benchmark/scoring-rubric.md) | 三类任务的评分维度、闸门、锚点、judge 契约 | v1.0.0 现行 |
+| [pdd-commerce-benchmark/scoring-rubric.md](pdd-commerce-benchmark/scoring-rubric.md) | 三类任务的评分维度、闸门、锚点、judge 契约；含用例 R1-R4 业务可读性 | v1.1.0 现行 |
 | [pdd-commerce-benchmark/benchmark-plan.md](pdd-commerce-benchmark/benchmark-plan.md) | 运行协议、人工到 AI 迁移、反向调整闭环、阶段计划 | v1.0.0 现行 |
 | [pdd-commerce-benchmark/assessment.md](pdd-commerce-benchmark/assessment.md) | 可行性、必要性、收益、成本与风险评估 | v1.0.0 现行 |
-| [pdd-commerce-benchmark/reports/2026-11-17-p0-pilot.md](pdd-commerce-benchmark/reports/2026-11-17-p0-pilot.md) | P0-lite 最小闭环试跑报告（dry_run，不作效果结论） | 弱（N=3 / 单评 / 同源） |
-| [pdd-commerce-benchmark/scripts/](pdd-commerce-benchmark/scripts/) | P0 runner packet、G0 结构校验、评分汇总脚本 | 现行 |
-| [pdd-commerce-benchmark/runs/2026-11-17-p0/](pdd-commerce-benchmark/runs/2026-11-17-p0/) | P0 批次清单、runner packet、7 份原始产物、结构校验 | 运行时证据 |
-| [pdd-commerce-benchmark/scores/2026-11-17-p0/](pdd-commerce-benchmark/scores/2026-11-17-p0/) | P0 评分记录与汇总结果 | 运行时证据 |
+| [pdd-commerce-benchmark/reports/2026-11-17-p0-pilot.md](pdd-commerce-benchmark/reports/2026-11-17-p0-pilot.md) | P0 最小闭环试跑报告（18 产物 / 同源评审，不作效果结论） | 弱（同源评审，未换族） |
+| [pdd-commerce-benchmark/scripts/](pdd-commerce-benchmark/scripts/) | P0 runner packet、G0 结构校验、评分汇总、盲评与 kappa 脚本 | 现行 |
+| [pdd-commerce-benchmark/runs/2026-11-17-p0/](pdd-commerce-benchmark/runs/2026-11-17-p0/) | P0 批次清单、runner packet、18 份原始产物、盲副本、评审员包 | 运行时证据 |
+| [pdd-commerce-benchmark/scores/2026-11-17-p0/](pdd-commerce-benchmark/scores/2026-11-17-p0/) | P0 评分、R2 复核、summary、kappa、用例可读性 R1-R4 | 运行时证据 |
 
 ## 3. 报告
 

@@ -1,0 +1,80 @@
+{
+  "batch_id": "2026-11-17-p0",
+  "rubric_version": "1.1.0",
+  "scope": "test_cases only",
+  "r4_protocol": "每份用例集随机抽 5 条，只看标题、关联需求 ID、预期首句，3-5 秒内复述测什么/为什么/预期是什么",
+  "runs": [
+    {
+      "run_id": "TC-ORDER__with_skill__r1",
+      "R1": 4,
+      "R2": 3,
+      "R3": 4,
+      "R4": 4,
+      "R_total": 3.8,
+      "r4_pass_rate": 1.0,
+      "sample_cases": ["TC_ORDER_金额计算_001", "TC_ORDER_提交幂等_007", "TC_ORDER_回调验签_013", "TC_ORDER_拼单成团_018", "TC_ORDER_关闭后回调_025"],
+      "notes": "标题为业务场景+关键预期；术语与 PRD 一致；5/5 可在 3-5 秒内复述。"
+    },
+    {
+      "run_id": "TC-ORDER__with_skill__r2",
+      "R1": 4,
+      "R2": 3,
+      "R3": 4,
+      "R4": 4,
+      "R_total": 3.8,
+      "r4_pass_rate": 1.0,
+      "sample_cases": ["TC_ORDER_金额计算_001", "TC_ORDER_提交幂等_004", "TC_ORDER_回调验签_008", "TC_ORDER_拼单成团_013", "TC_ORDER_对账补偿_019"],
+      "notes": "与 r1 同口径；标题清晰，少量步骤有重复背景。"
+    },
+    {
+      "run_id": "TC-ORDER__with_skill__r3",
+      "R1": 4,
+      "R2": 3,
+      "R3": 4,
+      "R4": 4,
+      "R_total": 3.8,
+      "r4_pass_rate": 1.0,
+      "sample_cases": ["TC_ORDER_金额计算_001", "TC_ORDER_提交幂等_004", "TC_ORDER_回调验签_008", "TC_ORDER_拼单失败_014", "TC_ORDER_关闭后回调_019"],
+      "notes": "标题清晰；业务术语一致；5/5 通过。"
+    },
+    {
+      "run_id": "TC-ORDER__no_skill__r1",
+      "R1": 2,
+      "R2": 1,
+      "R3": 3,
+      "R4": 2,
+      "R_total": 2.0,
+      "r4_pass_rate": 0.4,
+      "sample_cases": ["TC_ORDER_正常下单_001", "TC_ORDER_使用优惠券_003", "TC_ORDER_拼单成功_008", "TC_ORDER_拼单失败_009", "TC_ORDER_支付回调_012"],
+      "notes": "标题宽泛（正常下单/支付回调），预期多次出现「功能正常」；2/5 只能复述部分目的。"
+    },
+    {
+      "run_id": "TC-ORDER__no_skill__r2",
+      "R1": 2,
+      "R2": 1,
+      "R3": 3,
+      "R4": 1,
+      "R_total": 1.8,
+      "r4_pass_rate": 0.2,
+      "sample_cases": ["TC_ORDER_正常下单_001", "TC_ORDER_使用优惠券_003", "TC_ORDER_拼单成功_008", "TC_ORDER_拼单失败_009", "TC_ORDER_支付回调_011"],
+      "notes": "标题与预期均较空泛；多数 3-5 秒内无法说出具体预期。"
+    },
+    {
+      "run_id": "TC-ORDER__no_skill__r3",
+      "R1": 2,
+      "R2": 1,
+      "R3": 3,
+      "R4": 1,
+      "R_total": 1.8,
+      "r4_pass_rate": 0.2,
+      "sample_cases": ["TC_ORDER_正常下单_001", "TC_ORDER_优惠券_003", "TC_ORDER_拼单_008", "TC_ORDER_拼单失败_009", "TC_ORDER_支付回调_011"],
+      "notes": "标题过短且范围过大；预期缺少可观察结果。"
+    }
+  ],
+  "summary": {
+    "with_skill_mean": 3.8,
+    "no_skill_mean": 1.9,
+    "delta": 1.9,
+    "note": "R 分单独报告，不改变 0-100 总分；用于验证用例是否贴合业务、语言是否精准简洁、是否有自创晦涩词、能否 3-5 秒理解。"
+  }
+}

@@ -159,7 +159,7 @@ def main() -> None:
         "sign_test_p_one_sided": round(p, 4),
         "aa_rev_order_score_diff": aa_diff,
         "verdict": verdict,
-        "verdict_note": "P0-lite: N<6 and single rater; pilot only, not an effectiveness conclusion.",
+        "verdict_note": "P0 same-source run: N=9, single rater, not independent; pilot only, not an effectiveness conclusion.",
         "rows": rows,
     }
     out = BASE / "scores" / args.batch_id / "summary.json"
@@ -175,7 +175,7 @@ def main() -> None:
     print(f"\nmacro: {macro}")
     print(f"pairs: {pairs}")
     print(f"wins/losses/ties: {wins}/{losses}/{ties}; sign p={p:.4f}; A/A diff={aa_diff}")
-    print(f"verdict: {verdict} (P0-lite, pilot only)")
+    print(f"verdict: {verdict} (P0 same-source, pilot only)")
     print(f"wrote {out}")
 
 

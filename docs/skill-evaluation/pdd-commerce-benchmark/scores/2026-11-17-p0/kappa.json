@@ -1,0 +1,43 @@
+{
+  "batch_id": "2026-11-17-p0",
+  "n": 18,
+  "dimensions": {
+    "D1": {
+      "kappa": 0.9654,
+      "exact_agreement": 0.8333,
+      "adjacent_agreement": 1.0,
+      "mae": 0.1667
+    },
+    "D2": {
+      "kappa": 0.6364,
+      "exact_agreement": 0.7778,
+      "adjacent_agreement": 1.0,
+      "mae": 0.2222
+    },
+    "D3": {
+      "kappa": 0.7887,
+      "exact_agreement": 0.7222,
+      "adjacent_agreement": 1.0,
+      "mae": 0.2778
+    },
+    "D4": {
+      "kappa": 0.9077,
+      "exact_agreement": 0.7778,
+      "adjacent_agreement": 1.0,
+      "mae": 0.2222
+    },
+    "D5": {
+      "kappa": 1.0,
+      "exact_agreement": 1.0,
+      "adjacent_agreement": 1.0,
+      "mae": 0.0
+    },
+    "D6": {
+      "kappa": 0.6923,
+      "exact_agreement": 0.7778,
+      "adjacent_agreement": 1.0,
+      "mae": 0.2222
+    }
+  },
+  "mean_kappa": 0.8318
+}
