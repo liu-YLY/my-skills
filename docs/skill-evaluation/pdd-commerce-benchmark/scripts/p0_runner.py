@@ -40,10 +40,9 @@ def main() -> None:
     tasks = {t["id"]: t for t in bench["tasks"]}
     runs = []
     for task_id in P0_TASKS:
-        task = tasks[task_id]
         for variant in ["with_skill", "no_skill"]:
-            runs.append((task_id, variant, 1))
-    runs.append(("REV-ORDER", "with_skill", 2))  # A/A repeat
+            for repeat in [1, 2, 3]:
+                runs.append((task_id, variant, repeat))
 
     run_plan = []
     for task_id, variant, repeat in runs:

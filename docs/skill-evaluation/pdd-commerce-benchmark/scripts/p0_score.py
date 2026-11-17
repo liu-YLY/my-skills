@@ -36,12 +36,13 @@ def sign_p(wins: int, n: int) -> float:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch-id", default="2026-11-17-p0")
+    parser.add_argument("--scores-file", default="scores.jsonl")
     args = parser.parse_args()
 
     batch = BASE / "runs" / args.batch_id
     plan = {r["run_id"]: r for r in json.loads((batch / "run-plan.json").read_text(encoding="utf-8"))}
     checks = {r["run_id"]: r for r in json.loads((batch / "checks.json").read_text(encoding="utf-8"))}
-    scores_path = BASE / "scores" / args.batch_id / "scores.jsonl"
+    scores_path = BASE / "scores" / args.batch_id / args.scores_file
     scores = [json.loads(line) for line in scores_path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
     bench = json.loads(BENCH.read_text(encoding="utf-8"))
@@ -112,24 +113,26 @@ def main() -> None:
 
     by_variant = defaultdict(list)
     for row in rows:
-        if row["repeat"] == 1:
-            by_variant[row["variant"]].append(row["final"])
+        by_variant[row["variant"]].append(row["final"])
     macro = {k: round(sum(v) / len(v), 1) for k, v in by_variant.items()}
 
     pairs = []
     wins = losses = ties = 0
     for task_id in ["REV-ORDER", "TP-ORDER", "TC-ORDER"]:
-        with_row = next(r for r in rows if r["task_id"] == task_id and r["variant"] == "with_skill" and r["repeat"] == 1)
-        no_row = next(r for r in rows if r["task_id"] == task_id and r["variant"] == "no_skill" and r["repeat"] == 1)
-        diff = round(with_row["final"] - no_row["final"], 1)
-        result = "win" if diff > 5 else "lose" if diff < -5 else "tie"
-        if result == "win":
-            wins += 1
-        elif result == "lose":
-            losses += 1
-        else:
-            ties += 1
-        pairs.append({"task_id": task_id, "with": with_row["final"], "no": no_row["final"], "diff": diff, "result": result})
+        for repeat in [1, 2, 3]:
+            with_row = next((r for r in rows if r["task_id"] == task_id and r["variant"] == "with_skill" and r["repeat"] == repeat), None)
+            no_row = next((r for r in rows if r["task_id"] == task_id and r["variant"] == "no_skill" and r["repeat"] == repeat), None)
+            if not with_row or not no_row:
+                continue
+            diff = round(with_row["final"] - no_row["final"], 1)
+            result = "win" if diff > 5 else "lose" if diff < -5 else "tie"
+            if result == "win":
+                wins += 1
+            elif result == "lose":
+                losses += 1
+            else:
+                ties += 1
+            pairs.append({"task_id": task_id, "repeat": repeat, "with": with_row["final"], "no": no_row["final"], "diff": diff, "result": result})
 
     n = wins + losses
     p = sign_p(wins, n) if n else 1.0
@@ -143,7 +146,7 @@ def main() -> None:
         verdict = "N"
 
     aa = [r for r in rows if r["task_id"] == "REV-ORDER" and r["variant"] == "with_skill"]
-    aa_diff = round(abs(aa[0]["final"] - aa[1]["final"]), 1) if len(aa) >= 2 else None
+    aa_diff = round(max(r["final"] for r in aa) - min(r["final"] for r in aa), 1) if len(aa) >= 2 else None
 
     summary = {
         "batch_id": args.batch_id,

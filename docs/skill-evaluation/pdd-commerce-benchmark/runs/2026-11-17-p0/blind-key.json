@@ -1,0 +1,110 @@
+[
+  {
+    "blind_id": "S01",
+    "run_id": "TP-ORDER__with_skill__r1",
+    "task_id": "TP-ORDER",
+    "task_type": "test_points"
+  },
+  {
+    "blind_id": "S02",
+    "run_id": "TP-ORDER__no_skill__r2",
+    "task_id": "TP-ORDER",
+    "task_type": "test_points"
+  },
+  {
+    "blind_id": "S03",
+    "run_id": "REV-ORDER__with_skill__r2",
+    "task_id": "REV-ORDER",
+    "task_type": "requirement_review"
+  },
+  {
+    "blind_id": "S04",
+    "run_id": "TP-ORDER__no_skill__r3",
+    "task_id": "TP-ORDER",
+    "task_type": "test_points"
+  },
+  {
+    "blind_id": "S05",
+    "run_id": "REV-ORDER__with_skill__r3",
+    "task_id": "REV-ORDER",
+    "task_type": "requirement_review"
+  },
+  {
+    "blind_id": "S06",
+    "run_id": "TP-ORDER__no_skill__r1",
+    "task_id": "TP-ORDER",
+    "task_type": "test_points"
+  },
+  {
+    "blind_id": "S07",
+    "run_id": "TP-ORDER__with_skill__r3",
+    "task_id": "TP-ORDER",
+    "task_type": "test_points"
+  },
+  {
+    "blind_id": "S08",
+    "run_id": "TC-ORDER__no_skill__r2",
+    "task_id": "TC-ORDER",
+    "task_type": "test_cases"
+  },
+  {
+    "blind_id": "S09",
+    "run_id": "TC-ORDER__no_skill__r1",
+    "task_id": "TC-ORDER",
+    "task_type": "test_cases"
+  },
+  {
+    "blind_id": "S10",
+    "run_id": "TC-ORDER__with_skill__r1",
+    "task_id": "TC-ORDER",
+    "task_type": "test_cases"
+  },
+  {
+    "blind_id": "S11",
+    "run_id": "TC-ORDER__with_skill__r2",
+    "task_id": "TC-ORDER",
+    "task_type": "test_cases"
+  },
+  {
+    "blind_id": "S12",
+    "run_id": "TC-ORDER__no_skill__r3",
+    "task_id": "TC-ORDER",
+    "task_type": "test_cases"
+  },
+  {
+    "blind_id": "S13",
+    "run_id": "REV-ORDER__no_skill__r3",
+    "task_id": "REV-ORDER",
+    "task_type": "requirement_review"
+  },
+  {
+    "blind_id": "S14",
+    "run_id": "TC-ORDER__with_skill__r3",
+    "task_id": "TC-ORDER",
+    "task_type": "test_cases"
+  },
+  {
+    "blind_id": "S15",
+    "run_id": "REV-ORDER__no_skill__r1",
+    "task_id": "REV-ORDER",
+    "task_type": "requirement_review"
+  },
+  {
+    "blind_id": "S16",
+    "run_id": "TP-ORDER__with_skill__r2",
+    "task_id": "TP-ORDER",
+    "task_type": "test_points"
+  },
+  {
+    "blind_id": "S17",
+    "run_id": "REV-ORDER__with_skill__r1",
+    "task_id": "REV-ORDER",
+    "task_type": "requirement_review"
+  },
+  {
+    "blind_id": "S18",
+    "run_id": "REV-ORDER__no_skill__r2",
+    "task_id": "REV-ORDER",
+    "task_type": "requirement_review"
+  }
+]
