@@ -98,16 +98,17 @@ test-case-engineer/
 ├── knowledge/                  # 知识库
 │   ├── writing-rules.md        # 用例编写规则（写作风格/格式/字段/铁律/拆分合并）
 │   ├── readability.md          # 人类易读性细则（句式/结构/术语/认知负荷）
-│   ├── case-arrangement.md     # 用例编排与排序（用户旅程/模块分组）
+│   ├── case-arrangement.md     # 用例组织（分层/输出类型/编排/预算）
 │   ├── failure-semantics.md    # 失败语义、安全属性与进展属性
 │   ├── efficiency-metrics.md   # 效率度量报告模板与工时基准
-│   ├── test-levels.md          # 测试分层策略
 │   ├── test-standards.md       # 测试规范与标准
 │   ├── bug-patterns.md         # 缺陷模式库（与 bug-analyzer 共享）
+│   ├── runtime-error-patterns.md # NPE/500/超时根因与防御性测试点（按需）
 │   ├── project-knowledge.md    # 项目知识目录
-│   ├── prompt-strategy.md      # AI 生成 Prompt 策略
+│   ├── prompt-strategy.md      # 语义事实抽取（评审 R2 按需）
 │   ├── anti-patterns.md        # 反模式黑名单（阶段 3/4 自检）
 │   ├── review-mode.md          # 评审模式（10 维度评审）
+│   ├── review-reference.md     # 评审模板与增量评审（R3/按需）
 │   ├── large-scale-review.md   # 规模化评审方案（>100 条时的分批/抽样/聚合）
 │   ├── review-plan.md          # 评审方案（面向产品/UI/前后端的材料与议程）
 │   ├── writing-examples.md     # 用例编写示例（铁律教学示例表）

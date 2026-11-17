@@ -34,7 +34,11 @@
 
 | 文件 | 规模 | 说明 |
 |---|---|---|
-| [2026-11-03-test-case-quality-cases-v6.json](2026-11-03-test-case-quality-cases-v6.json) | 54 cases / 12 trigger | **现行冻结版本**，修复 #13/14/16/19/20/21 缺口后的版本 |
+| [2026-11-17-quality-suite-v7.1.json](2026-11-17-quality-suite-v7.1.json) | 70 task / 12 trigger / 354 checks | **现行冻结版本**。修复 #13 评级口径、#7/#19 抽样口径；其余同 v7。SHA `dd2f1b49` |
+| [2026-11-17-test-point-cases.json](2026-11-17-test-point-cases.json) | 10 cases | 测试点种子集：需求条目、期望测试点、范围外项与结果型 checks。SHA `dc900b79` |
+| [2026-11-17-requirement-review-cases.json](2026-11-17-requirement-review-cases.json) | 12 cases / 61 seeded defects | 需求评审种子集：每个 PRD 预埋 5-6 个缺陷，附位置、原文、类型、严重级别与期望问题。SHA `aee2ed36` |
+
+> v7 / v7.1 使用 `task_cases` + `trigger_evals` 结构，`scripts/skill-evals.py --cases-file` 可直接读取；v6 及更早为 list 结构。
 
 ### 2.2 历史冻结套件（保留仅为复现历史报告，勿用于新评测）
 
@@ -45,6 +49,8 @@
 | [2026-11-02-test-case-quality-cases-v3.json](2026-11-02-test-case-quality-cases-v3.json) | 219 | v3，仅 #39 文本 | `70cdec7c` |
 | [2026-11-02-test-case-quality-cases-v4.json](2026-11-02-test-case-quality-cases-v4.json) | 219 | v4，与 v3 差 1 处 | `4a81d91f` |
 | [2026-11-02-test-case-quality-cases-v5.json](2026-11-02-test-case-quality-cases-v5.json) | 219 | v5，与 v4 差 #32 | `9a0520ed` |
+| [2026-11-03-test-case-quality-cases-v6.json](2026-11-03-test-case-quality-cases-v6.json) | 219 | v6，修复 #13/14/16/19/20/21 缺料，仍为 list 结构 | `a8fcdc82` |
+| [2026-11-17-quality-suite-v7.json](2026-11-17-quality-suite-v7.json) | 354 | v7，补 category + 结果型断言；#13/#7/#19 口径未修 | `ae880180` |
 
 ### 2.3 批次数据
 
@@ -99,13 +105,16 @@
 | [2026-11-02-eval-tier23-small-control.md](reports/2026-11-02-eval-tier23-small-control.md) | 小规模真实对照（方向性） | 中 |
 | [2026-11-03-eval-fix-suite-gaps.md](reports/2026-11-03-eval-fix-suite-gaps.md) | 修复套件缺料后的完整对照（阶段 Q） | 中 |
 | [2026-11-03-eval-tier23-full.md](reports/2026-11-03-eval-tier23-full.md) | **42 task × with/without 完整对照** | 中（当前最强单份） |
+| [2026-11-17-quality-baseline.md](reports/2026-11-17-quality-baseline.md) | 阶段 1 确定性基线；模型行为评测 `blocked` | 中（确定性）/ 模型行为未执行 |
+| [2026-11-17-eval-rule-consistency.md](reports/2026-11-17-eval-rule-consistency.md) | v7 断言-规则一致性扫描 | 中（静态审计） |
 
 ## 4. 执行档案
 
 | 目录 | 内容 | 说明 |
 |---|---|---|
-| [../superpowers/plans/](../superpowers/plans/) | 11 份实施计划（2026-07 → 2026-11） | 已完成事项的历史档案，不再更新 |
+| [../superpowers/plans/](../superpowers/plans/) | 12 份实施计划（2026-07 → 2026-11） | 已完成事项的历史档案，不再更新 |
 | [../superpowers/specs/](../superpowers/specs/) | 2 份设计文档（testing skills 扩展、状态机设计） | 已完成事项的历史档案 |
+| [rule-inventory/](rule-inventory/) | 4 个首批 skill 的规范语句清单与 D1–D5 分类 | 瘦身前置材料，由 `scripts/extract-rule-inventory.py` 生成 |
 
 ## 5. 建议阅读顺序
 
