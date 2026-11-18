@@ -101,10 +101,10 @@ def main() -> None:
 
     batch = BASE / "runs" / args.batch_id
     plan = json.loads((batch / "run-plan.json").read_text(encoding="utf-8"))
-    blind_dir = batch / "blind"
     reviewer_dir = batch / "reviewer"
-    blind_dir.mkdir(exist_ok=True)
+    blind_dir = reviewer_dir / "blind"
     reviewer_dir.mkdir(exist_ok=True)
+    blind_dir.mkdir(exist_ok=True)
 
     entries = []
     for run in plan:
@@ -114,9 +114,24 @@ def main() -> None:
 
     random.Random(args.seed).shuffle(entries)
     key = []
+    pack_lines = [
+        "# P0 盲评阅读包",
+        "",
+        "> 这里汇总了 18 份盲产物全文，方便连续阅读；分数仍填 `score-sheet-R1.csv` / `score-sheet-R2.csv`。",
+        "> 不要根据顺序猜 variant；顺序是随机的。",
+        "",
+    ]
     for i, entry in enumerate(entries, start=1):
         blind_id = f"S{i:02d}"
         (blind_dir / f"{blind_id}.md").write_text(entry["text"], encoding="utf-8")
+        pack_lines += [
+            f"## {blind_id}（{entry['task_id']} / {entry['task_type']}）",
+            "",
+            entry["text"],
+            "",
+            "---",
+            "",
+        ]
         key.append(
             {
                 "blind_id": blind_id,
@@ -125,6 +140,7 @@ def main() -> None:
                 "task_type": entry["task_type"],
             }
         )
+    (reviewer_dir / "review-pack.md").write_text("\n".join(pack_lines), encoding="utf-8")
 
     (batch / "blind-key.json").write_text(
         json.dumps(key, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -166,13 +182,15 @@ def main() -> None:
 > 批次：`{args.batch_id}`
 > 目标：2 名评审员独立评分 18 份盲产物，计算二次加权 kappa。
 
-## 一、两份 CSV 怎么用
+## 一、评分表怎么用（推荐 Excel 工作簿）
 
-- `score-sheet-R1.csv` 给**评审员 A**；`score-sheet-R2.csv` 给**评审员 B**。
+- **CSV 只是打分表，不含产物正文**。产物正文在 `P0-review-workbook-R1.xlsx` 的 S01-S18 工作表，或 `review-pack.md` / `blind/`。
+- `P0-review-workbook-R1.xlsx` 给**评审员 A**；`P0-review-workbook-R2.xlsx` 给**评审员 B**。一个工作簿已含评分表、说明、清单和 18 份全文。
+- 如果坚持用 CSV：`score-sheet-R1.csv` 给 A，`score-sheet-R2.csv` 给 B；先读 `blind/Sxx.md` 再填。
 - 不要由同一个人填两份；两位评审员不要互相讨论分数。
 - 用 Excel / WPS / Numbers 打开，保存时保持 CSV 与 UTF-8。
 - 不要改 `blind_id`、`task_id`、`task_type`；不要增删行；不要改列名。
-- 每行对应一份 `blind/Sxx.md`。先读产物，再填这一行。
+- 每行对应一份产物。先读产物，再填这一行。
 
 ## 二、列怎么填
 
@@ -190,11 +208,12 @@ def main() -> None:
 ## 三、评分步骤
 
 1. 读 [评分卡](../../../scoring-rubric.md) 和 [需求文档](../../../requirements-pdd-auth-cart-order.md)。
-2. 按 `blind/S01.md` ~ `blind/S18.md` 逐份阅读。
-3. 先用 `must-cover-order.md` / `review-checks-order.md` 算 `coverage_recall`。
-4. 再给 D1-D6；用例任务额外给 R1-R4。
-5. 数 S1/S2/S3，写 notes。
-6. 全部填完后，交给运行负责人执行：
+2. **推荐直接用 Excel 打开 `P0-review-workbook-R1.xlsx`（评审员 A）或 `P0-review-workbook-R2.xlsx`（评审员 B）**：里面已经包含“评分表”、说明、must-cover、review-checks、R1-R4 和 S01-S18 全文。
+3. 如果不使用工作簿，再读 `review-pack.md`（18 份产物全文），或按 `blind/S01.md` ~ `blind/S18.md` 逐个打开。
+4. 先用 `must-cover-order.md` / `review-checks-order.md` 算 `coverage_recall`。
+5. 再给 D1-D6；用例任务额外给 R1-R4。
+6. 数 S1/S2/S3，写 notes。
+7. 全部填完后，把“评分表”另存为 CSV UTF-8，交给运行负责人执行：
 
 ```bash
 python3 scripts/p0_import_review.py --r1 runs/2026-11-17-p0/reviewer/score-sheet-R1.csv --r2 runs/2026-11-17-p0/reviewer/score-sheet-R2.csv
@@ -246,11 +265,13 @@ S05,TC-ORDER,test_cases,3,3,3,3,3,3,4,3,4,4,3.75,0.8,0.86,0,0,1,"3-5秒抽查4/5
 
 ## 八、文件
 
-- `blind/`：18 份去标识产物。
-- `score-sheet-R1.csv` / `score-sheet-R2.csv`：两名评审员各用一份。
+- `P0-review-workbook-R1.xlsx` / `P0-review-workbook-R2.xlsx`：推荐入口，内含评分表、说明、清单与 18 份产物全文。
+- `review-pack.md`：18 份产物全文，适合连续阅读。
+- `blind/`：18 份去标识产物，按 S01-S18 拆分。
+- `score-sheet-R1.csv` / `score-sheet-R2.csv`：如果不想用 Excel 工作簿，可直接填这两个 CSV。
 - `must-cover-order.md`：TP/TC 覆盖率检查清单。
 - `review-checks-order.md`：REV 覆盖率检查清单。
-- `blind-key.json`：仅运行负责人可见。
+- `../blind-key.json`：仅运行负责人可见，评审员不要打开。
 
 ## 九、已知限制
 

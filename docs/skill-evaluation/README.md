@@ -69,7 +69,7 @@
 | [pdd-commerce-benchmark/assessment.md](pdd-commerce-benchmark/assessment.md) | 可行性、必要性、收益、成本与风险评估 | v1.0.0 现行 |
 | [pdd-commerce-benchmark/reports/2026-11-17-p0-pilot.md](pdd-commerce-benchmark/reports/2026-11-17-p0-pilot.md) | P0 最小闭环试跑报告（18 产物 / 同源评审，不作效果结论） | 弱（同源评审，未换族） |
 | [pdd-commerce-benchmark/scripts/](pdd-commerce-benchmark/scripts/) | P0 runner packet、G0 结构校验、评分汇总、盲评、kappa、评审回收脚本 | 现行 |
-| [pdd-commerce-benchmark/runs/2026-11-17-p0/](pdd-commerce-benchmark/runs/2026-11-17-p0/) | P0 批次清单、runner packet、18 份原始产物、盲副本、评审员包 | 运行时证据 |
+| [pdd-commerce-benchmark/runs/2026-11-17-p0/](pdd-commerce-benchmark/runs/2026-11-17-p0/) | P0 批次清单、runner packet、18 份原始产物、Excel 评审工作簿、评审员包 | 运行时证据 |
 | [pdd-commerce-benchmark/scores/2026-11-17-p0/](pdd-commerce-benchmark/scores/2026-11-17-p0/) | P0 评分、R2 复核、summary、kappa、用例可读性 R1-R4 | 运行时证据 |
 
 ## 3. 报告
