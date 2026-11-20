@@ -1,9 +1,9 @@
 # Skill 瘦身与质量提升 · 执行交接
 
-> **当前阶段**：阶段 4（harness² 第一轮）
-> **当前进度**：阶段 1–3 完成；阶段 4 在匹配子集上完成闭环（`partial`），不采纳 INV1/DOM1；停在停止点 4
+> **当前阶段**：阶段 5（瘦身第二批）
+> **当前进度**：阶段 1–4 完成；阶段 5 已完成（5-1 至 5-7），停在停止点 5
 > **计划文件**：[2026-11-17-skill-slimming-and-quality-plan.md](2026-11-17-skill-slimming-and-quality-plan.md)
-> **工作分支**：`trae/agent-WZBLh1`（未推送；阶段 1–3 已提交，阶段 4 文档与 Probe 输出未提交）
+> **工作分支**：`trae/agent-WZBLh1`（未推送；阶段 1–3 已提交，阶段 4/5 文档与产物未提交）
 > **更新方式**：每完成一个任务追加一节，最新状态置顶；恢复上下文时先读本文件
 
 ---
@@ -41,6 +41,205 @@
 | 4-4 两路 Probe | 部分完成 | base/inv1 各 70；dom1 28；complete-case 25 |
 | 4-5 Compose | 未执行 | 无候选通过采纳门槛 |
 | 4-6 采纳决策 + 经验库 | 已完成 | 不采纳 INV1/DOM1；保留 base；`experience-library.md` 5 条 |
+| 5-1 state-machine 瘦身 | 已完成 | default 44,340 → 33,143；entry 7,081 → 5,498 |
+| 5-2 change-impact 瘦身 | 已完成 | default 38,829 → 26,984；entry 6,151 → 4,920 |
+| 5-3 test-strategy 瘦身 | 已完成 | default 17,765 → 14,979；entry 6,200 → 4,613 |
+| 5-4 bug-analyzer 瘦身 | 已完成 | default 21,100 → 12,390；entry 6,940 → 5,487 |
+| 5-5 performance 瘦身 | 已完成 | default 18,726 → 15,491；entry 4,170 → 3,724 |
+| 5-6 frontend / test-data 瘦身 | 已完成 | frontend 6,378 → 5,994；test-data 10,029 → 8,992 |
+| 5-7 其余 skill 质量评测 | 已完成 | `reports/2026-11-20-phase5-skill-quality.md`；模型行为未执行 |
+
+---
+
+## 5-7 其余 skill 质量评测
+
+### 产出
+
+`docs/skill-evaluation/reports/2026-11-20-phase5-skill-quality.md`
+
+### 覆盖
+
+| 项 | 结果 |
+|---|---|
+| 预算 | 全部 skill/mode 达到 target，无超限 |
+| 六个仓库脚本 | 全绿；清单已刷新 |
+| pytest | 46 passed；10 个环境失败（要求 PowerShell） |
+| MCP | review-checker 110 passed；state-machine 114 passed |
+| 触发覆盖 | 10 个 skill 的 trigger case 齐全，每个 ≥4 |
+| 规则保留 | 对 6 个 skill 抽检核心硬约束，均保留；唯一措辞变化为「禁止拼接」→「不得将用户输入直接拼入」 |
+| 种子回归 | test-case-engineer 沿用阶段 3 gold 结果；本轮瘦身未改其内容 |
+| 模型行为 | 无可用 runner/judge，未执行，保持 `partial` |
+
+### 结论
+
+- 阶段 5 验收的「预算全部达成、无只删不测」有确定性证据；规则删除行均为重排、合并或示例移出。
+- 不能据此宣称模型生成质量未退化；如需模型侧证据，阶段 6 用付费 runner 对 change-impact / bug-analyzer / performance 各跑 3 case 对照。
+
+---
+
+## 5-6 frontend / test-data 瘦身
+
+### 改动
+
+| 文件 | 变化 |
+|---|---:|
+| `frontend-test-preparation/SKILL.md` | 4,689 → 4,489 |
+| `frontend-test-preparation/references/handoff-template.md` | 1,689 → 1,505 |
+| `test-data-generator/SKILL.md` | 2,559（未改） |
+| `test-data-generator/knowledge/input-contract.md` | 3,314 → 3,285 |
+| `test-data-generator/knowledge/generation-validation.md` | 2,522 → 2,505 |
+| `test-data-generator/knowledge/extensions.md` | 1,634 → 891（设计参考移出） |
+| `test-data-generator/knowledge/design-references.md` | 新建（按需）：第三方方案来源与取舍 |
+
+### 做法
+
+- frontend 删除与「诚实推进基线」重复的交付清单段落，压缩索引字段、运行核实与交接说明；模板去掉重复路径说明。
+- test-data 把与运行无关的「设计参考」整体移到按需文件；压缩输入协议、格式说明和扩展边界中的重复句。
+- 不改变命令行参数、Schema、安全约束与校验状态语义。
+
+### 校验
+
+- frontend default 5,994 ≤6,000；entry 4,489 ≤5,500。
+- test-data default 8,992 ≤9,000；entry 2,559 ≤5,500。
+
+---
+
+## 5-5 performance 瘦身
+
+### 改动
+
+| 文件 | 变化 |
+|---|---:|
+| `SKILL.md` | 4,170 → 3,724（删除重复资源索引） |
+| `knowledge/metrics-framework.md` | 4,485 → 3,342（合并重复口径、反例压缩） |
+| `knowledge/load-models.md` | 2,709 → 2,533（反例表改条目） |
+| `knowledge/use-method.md` | 2,966 → 2,373（命令与阈值表合并） |
+| `knowledge/bottleneck-patterns.md` | 4,396 → 3,242（模式表保留，定位步骤压缩） |
+
+### 做法
+
+- SKILL 删除与阶段契约重复的资源索引表，其余入口契约不动。
+- metrics 保留四项指标、阈值表和 Little's Law，删除重复的「仅示例」说明与部分工具细节。
+- use-method 把采集命令表和阈值表合并为一张；反例改为条目。
+- bottleneck-patterns 六类模式保留现象/指标/根因/优化/转交列，定位步骤压为单段；传导链保留。
+- load-models 反例表改为条目并去重。
+
+### 校验
+
+- 预算、知识引用、链接检查通过。
+- default 15,491 ≤15,500；entry 3,724 ≤5,500。
+
+---
+
+## 5-4 bug-analyzer 瘦身
+
+### 改动
+
+| 文件 | 变化 |
+|---|---:|
+| `SKILL.md` | 6,940 → 5,487 |
+| `knowledge/root-cause-frameworks.md` | 1,809 → 1,384（删除与 defensive 重复的反推节） |
+| `knowledge/bug-patterns-index.md` | 1,041 → 598 |
+| `knowledge/report-template.md` | 5,827 → 2,550（示例移出） |
+| `knowledge/report-examples.md` | 新建（按需）：两类完整报告示例 |
+| `knowledge/defensive-test-points.md` | 5,483 → 2,371（去掉重复示例表，保留 5 类检查清单） |
+
+### 做法
+
+- SKILL 删除重复知识索引与步骤间依赖段；四张失败模式表逐行压缩；步骤 2/3 自检与能力约束合并。
+- report-template 只留字段定义、填写规范、骨架和转交规则；两个完整示例移到 `report-examples.md`（不在默认路径）。
+- defensive-test-points 保留反推流程、优先级、5 类检查清单和转交规则，删除与清单重复的示例表与完整示例。
+- bug-patterns-index 只留共享来源、降级策略和内容速览。
+
+### 校验
+
+- 预算、知识引用、链接检查通过。
+- default 12,390 ≤16,000；entry 5,487 ≤5,500。
+
+---
+
+## 5-3 test-strategy 瘦身
+
+### 改动
+
+| 文件 | 变化 |
+|---|---:|
+| `SKILL.md` | 6,200 → 4,613 |
+| `knowledge/risk-matrix-framework.md` | 2,692 → 2,386 |
+| `knowledge/test-pyramid.md` | 2,365 → 1,905 |
+| `knowledge/entry-exit-criteria.md` | 1,828 → 1,748 |
+| `knowledge/strategy-templates.md` | 4,680 → 4,327 |
+
+### 做法
+
+- SKILL 删除与阶段表重复的「知识库与参考索引」和边界表转交段；失败模式逐行压缩，保留全部触发条件与兜底结论。
+- risk-matrix 合并重复的执行规则，反例表去掉「问题」列。
+- test-pyramid 删除与职责表重复的边界判定清单，工具选择与自检压缩为单行。
+- strategy-templates 的准入准出 checklist 改为引用 entry-exit 权威源，覆盖报告规则与反例压缩。
+
+### 校验
+
+- 5 个仓库结构脚本通过；`check-project-inventory` 已刷新。
+- `scripts/tests/test_repository_tools.py` 36 passed（含策略反比例硬约束断言）。
+- default 14,979 ≤15,000；entry 4,613 ≤5,500。
+
+---
+
+## 5-2 change-impact 瘦身
+
+### 改动
+
+| 文件 | 变化 |
+|---|---:|
+| `SKILL.md` | 6,151 → 4,920 |
+| `knowledge/diff-modes.md` | 6,168 → 4,425 |
+| `knowledge/anti-patterns.md` | 6,005 → 3,311 |
+| `knowledge/cross-impact-analysis.md` | 9,538 → 8,774（合并 cross-analysis-guide 两轮分析） |
+| `knowledge/cross-analysis-guide.md` | 1,343 → 删除（并入 cross-impact-analysis 第 5 节） |
+| `knowledge/report-template.md` | 9,624 → 5,554 |
+| `knowledge/report-example.md` | 新建（按需）：完整 Mode B 报告示例 |
+
+### 做法
+
+- SKILL 只留定位、四阶段门禁、知识索引、证据边界与 4 条硬禁令；反模式表与失败模式全部指向 anti-patterns。
+- diff-modes 删除与表格重复的决策树，7 种模式示例压缩为一张表；保留 `git show --root` 与 6 条 diff 命令原文供安装文档测试校验。
+- cross-analysis-guide 的匹配优先级、影响程度表、覆盖/执行状态与缺口风险表并入 cross-impact 第 5 节。
+- report-template 只留工作表、P0-P2、场景模板与输出；完整 Mode B 示例移到 `report-example.md`（不在默认路径）。
+- anti-patterns 删除与速查表重复的「详解」章节，保留核心/扩展表、触发时机、自检与失败模式。
+
+### 校验
+
+- 6 个仓库脚本通过；`check-project-inventory` 已刷新。
+- `scripts/tests/test_installation_docs.py` 9 passed（diff 模式命令契约未破坏）。
+- default 26,984 ≤31,000；entry 4,920 ≤5,500。
+
+---
+
+## 5-1 state-machine 瘦身
+
+### 改动
+
+| 文件 | 变化 |
+|---|---:|
+| `SKILL.md` | 7,081 → 5,498 |
+| `state-machine-core.md` | 7,071 → 5,495 |
+| `knowledge/scenario-types.md` | 11,657 → 3,719 |
+| `knowledge/coverage-contract.md` | 新建（按需）：覆盖报告/失败阶段/分层覆盖契约 |
+| `knowledge/scenario-examples.md` | 新建（按需）：可校验状态机模型 + 10 条场景完整 YAML（MCP 集成测试解析） |
+| `knowledge/completeness-check.md` / `anti-patterns.md` / `state-modeling.md` | 未改（默认预算已达成） |
+
+### 做法
+
+- SKILL 只留定位、五阶段、模式、读取矩阵、数据契约、3 条硬禁令；反模式表移入 anti-patterns。
+- core 删除 9 项检查表、10 类场景表、重复失败模式表，改为判定要点 + 指针；转交段压缩。
+- scenario-types 压缩 10 类示例为规则 + 单行示例；完整可校验 YAML 移到 `scenario-examples.md`（不在默认路径），并同步 MCP 集成测试读取路径。
+- 覆盖/失败语义移到 `coverage-contract.md`（不在默认路径）。
+
+### 校验
+
+- 6 个仓库脚本通过；`check-project-inventory` 已刷新。
+- default 33,242 ≤33,300；entry 5,498 ≤5,500。
+- state-machine MCP 114 passed（含迁移后的示例校验）。
 
 ---
 

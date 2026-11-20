@@ -156,9 +156,9 @@ change-impact-analyzer/
 │   └── business-impact-test-scope.md # 完整业务影响与测试方案模板
 ├── knowledge/            # 按需加载的方法论与模板
 │   ├── diff-modes.md              # 七种 diff 模式 / 推断规则 / 采集脚本字段
-│   ├── cross-impact-analysis.md   # 跨层影响链路 / 契约检查 / Mode A/B
-│   ├── cross-analysis-guide.md    # 阶段 3 两轮交叉分析操作细则
+│   ├── cross-impact-analysis.md   # 跨层链路 / 契约检查 / Mode A/B / 两轮交叉分析
 │   ├── report-template.md         # 工作表 / 场景与预期来源 / 可选详情
+│   ├── report-example.md          # 完整 Mode B 报告示例（按需）
 │   └── anti-patterns.md           # 反例清单 + 触发检查时机 + 自检清单
 └── test-prompts.json     # 任务与触发评测样例，含无用例、证据不足、负例和降级
 ```

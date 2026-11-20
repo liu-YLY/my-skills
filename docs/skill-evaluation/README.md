@@ -127,6 +127,7 @@
 | [2026-11-17-eval-rule-consistency.md](reports/2026-11-17-eval-rule-consistency.md) | v7 断言-规则一致性扫描 | 中（静态审计） |
 | [2026-11-17-phase3-dry-run.md](reports/2026-11-17-phase3-dry-run.md) | 需求评审与测试点校验器 gold 干跑 | 弱（gold 样例，非模型） |
 | [2026-11-17-phase4-harness-round1.md](reports/2026-11-17-phase4-harness-round1.md) | harness² 初版：确定性代理基线 + INV/DOM 提案（当时 Probe 阻塞） | 弱（历史） |
+| [2026-11-20-phase5-skill-quality.md](reports/2026-11-20-phase5-skill-quality.md) | 阶段 5 瘦身后：预算、结构、关键规则保留抽检 | 中（确定性）/ 模型行为未执行 |
 | [phase4-probe-report.md](phase4/phase4-probe-report.md) | harness² 匹配子集 Probe：base/inv1/dom1 盲评与采纳结论 | 中（单次、免费模型、partial） |
 
 ## 4. 执行档案

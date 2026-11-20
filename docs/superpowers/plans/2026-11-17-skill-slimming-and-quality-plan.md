@@ -1,6 +1,6 @@
 # Skill 瘦身与生成质量提升计划
 
-> **状态**：阶段 4 在匹配子集上完成 `partial` 闭环（不采纳 INV1/DOM1）；停在停止点 4
+> **状态**：阶段 5 已完成（5-1 至 5-7），停在停止点 5；阶段 4 以 `partial` 闭环，不采纳 INV1/DOM1
 > **执行记录**：[2026-11-17-skill-slimming-quality-handoff.md](2026-11-17-skill-slimming-quality-handoff.md)
 > **基线**：`main` @ `848b613`（2026-11-17）
 > **范围**：`plugins/testing` 下 9 个 skill（含 testing-bundle）为第一优先级；wechat-formatter 暂不纳入
@@ -260,13 +260,13 @@ base 执行
 
 | ID | 对象 | 动作 | 预算 |
 |---|---|---|---:|
-| 5-1 | state-machine-test-engineer | 压缩 `scenario-types.md`、`completeness-check.md`、`anti-patterns.md`、core、SKILL；行业模板保留但标注按需 | 44.3k → ≤33.3k |
-| 5-2 | change-impact-analyzer | 合并 `cross-impact-analysis.md` 与 `cross-analysis-guide.md`；报告模板按需；反模式压缩 | 38.8k → ≤31k |
-| 5-3 | test-strategy-engineer | 压缩 SKILL 与 `strategy-templates.md`；风险矩阵保留判定问句 | ≤15k |
-| 5-4 | bug-analyzer | 压缩报告模板与防御性测试点；`bug-patterns` 跨 skill 引用改为可选降级说明 | ≤15k |
-| 5-5 | performance-test-engineer | 压缩指标框架与瓶颈模式；保留 USE 判定链 | ≤15k |
-| 5-6 | frontend / test-data-generator | 仅去重与入口压缩；不改变脚本与安全约束 | ≤10k |
-| 5-7 | 其余 skill 的质量评测 | 有种子集的加种子回归；无种子集的用确定性校验 + 小规模方向性对照 | 报告 |
+| 5-1 | state-machine-test-engineer | 压缩 `scenario-types.md`、`completeness-check.md`、`anti-patterns.md`、core、SKILL；行业模板保留但标注按需（已完成） | 44.3k → ≤33.3k |
+| 5-2 | change-impact-analyzer | 合并 `cross-impact-analysis.md` 与 `cross-analysis-guide.md`；报告模板按需；反模式压缩（已完成） | 38.8k → ≤31k |
+| 5-3 | test-strategy-engineer | 压缩 SKILL 与 `strategy-templates.md`；风险矩阵保留判定问句（已完成） | ≤15k |
+| 5-4 | bug-analyzer | 压缩报告模板与防御性测试点；`bug-patterns` 跨 skill 引用改为可选降级说明（已完成） | ≤15k |
+| 5-5 | performance-test-engineer | 压缩指标框架与瓶颈模式；保留 USE 判定链（已完成） | ≤15k |
+| 5-6 | frontend / test-data-generator | 仅去重与入口压缩；不改变脚本与安全约束（已完成） | ≤10k |
+| 5-7 | 其余 skill 的质量评测 | 有种子集的加种子回归；无种子集的用确定性校验 + 小规模方向性对照（已完成；模型行为未执行） | 报告 |
 
 **阶段 5 验收**：预算全部达成；每个 skill 的验证脚本全绿；无「只删不测」的改动；阶段 4 经验库按需复用而非自动继承。
 
