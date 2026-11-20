@@ -71,6 +71,7 @@
 | [pdd-commerce-benchmark/scripts/](pdd-commerce-benchmark/scripts/) | P0 runner packet、G0 结构校验、评分汇总、盲评、kappa、评审回收脚本 | 现行 |
 | [pdd-commerce-benchmark/runs/2026-11-17-p0/](pdd-commerce-benchmark/runs/2026-11-17-p0/) | P0 批次清单、runner packet、18 份原始产物、Excel 评审工作簿、评审员包 | 运行时证据 |
 | [pdd-commerce-benchmark/scores/2026-11-17-p0/](pdd-commerce-benchmark/scores/2026-11-17-p0/) | P0 评分、R2 复核、summary、kappa、用例可读性 R1-R4 | 运行时证据 |
+| [P0 → P1 后续计划](../superpowers/plans/2026-11-20-p0-eval-to-p1-plan.md) | 人工评审、P1 全量、AI 影子与评分迁移的阶段计划 | 现行 |
 
 ## 3. 报告
 
@@ -119,7 +120,7 @@
 
 | 目录 | 内容 | 说明 |
 |---|---|---|
-| [../superpowers/plans/](../superpowers/plans/) | 11 份实施计划（2026-07 → 2026-11） | 已完成事项的历史档案，不再更新 |
+| [../superpowers/plans/](../superpowers/plans/) | 实施计划（2026-07 → 2026-11） | 已完成事项的历史档案，不再更新 |
 | [../superpowers/specs/](../superpowers/specs/) | 2 份设计文档（testing skills 扩展、状态机设计） | 已完成事项的历史档案 |
 
 ## 5. 建议阅读顺序
