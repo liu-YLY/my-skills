@@ -1,0 +1,1 @@
+{"valid": true, "check_results": [true, false, true, true], "evidence": ["单一用例 TC_NICKNAME_SAVE_001 含 6 个步骤合并，标签为 parameterized，未拆成 6 条独立块状用例", "组内行（步骤1-6/检查点）仅有输入值与预期，无独立用例 ID；唯一 ID 是组级 TC_NICKNAME_SAVE_001", "「**前置条件**: 已登录并进入昵称编辑页面，昵称输入框为空」写在组头部，行内仅变化输入值「张三」「Alice」等", "步骤1-6 覆盖全部 6 类：「张三」「Alice」「123456」「张三Alice」「张三123」「zhang-san」"]}
