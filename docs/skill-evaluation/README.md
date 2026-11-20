@@ -76,7 +76,9 @@
 | 路径 | 内容 | 状态 |
 |---|---|---|
 | [phase4/inv1-proposal.md](phase4/inv1-proposal.md) | INV1 输出契约闸门提案 | 未应用（Probe 阻塞） |
-| [phase4/dom1-proposal.md](phase4/dom1-proposal.md) | DOM1 需求缺陷高频模式提案 | 未应用（Probe 阻塞） |
+| [phase4/dom1-proposal.md](phase4/dom1-proposal.md) | DOM1 需求缺陷高频模式提案 | 未应用（Probe 未评估） |
+| [phase4/phase4-probe-report.md](phase4/phase4-probe-report.md) | 阶段 4 匹配子集 Probe 报告 | `partial`，不采纳 |
+| [phase4/harness/](phase4/harness/) | 阶段 4 盲评/触发/汇总 harness | 现行 |
 | [experience-library.md](experience-library.md) | 有证据、可迁移的经验库 | 现行 |
 
 ## 3. 报告
@@ -124,7 +126,8 @@
 | [2026-11-17-quality-baseline.md](reports/2026-11-17-quality-baseline.md) | 阶段 1 确定性基线；模型行为评测 `blocked` | 中（确定性）/ 模型行为未执行 |
 | [2026-11-17-eval-rule-consistency.md](reports/2026-11-17-eval-rule-consistency.md) | v7 断言-规则一致性扫描 | 中（静态审计） |
 | [2026-11-17-phase3-dry-run.md](reports/2026-11-17-phase3-dry-run.md) | 需求评审与测试点校验器 gold 干跑 | 弱（gold 样例，非模型） |
-| [2026-11-17-phase4-harness-round1.md](reports/2026-11-17-phase4-harness-round1.md) | harness² 第一轮：确定性代理基线 + INV/DOM 提案 | 弱（模型 Probe `blocked`） |
+| [2026-11-17-phase4-harness-round1.md](reports/2026-11-17-phase4-harness-round1.md) | harness² 初版：确定性代理基线 + INV/DOM 提案（当时 Probe 阻塞） | 弱（历史） |
+| [phase4-probe-report.md](phase4/phase4-probe-report.md) | harness² 匹配子集 Probe：base/inv1/dom1 盲评与采纳结论 | 中（单次、免费模型、partial） |
 
 ## 4. 执行档案
 

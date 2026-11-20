@@ -1,9 +1,9 @@
 # Skill 瘦身与质量提升 · 执行交接
 
 > **当前阶段**：阶段 4（harness² 第一轮）
-> **当前进度**：阶段 1–3 完成；阶段 4 在 4-4 阻塞（无 runner/judge/API key）；停在停止点 4
+> **当前进度**：阶段 1–3 完成；阶段 4 在匹配子集上完成闭环（`partial`），不采纳 INV1/DOM1；停在停止点 4
 > **计划文件**：[2026-11-17-skill-slimming-and-quality-plan.md](2026-11-17-skill-slimming-and-quality-plan.md)
-> **工作分支**：`trae/agent-WZBLh1`（未推送；阶段 1+2 已提交 `5d57483`，阶段 3 改动未提交）
+> **工作分支**：`trae/agent-WZBLh1`（未推送；阶段 1–3 已提交，阶段 4 文档与 Probe 输出未提交）
 > **更新方式**：每完成一个任务追加一节，最新状态置顶；恢复上下文时先读本文件
 
 ---
@@ -38,38 +38,51 @@
 | 4-1 确定性代理失败聚类 | 已完成 | `reports/2026-11-17-phase4-harness-round1.md` |
 | 4-2 INV1 提案 | 已完成（未应用） | `phase4/inv1-proposal.md` |
 | 4-3 DOM1 提案 | 已完成（未应用） | `phase4/dom1-proposal.md` |
-| 4-4 两路 Probe | 阻塞 | 无 runner / judge / API key |
-| 4-5 Compose | 阻塞 | 依赖 4-4 |
-| 4-6 采纳决策 + 经验库 | 部分完成 | 保留 base；`experience-library.md` 5 条 |
+| 4-4 两路 Probe | 部分完成 | base/inv1 各 70；dom1 28；complete-case 25 |
+| 4-5 Compose | 未执行 | 无候选通过采纳门槛 |
+| 4-6 采纳决策 + 经验库 | 已完成 | 不采纳 INV1/DOM1；保留 base；`experience-library.md` 5 条 |
 
 ---
 
-## 停止点 4：阶段 4 在 4-4 阻塞
+## 停止点 4：阶段 4 匹配子集闭环（partial）
 
-### 已完成
+### 实测
 
-| 项 | 结果 |
-|---|---|
-| 4-1 代理基线 | 42 份历史产物：20 可解析 / 153 用例 / 10 ERROR / 26 WARN |
-| 失败聚类 | `TITLE_SEPARATOR` 13、`ARRANGE_DECLARE` 7、`VAGUE_WORD` 7、`NONFUNC_TAIL` 3，均有 ≥3 条证据 |
-| 4-2 INV1 | 输出契约闸门提案：标题分隔符、编排策略声明、非功能置末尾；只改 core 工作流 |
-| 4-3 DOM1 | 需求缺陷高频模式 + 级别判例；只改 requirement-review 领域知识 |
-| 4-6 经验库 | 5 条：单一权威源、原文回查、阶段闸门、旧产物代理、无 Probe 不合并 |
+| 项 | 数值 |
+|---|---:|
+| base 输出 | 70/70 |
+| inv1 输出 | 70/70 |
+| dom1 有效输出 | 28/70 |
+| 三变体 complete-case | 25 |
+| judge | Mimo，盲评，单次 |
+| base 检查通过率 | 88/128 = 68.75% |
+| inv1 检查通过率 | 86/128 = 67.19% |
+| dom1 检查通过率 | 86/128 = 67.19% |
 
-### 阻塞与未达成
+### 4-6 采纳结论
 
-- 无 runner（opencode/zcode/codebuddy/claude/codex/ollama）、无模型 API key、无不同厂商 judge。
-- 4-4 base/inv1/dom1 全量 Probe 未执行；4-5 Compose 未执行。
-- 阶段 4 验收要求四列指标、有效样本数、A/A 一致率：均无法提供，**阶段 4 未通过验收**。
-- INV1/DOM1 未应用到 skill；base 保持不变。
+| 项 | 决策 | 依据 |
+|---|---|---|
+| INV1 | **不采纳** | 总通过率 -1.56pp；生成类 -10.42pp；未达 +5pp |
+| DOM1 | **不采纳（未评估）** | 匹配子集无 requirement-review case |
+| AGG1 | 不构建 | 两个单路都未通过/未评估 |
+| base | **保留** | 不低于两个候选 |
+
+### 限制
+
+- 单次运行，无 3 次重复与 A/A；`status=partial`。
+- 免费模型（LongCat/Mimo），稳定性低于生产模型；dom1 缺失 42/70，缺失非随机。
+- 匹配子集只覆盖 generation/review；DOM1 目标类别未覆盖。
+- trigger 评测未完成（48 次调用排队超时）。
+- 详细报告：`docs/skill-evaluation/phase4/phase4-probe-report.md`。
 
 ### 需要用户选择
 
 | 选项 | 内容 | 推荐 |
 |---|---|---|
-| A | 补 runner + 独立 judge + API key，再重跑 4-4 | **推荐**：这是唯一能通过阶段 4 验收的路径 |
-| B | 以「静态提案 + 确定性门禁」先应用 INV1/DOM1，标 `partial` | 可选：能推进，但不能宣称质量提升 |
-| C | 跳过阶段 4，直接进入阶段 5 瘦身第二批 | 可推进预算，但质量闭环继续缺失 |
+| A | 用付费 runner 补全 dom1 与 requirement-review 子集，重跑 4-4 | 需要 API key 与更长窗口 |
+| B | 接受 `partial` 闭环，进入阶段 5 瘦身第二批 | **推荐**：阶段 4 结论已足以阻止无证据采纳 |
+| C | 停止优化，先做发布前的人工 review | 可选：若模型质量是硬门槛 |
 
 ---
 
@@ -102,7 +115,9 @@
 
 ## 4-4 / 4-5 Probe 与 Compose
 
-未执行。所需条件：同模型、同参数、同套件；base/inv1/dom1 各全量；独立 judge；3 次重复；A/A 一致率 ≥70%。当前有效样本数 0。
+- **4-4**：在 dom1 有效输出形成的匹配子集上完成。base/inv1 各 70 个输出，dom1 28 个有效输出；三变体 complete-case 25 个（128 checks）。
+- **4-5 Compose**：未执行。INV1 与 DOM1 都未达到采纳门槛，没有可合并的候选。
+- 未完成：dom1 其余 42 个、requirement-review 子集、trigger 评测、3 次重复与 A/A。
 
 ## 4-6 采纳与经验
 

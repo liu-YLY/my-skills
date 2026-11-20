@@ -1,6 +1,6 @@
 # Skill 瘦身与生成质量提升计划
 
-> **状态**：阶段 4 在 4-4 阻塞（无 runner/judge/API key）；确定性代理基线与 INV/DOM 提案已完成，停在停止点 4
+> **状态**：阶段 4 在匹配子集上完成 `partial` 闭环（不采纳 INV1/DOM1）；停在停止点 4
 > **执行记录**：[2026-11-17-skill-slimming-quality-handoff.md](2026-11-17-skill-slimming-quality-handoff.md)
 > **基线**：`main` @ `848b613`（2026-11-17）
 > **范围**：`plugins/testing` 下 9 个 skill（含 testing-bundle）为第一优先级；wechat-formatter 暂不纳入

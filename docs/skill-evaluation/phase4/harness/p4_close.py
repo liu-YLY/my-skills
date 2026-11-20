@@ -25,6 +25,7 @@ RUNS = ROOT / "docs/skill-evaluation/phase4/runs"
 OPENCODE = os.environ.get("OPENCODE_BIN", "/tmp/opencode-runner/node_modules/.bin/opencode")
 JUDGE = "opencode/mimo-v2.6-flash-free"
 RUNNER = "opencode/longcat-2.5-free"
+TRIGGER_MODEL = os.environ.get("TRIGGER_MODEL", "opencode/mimo-v2.6-flash-free")
 JUDGE_DIR = RUNS / "judge-mimo"
 CWD = os.environ.get("OPENCODE_CWD", "/tmp/empty-run")
 VMAP = {"base": "baseline", "inv1": "new", "dom1": "old"}
@@ -137,7 +138,7 @@ def triggers(workers: int) -> None:
                   "The skill handles test cases, test points, test-case review, requirement review, and single-feature test strategy.\n"
                   "User request:\n" + c["prompt"] +
                   '\n\nReturn ONLY JSON: {"trigger": true, "reason": "..."}. Use false for other capabilities (PRD writing, bug root cause, performance, state machine, change impact, frontend prep, test data).')
-        text, err = call(prompt, RUNNER, timeout=120)
+        text, err = call(prompt, TRIGGER_MODEL, timeout=120)
         data = extract_json(text) or {}
         return {"id": str(c["id"]), "variant": VMAP[v], "kind": "trigger",
                 "predicted_trigger": bool(data.get("trigger")),
@@ -206,9 +207,64 @@ def summary() -> None:
     print(json.dumps(out, ensure_ascii=False, indent=2))
 
 
+def summary_complete() -> None:
+    cases = {str(c["id"]): c for c in json.loads(CASES.read_text(encoding="utf-8"))["task_cases"]}
+    matched = matched_ids()
+    judged = {}
+    for variant in ("base", "inv1", "dom1"):
+        judged[variant] = {
+            cid for cid in matched
+            if (JUDGE_DIR / VMAP[variant] / f"{cid}.json").exists()
+            and (JUDGE_DIR / VMAP[variant] / f"{cid}.json").stat().st_size > 0
+            and json.loads((JUDGE_DIR / VMAP[variant] / f"{cid}.json").read_text(encoding="utf-8")).get("valid")
+        }
+    common = sorted(set.intersection(*judged.values()), key=lambda x: (len(x), x))
+    out = {"matched_ids": len(matched), "complete_case_ids": len(common),
+           "per_variant_judged": {k: len(v) for k, v in judged.items()},
+           "unjudged": {k: sorted(set(matched) - v) for k, v in judged.items()},
+           "variants": {}}
+    for variant in ("base", "inv1", "dom1"):
+        passed = total = full = 0
+        by_cat = collections.defaultdict(lambda: [0, 0])
+        for cid in common:
+            payload = json.loads((JUDGE_DIR / VMAP[variant] / f"{cid}.json").read_text(encoding="utf-8"))
+            r = payload["check_results"]
+            passed += sum(bool(x) for x in r)
+            total += len(r)
+            full += int(all(r))
+            cat = cases[cid]["category"]
+            by_cat[cat][0] += len(r)
+            by_cat[cat][1] += sum(bool(x) for x in r)
+            by_cat["ALL"][0] += len(r)
+            by_cat["ALL"][1] += sum(bool(x) for x in r)
+        out["variants"][variant] = {
+            "checks_passed": passed, "checks_total": total,
+            "check_rate": round(passed / total, 4) if total else None,
+            "full_pass_tasks": full,
+            "full_pass_rate": round(full / len(common), 4) if common else None,
+            "by_category": {k: {"passed": v[1], "total": v[0],
+                               "rate": round(v[1] / v[0], 4) if v[0] else None}
+                            for k, v in by_cat.items()},
+        }
+    trig = RUNS / "trigger-results.jsonl"
+    if trig.exists():
+        rows = [json.loads(line) for line in trig.read_text(encoding="utf-8").splitlines() if line.strip()]
+        acc = collections.defaultdict(lambda: [0, 0])
+        for r in rows:
+            acc[r["variant"]][0] += 1
+            acc[r["variant"]][1] += int(bool(r["predicted_trigger"]) == bool(r["should_trigger"]))
+        out["trigger_accuracy"] = {k: {"correct": v[1], "total": v[0],
+                                      "rate": round(v[1] / v[0], 4)} for k, v in acc.items()}
+    out["dom1_coverage"] = {"valid": len(matched), "total": len(cases),
+                            "missing": len(cases) - len(matched)}
+    (RUNS / "summary-complete.json").write_text(json.dumps(out, ensure_ascii=False, indent=2),
+                                                encoding="utf-8")
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("action", choices=["judge", "triggers", "summary", "ids"])
+    ap.add_argument("action", choices=["judge", "triggers", "summary", "summary-complete", "ids"])
     ap.add_argument("--variant", choices=list(VMAP), default="base")
     ap.add_argument("--limit", type=int, default=20)
     ap.add_argument("--workers", type=int, default=4)
@@ -219,6 +275,8 @@ def main() -> int:
         judge(args.variant, args.limit, args.workers)
     elif args.action == "triggers":
         triggers(args.workers)
+    elif args.action == "summary-complete":
+        summary_complete()
     else:
         summary()
     return 0

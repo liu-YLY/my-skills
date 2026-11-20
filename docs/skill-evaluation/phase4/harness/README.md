@@ -12,7 +12,7 @@ export OPENCODE_CWD=/tmp/empty-run
 ```
 
 Runner：`opencode/longcat-2.5-free`（已生成的 base/inv1/dom1 输出）。
-Judge：`opencode/glm-5.3-flash-free`（不同厂商）。
+Judge：`opencode/mimo-v2.6-flash-free`（与 runner 不同厂商）；GLM 在实测中返回 server error，未使用。
 
 ## 匹配子集
 
@@ -29,11 +29,11 @@ python3 docs/skill-evaluation/phase4/harness/p4_close.py judge --variant base --
 python3 docs/skill-evaluation/phase4/harness/p4_close.py judge --variant inv1 --limit 20 --workers 4
 python3 docs/skill-evaluation/phase4/harness/p4_close.py judge --variant dom1 --limit 20 --workers 4
 
-# 触发评测
+# 触发评测（本轮未完成，免费模型排队超时）
 python3 docs/skill-evaluation/phase4/harness/p4_close.py triggers --workers 4
 
 # 汇总
-python3 docs/skill-evaluation/phase4/harness/p4_close.py summary
+python3 docs/skill-evaluation/phase4/harness/p4_close.py summary-complete
 ```
 
 输出：
