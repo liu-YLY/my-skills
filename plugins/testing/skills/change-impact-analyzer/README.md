@@ -1,6 +1,6 @@
 # Change Impact Analyzer Skill
 
-> 变更影响分析师技能包，v1.5.1。
+> 变更影响分析师技能包，v1.5.2。
 > 从代码改动点总结影响范围和测试内容，需求与现有用例均为可选输入。
 
 ## 核心能力
@@ -156,9 +156,9 @@ change-impact-analyzer/
 │   └── business-impact-test-scope.md # 完整业务影响与测试方案模板
 ├── knowledge/            # 按需加载的方法论与模板
 │   ├── diff-modes.md              # 七种 diff 模式 / 推断规则 / 采集脚本字段
-│   ├── cross-impact-analysis.md   # 跨层影响链路 / 契约检查 / Mode A/B
-│   ├── cross-analysis-guide.md    # 阶段 3 两轮交叉分析操作细则
+│   ├── cross-impact-analysis.md   # 跨层链路 / 契约检查 / Mode A/B / 两轮交叉分析
 │   ├── report-template.md         # 工作表 / 场景与预期来源 / 可选详情
+│   ├── report-example.md          # 完整 Mode B 报告示例（按需）
 │   └── anti-patterns.md           # 反例清单 + 触发检查时机 + 自检清单
 └── test-prompts.json     # 任务与触发评测样例，含无用例、证据不足、负例和降级
 ```
@@ -186,6 +186,7 @@ change-impact-analyzer/
 
 ## 版本历史
 
+- v1.5.2: 合并 cross-analysis-guide 到 cross-impact-analysis 第 5 节；完整报告示例改为按需；默认路径 38,829→26,984
 - v1.5.1: 接入完整业务影响与测试方案模板，明确正文语言、术语解释和可读性检查，保留简单改动简表及证据边界
 - v1.5.0: 按实际业务解释调用链、触发条件和影响边界；匹配测试方式与证据；补充多提交/多仓库最终范围及部分失败、恢复验证
 - v1.4.0: 无旧用例也交付影响范围与测试内容；预期来源与变更证据分离；实现/覆盖/执行独立；统一确认、采样和回归规则
