@@ -104,7 +104,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 
 | Skill | 入口行数 | 配套 Markdown 文件数 |
 |---|---:|---:|
-| bug-analyzer | 232 | 5 |
+| bug-analyzer | 199 | 6 |
 | change-impact-analyzer | 124 | 6 |
 | frontend-test-preparation | 93 | 1 |
 | performance-test-engineer | 116 | 5 |
