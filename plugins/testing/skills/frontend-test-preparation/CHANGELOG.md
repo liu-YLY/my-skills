@@ -2,6 +2,12 @@
 
 本文件记录 frontend-test-preparation 所有版本变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [1.0.1] - 2026-11-23
+
+### Changed
+
+- 压缩入口与交接模板，删除与增量基线章节重复的交付说明；能力与授权边界不变
+
 ## [1.0.0] - 2026-10-31
 
 ### Added
