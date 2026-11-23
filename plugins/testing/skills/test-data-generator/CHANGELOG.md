@@ -2,6 +2,13 @@
 
 本文件记录 test-data-generator 所有版本变更。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [1.1.1] - 2026-11-23
+
+### Changed
+
+- 将第三方方案参考移到按需文件，压缩输入协议与格式说明中的重复表述
+- 命令行参数、Schema、安全约束与校验状态语义不变
+
 ## [1.1.0] - 2026-10-14
 
 ### Added
