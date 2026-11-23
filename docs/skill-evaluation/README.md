@@ -34,17 +34,24 @@
 
 | 文件 | 规模 | 说明 |
 |---|---|---|
-| [2026-11-03-test-case-quality-cases-v6.json](2026-11-03-test-case-quality-cases-v6.json) | 54 cases / 12 trigger | **现行冻结版本**，修复 #13/14/16/19/20/21 缺口后的版本 |
+| [2026-11-17-quality-suite-v7.2.json](2026-11-17-quality-suite-v7.2.json) | 70 task / 16 trigger / 354 checks | **现行冻结版本**。在 v7.1 基础上新增需求评审路由 4 条（positive/near_miss/skill_conflict/negative）。SHA `5c6bd2ef` |
+| [2026-11-17-test-point-cases.json](2026-11-17-test-point-cases.json) | 10 cases | 测试点种子集：需求条目、期望测试点、范围外项与结果型 checks。SHA `dc900b79` |
+| [2026-11-17-requirement-review-cases.json](2026-11-17-requirement-review-cases.json) | 12 cases / 61 seeded defects | 需求评审种子集：每个 PRD 预埋 5-6 个缺陷，附位置、原文、类型、严重级别与期望问题。SHA `aee2ed36` |
+
+> v7 / v7.1 / v7.2 使用 `task_cases` + `trigger_evals` 结构，`scripts/skill-evals.py --cases-file` 可直接读取；v6 及更早为 list 结构。
 
 ### 2.2 历史冻结套件（保留仅为复现历史报告，勿用于新评测）
 
 | 文件 | checks | 差异 | SHA256 前缀 |
 |---|---:|---|---|
+| [2026-11-17-quality-suite-v7.1.json](2026-11-17-quality-suite-v7.1.json) | 354 | v7.1 基线（70 task / 12 trigger） | `dd2f1b49` |
 | [2026-11-01-test-case-quality-cases.json](2026-11-01-test-case-quality-cases.json) | 217 | v1 初版 | `a504f741` |
 | [2026-11-02-test-case-quality-cases.json](2026-11-02-test-case-quality-cases.json) | 219 | v2，新增断言 | `aaf6fa42` |
 | [2026-11-02-test-case-quality-cases-v3.json](2026-11-02-test-case-quality-cases-v3.json) | 219 | v3，仅 #39 文本 | `70cdec7c` |
 | [2026-11-02-test-case-quality-cases-v4.json](2026-11-02-test-case-quality-cases-v4.json) | 219 | v4，与 v3 差 1 处 | `4a81d91f` |
 | [2026-11-02-test-case-quality-cases-v5.json](2026-11-02-test-case-quality-cases-v5.json) | 219 | v5，与 v4 差 #32 | `9a0520ed` |
+| [2026-11-03-test-case-quality-cases-v6.json](2026-11-03-test-case-quality-cases-v6.json) | 219 | v6，修复 #13/14/16/19/20/21 缺料，仍为 list 结构 | `a8fcdc82` |
+| [2026-11-17-quality-suite-v7.json](2026-11-17-quality-suite-v7.json) | 354 | v7，补 category + 结果型断言；#13/#7/#19 口径未修 | `ae880180` |
 
 ### 2.3 批次数据
 
@@ -56,6 +63,23 @@
 | [data-generator-2026-10-14/](data-generator-2026-10-14/) | data-generator 完整证据链（38 份原始产物 + 26 项校验输出 + README 说明） | 强：产物落盘 + SHA 可核 |
 | [pilot/](pilot/) | 11-01 / 11-02 的 3-case pilot（runs.jsonl + v2–v5） | 单 case 试跑，用于调口径 |
 | [tier23/](tier23/) | N=40 配对 + 盲评（blind/ + full/），含原始产物 84 份；判分脚本锁定**套件 v5**（`full/judge_batch.py` 硬编码，属可复现设计，勿改为 v6） | 中等：配对完备，judge 未换族 |
+
+### 2.3 阶段 3 gold 样例
+
+| 路径 | 规模 | 说明 |
+|---|---|---|
+| [gold/requirement-review/](gold/requirement-review/) | 5 PRD + 5 报告 | 需求评审 gold：报告覆盖种子缺陷，用于模板与校验器干跑；非模型输出 |
+| [gold/test-points/](gold/test-points/) | 5 清单 / 34 测试点 | 测试点 gold：按种子需求生成，用于 `validate_points.py` 干跑 |
+
+### 2.4 阶段 4 harness² 提案与经验
+
+| 路径 | 内容 | 状态 |
+|---|---|---|
+| [phase4/inv1-proposal.md](phase4/inv1-proposal.md) | INV1 输出契约闸门提案 | 未应用（Probe 阻塞） |
+| [phase4/dom1-proposal.md](phase4/dom1-proposal.md) | DOM1 需求缺陷高频模式提案 | 未应用（Probe 未评估） |
+| [phase4/phase4-probe-report.md](phase4/phase4-probe-report.md) | 阶段 4 匹配子集 Probe 报告 | `partial`，不采纳 |
+| [phase4/harness/](phase4/harness/) | 阶段 4 盲评/触发/汇总 harness | 现行 |
+| [experience-library.md](experience-library.md) | 有证据、可迁移的经验库 | 现行 |
 
 ## 3. 报告
 
@@ -99,13 +123,21 @@
 | [2026-11-02-eval-tier23-small-control.md](reports/2026-11-02-eval-tier23-small-control.md) | 小规模真实对照（方向性） | 中 |
 | [2026-11-03-eval-fix-suite-gaps.md](reports/2026-11-03-eval-fix-suite-gaps.md) | 修复套件缺料后的完整对照（阶段 Q） | 中 |
 | [2026-11-03-eval-tier23-full.md](reports/2026-11-03-eval-tier23-full.md) | **42 task × with/without 完整对照** | 中（当前最强单份） |
+| [2026-11-17-quality-baseline.md](reports/2026-11-17-quality-baseline.md) | 阶段 1 确定性基线；模型行为评测 `blocked` | 中（确定性）/ 模型行为未执行 |
+| [2026-11-17-eval-rule-consistency.md](reports/2026-11-17-eval-rule-consistency.md) | v7 断言-规则一致性扫描 | 中（静态审计） |
+| [2026-11-17-phase3-dry-run.md](reports/2026-11-17-phase3-dry-run.md) | 需求评审与测试点校验器 gold 干跑 | 弱（gold 样例，非模型） |
+| [2026-11-17-phase4-harness-round1.md](reports/2026-11-17-phase4-harness-round1.md) | harness² 初版：确定性代理基线 + INV/DOM 提案（当时 Probe 阻塞） | 弱（历史） |
+| [2026-11-20-phase5-skill-quality.md](reports/2026-11-20-phase5-skill-quality.md) | 阶段 5 瘦身后：预算、结构、关键规则保留抽检 | 中（确定性）/ 模型行为未执行 |
+| [2026-11-23-phase6-release.md](reports/2026-11-23-phase6-release.md) | 阶段 6 发布准备：版本、文档、CI、PR 拆分 | 中（确定性）/ 待 PR |
+| [phase4-probe-report.md](phase4/phase4-probe-report.md) | harness² 匹配子集 Probe：base/inv1/dom1 盲评与采纳结论 | 中（单次、免费模型、partial） |
 
 ## 4. 执行档案
 
 | 目录 | 内容 | 说明 |
 |---|---|---|
-| [../superpowers/plans/](../superpowers/plans/) | 11 份实施计划（2026-07 → 2026-11） | 已完成事项的历史档案，不再更新 |
+| [../superpowers/plans/](../superpowers/plans/) | 12 份实施计划（2026-07 → 2026-11） | 已完成事项的历史档案，不再更新 |
 | [../superpowers/specs/](../superpowers/specs/) | 2 份设计文档（testing skills 扩展、状态机设计） | 已完成事项的历史档案 |
+| [rule-inventory/](rule-inventory/) | 4 个首批 skill 的规范语句清单与 D1–D5 分类 | 瘦身前置材料，由 `scripts/extract-rule-inventory.py` 生成 |
 
 ## 5. 建议阅读顺序
 

@@ -1,0 +1,98 @@
+{
+  "matched_ids": 28,
+  "complete_case_ids": 25,
+  "per_variant_judged": {
+    "base": 27,
+    "inv1": 26,
+    "dom1": 28
+  },
+  "unjudged": {
+    "base": [
+      "32"
+    ],
+    "inv1": [
+      "31",
+      "7"
+    ],
+    "dom1": []
+  },
+  "variants": {
+    "base": {
+      "checks_passed": 88,
+      "checks_total": 128,
+      "check_rate": 0.6875,
+      "full_pass_tasks": 5,
+      "full_pass_rate": 0.2,
+      "by_category": {
+        "generation": {
+          "passed": 38,
+          "total": 48,
+          "rate": 0.7917
+        },
+        "ALL": {
+          "passed": 88,
+          "total": 128,
+          "rate": 0.6875
+        },
+        "review": {
+          "passed": 50,
+          "total": 80,
+          "rate": 0.625
+        }
+      }
+    },
+    "inv1": {
+      "checks_passed": 86,
+      "checks_total": 128,
+      "check_rate": 0.6719,
+      "full_pass_tasks": 7,
+      "full_pass_rate": 0.28,
+      "by_category": {
+        "generation": {
+          "passed": 33,
+          "total": 48,
+          "rate": 0.6875
+        },
+        "ALL": {
+          "passed": 86,
+          "total": 128,
+          "rate": 0.6719
+        },
+        "review": {
+          "passed": 53,
+          "total": 80,
+          "rate": 0.6625
+        }
+      }
+    },
+    "dom1": {
+      "checks_passed": 86,
+      "checks_total": 128,
+      "check_rate": 0.6719,
+      "full_pass_tasks": 4,
+      "full_pass_rate": 0.16,
+      "by_category": {
+        "generation": {
+          "passed": 30,
+          "total": 48,
+          "rate": 0.625
+        },
+        "ALL": {
+          "passed": 86,
+          "total": 128,
+          "rate": 0.6719
+        },
+        "review": {
+          "passed": 56,
+          "total": 80,
+          "rate": 0.7
+        }
+      }
+    }
+  },
+  "dom1_coverage": {
+    "valid": 28,
+    "total": 70,
+    "missing": 42
+  }
+}

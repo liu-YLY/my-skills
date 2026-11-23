@@ -31,7 +31,7 @@ def read_cases(path: Path) -> list[dict]:
             if key in seen:
                 raise ValueError(f"{path}: duplicate {key}")
             seen.add(key)
-            checks = row.get("expectations", row.get("validation_points", []))
+            checks = row.get("expectations", row.get("validation_points", row.get("checks", [])))
             expected = row.get("expected", row.get("expected_behavior"))
             if not isinstance(checks, list) or not all(isinstance(v, str) for v in checks):
                 raise ValueError(f"{path}: {case_id} has invalid expectations")
