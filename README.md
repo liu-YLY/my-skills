@@ -111,7 +111,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | state-machine-test-engineer | 145 | 16 |
 | test-case-engineer | 113 | 23 |
 | test-data-generator | 54 | 4 |
-| test-strategy-engineer | 139 | 5 |
+| test-strategy-engineer | 104 | 5 |
 | testing-bundle | 122 | 3 |
 | wechat-formatter | 169 | 29 |
 
