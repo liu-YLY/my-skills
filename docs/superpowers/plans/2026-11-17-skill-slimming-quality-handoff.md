@@ -83,6 +83,7 @@
 - pytest 47 passed；9 个环境失败（沙箱无 PowerShell）。
 - review-checker 110 passed；state-machine 114 passed。
 - 修复 181 个生成文档末尾换行（MD047）；PR #156 完整 CI 全绿。
+- CI 仅在 PR 目标为 `main` 时触发；#157–#166 需按序合并、逐个改 base 后再跑 CI。
 
 ### 未完成
 

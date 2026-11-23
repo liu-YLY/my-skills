@@ -79,7 +79,7 @@
 - 第 3 组路由与链 10 需整体评审。
 - 第 11 组为执行交接文档，单独 docs PR。
 
-PR #156 已通过完整 CI（repository-tools、Lint、功能测试与造数测试全绿）。每个 PR 的 base 为上一组分支，第 1 组 base 为 `main`；merged 后再按 6-5 删除远程分支、打 tag。
+PR #156 已通过完整 CI（repository-tools、Lint、功能测试与造数测试全绿）。CI 仅在 PR 目标为 `main` 时触发，因此 #157–#166 当前无检查记录；需按顺序合并前一个 PR、把下一个 PR 的 base 改为 `main` 后触发 CI。每个 PR 的 base 为上一组分支，第 1 组 base 为 `main`；merged 后再按 6-5 删除远程分支、打 tag。
 
 ## 6. 未完成与限制
 
