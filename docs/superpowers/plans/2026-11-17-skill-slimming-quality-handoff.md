@@ -1,9 +1,9 @@
 # Skill 瘦身与质量提升 · 执行交接
 
-> **当前阶段**：阶段 6（发布准备）
-> **当前进度**：阶段 5 完成；阶段 6 的版本/文档/CI/拆分已完成，11 个 stacked PR #156–#166 已创建，#156 CI 全绿；6-5 待合并
+> **当前阶段**：阶段 6（发布完成）
+> **当前进度**：阶段 1–6 完成；11 个 PR #156–#166 已合并，`v3.7.0` 已发布
 > **计划文件**：[2026-11-17-skill-slimming-and-quality-plan.md](2026-11-17-skill-slimming-and-quality-plan.md)
-> **工作分支**：stacked 分支 `feat/eval-foundation` … `docs/phase5-6-handoff`（PR #156–#166）；原 `trae/agent-WZBLh1` 与 `backup/pre-stacked-release` 保留
+> **工作分支**：`main`（已同步 origin）；`backup/pre-stacked-release` 保留可回退
 > **更新方式**：每完成一个任务追加一节，最新状态置顶；恢复上下文时先读本文件
 
 ---
@@ -52,6 +52,7 @@
 | 6-2 文档同步 | 已完成 | 根 README、overview、plugin README、CHANGELOG、marketplace |
 | 6-3 CI 门禁 | 已完成 | CI 增加 `check-context-budget.py --target` |
 | 6-4 PR 拆分与交付报告 | 已完成 | 11 个 stacked PR #156–#166；报告 `reports/2026-11-23-phase6-release.md` |
+| 6-5 合并、tag、清理 | 已完成 | 全部 PR 合并；tag `v3.7.0`；11 个远程分支删除 |
 
 ---
 
@@ -83,13 +84,14 @@
 - pytest 47 passed；9 个环境失败（沙箱无 PowerShell）。
 - review-checker 110 passed；state-machine 114 passed。
 - 修复 181 个生成文档末尾换行（MD047）；PR #156 完整 CI 全绿。
-- CI 仅在 PR 目标为 `main` 时触发；#157–#166 需按序合并、逐个改 base 后再跑 CI。
+- CI 仅在 PR 目标为 `main` 时触发；#157–#166 逐个改 base 后 CI 全绿并合并。
 
-### 未完成
+### 发布结果
 
-- PR #156–#166 已创建；未合并、未打 tag（6-5 待执行）。
-- PR 合并需逐个 review；超过 400 行的 PR 需确认例外。
-- PR 列表与例外说明见阶段 6 报告。
+- PR #156–#166 已全部合并到 `main`；tag `v3.7.0` 已推送。
+- 11 个远程分支已删除；`backup/pre-stacked-release` 保留可回退。
+- 超过 400 行的 PR 已按阶段 6 报告记录的例外合并。
+- 模型侧质量仍未重测，沿用阶段 5 `partial` 结论。
 
 ---
 
