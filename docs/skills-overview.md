@@ -4,27 +4,28 @@
 
 ### 1. Testing Bundle (testing-bundle)
 
-**版本**：v3.6.0
-**功能**：测试能力 bundle 入口，统一路由到 8 个专业子 skill：test-strategy-engineer（项目级策略）/ test-case-engineer（功能用例生成与用例评审）/ performance-test-engineer（性能测试）/ bug-analyzer（Bug 根因分析）/ state-machine-test-engineer（状态机测试）/ change-impact-analyzer（变更影响分析）/ frontend-test-preparation（前端测试准备）/ test-data-generator（离线数据生成与校验）。
+**版本**：v3.7.0
+**功能**：测试能力 bundle 入口，统一路由到 8 个专业子 skill：test-strategy-engineer（项目级策略）/ test-case-engineer（功能用例生成、需求评审与用例评审）/ performance-test-engineer（性能测试）/ bug-analyzer（Bug 根因分析）/ state-machine-test-engineer（状态机测试）/ change-impact-analyzer（变更影响分析）/ frontend-test-preparation（前端测试准备）/ test-data-generator（离线数据生成与校验）。
 
 > Bundle 是元 skill，本身不实现具体能力，而是根据用户意图自动路由到对应子 skill。
 
-**路由规则**（意图三要素 + 八路路由 + 9 条混合意图链）：
+**路由规则**（意图三要素 + 单意图路由 + 10 条混合意图链）：
 
 | 用户意图关键词 | 路由到 | 说明 |
 |---------------|--------|------|
 | 测试策略、测试计划、测试分层、风险矩阵、准入准出、测试范围与优先级 | test-strategy-engineer | 项目级策略 |
 | 生成/评审测试用例、需求分析、单功能测试策略、评审方案/覆盖度汇报 | test-case-engineer | 功能用例生成；评审含规模化与干系人评审方案 |
+| 需求评审、PRD 评审、评审需求文档、需求文档检查、需求问题清单 | test-case-engineer | 需求评审模式（10 维度 + P0–P3） |
 | 前端代码准备测试、页面索引、入口定位、账号与数据状态 | frontend-test-preparation | 导航索引 + 单需求上下文映射 |
 | 性能测试、负载测试、压力测试、TPS、响应时间、瓶颈、容量评估 | performance-test-engineer | 性能场景 + 瓶颈分析 |
 | Bug 根因分析、缺陷定位、5 Whys、鱼骨图、防御性用例反推 | bug-analyzer | 功能缺陷根因 |
 | 状态机、状态流转、状态转换、生命周期、非法跳转、幂等、并发冲突、消息乱序、终态吸收 | state-machine-test-engineer | 状态机建模 + 10 类场景穷举 |
 | 变更影响、diff 分析、改动影响范围与测试内容 | change-impact-analyzer | 从实际业务解释改动影响，需求与用例可选 |
 | 造测试数据、生成关联数据、按规则校验 JSON/JSONL/CSV | test-data-generator | 离线文件与独立校验，系统执行保持 not_run |
-| 混合意图（9 条链） | 见 SKILL.md 混合意图链 | 转交披露依据，按既有授权继续 |
+| 混合意图（10 条链） | 见 SKILL.md 混合意图链 | 转交披露依据，按既有授权继续 |
 | 意图不明确 | 追问用户 | 列出 8 个子 skill 让用户选择 |
 
-**9 条混合意图链**：
+**10 条混合意图链**：
 - 链 1：Bug 分析 + 补充用例 → bug-analyzer → case-engineer
 - 链 2：测试策略 + 分层用例 → strategy → case-engineer
 - 链 3：性能测试 + 瓶颈定位 → performance（内部完成）
@@ -34,6 +35,7 @@
 - 链 7：评审→风险用例根因反推 → case-engineer 评审模式 → bug-analyzer
 - 链 8：编写/修订用例→离线数据准备 → case-engineer → test-data-generator
 - 链 9：前端测试准备→用例编写 → frontend-test-preparation → case-engineer
+- 链 10：需求评审→用例生成 → case-engineer（需求评审）→ case-engineer（用例生成）
 
 已有用例或组合矩阵仅准备数据时，直接调用 test-data-generator；链 8 只在明确要求新编/修订用例并交付对应数据时触发。
 
@@ -89,7 +91,7 @@ AI（testing-bundle）：
 
 ### 1a. 测试策略工程师 (test-strategy-engineer)
 
-**版本**：v1.3.0
+**版本**：v1.3.1
 **功能**：扮演资深测试架构师角色，专注项目级测试策略制定，输出风险矩阵 + 分层策略 + 范围优先级 + 准入准出。
 
 > testing-bundle v2.0.0 新增子 skill（v3.0.0 同步升级），与 test-case-engineer 的粒度边界：本 skill 是项目级（整体），test-case-engineer 是单功能级。
@@ -167,13 +169,14 @@ AI（test-strategy-engineer）：
 
 ### 1b. 测试用例工程师 (test-case-engineer)
 
-**版本**：v9.14.0
+**版本**：v9.15.0
 **功能**：扮演资深测试工程师角色，AI 赋能用例生成，深入理解需求与产品现状，精准提取测试点，输出完整全面可落地的测试用例。
 
 > v8.0.0 起由原 test-engineer v7.0.0 拆分而来，专注正向用例生成。Bug 根因分析能力已迁移至 bug-analyzer skill。
 
 **核心能力**：
 - **需求分析**：深入理解需求文档，提取业务规则和测试点
+- **需求评审**：按 10 维度检查 PRD，输出 P0–P3 问题清单、原文回查与 9 字段问题记录
 - **测试点提取**：系统性扫描 7 个维度，确保测试覆盖无遗漏
 - **用例生成**：AI 生成 70%-90% 的基础用例，人工审核补充
 - **产品知识库**：按产品维度沉淀业务知识，增强测试针对性
@@ -242,7 +245,7 @@ AI（test-case-engineer）：
 
 ### 1c. 性能测试工程师 (performance-test-engineer)
 
-**版本**：v1.2.3
+**版本**：v1.2.4
 **功能**：扮演资深性能测试工程师角色，专注性能测试方案设计与瓶颈定位（资源/架构层），通过 USE 方法 + 4 种负载模型 + 6 类瓶颈模式提供完整方案。
 
 > testing-bundle v2.0.0 新增子 skill（v3.0.0 同步升级），聚焦资源/架构层；当代码逻辑层缺陷（死锁/N+1/内存泄漏）时转交 bug-analyzer。
@@ -315,7 +318,7 @@ AI（performance-test-engineer）：
 
 ### 1d. Bug 分析师 (bug-analyzer)
 
-**版本**：v1.2.3
+**版本**：v1.2.4
 **功能**：扮演资深测试工程师角色，专注于 Bug 根因分析与缺陷定位（代码逻辑层）。使用五步定位法、鱼骨图、5 Whys 等方法，输出结构化根因分析报告与防御性测试用例建议。
 
 **核心能力**：
@@ -387,7 +390,7 @@ AI（bug-analyzer）：
 
 ### 1e. 状态机测试工程师 (state-machine-test-engineer)
 
-**版本**：v1.7.6
+**版本**：v1.7.7
 **功能**：扮演资深测试工程师角色，基于 MAE（主流程/替代流程/异常流程）+ State Machine 方法论，为状态型业务对象（订单/审批/工单/会员等）构建状态机模型并穷举 10 类测试场景。
 
 > testing-bundle v3.0.0 新增子 skill，专注状态型需求测试。与 test-case-engineer 的粒度边界：本 skill 输出场景级清单（含依据类型标注），test-case-engineer 基于清单落地用例步骤级（链 5 协同）。
@@ -448,7 +451,7 @@ AI（testing-bundle）：
 
 ### 1f. 变更影响分析师 (change-impact-analyzer)
 
-**版本**：v1.5.1
+**版本**：v1.5.2
 **功能**：从 git diff、patch、前后片段或具体改动点，按实际业务解释调用链、影响条件与后果，生成测试内容和方式；旧用例与需求可选，有材料时追加影响、覆盖和实现对照。
 
 > testing plugin 内的专业子 skill（链 6 使用），随 plugin 整体安装，也可单独使用。
@@ -525,7 +528,7 @@ AI（change-impact-analyzer）：
 
 ### 1g. 通用测试数据生成 (test-data-generator)
 
-**版本**：v1.1.0
+**版本**：v1.1.1
 
 根据项目字段、关联、场景和业务约束生成可重复的离线测试数据，输出 JSON、JSONL、CSV 与独立校验报告。正常和边界数据满足已声明规则，异常输入从合法基准构造并核对预期违规。
 
@@ -537,7 +540,7 @@ AI（change-impact-analyzer）：
 
 ### 1h. 前端测试准备 (frontend-test-preparation)
 
-**版本**：v1.0.0
+**版本**：v1.0.1
 **功能**：从本机定制版迁入，保留 [Skill 入口](../plugins/testing/skills/frontend-test-preparation/SKILL.md) 与[交接模板](../plugins/testing/skills/frontend-test-preparation/references/handoff-template.md)；作为 bundle 第 8 个子 skill 接入链 9。
 
 在需求评审之后、用例编写或执行之前，读取前端代码建立分层导航索引，再把单需求映射到页面入口、角色、数据、操作与检查点。后续按代码差异增量更新相关页面。具备环境、身份、浏览器工具及当次授权时核实运行页面，结论区分代码推断、运行已验证与待确认。

@@ -165,6 +165,7 @@ state-machine-test-engineer/
 
 ## 版本历史
 
+- v1.7.7: 压缩默认路径（44,340→33,242）；场景 YAML 示例移到按需 knowledge/scenario-examples.md，并同步 MCP 集成测试读取路径
 - v1.7.6: MCP 探测与增强/独立/降级模式细则从 core 拆到 knowledge/mcp-enhancement.md，core 由 347 行降至 287 行，必读路径不再包含可选增强细节
 - v1.7.5: 校验失败场景的唯一转换关联与允许目标
 - v1.7.4: 沿映射依据来源传播需复核结论

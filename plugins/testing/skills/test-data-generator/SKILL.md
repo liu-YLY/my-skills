@@ -1,6 +1,6 @@
 ---
 name: test-data-generator
-version: 1.1.0
+version: 1.1.1
 description: >-
   Generate reproducible, independently validated offline test data from field
   definitions, business constraints, relationships, and scenarios, or validate
