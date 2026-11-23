@@ -101,16 +101,6 @@ keywords:
 4. 不伪造 TPS、RT、通过结论或生产容量；不把推断写成已确认事实。
 5. 本 skill 设计方案与诊断路径，不直接编写 JMeter/Locust/k6 脚本。
 
-## 资源索引
-
-| 文件 | 何时读取 |
-|------|----------|
-| [knowledge/load-models.md](knowledge/load-models.md) | 选择阶梯、峰值、疲劳或容量模型时 |
-| [knowledge/metrics-framework.md](knowledge/metrics-framework.md) | 定义指标、阈值来源、采集与关系时 |
-| [knowledge/use-method.md](knowledge/use-method.md) | 诊断资源利用率、饱和度与错误时 |
-| [knowledge/bottleneck-patterns.md](knowledge/bottleneck-patterns.md) | 匹配瓶颈模式和传导链时 |
-| [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
-
 ---
 
 版本历史以 [README.md](README.md) 的「版本历史」章节为准，版本号以 SKILL.md frontmatter 为准。

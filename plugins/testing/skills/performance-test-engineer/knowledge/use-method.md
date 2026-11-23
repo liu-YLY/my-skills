@@ -22,27 +22,16 @@ USE 方法（Utilization / Saturation / Errors）由 Brendan Gregg 提出，用�
 | **磁盘 IO** | 磁盘利用率%、IOPS | 队列深度、iowait、await | 磁盘错误、I/O error |
 | **网络** | 带宽利用率% | 重传率、TCP 重传、丢包 | rx/tx errors、dropped |
 
-### 采集命令参考
+### 采集命令与阈值参考
 
-| 资源 | 命令/工具 |
-|------|-----------|
-| CPU | `top`、`mpstat -P ALL 1`、`pidstat 1`、`perf top` |
-| 内存 | `free -m`、`vmstat 1`、`sar -B 1`、`jstat -gcutil <pid> 1s`（GC） |
-| 磁盘 | `iostat -x 1`、`sar -d 1`、`iotop` |
-| 网络 | `sar -n DEV 1`、`netstat -s`、`ifconfig`、`ethtool -S <iface>` |
+| 资源 | 命令/工具 | 排查信号（示例，需结合基线） |
+|------|-----------|------------------------------|
+| CPU | `top`、`mpstat -P ALL 1`、`pidstat 1`、`perf top` | 单核持续 >90%、runqueue > 核数 ×1（持续） |
+| 内存 | `free -m`、`vmstat 1`、`sar -B 1`、`jstat -gcutil <pid> 1s` | swap >0 需排查、内存使用率 >85% 触发排查 |
+| 磁盘 | `iostat -x 1`、`sar -d 1`、`iotop` | await >20ms（HDD）/ >10ms（SSD）、avgqu-sz >2 持续 |
+| 网络 | `sar -n DEV 1`、`netstat -s`、`ifconfig`、`ethtool -S <iface>` | TCP 重传率 >1% |
 
-**关键指标阈值参考**（按 [metrics-framework.md](metrics-framework.md) 记录来源；本表仅为工具排查示例，不能替代已确认业务SLA或单独证明瓶颈）：
-
-| 指标 | 命令 | 告警阈值 |
-|------|------|----------|
-| CPU 利用率 | `mpstat` %usr+%sys | 单核持续 >90% |
-| runqueue 长度 | `vmstat` r 列 | > CPU 核数 × 1（持续） |
-| iowait | `mpstat` %iowait | >20% |
-| 磁盘 await | `iostat -x` await | >20ms（HDD）/ >10ms（SSD） |
-| 队列深度 | `iostat -x` avgqu-sz | >2 持续 |
-| swap 使用 | `free` Swap used | >0（任何 swap 都需排查） |
-| TCP 重传率 | `netstat -s` retransmits | >1% |
-| 内存使用率 | `free` used/total | >85% 触发排查 |
+> 以上均为工具排查示例，按 [metrics-framework.md](metrics-framework.md) 记录来源，不能替代已确认业务 SLA 或单独证明瓶颈。
 
 ## 3. 排查顺序
 
@@ -79,12 +68,10 @@ USE 信号定位后，按以下表对应到具体瓶颈模式：
 
 ## 5. 反例（不要这样做）
 
-| 反例 | 问题 | 正确做法 |
-|------|------|----------|
-| 跳过资源层直接猜架构问题 | 没有资源层数据支撑的架构判断是猜测 | 先完成资源层 USE 三维采集 |
-| 只看 Utilization 不看 Saturation | CPU 60% 但 runqueue 已很长，仍是瓶颈 | 三维必须全查 |
-| 只看单类资源 | 性能瓶颈常是多资源耦合（如 IO 慢导致 CPU 等待） | 四类资源全查，关注耦合 |
-| 用 USE 方法分析代码逻辑缺陷 | USE 只适用于资源/架构层 | 代码逻辑层用 bug-analyzer skill |
+- 跳过资源层直接猜架构问题：没有资源数据支撑的架构判断是猜测。
+- 只看 Utilization 不看 Saturation：CPU 60% 但 runqueue 很长，仍是瓶颈。
+- 只看单类资源：瓶颈常是多资源耦合（如 IO 慢导致 CPU 等待），四类都要查。
+- 用 USE 方法分析代码逻辑缺陷：USE 只适用于资源/架构层，代码逻辑用 bug-analyzer。
 
 ## 6. 与其他知识库的关系
 
