@@ -57,29 +57,39 @@
 
 ## 5. PR 拆分计划（6-4）
 
-当前分支相对 `main` @ `848b613` 的改动约 430 文件 / 28.9k 行，主要体积来自评测数据与生成产物。按 ≤400 行的规则，需要拆分为以下 PR；超过 400 行的组需再拆或标记为生成数据例外。
+已从 `main` @ `848b613` 重建 15 个 stacked 分支，每组一个原子提交；栈顶树与 `b778f92` 完全一致。分支尚未推送。
 
-| PR | 范围 | 估算行数 | 处理建议 |
-|---|---|---:|---|
-| PR-1 | `scripts/` 工具与测试 | 826 | 拆为 2–3 个：上下文脚本 / 校验器与测试 / 技能评测输入校验 |
-| PR-2 | 评测套件 v7.1/v7.2 + 种子集 + gold | 3,593 | 生成数据例外或按套件拆 |
-| PR-3 | `rule-inventory/` | 5,488 | 生成数据例外，单独 PR |
-| PR-4 | `phase4/` harness 与 Probe 产物 | 12,724 | 生成数据例外，单独 PR |
-| PR-5 | 报告与经验库 | 544 | 1 个 PR |
-| PR-6 | test-case-engineer | 3,500+ | 拆为知识契约 / 需求评审模式+校验器 / 瘦身 3 个 PR |
-| PR-7 | testing-bundle | 500+ | 路由与链 10 / 瘦身 2 个 PR |
-| PR-8 | state-machine | 821 | 拆为 2 个 PR |
-| PR-9 | change-impact | 1,244 | 拆为 3 个 PR |
-| PR-10 | strategy / bug / performance | 1,342 | 每个 skill 1 个 PR |
-| PR-11 | frontend / test-data | 93 | 1 个 PR |
-| PR-12 | 版本、文档、CI 同步 | ~200 | 1 个 PR |
+| # | 分支 | 提交 | 行数 | 说明 |
+|---|---|---|---:|---|
+| 1 | `feat/eval-context-tools` | `8048f0b` | 826 | 上下文度量、预算门禁、规则清单脚本 |
+| 2 | `feat/eval-quality-suite` | `975e0fd` | 5,474 | v7/v7.1/v7.2 套件、种子集、gold、报告 |
+| 3 | `feat/eval-rule-inventory` | `1f86f30` | 5,488 | 规范语句清单 |
+| 4 | `feat/eval-phase4-harness` | `2b2993f` | 12,724 | 阶段 4 harness 与 Probe 产物 |
+| 5 | `refactor/test-case-knowledge` | `5606cb8` | 2,159 | 写作契约合并与知识瘦身 |
+| 6 | `feat/test-case-requirement-review` | `490cb63` | 1,341 | 需求评审模式、校验器、评测用例 |
+| 7 | `feat/bundle-requirement-review-route` | `dedd74f` | 565 | 需求评审路由与链 10 |
+| 8 | `refactor/state-machine-slim` | `d745e3d` | 826 | 入口/场景知识瘦身与示例按需化 |
+| 9 | `refactor/change-impact-slim` | `72dd97b` | 1,244 | 合并交叉分析、示例按需化 |
+| 10 | `refactor/test-strategy-slim` | `647d6f2` | 259 | 去重与压缩 |
+| 11 | `refactor/bug-analyzer-slim` | `6886401` | 742 | 报告示例按需化与压缩 |
+| 12 | `refactor/performance-slim` | `1bf9934` | 341 | 指标/命令表合并 |
+| 13 | `refactor/frontend-test-data-slim` | `10d9908` | 93 | 去重与按需参考 |
+| 14 | `chore/release-sync-3.7.0` | `0852384` | 101 | 版本、文档、CI、marketplace |
+| 15 | `docs/phase5-6-handoff` | `8d47119` | 1,446 | 阶段 5–6 交接与计划记录 |
 
-**阻塞**：现有 `trae/agent-WZBLh1` 历史包含多个大提交且未推送，直接开 PR 无法满足 ≤400 行。建议先在本地按上表重建干净的 stacked 分支（从 `main` 逐组 cherry-pick/checkout 路径），再推送逐个 PR；不重写已推送历史。
+**≤400 行**：第 10、12、13、14 组达标；其余为已记录例外：
+- 第 2–4 组是评测套件/生成产物，按文件整体提交，无法无损拆到 400 行以下。
+- 第 5–9 组是单个知识文件的整体重写或新增模式，按 hunk 拆分会产生不可评审的半文件。
+- 第 1 组为 7 个新增工具文件，按文件拆会破坏脚本间契约。
+- 第 15 组为执行交接文档，单独 docs PR。
+
+每个 PR 的描述需注明例外原因与文件清单；merged 后再按 6-5 删除远程分支、打 tag。
 
 ## 6. 未完成与限制
 
-- 未提交、未推送、未创建 PR、未打 tag（6-5 待执行）。
-- 无 GitHub 凭据确认，远程 PR 需用户授权。
+- 已在本地重建 15 个 stacked 分支并提交；未推送、未创建 PR、未打 tag（6-5 待执行）。
+- 原 `trae/agent-WZBLh1` 与 `backup/pre-stacked-release` 保留，可回退。
+- 无 GitHub 登录（`gh auth status` 未登录），PR 创建需用户授权或 GitHub 连接器。
 - 9 个安装器 smoke test 因沙箱无 PowerShell 无法执行。
 - 模型侧质量未重测；发布前若需该证据，用付费 runner 跑阶段 5 建议的 3-case 对照。
 
@@ -87,7 +97,6 @@
 
 | 选项 | 内容 | 建议 |
 |---|---|---|
-| A | 先提交阶段 6 改动到当前分支 | 可立即执行 |
-| B | 直接推送当前分支并开一个大 PR | 不满足 ≤400 行，仅适合内部预审 |
-| C | 按上表重建 stacked PR 后再推送 | **推荐**，符合仓库规则 |
-| D | 合并后打 tag `v3.7.0` 并清理分支 | 6-5，需在 C/B 之后 |
+| A | 推送 15 个 stacked 分支到 origin | 可立即执行；PR 需 GitHub 授权 |
+| B | 先人工 review 本地栈，再推送 | 适合对例外 PR 有顾虑时 |
+| C | 合并后打 tag `v3.7.0` 并清理分支 | 6-5，需在 PR 合并后 |
