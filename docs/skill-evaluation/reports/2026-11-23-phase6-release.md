@@ -57,7 +57,7 @@
 
 ## 5. PR 拆分计划（6-4）
 
-已从 `main` @ `848b613` 重建 15 个 stacked 分支，每组一个原子提交；栈顶树与 `b778f92` 完全一致。分支尚未推送。
+已从 `main` @ `848b613` 重建 15 个 stacked 分支，每组一个原子提交；栈顶树与 `b778f92` 完全一致。15 个分支已推送到 origin。
 
 | # | 分支 | 提交 | 行数 | 说明 |
 |---|---|---|---:|---|
@@ -87,9 +87,9 @@
 
 ## 6. 未完成与限制
 
-- 已在本地重建 15 个 stacked 分支并提交；未推送、未创建 PR、未打 tag（6-5 待执行）。
+- 15 个 stacked 分支已推送；未创建 PR、未打 tag（6-5 待执行）。
 - 原 `trae/agent-WZBLh1` 与 `backup/pre-stacked-release` 保留，可回退。
-- 无 GitHub 登录（`gh auth status` 未登录），PR 创建需用户授权或 GitHub 连接器。
+- `gh` 未登录且无 GitHub token，PR 创建需用户授权或 GitHub 连接器。
 - 9 个安装器 smoke test 因沙箱无 PowerShell 无法执行。
 - 模型侧质量未重测；发布前若需该证据，用付费 runner 跑阶段 5 建议的 3-case 对照。
 

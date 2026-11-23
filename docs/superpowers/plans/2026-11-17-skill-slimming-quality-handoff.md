@@ -1,9 +1,9 @@
 # Skill 瘦身与质量提升 · 执行交接
 
 > **当前阶段**：阶段 6（发布准备）
-> **当前进度**：阶段 5 完成；阶段 6 的版本/文档/CI/拆分报告已完成（6-1～6-4），6-5 待 PR 合并
+> **当前进度**：阶段 5 完成；阶段 6 的版本/文档/CI/拆分已完成，15 个 stacked 分支已推送，6-5 待 PR 合并
 > **计划文件**：[2026-11-17-skill-slimming-and-quality-plan.md](2026-11-17-skill-slimming-and-quality-plan.md)
-> **工作分支**：`trae/agent-WZBLh1`（无 upstream；阶段 1–5 已提交，阶段 6 改动未提交）
+> **工作分支**：15 个 stacked 分支已推送（`feat/eval-*` … `docs/phase5-6-handoff`）；原 `trae/agent-WZBLh1` 与 `backup/pre-stacked-release` 保留
 > **更新方式**：每完成一个任务追加一节，最新状态置顶；恢复上下文时先读本文件
 
 ---
@@ -48,10 +48,10 @@
 | 5-5 performance 瘦身 | 已完成 | default 18,726 → 15,491；entry 4,170 → 3,724 |
 | 5-6 frontend / test-data 瘦身 | 已完成 | frontend 6,378 → 5,994；test-data 10,029 → 8,992 |
 | 5-7 其余 skill 质量评测 | 已完成 | `reports/2026-11-20-phase5-skill-quality.md`；模型行为未执行 |
-| 6-1 版本同步 | 已完成（未提交） | bundle 3.7.0、test-case 9.15.0、其余 skill patch |
-| 6-2 文档同步 | 已完成（未提交） | 根 README、overview、plugin README、CHANGELOG、marketplace |
-| 6-3 CI 门禁 | 已完成（未提交） | CI 增加 `check-context-budget.py --target` |
-| 6-4 PR 拆分与交付报告 | 已完成（未提交） | `reports/2026-11-23-phase6-release.md`；6-5 待 PR |
+| 6-1 版本同步 | 已完成 | bundle 3.7.0、test-case 9.15.0、其余 skill patch |
+| 6-2 文档同步 | 已完成 | 根 README、overview、plugin README、CHANGELOG、marketplace |
+| 6-3 CI 门禁 | 已完成 | CI 增加 `check-context-budget.py --target` |
+| 6-4 PR 拆分与交付报告 | 已完成 | 15 个 stacked 分支已推送；报告 `reports/2026-11-23-phase6-release.md` |
 
 ---
 
@@ -85,8 +85,10 @@
 
 ### 未完成
 
-- 未提交、未推送、未开 PR、未打 tag。
-- 当前分支历史含大提交，直接开 PR 不满足 ≤400 行；报告给出 stacked PR 重建方案。
+- 15 个 stacked 分支已推送；未创建 PR、未打 tag（6-5 待执行）。
+- `gh` 未登录且无 GitHub token；PR 创建需用户授权或 GitHub 连接器。
+- 原 `trae/agent-WZBLh1` 与 `backup/pre-stacked-release` 保留。
+- PR 列表与例外说明见阶段 6 报告。
 
 ---
 
