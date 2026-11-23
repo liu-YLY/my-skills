@@ -1,6 +1,6 @@
 # bug-analyzer Skill
 
-> Bug 根因分析与缺陷定位技能包，v1.2.3。
+> Bug 根因分析与缺陷定位技能包，v1.2.4。
 > 由原 test-engineer v7.0.0 拆分而来，专注逆向根因分析。
 
 ## 核心能力
@@ -25,9 +25,10 @@
 bug-analyzer/
 ├── SKILL.md                          # 入口 + 核心流程（五步定位法）
 ├── knowledge/
-│   ├── root-cause-frameworks.md      # 鱼骨图/5 Whys/因果链/防御性用例反推
+│   ├── root-cause-frameworks.md      # 鱼骨图/5 Whys/因果链
 │   ├── bug-patterns-index.md         # 指向 test-case-engineer 的共享缺陷模式库
-│   ├── report-template.md            # 报告字段定义/填写规范/两类报告示例
+│   ├── report-template.md            # 报告字段定义/填写规范/转交规则
+│   ├── report-examples.md            # 两类完整报告示例（按需）
 │   └── defensive-test-points.md      # 防御性测试点反推流程/5 类测试点/检查清单
 ├── integrations/
 │   └── quickstart.md                 # 命令速查
@@ -49,6 +50,7 @@ Bug分析、根因、缺陷定位、复现、5 Whys、鱼骨图、NullPointerExc
 
 ## 版本历史
 
+- v1.2.4: 报告示例移到按需 knowledge/report-examples.md；压缩防御性测试点与缺陷模式索引；默认路径 21,100→12,390
 - v1.2.3: 统一幂等测试点的一次业务副作用断言
 - v1.2.2: 按已有授权连续交付并保留任务粒度
 - v1.2.1: 按证据停止根因推理并区分未验证与证伪
