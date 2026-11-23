@@ -194,6 +194,24 @@
     "prompt": "这 420 条用例下周只有 3 个人评审，给我一个评审方案",
     "category": "单意图（规模化评审）",
     "expected": "路由到 test-case-engineer 评审模式并叠加规模化评审子模式，输出规模画像、策略选择、强制全量清单、分层抽样与批次计划；未评审范围不计入通过率"
+  },
+  {
+    "id": 36,
+    "prompt": "帮我评审这份 PRD，找出模糊、矛盾和不可测的地方",
+    "category": "单意图（需求评审）",
+    "expected": "路由到 test-case-engineer 需求评审模式，输出 10 维度问题清单（位置+原文+类型+级别+影响+待确认），不进入四阶段用例生成"
+  },
+  {
+    "id": 37,
+    "prompt": "帮我润色这份 PRD 的措辞，让表达更顺一些",
+    "category": "边界（非需求评审）",
+    "expected": "不进入需求评审模式；只要求撰写/润色 PRD，不要求找需求问题，不路由到 test-case-engineer"
+  },
+  {
+    "id": 38,
+    "prompt": "先评审这份 PRD 的问题，再根据评审结果生成测试用例",
+    "category": "混合意图（链 10）",
+    "expected": "按链 10 先由 test-case-engineer 需求评审输出问题清单，P0/P1 澄清后转交用例生成；confirmed 进原文问题清单，candidate 进待确认项，不重复评审"
   }
   ],
   "trigger_evals": [
