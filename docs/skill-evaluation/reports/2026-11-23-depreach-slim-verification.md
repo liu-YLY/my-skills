@@ -55,7 +55,7 @@
    - **现象**：3 个 Subagent 首次运行 `validate_points.py` 均因照抄 `test-case-engineer-core.md` 模板示例中的纯数字编号 `| 1 |` 而触发 `TP_ID_FORMAT`（要求 `TP-序号` 格式），导致首轮必返工。
    - **修复**：已将 `test-case-engineer-core.md` 阶段 2 模板示例编号修正为 `| TP-01 |`。
 2. **单行内联段落头（`**业务结果**: 内容`）被 `validate_cases.py` 漏解析**：
-   - **现象**：V-01 首次采用 `writing-rules.md` 旧示例的单行写法 `**业务结果**: ...`（无行首 `- ` 且未换行），既不命中 `META_RE` 也不命中要求行尾为空的旧 `SECTION_RE`，触发 `FIELD_REQUIRED` 误报。
+   - **现象**：V-01 首次采用 `writing-rules.md` 旧示例的单行写法 `**业务结果**: ...`（无行首 `-` 且未换行），既不命中 `META_RE` 也不命中要求行尾为空的旧 `SECTION_RE`，触发 `FIELD_REQUIRED` 误报。
    - **修复**：已将 `writing-rules.md` 示例统一为标准多行列表结构，同时升级 `validate_cases.py` 的 `SECTION_RE` 兼容同行冒号内联值并补齐 `test_inline_section_header_parsed_properly` 单测（单测总数增至 22 项全绿）。
 
 ---
