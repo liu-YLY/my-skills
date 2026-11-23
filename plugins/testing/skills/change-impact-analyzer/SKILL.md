@@ -1,6 +1,6 @@
 ---
 name: change-impact-analyzer
-version: 1.5.1
+version: 1.5.2
 description: >-
   Derives business impact scope and actionable test content from git diffs, patches,
   or code change points, even without existing test cases. Explains each affected
