@@ -131,3 +131,6 @@ jobs:
 
       - name: Check skill consistency
         run: python scripts/check-skill-consistency.py
+
+      - name: Check context budget
+        run: python scripts/check-context-budget.py --target
