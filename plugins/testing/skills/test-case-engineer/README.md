@@ -1,6 +1,6 @@
 # Test Case Engineer Skill
 
-> AI 赋能的测试用例工程师技能，自动生成高质量测试用例。当前版本 v9.14.0。v8.0.0 起由原 test-engineer 拆分而来，专注正向用例生成。
+> AI 赋能的测试用例工程师技能，自动生成高质量测试用例。当前版本 v9.15.0。v8.0.0 起由原 test-engineer 拆分而来，专注正向用例生成。
 
 ## 简介
 
@@ -13,6 +13,7 @@ Test Case Engineer 是一个 AI 驱动的测试技能，扮演资深测试工程
 - **可读性规范**：句式、结构与术语约束（含测试黑话与套话替换），保证执行人一遍读懂、结果可判定
 - **机器校验闭环**：阶段 4 自检后调用 review-checker 做确定性复核，按增强/独立/降级三模式如实标注
 - **用例评审**：10 维度评审已有用例的质量与覆盖度，用例数量过大时输出规模化评审方案
+- **需求评审**：10 维度检查 PRD/需求文档，输出带位置/原文/影响/待确认的问题清单
 - **产品知识库**：按产品维度沉淀业务知识，增强测试针对性
 
 > Bug 根因分析能力已迁移至独立的 bug-analyzer skill。
@@ -45,8 +46,9 @@ Test Case Engineer 是一个 AI 驱动的测试技能，扮演资深测试工程
 | 回归验证清单 | 跳过阶段 1/2，直接输出回归验证清单 | 纯重构无行为变更 |
 | 探索式 | 额外输出探索章程 | 新功能探索、风险评估 |
 | 评审 | 10 维度评审，可选调用 review-checker MCP Server | 评审已有测试用例的质量与覆盖度 |
+| 需求评审 | 10 维度评审 PRD/需求文档，输出问题清单 | 需求可测性、完整性、一致性检查 |
 
-> 评审模式独立于四阶段生成流程，详见 [knowledge/review-mode.md](knowledge/review-mode.md)。
+> 评审模式独立于四阶段生成流程，详见 [knowledge/review-mode.md](knowledge/review-mode.md)。需求评审同样独立，详见 [knowledge/requirement-review.md](knowledge/requirement-review.md)。
 
 > **增量评审前置条件**：增量评审子模式需在 git 仓库内执行，依赖 `git diff` 提取变更用例。若用例文件不在 git 仓库中，将自动降级为全量评审。
 
@@ -54,7 +56,7 @@ Test Case Engineer 是一个 AI 驱动的测试技能，扮演资深测试工程
 
 ### 快速开始
 
-1. **确定模式**：根据场景选择默认/快速/回归验证清单/探索式/评审模式
+1. **确定模式**：根据场景选择默认/快速/回归验证清单/探索式/评审/需求评审模式
 2. **提供输入**：
    - 需求文档（Word/PDF/Markdown）
    - 或用户描述
@@ -98,16 +100,18 @@ test-case-engineer/
 ├── knowledge/                  # 知识库
 │   ├── writing-rules.md        # 用例编写规则（写作风格/格式/字段/铁律/拆分合并）
 │   ├── readability.md          # 人类易读性细则（句式/结构/术语/认知负荷）
-│   ├── case-arrangement.md     # 用例编排与排序（用户旅程/模块分组）
+│   ├── case-arrangement.md     # 用例组织（分层/输出类型/编排/预算）
 │   ├── failure-semantics.md    # 失败语义、安全属性与进展属性
 │   ├── efficiency-metrics.md   # 效率度量报告模板与工时基准
-│   ├── test-levels.md          # 测试分层策略
 │   ├── test-standards.md       # 测试规范与标准
 │   ├── bug-patterns.md         # 缺陷模式库（与 bug-analyzer 共享）
+│   ├── runtime-error-patterns.md # NPE/500/超时根因与防御性测试点（按需）
+│   ├── requirement-review.md   # 需求评审（10 维度/问题 schema/报告模板）
 │   ├── project-knowledge.md    # 项目知识目录
-│   ├── prompt-strategy.md      # AI 生成 Prompt 策略
+│   ├── prompt-strategy.md      # 语义事实抽取（评审 R2 按需）
 │   ├── anti-patterns.md        # 反模式黑名单（阶段 3/4 自检）
 │   ├── review-mode.md          # 评审模式（10 维度评审）
+│   ├── review-reference.md     # 评审模板与增量评审（R3/按需）
 │   ├── large-scale-review.md   # 规模化评审方案（>100 条时的分批/抽样/聚合）
 │   ├── review-plan.md          # 评审方案（面向产品/UI/前后端的材料与议程）
 │   ├── writing-examples.md     # 用例编写示例（铁律教学示例表）
@@ -132,6 +136,7 @@ test-case-engineer/
 | knowledge/writing-rules.md | 阶段 3 编写用例时必读 |
 | knowledge/readability.md | 阶段 3 拿不准句式、结构或术语时查阅 |
 | knowledge/review-mode.md | 评审模式必读 |
+| knowledge/requirement-review.md | 需求评审模式必读 |
 | knowledge/large-scale-review.md | 用例数 >100 或要求评审方案/排期时查阅 |
 | knowledge/review-plan.md | 面向产品/UI/前端/后端的评审会或覆盖度汇报时查阅 |
 | knowledge/anti-patterns.md | 阶段 3/4 自检时对照 |
@@ -155,6 +160,7 @@ A: 使用回归验证清单模式，直接基于变更范围输出回归验证�
 
 ## 版本历史
 
+- v9.15.0: 新增需求评审模式（10 维度检查、P0–P3、9 字段问题 schema）与需求评审/测试点校验器；合并写作契约、压缩默认路径（64,028→36,990）；testing-bundle 新增需求评审路由与链 10
 - v9.14.0: 需求范围纪律——新增 `knowledge/scope-discipline.md`（需求焦点三档：焦点/回归/范围外；范围闸门三问：需求依据/变更影响/失败归属；服务故障类、边界值膨胀、非重点展开三类默认不写及准入条件；描述深度分级；裁剪说明写法）；core 阶段 1 新增「本次变更焦点/不在本次范围」，阶段 2 增加范围闸门、缺陷模式对照由「必须补点」改为按适用性补点、7 维度收紧边界与容错口径；writing-rules/readability 新增「说人话」（测试黑话与实现词替换表、套话改写、业务背景一句话、整条对照）；anti-patterns 新增范围与相关性反模式 6 条 + 可读性反例 2 条；review-rubric 新增 J9 范围相关性并划清与 J2 的边界；prompt-strategy 场景类型改为只按测试点清单落地、容错场景需需求明确要求；脚本增 `BIZ_CONTEXT_LEN`（业务背景 >40 字，warning）；评测集增 4 条范围与可读性用例
 - v9.13.0: 确定性规则脚本化——新增 `scripts/validate_cases.py`（28 条 D 类规则：ID 格式/唯一/序号、必填字段、枚举、模糊词、句长、标题前缀、Tag、步骤动词、编排置末尾、用例数预算等）与 14 项回归测试；阶段 4 机器校验改为必做闸门，有 error 禁止交付，快速模式亦不得跳过；自检清单由 26 项重构为 15 项单判定点 J 类检查；规则边界补强（验证码例外、业务术语白名单、紧凑表格列要求）；统一「40 字」表述、合并标题与业务背景互斥规则对照、模糊词清单收口至单一权威源。新增 `knowledge/review-rubric.md`（J1–J8 语义评审标准）与 `agents/test-case-reviewer.md`（独立上下文评审 agent，只读产物、每条判定须引用原文、不输出总分），阶段 4 增加按需语义闸门；agent 兼容 WorkBuddy / Claude Code，Codex 用 `codex exec` 降级
 - v9.12.0: 评测集与断言一致性收口——需求未给文案/数值/错误码时不写「待补充」占位，改用可观察结构化事实作预期并在「原文问题清单」标注缺失；#39/#32 的「关键检查点」断言改为「若设则就近写、未设则业务结果须完整可判定」，#35 用例数软预算对齐「超出写明理由」；评测集为 11 条评审类 case 内嵌真实用例消除缺料（模型对照 with_skill 82.6% vs no_skill 47.5%，方向性观察非质量结论）
