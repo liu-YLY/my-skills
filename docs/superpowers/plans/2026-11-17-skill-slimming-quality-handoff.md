@@ -51,7 +51,7 @@
 | 6-1 版本同步 | 已完成 | bundle 3.7.0、test-case 9.15.0、其余 skill patch |
 | 6-2 文档同步 | 已完成 | 根 README、overview、plugin README、CHANGELOG、marketplace |
 | 6-3 CI 门禁 | 已完成 | CI 增加 `check-context-budget.py --target` |
-| 6-4 PR 拆分与交付报告 | 已完成 | 15 个 stacked 分支已推送；报告 `reports/2026-11-23-phase6-release.md` |
+| 6-4 PR 拆分与交付报告 | 已完成 | 15 个 stacked 分支与 PR #141–#155；报告 `reports/2026-11-23-phase6-release.md` |
 
 ---
 
@@ -85,8 +85,8 @@
 
 ### 未完成
 
-- 15 个 stacked 分支已推送；未创建 PR、未打 tag（6-5 待执行）。
-- `gh` 未登录且无 GitHub token；PR 创建需用户授权或 GitHub 连接器。
+- 15 个 stacked 分支已推送，PR **#141–#155** 已创建；未合并、未打 tag（6-5 待执行）。
+- PR 合并需逐个 review；超过 400 行的 PR 需确认例外。
 - 原 `trae/agent-WZBLh1` 与 `backup/pre-stacked-release` 保留。
 - PR 列表与例外说明见阶段 6 报告。
 
