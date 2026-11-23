@@ -62,6 +62,7 @@ version_spec.loader.exec_module(version_sync)
     {"evals": [{"id": 1, "prompt": "task", "expectations": ["observable result"]}]},
     {"prompts": [{"id": 1, "prompt": "task", "expected_behavior": "observable result",
                    "validation_points": ["evidence"]}]},
+    {"task_cases": [{"id": 1, "prompt": "task", "checks": ["observable result"]}]},
 ])
 def test_eval_formats_preserve_prompt_and_expectations(tmp_path, payload):
     path = tmp_path / "test-prompts.json"
@@ -83,6 +84,15 @@ def test_eval_reader_preserves_negative_trigger(tmp_path):
     path = tmp_path / "test-prompts.json"
     path.write_text(json.dumps({"trigger_evals": [{"query": "translate", "should_trigger": False}]}))
     assert evals.read_cases(path)[0]["should_trigger"] is False
+
+
+def test_quality_suite_v7_is_readable_and_categorized():
+    cases = evals.read_cases(ROOT / "docs/skill-evaluation/2026-11-17-quality-suite-v7.1.json")
+    assert len(cases) == 82
+    assert sum(1 for case in cases if case["kind"] == "task") == 70
+    assert sum(1 for case in cases if case["kind"] == "trigger") == 12
+    assert all(case["category"] for case in cases)
+    evals.validate_trigger_coverage(cases)
 
 
 def test_every_skill_has_complete_trigger_coverage():
@@ -383,6 +393,72 @@ def test_model_pair_metrics_exclude_a_valid_but_unpaired_artifact(tmp_path):
     assert summary["variants"]["with_skill"]["completed_runs"] == 1
     assert summary["variants"]["with_skill"]["checks_total"] == 0
     assert summary["variants"]["baseline"]["invalid_runs"]
+
+
+context_spec = importlib.util.spec_from_file_location(
+    "skill_context", ROOT / "scripts/skill_context.py"
+)
+skill_context = importlib.util.module_from_spec(context_spec)
+context_spec.loader.exec_module(skill_context)
+budget_spec = importlib.util.spec_from_file_location(
+    "context_budget", ROOT / "scripts/check-context-budget.py"
+)
+context_budget = importlib.util.module_from_spec(budget_spec)
+budget_spec.loader.exec_module(context_budget)
+
+
+def test_skill_context_measures_entry_and_mode(tmp_path):
+    skill = tmp_path / "plugins/testing/skills/sample"
+    (skill / "knowledge").mkdir(parents=True)
+    (skill / "SKILL.md").write_text("entry", encoding="utf-8")
+    (skill / "knowledge/a.md").write_text("knowledge", encoding="utf-8")
+    config = {"skills": {"sample": {
+        "entry": {"file": "SKILL.md", "budget": 10, "target": 5},
+        "modes": {"default": {
+            "files": ["SKILL.md", "knowledge/a.md"], "budget": 20, "target": 10,
+        }},
+    }}}
+    measured = skill_context.measure_files(tmp_path, "sample", ["SKILL.md", "knowledge/a.md"])
+    assert measured["characters"] == 14
+    assert not measured["missing"]
+    mode = skill_context.measure_mode(tmp_path, "sample", config["skills"]["sample"]["modes"]["default"])
+    assert mode["characters"] == 14
+    assert mode["tokens"] > 0
+    rows = context_budget.check(tmp_path, config, "sample", use_target=False)
+    assert len(rows) == 2
+    assert not any(row["over"] for row in rows)
+
+
+def test_skill_context_budget_fails_when_over(tmp_path):
+    skill = tmp_path / "plugins/testing/skills/sample"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text("0123456789", encoding="utf-8")
+    config = {"skills": {"sample": {
+        "entry": {"file": "SKILL.md", "budget": 5, "target": 5},
+        "modes": {"default": {"files": ["SKILL.md"], "budget": 20, "target": 10}},
+    }}}
+    rows = context_budget.check(tmp_path, config, "sample", use_target=False)
+    assert rows[0]["over"] is True
+
+
+inventory_spec = importlib.util.spec_from_file_location(
+    "rule_inventory", ROOT / "scripts/extract-rule-inventory.py"
+)
+rule_inventory = importlib.util.module_from_spec(inventory_spec)
+inventory_spec.loader.exec_module(rule_inventory)
+
+
+def test_rule_inventory_extracts_normative_lines_only(tmp_path):
+    skill = tmp_path / "sample"
+    (skill / "knowledge").mkdir(parents=True)
+    (skill / "SKILL.md").write_text(
+        "## 禁止\n\n- 必须为每条用例写明可观察的预期结果。\n- 普通说明行。\n",
+        encoding="utf-8",
+    )
+    rows = rule_inventory.extract_skill(skill, "sample", {"SKILL.md"})
+    assert len(rows) == 1
+    assert rows[0]["class"] == "D5"
+    assert "可观察" in rows[0]["statement"]
 
 
 def test_model_trigger_repeats_can_differ_from_task_repeats(tmp_path):
