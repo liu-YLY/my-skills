@@ -25,25 +25,23 @@
     "test-case-engineer": {
       "entry": {
         "file": "SKILL.md",
-        "budget": 7500,
-        "target": 5500
+        "budget": 5500,
+        "target": 3600
       },
       "modes": {
         "default": {
-          "description": "默认/快速/探索式生成路径",
+          "description": "默认/快速生成主路径（按需知识延迟加载）",
           "files": [
             "SKILL.md",
             "test-case-engineer-core.md",
             "knowledge/scope-discipline.md",
-            "knowledge/bug-patterns.md",
             "knowledge/writing-rules.md",
             "knowledge/test-standards.md",
-            "knowledge/anti-patterns.md",
             "knowledge/case-arrangement.md",
             "knowledge/project-knowledge.md"
           ],
-          "budget": 65300,
-          "target": 44800
+          "budget": 37000,
+          "target": 22000
         },
         "review": {
           "description": "已有用例评审路径（含 J 类 rubric 上界）",
@@ -54,8 +52,8 @@
             "knowledge/readability.md",
             "knowledge/review-rubric.md"
           ],
-          "budget": 34200,
-          "target": 25200
+          "budget": 25200,
+          "target": 23500
         },
         "requirement-review": {
           "description": "需求评审模式（PRD/需求文档）",
@@ -64,8 +62,8 @@
             "knowledge/requirement-review.md",
             "knowledge/project-knowledge.md"
           ],
-          "budget": 9700,
-          "target": 9600
+          "budget": 9600,
+          "target": 7800
         }
       }
     },

@@ -1,35 +1,18 @@
-# 项目知识自动发现与文档格式处理
+# 项目知识发现与文档格式转换
 
-> **来源优先级**：用户明确要求 > 项目已确认资料 > Skill 通用知识 > 行业模板。冲突、缺日期或疑似过期资料注明来源与待确认；模板不覆盖项目事实，不改写历史用例。
-> **何时阅读**：阶段 1 必读；Office/PDF 转换时读。用户已提供需求文本/Markdown 且无项目文档需扫描时可跳过。
+> **来源优先级**：用户明确指令 > 项目已确认文档 > Skill 通用规范 > 行业惯例（冲突或过期资料标来源与待确认，不改写历史用例）。
+> **何时阅读**：阶段 1 扫描项目资料或处理 Office/PDF 附件时读；用户已直接给纯文本/Markdown 需求且无仓库文档时可跳过。
 
-## 项目知识目录约定
+## 项目文档扫描路径
 
-阶段 1 必须扫描以下目录，存在则读：
+阶段 1 按序检查以下路径，存在即读取并记入「信息来源」：
+`docs/README.md`（索引）、`docs/prd/`（需求）、`docs/api/`（OpenAPI/接口契约）、`docs/design/`（交互/UI）、`docs/reference/`（外部规范）、`testing-tm-cases/releases/`（历史用例，继承 ID 前缀与风格）、`CHANGELOG.md` 或 `docs/changelog/`（变更范围）。
 
-| 路径 | 内容 |
-|------|------|
-| `docs/README.md` | 文档索引 |
-| `docs/prd/` | PRD 需求文档 |
-| `docs/api/` | API 文档、Swagger/OpenAPI |
-| `docs/design/` | UI 设计稿说明、交互规范 |
-| `docs/reference/` | 行业规范、竞品、第三方文档 |
-| `testing-tm-cases/releases/` | 已有用例（继承风格/ID） |
-| `CHANGELOG.md` 或 `docs/changelog/` | 版本变更与影响范围 |
+## Office / PDF 转换流程
 
-## 文档格式处理
+优先直读 `.md`/`.csv`/纯文本/PDF/图片。遇到 `.docx`/`.xlsx`/`.xls`/`.pptx`（或直读受限的 `.pdf`）且无同名 `.md`/`.csv` 时，主动转换后继续执行四阶段，**禁止让用户手动转换**：
 
-优先读文本格式；PDF/图片可直接读。
-
-遇到 `.docx`/`.xlsx`/`.xls`/`.pptx`/`.pdf`：
-
-1. 先找同名 `.md`/`.csv`，存在直接读。
-2. 不存在则主动转换后继续后续阶段，不得回复「请先手动转换」或中途停下。执行前遵守 [integrations/quickstart.md](../integrations/quickstart.md)「安全约束」，不拼接或改写用户路径。
-3. 优先 MarkItDown：`"$TOOLS_ENV/bin/markitdown" <文件路径> -o <输出路径>.md`
-4. 首次自举：解析 `TOOLS_ROOT`，用临时 `TOOLS_ENV` 安装 `$TOOLS_ROOT/scripts/requirements.txt`。
-
-**降级**：MarkItDown 不可用（Python <3.10、安装失败、找不到命令）时用 `"$TOOLS_ENV/bin/python" "$TOOLS_ROOT/scripts/convert_docs.py" <路径> --recursive`；仅支持 `.docx`/`.xlsx`/`.pptx`，不支持 PDF 和 `.xls`，须说明局限。
-
-**无法创建 venv 或执行终端**：只处理可直接读取的格式，说明 Office/PDF 局限并建议导出 Markdown/文本，不得无限重试。
-
-**用户只给文档路径或「根据某 docx 写用例」**：先解析路径，按上述步骤转换读取，再完成阶段 1–4。
+1. 执行前必须遵守 [integrations/quickstart.md](../integrations/quickstart.md)「安全约束」，严禁拼接命令或篡改用户路径。
+2. 优先用 MarkItDown（首次缺环境时在临时 `TOOLS_ENV` 安装 `$TOOLS_ROOT/scripts/requirements.txt`）：
+   `"$TOOLS_ENV/bin/markitdown" <文件路径> -o <输出路径>.md`
+3. **降级兜底**：MarkItDown 不可用时改跑 `"$TOOLS_ENV/bin/python" "$TOOLS_ROOT/scripts/convert_docs.py" <路径> --recursive`（仅支持 `.docx`/`.xlsx`/`.pptx`，须说明不支持 `.pdf`/`.xls`）；无终端或虚拟环境权限时说明限制并请用户提供文本版，不死循环重试。
