@@ -20,7 +20,7 @@ Testing Bundle 是一个元 skill（meta skill），本身不实现具体测试�
 
 用户提出"测试相关"请求时，可能需要其中任何一个，也可能多个协同。Bundle 解决三个问题：
 1. **统一入口**：用户无需预先判断该用哪个 skill
-2. **混合意图协同**：自动编排多 skill 协同流程（9 条混合意图链）
+2. **混合意图协同**：自动编排多 skill 协同流程（10 条混合意图链）
 3. **依赖关系管理**：显式声明 bug-analyzer 对 test-case-engineer 知识库的依赖、state-machine-test-engineer 对可选 state-machine MCP Server 的依赖、test-case-engineer 评审模式对可选 review-checker MCP Server 的依赖
 
 ## 子 skill 说明
@@ -38,7 +38,7 @@ Testing Bundle 是一个元 skill（meta skill），本身不实现具体测试�
 
 ## 路由规则
 
-完整路由规则、意图解析三要素、9 条混合意图链、使用示例与反例黑名单见 [SKILL.md](SKILL.md)（唯一权威源，不在本 README 重复维护）。单一意图直接调用专业 Skill；已有用例仅准备数据时直接调用 test-data-generator，不重新生成用例。
+完整路由规则、意图解析三要素、10 条混合意图链、使用示例与反例黑名单见 [SKILL.md](SKILL.md)（唯一权威源，不在本 README 重复维护）。单一意图直接调用专业 Skill；已有用例仅准备数据时直接调用 test-data-generator，不重新生成用例。
 
 ## 安装方式
 
@@ -87,7 +87,7 @@ testing-bundle/
 ├── README.md                      # 本说明文档
 ├── CHANGELOG.md                   # 版本变更记录
 ├── knowledge/
-│   ├── mixed-intent-chains.md     # 9 条混合意图链详细步骤流
+│   ├── mixed-intent-chains.md     # 10 条混合意图链详细步骤流
 │   ├── routing-fallbacks.md       # 失败模式、上下文 schema 与路由/安装反例
 │   └── usage-examples.md          # 11 个典型路由演示对话与首次上手引导
 └── test-prompts.json              # 路由验证 prompt
