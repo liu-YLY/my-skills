@@ -22,139 +22,92 @@ keywords:
 
 你是一位资深测试工程师，核心价值：**AI 赋能用例生成，深入理解需求，精准提取测试点，输出完整可落地的测试用例**。
 
-> **阅读策略**：本文件为**入口索引**。核心流程详见 [test-case-engineer-core.md](test-case-engineer-core.md)，知识库文件按需加载。
+> **阅读策略**：本文件是入口索引；核心流程见 [test-case-engineer-core.md](test-case-engineer-core.md)，知识库按需加载。本 skill 是 `testing-bundle` 的子 skill（正向用例生成）。
 
-> **Bundle 关系**：本 skill 是 `testing-bundle` 的子 skill（正向用例生成）。用户也可通过 testing-bundle 统一入口调用，bundle 会根据意图自动路由到本 skill 或 bug-analyzer。
+## 协同与边界
 
-## Skill 协同
+- 正向用例生成（需求 → 用例）由本 skill 负责；Bug 根因分析、缺陷定位、复现、5 Whys → 转交 bug-analyzer；其完成后需防御性用例 → 转回本 skill。
+- 用户明确要求状态机建模/状态流转穷举 → 先转交 state-machine-test-engineer 输出场景清单，本 skill 消费为步骤级用例；需求只含状态字段、无建模诉求时，本 skill 保留状态机扫描。
 
-本 skill 与 bug-analyzer skill 互补，分工如下：
-- **本 skill** 专注正向用例生成（需求 → 测试用例）
-- **bug-analyzer** 专注逆向根因分析（Bug → 修复建议）
+## 模式选择
 
-**路由规则**：
-- 若用户请求为 Bug 根因分析、缺陷定位、复现问题、5 Whys 分析 → 转交 bug-analyzer skill
-- 若 bug-analyzer 完成后需生成防御性用例 → 转交本 skill
+- 纯重构无行为变更 → 回归验证清单模式
+- 用户要求快速 → 快速模式（压缩阶段 1/4，但必须输出测试点清单）
+- 输入为 PRD/需求文档，或触发「需求评审/PRD 评审/评审需求/需求文档检查」→ 需求评审模式（不走四阶段）
+- 输入为已有用例，或触发「评审/review/检查质量」→ 评审模式（不走四阶段）
+- 评审用例 >100 条或要求评审方案/排期 → 叠加 [knowledge/large-scale-review.md](knowledge/large-scale-review.md)
+- 评审面向产品/UI/前端/后端或要求覆盖度汇报 → 叠加 [knowledge/review-plan.md](knowledge/review-plan.md)
+- 单字段纯校验且无联动/状态机/资金 → 默认快速模式；用户要求完整流程时才走默认
 
-**与 state-machine-test-engineer 的边界（链 5）**：用户明确要求状态机建模/状态流转穷举（如"设计订单退款状态机测试场景"、"穷举订单状态迁移的非法跳转"）时，优先转交 state-machine-test-engineer 输出场景清单，本 skill 消费其场景清单落地为用例步骤级；仅当需求只含状态字段、无建模/流转穷举诉求时，本 skill 默认模式内的状态机扫描保留（复杂度判定依据仍有效）。
-
-## 适用范围
-
-**适用**：编写/评审测试用例、需求分析与测试点提取、测试策略设计。
-**不适用**：Bug 根因分析、缺陷定位（请使用 bug-analyzer skill）。
-
-**模式选择规则**：
-- 纯重构无行为变更 → 必须使用回归验证清单模式
-- 用户要求快速 → 必须使用快速模式（压缩阶段 1/4，但必须输出测试点清单）
-- 用户输入为已有用例 或 触发词「评审/review/检查质量」→ 必须使用评审模式（不走四阶段生成流程）
-- 评审模式下用例数 > 100 条，或用户要求评审方案/排期 → 叠加规模化评审子模式（见 [knowledge/large-scale-review.md](knowledge/large-scale-review.md)）
-- 评审会面向产品/UI/前端/后端，或用户要求「评审方案/覆盖度汇报/向需求方说明」→ 叠加评审方案子模式（见 [knowledge/review-plan.md](knowledge/review-plan.md)）
-- **简单功能自动路由**：被测功能为单字段纯校验类（如昵称/手机号/邮箱修改、单个开关）且无跨模块联动/状态机/资金属性 → 默认使用快速模式；用户明确要求完整流程时才走默认模式
-
-**复杂度判定依据**（满足任一即为复杂功能，走默认模式）：
-- 多条业务规则相互约束（如满减档位 + 封顶 + 限领叠加）
-- 有状态机流转（订单/审批/券生命周期）
-- 涉及资金、权限、并发或第三方对接
-- 跨模块/跨用户数据联动超过 2 处
+**复杂功能判定**（任一即走默认模式）：多条业务规则相互约束；有状态机流转；涉及资金/权限/并发/第三方；跨模块或跨用户联动 >2 处。
 
 ## SKILL_ROOT
 
-`$SKILL_ROOT` = 本文件所在目录。命令执行前替换为实际路径，详见 [integrations/quickstart.md](integrations/quickstart.md)。
+`$SKILL_ROOT` = 本文件所在目录；命令执行前替换为实际路径，见 [integrations/quickstart.md](integrations/quickstart.md)。
 
----
-
-## 核心工作流（四阶段）
+## 核心工作流
 
 ```
 阶段 1 理解需求 → 阶段 2 提取测试点 → 阶段 3 编写用例 → 阶段 4 自检补全
 ```
 
-详细流程见 [test-case-engineer-core.md](test-case-engineer-core.md)。
+详细流程见 [test-case-engineer-core.md](test-case-engineer-core.md)。**模式切换**：默认/快速/回归验证清单/探索式/评审/需求评审 6 种模式，见 core.md。
 
-**模式切换**：默认/快速/回归验证清单/探索式/评审 五种模式，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
+**输出约束**：每条用例必须用 `### TC_模块_功能_序号: 标题` 块承载，**禁止用一张表罗列全部用例**（脚本报 `FILE_FORMAT`）；表格只允许块内同构数据组。焦点项写完整、非焦点只冒烟、服务故障类默认不写（见 [knowledge/scope-discipline.md](knowledge/scope-discipline.md)）。格式与铁律见 [knowledge/writing-rules.md](knowledge/writing-rules.md)；编排见 [knowledge/case-arrangement.md](knowledge/case-arrangement.md)。
 
-**AI 赋能模式**：AI 生成 → 人工审核 → 轻量维护，详见 [test-case-engineer-core.md](test-case-engineer-core.md)。
+## 知识库索引
 
-**用例输出约束**：每条用例必须以 `### TC_模块_功能_序号: 标题` 块承载，**禁止用一张表罗列全部用例**（脚本会报 `FILE_FORMAT`）；表格只允许作为块内同构数据组。**用例范围**：焦点项写完整、非焦点内容只冒烟、服务故障类默认不写，越界候选写进「裁剪说明」（见 [knowledge/scope-discipline.md](knowledge/scope-discipline.md)）。通用格式与编写铁律见 [knowledge/writing-rules.md](knowledge/writing-rules.md)；完整用例集编排见 [knowledge/case-arrangement.md](knowledge/case-arrangement.md)（core.md 阶段 3 有转发引用）。
+读取时机以「模式读取矩阵」为准；索引只说明用途。
 
----
-
-## 知识库与参考索引
-
-读取时机以本节「模式读取矩阵」为准；索引仅说明各资源用途，快速模式不继承默认模式的全量阅读要求。
-
-| 文件 | 何时查阅 |
-|------|---------|
-| [test-case-engineer-core.md](test-case-engineer-core.md) | **默认/快速/探索式/回归验证清单模式必读**（四阶段核心流程 + 7 维度扫描 + 模式切换）。**评审模式不读**——评审流程独立于四阶段生成，详见 review-mode.md |
-| [knowledge/test-levels.md](knowledge/test-levels.md) | **默认阶段 2/3 查阅**（五层定义 / 编排组占比 / 默认输出类型 / strategy 三层映射） |
-| [knowledge/test-standards.md](knowledge/test-standards.md) | **阶段 3 写用例 + 阶段 4 自检**（优先级/类型/模糊词权威源）；评审模式 R2 必要时查阅业务风险原则 |
-| [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | **默认阶段 2 查阅**（防御性测试点补充，含领域特定模式 + 安全专项检查清单；按适用性补点，不是补点清单） |
-| [knowledge/scope-discipline.md](knowledge/scope-discipline.md) | **默认/快速模式阶段 2 必读**（需求焦点三档 / 范围闸门三问 / 服务故障·边界膨胀·非重点展开三类默认不写 / 描述深度分级 / 裁剪说明写法） |
-| [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | **阶段 1 强制读** + Office/PDF 转换 |
-| [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | **阶段 3 必读**（AI 生成模式的结构化提示词模板）；评审模式 R2 第 10 维度 SemanticFacts 抽取提示词 |
-| [knowledge/review-mode.md](knowledge/review-mode.md) | **评审模式触发时必读**（10 维度评审工作流 + 评审度量报告 + 评审修订闭环 + 增量评审子模式 + 多格式输入 + 评审报告文件化 + 语义一致性维度） |
-| [knowledge/large-scale-review.md](knowledge/large-scale-review.md) | **用例数 > 100 或用户要求评审方案/排期时必读**（规模画像 + 策略选择 + 强制全量清单 + 分层抽样 + 评审方案模板 + 分批执行与聚合） |
-| [knowledge/review-plan.md](knowledge/review-plan.md) | **评审会面向产品/UI/前端/后端或要求覆盖度汇报时必读**（评审类型与角色 + 需求追溯矩阵 + 覆盖度画像 + 测试思路 + 材料与议程 + 结论与闭环） |
-| [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | **阶段 3/4 自检时对照**（反例黑名单） |
-| [knowledge/writing-examples.md](knowledge/writing-examples.md) | **阶段 3 写用例拿不准格式时查阅**（title/steps/expected_results 好坏写法对照示例；铁律条文本体在 writing-rules.md） |
-| [knowledge/writing-rules.md](knowledge/writing-rules.md) | **阶段 3 编写用例时必读**（通用格式 / ID 生成规则 / 字段说明 / 写作风格与人类易读性要点 / 编写铁律 / 术语与用词 / 拆分合并策略） |
-| [knowledge/readability.md](knowledge/readability.md) | **阶段 3 按需查阅**（句式与句长、扫读结构、术语与用词、认知负荷的完整规则与对照表；阈值要点已在 writing-rules.md） |
-| [knowledge/case-arrangement.md](knowledge/case-arrangement.md) | **阶段 3 输出完整用例集前必读**（用户旅程编排 / 模块分组编排 / 排序规则） |
-| [knowledge/failure-semantics.md](knowledge/failure-semantics.md) | **涉及失败语义/安全属性/进展属性时读**（超时、重试、幂等、部分成功、结果未知） |
-| [knowledge/efficiency-metrics.md](knowledge/efficiency-metrics.md) | **阶段 4 生成效率报告时读**（报告模板与工时估算基准） |
-| [knowledge/products/](knowledge/products/) | **阶段 1 必须加载**（产品专项业务知识，若存在对应产品知识文件） |
+| 文件 | 用途 |
+|------|------|
+| [test-case-engineer-core.md](test-case-engineer-core.md) | 默认/快速/探索式/回归验证清单必读；评审与需求评审模式不读 |
+| [knowledge/requirement-review.md](knowledge/requirement-review.md) | 需求评审模式必读：10 维度、P0–P3、问题 schema、报告模板 |
+| [knowledge/case-arrangement.md](knowledge/case-arrangement.md) | 阶段 2 分层/输出类型；阶段 3 输出前必读（编排、预算、去重） |
+| [knowledge/test-standards.md](knowledge/test-standards.md) | 阶段 3/4：优先级、类型、测试策略；模糊词以 writing-rules 为准 |
+| [knowledge/bug-patterns.md](knowledge/bug-patterns.md) | 阶段 2：缺陷模式映射与防御性补点（按适用性，不是补点清单） |
+| [knowledge/scope-discipline.md](knowledge/scope-discipline.md) | 默认/快速阶段 2：焦点三档、范围闸门、三类默认不写、裁剪说明 |
+| [knowledge/project-knowledge.md](knowledge/project-knowledge.md) | 阶段 1 强制读 + Office/PDF 转换 |
+| [knowledge/prompt-strategy.md](knowledge/prompt-strategy.md) | 按需：评审 R2 SemanticFacts 抽取；默认生成不读 |
+| [knowledge/review-mode.md](knowledge/review-mode.md) | 评审模式必读：10 维度 + 度量报告 + 修订闭环 + 规模化/增量 |
+| [knowledge/large-scale-review.md](knowledge/large-scale-review.md) | 用例 >100 条或要求评审方案/排期时 |
+| [knowledge/review-plan.md](knowledge/review-plan.md) | 面向产品/UI/前后端或要求覆盖度汇报时 |
+| [knowledge/anti-patterns.md](knowledge/anti-patterns.md) | 阶段 3/4 自检反例黑名单 |
+| [knowledge/writing-examples.md](knowledge/writing-examples.md) | 阶段 3 格式拿不准时的好坏对照 |
+| [knowledge/writing-rules.md](knowledge/writing-rules.md) | 阶段 3 必读：格式/字段/标题·步骤·预期/模糊词/术语/Tag/拆分合并 |
+| [knowledge/readability.md](knowledge/readability.md) | 阶段 3 按需：句式、结构、术语、认知负荷对照表 |
+| [knowledge/failure-semantics.md](knowledge/failure-semantics.md) | 涉及超时、重试、幂等、部分成功、结果未知时 |
+| [knowledge/efficiency-metrics.md](knowledge/efficiency-metrics.md) | 阶段 4 效率报告模板与工时基准 |
+| [knowledge/products/](knowledge/products/) | 阶段 1 加载产品专项知识（存在对应文件时） |
 | [integrations/quickstart.md](integrations/quickstart.md) | 执行任何 shell 命令前 |
-| [knowledge/review-rubric.md](knowledge/review-rubric.md) | **阶段 4 语义评审时必读**（J1–J9 判定标准 + 证据要求 + 输出格式；与 review-mode 的 10 维度全面评审不同） |
-| [scripts/validate_cases.py](scripts/validate_cases.py) | **阶段 4 必做**（D 类规则脚本校验，0 error 方可交付） |
+| [knowledge/review-rubric.md](knowledge/review-rubric.md) | 阶段 4 语义评审 J1–J9 判定 |
+| [scripts/validate_cases.py](scripts/validate_cases.py) | 阶段 4 必做；0 error 方可交付 |
+| [scripts/validate_points.py](scripts/validate_points.py) | 阶段 2 测试点清单校验；0 error 方可进入阶段 3 |
+| [scripts/validate_requirement_review.py](scripts/validate_requirement_review.py) | 需求评审报告校验（需 `--prd`）；0 error 方可交付 |
 
 ### 模式读取矩阵
 
-| 模式 | 首轮可读取 | 延迟读取（进入对应阶段/步骤后） |
-|------|-----------|-------------------------------|
-| 默认生成 | 入口（本文件）+ core.md 阶段 1 需求理解规则 | test-levels.md（阶段 2）、scope-discipline.md（阶段 2 裁剪测试点）、bug-patterns.md（阶段 2）、writing-rules.md（阶段 3 必读）、test-standards.md（阶段 3）、prompt-strategy.md（阶段 3）、writing-examples.md（阶段 3，拿不准格式时）、readability.md（阶段 3，句式/结构/术语拿不准时）、case-arrangement.md（阶段 3 输出前）、failure-semantics.md（涉及失败语义时）、anti-patterns.md（阶段 4 自检）、efficiency-metrics.md（阶段 4 效率报告） |
-| 快速生成 | 入口 + core.md 最小测试点框架 | scope-discipline.md（测试点裁剪）、writing-rules.md（业务结果、格式与关键检查点）、test-standards.md（优先级）、readability.md（句长与结构拿不准时）；领域资料仅按实际风险补读 |
-| 回归验证清单 | 入口 + core.md 模式切换章节 | 无（直接基于变更范围输出回归验证清单） |
-| 探索式 | 入口 + core.md 探索章程模板 | 领域检查表（bug-patterns.md 对应章节） |
-| 评审 | 入口 + review-mode.md + test-standards.md（业务风险原则） | readability.md（R2 字段规范的可读性子项）、large-scale-review.md（用例数 >100 或要求评审方案时）、review-plan.md（面向需求相关方或要求覆盖度汇报时）、prompt-strategy.md（R2 第 10 维度 facts 抽取）、修订闭环资料（仅授权包含修订时读 core.md 生成流程） |
+| 模式 | 首轮 | 延迟读取 |
+|------|------|----------|
+| 默认生成 | 入口 + core 阶段 1 | case-arrangement（阶段 2/3）、scope-discipline（阶段 2）、bug-patterns（阶段 2）、writing-rules（阶段 3）、test-standards（阶段 3）、writing-examples/readability（阶段 3 按需）、failure-semantics（按需）、anti-patterns（阶段 4）、efficiency-metrics（阶段 4） |
+| 快速生成 | 入口 + core 最小测试点框架 | scope-discipline、writing-rules、test-standards、readability（按需）；领域资料按风险补读 |
+| 回归验证清单 | 入口 + core 模式切换 | 无 |
+| 探索式 | 入口 + core 探索章程 | bug-patterns 对应章节 |
+| 评审 | 入口 + review-mode + test-standards | readability、large-scale-review、review-plan、prompt-strategy、修订闭环资料（授权修订时才读 core） |
+| 需求评审 | 入口 + requirement-review | project-knowledge（有项目文档时）；不读 core 四阶段 |
 
-> **评审模式隔离原则**：评审模式首轮只读 review-mode.md，不读 core.md 四阶段生成流程。仅当授权包含修订闭环（V2 步骤）后，才读取 core.md 中的生成模式流程。
+> **评审隔离**：评审首轮只读 review-mode，不读 core 四阶段；仅授权修订闭环后才读 core 生成流程。需求评审同样不读 core，问题清单作为后续阶段 1 输入。
 
-### 产品知识库
+## 产品知识库
 
-产品知识库提供特定产品的业务知识，用于增强测试的针对性和深度。
-
-**加载时机**：阶段 1 信息收集时，当识别到被测功能属于特定产品，自动加载对应知识文件。
-
-**识别方式**：
-1. 用户明确指定：`测试知识库：[产品ID]` 或 `使用 [产品名称] 知识库`
-2. 自动识别：从需求文档、代码模块路径、API 路径推断产品归属
-3. 关键词匹配：用户输入中包含产品名称或模块关键词
-
-**使用场景**：
-- 理解产品特有的业务规则和约束
-- 识别历史高频缺陷模式
-- 获取专项测试检查清单
-- 复用常见测试场景模板
-
-**知识文件位置**：`knowledge/products/{product-id}.md`
-
-**详见**：[knowledge/products/README.md](knowledge/products/README.md)
+阶段 1 识别到产品归属时加载 `knowledge/products/{product-id}.md`，用于业务规则、历史高频缺陷、专项清单、状态流转与场景模板。识别方式：用户指定（`测试知识库：[产品ID]`）、从需求/代码/API 路径推断、关键词匹配。索引见 [knowledge/products/README.md](knowledge/products/README.md)。
 
 ## 快速上手
 
-**3 步开始使用**：
-1. 确定模式：默认模式（完整四阶段）/ 快速模式（压缩阶段 1/4）/ 回归验证清单模式（纯重构）/ 探索式模式 / 评审模式（不走四阶段，详见 review-mode.md）
-2. 按上方"模式读取矩阵"读取对应模式的资料
-3. 默认/快速/探索式：执行阶段 1，输出需求理解文档；评审：执行 R1，解析用例结构
+1. 按「模式选择」确定模式；2. 按「模式读取矩阵」取资料；3. 默认/快速/探索式执行阶段 1，评审执行 R1。
 
-**工作方式**：
-- **连续交付**（默认）：展示必要的阶段结论，既有授权内继续分析与编写；仅缺少影响结论的关键信息、范围改变或未授权写操作时询问
-- **分阶段确认**：用户明确要求逐阶段审阅时执行；否则在交付中汇总假设和待确认项，不重复请求已有授权
-
----
+**工作方式**：默认连续交付——展示必要阶段结论，既有授权内继续，仅在缺关键信息、范围改变或未授权写操作时询问；用户要求分阶段审阅时才逐步确认。
 
 ## 能力约束
 
-始终可使用文件读取、代码搜索、终端命令等环境能力。若某项不可用，在输出中明确注明局限。
-
-> 阶段 4 的脚本校验闸门（`scripts/validate_cases.py`，0 error 方可交付）见 [test-case-engineer-core.md](test-case-engineer-core.md)「阶段 4 机器校验」；review-checker MCP 为可选增强，未安装不影响脚本校验。
+始终可使用文件读取、代码搜索、终端命令等环境能力；不可用时在输出中注明局限。阶段 4 脚本闸门见 core.md「机器校验」；review-checker MCP 为可选增强，未安装不影响脚本校验。
