@@ -13,6 +13,7 @@ Test Case Engineer 是一个 AI 驱动的测试技能，扮演资深测试工程
 - **可读性规范**：句式、结构与术语约束（含测试黑话与套话替换），保证执行人一遍读懂、结果可判定
 - **机器校验闭环**：阶段 4 自检后调用 review-checker 做确定性复核，按增强/独立/降级三模式如实标注
 - **用例评审**：10 维度评审已有用例的质量与覆盖度，用例数量过大时输出规模化评审方案
+- **需求评审**：10 维度检查 PRD/需求文档，输出带位置/原文/影响/待确认的问题清单
 - **产品知识库**：按产品维度沉淀业务知识，增强测试针对性
 
 > Bug 根因分析能力已迁移至独立的 bug-analyzer skill。
@@ -45,8 +46,9 @@ Test Case Engineer 是一个 AI 驱动的测试技能，扮演资深测试工程
 | 回归验证清单 | 跳过阶段 1/2，直接输出回归验证清单 | 纯重构无行为变更 |
 | 探索式 | 额外输出探索章程 | 新功能探索、风险评估 |
 | 评审 | 10 维度评审，可选调用 review-checker MCP Server | 评审已有测试用例的质量与覆盖度 |
+| 需求评审 | 10 维度评审 PRD/需求文档，输出问题清单 | 需求可测性、完整性、一致性检查 |
 
-> 评审模式独立于四阶段生成流程，详见 [knowledge/review-mode.md](knowledge/review-mode.md)。
+> 评审模式独立于四阶段生成流程，详见 [knowledge/review-mode.md](knowledge/review-mode.md)。需求评审同样独立，详见 [knowledge/requirement-review.md](knowledge/requirement-review.md)。
 
 > **增量评审前置条件**：增量评审子模式需在 git 仓库内执行，依赖 `git diff` 提取变更用例。若用例文件不在 git 仓库中，将自动降级为全量评审。
 
@@ -54,7 +56,7 @@ Test Case Engineer 是一个 AI 驱动的测试技能，扮演资深测试工程
 
 ### 快速开始
 
-1. **确定模式**：根据场景选择默认/快速/回归验证清单/探索式/评审模式
+1. **确定模式**：根据场景选择默认/快速/回归验证清单/探索式/评审/需求评审模式
 2. **提供输入**：
    - 需求文档（Word/PDF/Markdown）
    - 或用户描述
@@ -98,16 +100,18 @@ test-case-engineer/
 ├── knowledge/                  # 知识库
 │   ├── writing-rules.md        # 用例编写规则（写作风格/格式/字段/铁律/拆分合并）
 │   ├── readability.md          # 人类易读性细则（句式/结构/术语/认知负荷）
-│   ├── case-arrangement.md     # 用例编排与排序（用户旅程/模块分组）
+│   ├── case-arrangement.md     # 用例组织（分层/输出类型/编排/预算）
 │   ├── failure-semantics.md    # 失败语义、安全属性与进展属性
 │   ├── efficiency-metrics.md   # 效率度量报告模板与工时基准
-│   ├── test-levels.md          # 测试分层策略
 │   ├── test-standards.md       # 测试规范与标准
 │   ├── bug-patterns.md         # 缺陷模式库（与 bug-analyzer 共享）
+│   ├── runtime-error-patterns.md # NPE/500/超时根因与防御性测试点（按需）
+│   ├── requirement-review.md   # 需求评审（10 维度/问题 schema/报告模板）
 │   ├── project-knowledge.md    # 项目知识目录
-│   ├── prompt-strategy.md      # AI 生成 Prompt 策略
+│   ├── prompt-strategy.md      # 语义事实抽取（评审 R2 按需）
 │   ├── anti-patterns.md        # 反模式黑名单（阶段 3/4 自检）
 │   ├── review-mode.md          # 评审模式（10 维度评审）
+│   ├── review-reference.md     # 评审模板与增量评审（R3/按需）
 │   ├── large-scale-review.md   # 规模化评审方案（>100 条时的分批/抽样/聚合）
 │   ├── review-plan.md          # 评审方案（面向产品/UI/前后端的材料与议程）
 │   ├── writing-examples.md     # 用例编写示例（铁律教学示例表）
@@ -132,6 +136,7 @@ test-case-engineer/
 | knowledge/writing-rules.md | 阶段 3 编写用例时必读 |
 | knowledge/readability.md | 阶段 3 拿不准句式、结构或术语时查阅 |
 | knowledge/review-mode.md | 评审模式必读 |
+| knowledge/requirement-review.md | 需求评审模式必读 |
 | knowledge/large-scale-review.md | 用例数 >100 或要求评审方案/排期时查阅 |
 | knowledge/review-plan.md | 面向产品/UI/前端/后端的评审会或覆盖度汇报时查阅 |
 | knowledge/anti-patterns.md | 阶段 3/4 自检时对照 |
