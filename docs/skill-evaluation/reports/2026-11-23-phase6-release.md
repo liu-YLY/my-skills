@@ -89,7 +89,7 @@
 
 - 15 个 stacked 分支已推送；未创建 PR、未打 tag（6-5 待执行）。
 - 原 `trae/agent-WZBLh1` 与 `backup/pre-stacked-release` 保留，可回退。
-- `gh` 未登录且无 GitHub token，PR 创建需用户授权或 GitHub 连接器。
+- GitHub 连接器已授权，但服务要求在新会话中重试；本轮未创建 PR。`gh` 仍未登录。
 - 9 个安装器 smoke test 因沙箱无 PowerShell 无法执行。
 - 模型侧质量未重测；发布前若需该证据，用付费 runner 跑阶段 5 建议的 3-case 对照。
 
