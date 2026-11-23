@@ -4,7 +4,7 @@
 
 profile 使用 YAML 或 JSON，协议版本 `1.0`。必须给出 `schema_version`、`profile_id`、`sources` 和 `entities`。实体包含数量、主键和字段，每个字段指定类型；生成数据时还必须指定生成器，校验已有数据时可省略。来源使用 `default_source_ids` 或对象自己的 `source_ids` 关联。
 
-完整形状见 [配置 Schema](../schemas/profile.schema.json)，最小用法见 [基础字段示例](../examples/basic-fields.yaml)。标识符采用以字母开头的 ASCII 字母、数字、点、下划线或短横线，最多 64 字符。实体名还需在大小写不敏感的文件系统上互不冲突。引擎拒绝未知键、重复键、非有限值、未知引用及大于 1 MiB 的配置；深度最多 64、展开节点最多 20000，不接受 YAML 别名，不获取 sources 中的链接。数学上为整数的配置数值如 `3.0` 规范化为 Python 整数。
+完整形状见 [配置 Schema](../schemas/profile.schema.json)，最小用法见 [基础字段示例](../examples/basic-fields.yaml)。标识符为字母开头的 ASCII 字母/数字/点/下划线/短横线，≤64 字符；实体名在大小写不敏感文件系统上须不冲突。引擎拒绝未知键、重复键、非有限值、未知引用及大于 1 MiB 的配置；深度最多 64、展开节点最多 20000，不接受 YAML 别名，不获取 sources 中的链接。数学上为整数的配置数值如 `3.0` 规范化为 Python 整数。
 
 ## 规则依据
 
