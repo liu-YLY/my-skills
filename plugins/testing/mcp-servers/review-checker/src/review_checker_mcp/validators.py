@@ -48,7 +48,7 @@ UI_ABSOLUTE_PATTERN = re.compile(
 # 可自动化维度：模糊断言（P2）
 VAGUE_ASSERT_PATTERN = re.compile(r"(页面显示正确|布局正常|界面正常|显示正确|展示正确)")
 
-# 可读性（字段规范子项）：阈值与词表对齐 skill 的 knowledge/readability.md
+# 可读性（字段规范子项）：阈值与词表对齐 skill 的 knowledge/readability.md & writing-rules.md
 READABILITY_CLAUSE_LIMIT = 40
 READABILITY_TITLE_PREFIX = re.compile(r"^\s*(?:验证|测试)")
 CLAUSE_SPLIT_PATTERN = re.compile(r"[，,；;。]")
@@ -57,6 +57,20 @@ VERB_VARIANT_PAIRS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("点击", ("点选", "单击")),
     ("输入", ("录入", "键入")),
     ("选择", ("选中",)),
+)
+PREACH_NOISE_PATTERN = re.compile(
+    r"(已回读|另验|另由|手工修改|手工改库|技术协作|无其他阻断|不先触发|其余条件|不代表|不计入"
+    r"|不复用前组|不再重发|不重新登录|(?<!系统)(?<!日志)已记录.{0,8}(?:原|前|快照|数量|余额|状态|标识)"
+    r"|(?:保存|记录|回读).{0,6}快照|(?:不用|不得用|不能用|不以|不能以|不可由|不能由).{0,18}(?:代替|冒充))"
+)
+RESULT_STEP_PREFIX_PATTERN = re.compile(r"^\s*步骤\s*\d+(?:\s*[~～\-—、,，至及和]\s*\d+)*\s*[:：]")
+EXTERNAL_OR_FICTIONAL_FIXTURE_PATTERN = re.compile(
+    r"(隔离\s*stub|受控响应篡改|可控服务端时钟|推进.{0,6}服务端时钟"
+    r"|见数据表\s*[A-Za-z0-9_-]*|见\s*test-data|使用夹具\s*[A-Za-z0-9_-]+)",
+    re.I,
+)
+NON_REPRODUCIBLE_DATA_PATTERN = re.compile(
+    r"(生产环境|线上真实|沿用上一条|在上述状态下继续)"
 )
 
 def check_coverage(case_set: TestCaseSet) -> list[Issue]:
@@ -163,8 +177,9 @@ def check_field_completeness(case: TestCase) -> list[Issue]:
 
 
 def _readability_texts(case: TestCase) -> list[tuple[str, str]]:
-    """可读性检查覆盖的文本：步骤与全部预期结果。"""
-    items = [(f"steps[{index}]", step) for index, step in enumerate(case.steps, 1)]
+    """可读性检查覆盖的文本：前置条件、步骤与全部预期结果。"""
+    items = [(f"preconditions[{index}]", pre) for index, pre in enumerate(case.preconditions, 1)]
+    items.extend((f"steps[{index}]", step) for index, step in enumerate(case.steps, 1))
     items.extend(("expected_results", result) for result in _expectations(case))
     return items
 
@@ -216,6 +231,27 @@ def check_readability(case: TestCase) -> list[Issue]:
                 rule="可读性：同一动作混用多种说法 → P2",
                 evidence=f"同时出现「{preferred}」与「{hit}」",
                 suggestion=f"统一使用「{preferred}」，见 readability.md 动词首选表",
+            ))
+
+    for label, text in _readability_texts(case):
+        m_preach = PREACH_NOISE_PATTERN.search(INLINE_CODE_PATTERN.sub("", text))
+        if m_preach:
+            issues.append(Issue(
+                case_id=case.id, dimension="字段规范", severity=Severity.P2,
+                confirmation="candidate",
+                rule="可读性：含防作弊免责说教或取证动作噪音 → P2",
+                evidence=f"{label} 命中「{m_preach.group(0)}」",
+                suggestion="执行删词脱水测试，删除默认正常废话、快照回读叮嘱与反面免责备注",
+            ))
+
+    for result in _results(case.expected_results):
+        if RESULT_STEP_PREFIX_PATTERN.match(result):
+            issues.append(Issue(
+                case_id=case.id, dimension="字段规范", severity=Severity.P2,
+                confirmation="candidate",
+                rule="可读性：业务结果冠以「步骤 N：」行号索引 → P2",
+                evidence=f"expected_results「{result[:24]}…」",
+                suggestion="去掉行首「步骤 N：」前缀；确需中间断言时移入 checkpoints",
             ))
 
     return issues
@@ -370,7 +406,7 @@ def check_maintainability(case: TestCase) -> list[Issue]:
 
 
 def check_automation(case: TestCase) -> list[Issue]:
-    """可自动化维度（单用例）：模糊断言 → P2；强数据依赖未提供造数 → P2。"""
+    """可自动化维度（单用例）：模糊断言 → P2；虚构夹具或外置暗号表跨文件引用 → P2。"""
     issues: list[Issue] = []
 
     assertion = VAGUE_ASSERT_PATTERN.fullmatch("\n".join(_expectations(case)))
@@ -386,40 +422,43 @@ def check_automation(case: TestCase) -> list[Issue]:
             )
         )
 
-    for precond in case.preconditions:
-        if any(k in precond for k in ("数据库", "生产环境", "特定用户", "第三方")):
-            if not any(k in precond for k in ("mock", "Mock", "替代", "fixture")):
-                issues.append(
-                    Issue(
-                        case_id=case.id,
-                        dimension="可自动化",
-                        severity=Severity.P2,
-                        confirmation="candidate",
-                        rule="强数据依赖未提供造数方式 → P2",
-                        evidence=f"precondition 要求特定数据但无 mock：{precond}",
-                        suggestion="提供 mock 或 fixture 造数方式",
-                    )
+    for field_label, text in (
+        *[("precondition", p) for p in case.preconditions],
+        *[("step", s) for s in case.steps],
+    ):
+        m_fix = EXTERNAL_OR_FICTIONAL_FIXTURE_PATTERN.search(text)
+        if m_fix:
+            issues.append(
+                Issue(
+                    case_id=case.id,
+                    dimension="可自动化",
+                    severity=Severity.P2,
+                    confirmation="candidate",
+                    rule="依赖虚构未交付夹具或外置暗号数据表 → P2",
+                    evidence=f"{field_label} 含「{m_fix.group(0)}」：{text}",
+                    suggestion="在单条用例内直接内联真实可准备的状态与输入值，禁跨文件暗号表或虚构 stub",
                 )
+            )
     return issues
 
 
 def check_test_data_dependency(case: TestCase) -> list[Issue]:
-    """测试数据依赖维度（单用例）：高成本造数无替代 → P2。"""
+    """测试数据依赖维度（单用例）：绑定不可重建生产数据或隐式顺序耦合 → P2。"""
     issues: list[Issue] = []
     for precond in case.preconditions:
-        if any(k in precond for k in ("生产环境", "特定权限", "第三方系统")):
-            if not any(k in precond for k in ("mock", "Mock", "替代", "stub")):
-                issues.append(
-                    Issue(
-                        case_id=case.id,
-                        dimension="测试数据依赖",
-                        severity=Severity.P2,
-                        confirmation="candidate",
-                        rule="高成本造数无替代方案 → P2",
-                        evidence=f"precondition 要求高成本数据：{precond}",
-                        suggestion="提供 mock/stub 替代方案",
-                    )
+        m_dep = NON_REPRODUCIBLE_DATA_PATTERN.search(precond)
+        if m_dep and not any(k in precond for k in ("脱敏", "测试环境", "可重置")):
+            issues.append(
+                Issue(
+                    case_id=case.id,
+                    dimension="测试数据依赖",
+                    severity=Severity.P2,
+                    confirmation="candidate",
+                    rule="绑定不可重置生产数据或隐式前序状态 → P2",
+                    evidence=f"precondition 含不可独立重建依赖「{m_dep.group(0)}」：{precond}",
+                    suggestion="改写为测试环境可随时新建或重置的客观业务状态特征（禁止虚构未交付 stub）",
                 )
+            )
     return issues
 
 

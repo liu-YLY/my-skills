@@ -56,6 +56,10 @@ RULES: dict[str, tuple[str, str, str]] = {
     "CASE_BUDGET": ("用例数预算", "D", "warning"),
     "DUP_TITLE": ("标题同模块重复", "D", "warning"),
     "FILE_FORMAT": ("文件用例格式无法解析", "D", "error"),
+    "PREACH_NOISE": ("防作弊说教与免责噪音", "D", "error"),
+    "FICTIONAL_FIXTURE": ("虚构夹具或外部暗号表", "D", "error"),
+    "RAW_DB_COL": ("前置裸写底层列名", "D", "error"),
+    "RESULT_STEP_PREFIX": ("业务结果行号前缀", "D", "error"),
 }
 
 PRIORITIES = {"P0", "P1", "P2", "P3"}
@@ -88,7 +92,7 @@ REQUIRED_SECTIONS = ["测试步骤", "业务结果"]
 VAGUE_STRONG = [
     "符合预期", "结果正确", "配置正确", "功能正常", "应生效", "与测试目标一致",
     "错误信息", "非法字符", "按测试点要求执行", "执行对应操作", "验证相关功能",
-    "相关信息", "相关功能", "对应操作", "进行配置", "填写相关信息",
+    "相关信息", "相关功能", "对应操作", "进行配置", "填写相关信息", "已准备相关数据",
 ]
 # 需结合语境判断，交由 warning
 VAGUE_WEAK = [
@@ -105,9 +109,35 @@ TERM_WHITELIST = (
 )
 # 「结果正常」「显示正确」这类谓语式模糊
 VAGUE_PATTERN = re.compile(
-    r"(结果|显示|功能|页面|提示|返回|状态|配置|操作|文案|响应)"
+    r"(结果|显示|功能|页面|提示|返回|状态|配置|操作|文案|响应|环境)"
     r"(正常|正确|符合预期|无误)"
 )
+
+# 防作弊免责说教与取证下沉黑名单
+PREACH_WORDS_ANY = (
+    "已回读", "另验", "另由", "手工修改", "手工改库", "技术协作",
+    "无其他阻断", "不先触发", "其余条件", "不代表", "不计入",
+    "不复用前组", "不再重发", "不重新登录",
+)
+PREACH_PRECOND_RE = re.compile(
+    r"(服务可用|网络正常|额度充足|无风控.{0,6}阻断|无其他.{0,6}(?:阻断|限制)"
+    r"|(?<!系统)(?<!日志)已记录|(?:保存|记录|回读|对比).{0,6}快照|快照.{0,4}(?:已|回读|对比|不变))"
+)
+PREACH_ANTI_CHEAT_RE = re.compile(
+    r"(?:不用|不得用|不能用|不以|不能以|不可由|不能由).{0,18}(?:代替|冒充)"
+    r"|(?:保存|记录|回读).{0,6}快照"
+)
+FICTIONAL_FIXTURE_RE = re.compile(
+    r"(隔离\s*stub|受控响应篡改|可控服务端时钟|推进.{0,6}服务端时钟"
+    r"|见数据表\s*[A-Za-z0-9_-]*|见\s*test-data|使用夹具\s*[A-Za-z0-9_-]+)",
+    re.I,
+)
+RAW_DB_COL_RE = re.compile(
+    r"(?<![A-Za-z0-9_/?&])([a-z][a-z0-9_]{1,28})\s*=\s*(?:\d+|true|false|null|'[^']*'|\"[^\"]*\")",
+    re.I,
+)
+RESULT_STEP_PREFIX_RE = re.compile(r"^\s*步骤\s*\d+(?:\s*[~～\-—、,，至及和]\s*\d+)*\s*[:：]")
+HANZI_RE = re.compile(r"[\u4e00-\u9fff]")
 
 
 def _mask_terms(text: str) -> str:
@@ -135,7 +165,7 @@ EXPECT_EVIDENCE = (
 
 HEAD_RE = re.compile(r"^(#{3,4})\s+(TC_[A-Za-z0-9_]+)\s*[:：]\s*(.+?)\s*$")
 META_RE = re.compile(r"^-\s*\*{0,2}([^\*:：]{2,12})\*{0,2}\s*[:：]\s*(.*)$")
-SECTION_RE = re.compile(r"^\*{0,2}(前置条件|测试步骤|业务结果|预期结果|关键检查点|后置条件|标签)\*{0,2}\s*[:：]?\s*$")
+SECTION_RE = re.compile(r"^\*{0,2}(前置条件|测试步骤|业务结果|预期结果|关键检查点|后置条件|标签)\*{0,2}(?:\s*[:：]\s*(.*)|\s*)$")
 ITEM_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.*\S)\s*$")
 ID_RE = re.compile(r"^TC_([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*)_(\d{3})([a-z]?)$")
 TAG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -151,6 +181,7 @@ class Case:
     sections: dict[str, list[tuple[int, str]]] = field(default_factory=dict)
     section_order: list[str] = field(default_factory=list)
     table_rows: list[tuple[int, str]] = field(default_factory=list)
+    is_yaml: bool = False
 
     def sec(self, name: str) -> list[tuple[int, str]]:
         if name == "业务结果" and name not in self.sections:
@@ -219,6 +250,101 @@ def _measure(text: str) -> int:
     return len(re.sub(r"\s+", "", t))
 
 
+def _measure_hanzi(text: str) -> int:
+    """统计剔除代码、URL、引号文案后的纯汉字字数（对齐「单条 ≤60 个汉字」物理红线）。"""
+    return len(HANZI_RE.findall(_strip_noise(text)))
+
+
+def parse_yaml_cases(text: str) -> list[Case]:
+    """解析 .yaml/.yml 用例文件（兼容顶层 list 或 cases/test_cases 字段）。"""
+    try:
+        import yaml  # type: ignore[import-untyped]
+        data = yaml.safe_load(text)
+    except Exception:
+        return []
+    if isinstance(data, dict):
+        items = data.get("cases") or data.get("test_cases") or data.get("items")
+    elif isinstance(data, list):
+        items = data
+    else:
+        return []
+    if not isinstance(items, list):
+        return []
+
+    raw_lines = text.splitlines()
+    id_line_map: dict[str, int] = {}
+    id_pat = re.compile(r"^\s*-?\s*id\s*:\s*['\"]?(TC_[A-Za-z0-9_]+)['\"]?")
+    for idx, rline in enumerate(raw_lines, start=1):
+        m = id_pat.match(rline)
+        if m and m.group(1) not in id_line_map:
+            id_line_map[m.group(1)] = idx
+
+    cases: list[Case] = []
+    for obj in items:
+        if not isinstance(obj, dict):
+            continue
+        cid = str(obj.get("id") or "").strip()
+        if not cid.startswith("TC_"):
+            continue
+        cline = id_line_map.get(cid, 1)
+        c = Case(cid=cid, title=str(obj.get("title") or "").strip(), line=cline, is_yaml=True)
+        for yaml_key, meta_key in (
+            ("priority", "优先级"), ("type", "类型"),
+            ("source", "来源"), ("review_status", "人工审核状态"),
+        ):
+            val = obj.get(yaml_key)
+            if val is not None and str(val).strip():
+                c.meta[meta_key] = (str(val).strip(), cline)
+        desc = str(obj.get("description") or "").strip()
+        if desc:
+            for dline in desc.splitlines():
+                dl = dline.strip()
+                if dl.startswith(("追溯:", "追溯：", "需求追溯:", "需求追溯：")):
+                    c.meta["需求追溯"] = (re.sub(r"^(?:需求)?追溯[:：]\s*", "", dl), cline)
+                elif dl:
+                    c.meta.setdefault("业务背景", (dl, cline))
+        tags = obj.get("tags")
+        if isinstance(tags, list) and tags:
+            c.meta["标签"] = (", ".join(str(x).strip() for x in tags if str(x).strip()), cline)
+        elif isinstance(tags, str) and tags.strip():
+            c.meta["标签"] = (tags.strip(), cline)
+
+        for yaml_sec, sec_name in (
+            ("preconditions", "前置条件"),
+            ("steps", "测试步骤"),
+            ("expected_results", "业务结果"),
+            ("postconditions", "后置条件"),
+        ):
+            raw_sec = obj.get(yaml_sec)
+            if isinstance(raw_sec, list):
+                entries: list[tuple[int, str]] = []
+                for entry in raw_sec:
+                    for sub in str(entry).splitlines():
+                        if sub.strip():
+                            entries.append((cline, sub.strip()))
+                if entries:
+                    c.sections[sec_name] = entries
+            elif isinstance(raw_sec, str) and raw_sec.strip():
+                c.sections[sec_name] = [(cline, s.strip()) for s in raw_sec.splitlines() if s.strip()]
+
+        cps = obj.get("checkpoints")
+        if isinstance(cps, list):
+            cp_entries: list[tuple[int, str]] = []
+            for cp in cps:
+                if isinstance(cp, dict) and "after_step" in cp:
+                    res = cp.get("expected_results") or []
+                    res_list = res if isinstance(res, list) else [res]
+                    for r in res_list:
+                        if str(r).strip():
+                            cp_entries.append((cline, f"步骤 {cp['after_step']} 后：{str(r).strip()}"))
+                elif isinstance(cp, str) and cp.strip():
+                    cp_entries.append((cline, cp.strip()))
+            if cp_entries:
+                c.sections["关键检查点"] = cp_entries
+        cases.append(c)
+    return cases
+
+
 def parse_cases(text: str) -> list[Case]:
     lines = text.splitlines()
     cases: list[Case] = []
@@ -249,12 +375,19 @@ def parse_cases(text: str) -> list[Case]:
         sec = SECTION_RE.match(raw.strip())
         if sec:
             name = sec.group(1)
+            inline_val = (sec.group(2) or "").strip()
+            if name == "标签" and inline_val:
+                cur.meta["标签"] = (inline_val, idx)
+                section = None
+                continue
             if name == "预期结果":
                 name = "业务结果"
             section = name
             cur.sections.setdefault(name, [])
             if name not in cur.section_order:
                 cur.section_order.append(name)
+            if inline_val:
+                cur.sections[name].append((idx, inline_val))
             continue
 
         if raw.strip().startswith("## ") or raw.strip().startswith("# "):
@@ -281,12 +414,17 @@ def parse_cases(text: str) -> list[Case]:
             if key in ("前置条件", "测试步骤", "业务结果", "预期结果", "关键检查点", "后置条件"):
                 section = "业务结果" if key == "预期结果" else key
                 cur.sections.setdefault(section, [])
+                if section not in cur.section_order:
+                    cur.section_order.append(section)
                 if value:
                     cur.sections[section].append((idx, value))
-            else:
+                continue
+            if section is None or key in (
+                "优先级", "类型", "需求追溯", "来源", "追溯引用", "人工审核状态", "业务背景", "标签",
+            ):
                 cur.meta[key] = (value, idx)
                 section = None
-            continue
+                continue
 
         if section:
             m = ITEM_RE.match(raw)
@@ -321,7 +459,8 @@ def check_case(c: Case) -> list[Issue]:
     if pri[0] and pri[0] not in PRIORITIES:
         add("ENUM_PRIORITY", pri[1], f"优先级 `{pri[0]}` 不在 P0-P3", pri[0])
     typ = c.meta.get("类型", ("", c.line))
-    if typ[0] and typ[0] not in TYPES:
+    allowed_types = TYPES | {"business"} if c.is_yaml else TYPES
+    if typ[0] and typ[0] not in allowed_types:
         add("ENUM_TYPE", typ[1], f"类型 `{typ[0]}` 不在 8 类枚举内", typ[0])
     src = c.meta.get("来源", ("", c.line))
     if src[0] and src[0] not in SOURCES:
@@ -358,6 +497,38 @@ def check_case(c: Case) -> list[Issue]:
         if not 1 <= len(tags) <= 5:
             add("TAG_COUNT", tag[1], f"Tag 数量 {len(tags)}，应为 1-5", tag[0])
 
+    # 前置条件
+    preconds = c.sec("前置条件")
+    is_biz_case = typ[0] in ("", "functional", "ui", "usability", "accessibility", "business")
+    for line, text in preconds:
+        plain = _strip_noise(text)
+        for w in VAGUE_STRONG:
+            if w in plain:
+                add("VAGUE_WORD", line, f"前置条件含模糊表达「{w}」", text)
+                break
+        for w in VAGUE_WEAK:
+            if w in plain:
+                add("VAGUE_WORD", line, f"前置条件含待具体化表达「{w}」", text)
+                break
+        if VAGUE_PATTERN.search(plain):
+            add("VAGUE_WORD", line, "前置条件用评价词代替具体业务状态", text)
+        for pw in PREACH_WORDS_ANY:
+            if pw in plain:
+                add("PREACH_NOISE", line, f"前置条件含防作弊说教/取证词「{pw}」", text)
+                break
+        else:
+            m_pre = PREACH_PRECOND_RE.search(plain)
+            if m_pre and not ("快照" in m_pre.group(0) and "快照" in c.title):
+                add("PREACH_NOISE", line, f"前置条件含默认废话或取证动作「{m_pre.group(0)}」", text)
+        m_fix = FICTIONAL_FIXTURE_RE.search(text)
+        if m_fix:
+            add("FICTIONAL_FIXTURE", line, f"前置条件含虚构夹具或外部暗号表「{m_fix.group(0)}」", text)
+        if is_biz_case:
+            no_url_quote = QUOTED_RE.sub("", URL_RE.sub("", text))
+            m_col = RAW_DB_COL_RE.search(no_url_quote)
+            if m_col:
+                add("RAW_DB_COL", line, f"业务用例前置裸写底层列名赋值 `{m_col.group(0)}`", text)
+
     # 步骤
     steps = c.sec("测试步骤")
     for line, text in steps:
@@ -374,6 +545,17 @@ def check_case(c: Case) -> list[Issue]:
                 break
         if VAGUE_PATTERN.search(plain):
             add("VAGUE_WORD", line, "步骤用「正常/正确」代替可观察结果", text)
+        for pw in PREACH_WORDS_ANY:
+            if pw in plain:
+                add("PREACH_NOISE", line, f"步骤含防作弊说教/协作词「{pw}」", text)
+                break
+        else:
+            m_ac = PREACH_ANTI_CHEAT_RE.search(plain)
+            if m_ac and "快照" not in c.title:
+                add("PREACH_NOISE", line, f"步骤含取证/免责噪音「{m_ac.group(0)}」", text)
+        m_fix = FICTIONAL_FIXTURE_RE.search(text)
+        if m_fix:
+            add("FICTIONAL_FIXTURE", line, f"步骤含虚构夹具或外部暗号表「{m_fix.group(0)}」", text)
         if not (plain.startswith(tuple(STEP_LEAD_OK)) or any(v in plain for v in STEP_VERBS)):
             add("STEP_VERB", line, "步骤缺少明确动作动词", text)
         for w in ("按测试点要求执行", "执行对应操作", "验证相关功能", "填写相关信息", "进行配置"):
@@ -384,6 +566,8 @@ def check_case(c: Case) -> list[Issue]:
     # 业务结果
     results = c.sec("业务结果")
     for line, text in results:
+        if RESULT_STEP_PREFIX_RE.match(text):
+            add("RESULT_STEP_PREFIX", line, "业务结果严禁冠以「步骤 N：」行号索引（中间断言请放入关键检查点）", text)
         plain = _strip_noise(text)
         for w in VAGUE_STRONG:
             if w in plain:
@@ -395,16 +579,30 @@ def check_case(c: Case) -> list[Issue]:
                 break
         if VAGUE_PATTERN.search(plain):
             add("VAGUE_WORD", line, "业务结果用评价词代替可观察事实", text)
+        for pw in PREACH_WORDS_ANY:
+            if pw in plain:
+                add("PREACH_NOISE", line, f"业务结果含防作弊/自辩说教词「{pw}」", text)
+                break
+        else:
+            m_ac = PREACH_ANTI_CHEAT_RE.search(plain)
+            if m_ac and "快照" not in c.title:
+                add("PREACH_NOISE", line, f"业务结果含反面防作弊说教「{m_ac.group(0)}」", text)
 
-    # 句长
-    for name in ("测试步骤", "业务结果"):
+    # 句长与分号物理红线（除「数据组：」枚举外，单条严格 ≤60 个汉字、最多 1 个分号）
+    for name in ("前置条件", "测试步骤", "业务结果"):
         for line, text in c.sec(name):
+            if text.lstrip().startswith(("数据组：", "数据组:")):
+                continue
             plain = _strip_noise(text)
-            if _measure(plain) > 100:
-                add("SENTENCE_LEN", line, f"单句 {_measure(plain)} 字，超过 100 字", text)
-            for clause in re.split(r"[，,、]", plain):
-                if _measure(clause) > 40:
-                    add("SENTENCE_LEN", line, f"逗号构件 {_measure(clause)} 字，超过 40 字必须改写", text)
+            hanzi_n = _measure_hanzi(text)
+            if hanzi_n > 60:
+                add("SENTENCE_LEN", line, f"单条 {hanzi_n} 个汉字，超过 60 字物理上限", text)
+            semi_n = plain.count("；") + plain.count(";")
+            if semi_n >= 2:
+                add("SENTENCE_LEN", line, f"单条含 {semi_n} 个分号，超过最多 1 个分号上限", text)
+            for clause in re.split(r"[，,、；;。]", plain):
+                if _measure_hanzi(clause) > 40:
+                    add("SENTENCE_LEN", line, f"分句构件 {_measure_hanzi(clause)} 个汉字，超过 40 字必须改写", text)
                     break
 
     # 检查点格式
@@ -474,8 +672,8 @@ def check_suite(cases: list[Case], text: str, budget: int | None) -> list[Issue]
         else:
             titles[key] = c.cid
 
-    # 编排策略声明
-    if cases and not re.search(r"(用户旅程|模块分组|编排策略|策略一|策略二)", text):
+    # 编排策略声明（仅针对 Markdown 用例集；分模块 YAML 文件免检文首声明）
+    if cases and not all(c.is_yaml for c in cases) and not re.search(r"(用户旅程|模块分组|编排策略|策略一|策略二)", text):
         out.append(Issue("ARRANGE_DECLARE", 1, "-", "用例集未声明编排策略（用户旅程 / 模块分组）"))
 
     # 非功能用例置末尾
@@ -505,7 +703,7 @@ def collect_targets(target: Path) -> list[Path]:
     if target.is_dir():
         return sorted(
             p for p in target.rglob("*")
-            if p.suffix.lower() in (".md", ".txt", ".markdown") and p.is_file()
+            if p.suffix.lower() in (".md", ".txt", ".markdown", ".yaml", ".yml") and p.is_file()
         )
     raise SystemExit(f"路径不存在：{target}")
 
@@ -533,23 +731,36 @@ def main(argv: list[str] | None = None) -> int:
             text = f.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             text = f.read_text(encoding="utf-8", errors="ignore")
-        cases = parse_cases(text)
+        is_yaml_file = f.suffix.lower() in (".yaml", ".yml")
+        cases = parse_yaml_cases(text) if is_yaml_file else parse_cases(text)
         issues: list[Issue] = []
         if not cases:
-            is_review = len(REVIEW_HINT_RE.findall(text)) >= 5
-            if args.mode == "review" or (args.mode == "auto" and is_review):
-                continue  # 评审报告的正文是评审结论，不适用用例块格式
-            tc_count = len(TC_ID_RE.findall(text))
-            if tc_count >= 3 and not SKIP_NAME_RE.search(f.name):
-                it = Issue(
-                    "FILE_FORMAT", 1, f.name,
-                    f"含 {tc_count} 处用例标识但无「### TC_xxx: 标题」块，整份文件未被任何规则校验；"
-                    f"改用 `### TC_模块_功能_序号: 标题` 承载每条用例",
-                )
-                it.file = str(f)
-                issues.append(it)
+            if is_yaml_file:
+                tc_count = len(TC_ID_RE.findall(text))
+                if tc_count >= 3 and not SKIP_NAME_RE.search(f.name):
+                    it = Issue(
+                        "FILE_FORMAT", 1, f.name,
+                        f"YAML 文件含 {tc_count} 处 TC_ 标识但无法解析为用例列表，请检查缩进与顶层结构",
+                    )
+                    it.file = str(f)
+                    issues.append(it)
+                else:
+                    continue
             else:
-                continue
+                is_review = len(REVIEW_HINT_RE.findall(text)) >= 5
+                if args.mode == "review" or (args.mode == "auto" and is_review):
+                    continue  # 评审报告的正文是评审结论，不适用用例块格式
+                tc_count = len(TC_ID_RE.findall(text))
+                if tc_count >= 3 and not SKIP_NAME_RE.search(f.name):
+                    it = Issue(
+                        "FILE_FORMAT", 1, f.name,
+                        f"含 {tc_count} 处用例标识但无「### TC_xxx: 标题」块，整份文件未被任何规则校验；"
+                        f"改用 `### TC_模块_功能_序号: 标题` 承载每条用例",
+                    )
+                    it.file = str(f)
+                    issues.append(it)
+                else:
+                    continue
         else:
             for c in cases:
                 issues.extend(check_case(c))
