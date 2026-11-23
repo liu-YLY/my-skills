@@ -35,3 +35,8 @@
 - 会员续订等允许周期循环的对象按需求排除进展要求；不能把所有环判Bug。
 - 闭合状态集合无法到达允许终态只能形成结构检查结论；存在退出边不保证守卫可满足、环境会调度或时限内结束。
 - 运行进展用例仅在需求规定触发事件/终态/时间依据时可执行；缺时限则不造SLA，标明结构结论与运行验证缺口。
+
+## 协同链追溯图与四层覆盖基线（可选契约）
+
+- 上游传入 `traceability` 图对象时原样消费：`sources`（`id/location/version/availability`：available/unreachable/missing/unknown）、`artifacts`（`id/kind/version`）、`links`（`upstream/downstream/confirmation/source/source_refs`：confirmed/candidate）；有依据且来源可达才标 `confirmed`，缺依据标 `candidate`；未读到来源不补造关系；来源变化只复核 `confirmed` 结论。
+- 覆盖报告区分需求条目、模型转换、场景设计与实际执行，沿用 `requirement_baseline` / `design_baseline` / `case_baseline` 语义，不改旧 transition/forbidden 分母；无需求基线不算需求覆盖，无执行记录不算通过率，只有设计证据时写「已设计，未执行」。

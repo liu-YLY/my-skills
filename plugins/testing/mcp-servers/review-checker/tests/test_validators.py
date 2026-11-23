@@ -285,31 +285,31 @@ class TestAutomation:
         issues = check_automation(case)
         assert any(i.severity.value == "P2" and "模糊断言" in i.rule for i in issues)
 
-    def test_strong_data_dependency_without_mock_triggers_p2(self):
+    def test_normal_user_or_db_state_does_not_force_mock(self):
         case = _make_case(
-            preconditions=["数据库存在特定用户数据"],
+            preconditions=["用户 A 账户余额为 $200，名下存在待支付订单 ORD-01"],
         )
         issues = check_automation(case)
-        assert any(i.severity.value == "P2" and "强数据依赖" in i.rule for i in issues)
+        assert issues == []
 
-    def test_strong_data_dependency_with_mock_no_issue(self):
+    def test_fictional_stub_or_external_data_table_triggers_p2(self):
         case = _make_case(
-            preconditions=["数据库存在特定用户数据（通过 mock 造数）"],
+            preconditions=["隔离 stub 返回 503，见数据表 S1"],
         )
         issues = check_automation(case)
-        assert not any("强数据依赖" in i.rule for i in issues)
+        assert any(i.severity.value == "P2" and "虚构未交付夹具或外置暗号" in i.rule for i in issues)
 
 
 class TestTestDataDependency:
     """测试数据依赖维度。"""
 
-    def test_high_cost_data_without_alternative_triggers_p2(self):
+    def test_production_data_or_implicit_coupling_triggers_p2(self):
         case = _make_case(preconditions=["需要生产环境数据"])
         issues = check_test_data_dependency(case)
-        assert any(i.severity.value == "P2" and "高成本造数" in i.rule for i in issues)
+        assert any(i.severity.value == "P2" and "不可重置生产数据" in i.rule for i in issues)
 
-    def test_high_cost_data_with_mock_no_issue(self):
-        case = _make_case(preconditions=["需要生产环境数据（使用 stub 替代）"])
+    def test_reproducible_test_env_state_no_issue(self):
+        case = _make_case(preconditions=["测试环境已创建具备审批权限的管理员账号 A"])
         issues = check_test_data_dependency(case)
         assert len(issues) == 0
 
@@ -964,3 +964,15 @@ class TestReadability:
         assert all(issue.severity.value == "P2" for issue in issues)
         assert all(issue.confirmation == "candidate" for issue in issues)
         assert all(issue.dimension == "字段规范" for issue in issues)
+
+    def test_preach_noise_and_result_step_prefix_reported(self):
+        from review_checker_mcp.validators import check_readability
+
+        case = _make_case(
+            preconditions=["用户 A 未冻结，无其他阻断；已记录支付前快照"],
+            expected_results="步骤 1：拒绝支付，不用其他原因代替本例幂等；页面提示另验",
+        )
+        issues = check_readability(case)
+        rules = [i.rule for i in issues]
+        assert any("防作弊免责说教" in r for r in rules)
+        assert any("行号索引" in r for r in rules)
