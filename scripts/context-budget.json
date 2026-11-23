@@ -1,0 +1,217 @@
+{
+  "version": 1,
+  "unit": "characters",
+  "note": "budget = 当前基线 + 约 2% 缓冲，用于阶段 1 不阻断；target = 阶段 2/5 瘦身后预算；--target 模式会在瘦身完成前失败，属预期。",
+  "skills": {
+    "testing-bundle": {
+      "entry": {
+        "file": "SKILL.md",
+        "budget": 7600,
+        "target": 5500
+      },
+      "modes": {
+        "route": {
+          "description": "混合/模糊意图路由",
+          "files": [
+            "SKILL.md",
+            "knowledge/mixed-intent-chains.md",
+            "knowledge/routing-fallbacks.md"
+          ],
+          "budget": 17500,
+          "target": 13750
+        }
+      }
+    },
+    "test-case-engineer": {
+      "entry": {
+        "file": "SKILL.md",
+        "budget": 7500,
+        "target": 5500
+      },
+      "modes": {
+        "default": {
+          "description": "默认/快速/探索式生成路径",
+          "files": [
+            "SKILL.md",
+            "test-case-engineer-core.md",
+            "knowledge/scope-discipline.md",
+            "knowledge/bug-patterns.md",
+            "knowledge/writing-rules.md",
+            "knowledge/test-standards.md",
+            "knowledge/anti-patterns.md",
+            "knowledge/case-arrangement.md",
+            "knowledge/project-knowledge.md"
+          ],
+          "budget": 65300,
+          "target": 44800
+        },
+        "review": {
+          "description": "已有用例评审路径（含 J 类 rubric 上界）",
+          "files": [
+            "SKILL.md",
+            "knowledge/review-mode.md",
+            "knowledge/test-standards.md",
+            "knowledge/readability.md",
+            "knowledge/review-rubric.md"
+          ],
+          "budget": 34200,
+          "target": 25200
+        },
+        "requirement-review": {
+          "description": "需求评审模式（PRD/需求文档）",
+          "files": [
+            "SKILL.md",
+            "knowledge/requirement-review.md",
+            "knowledge/project-knowledge.md"
+          ],
+          "budget": 9700,
+          "target": 9600
+        }
+      }
+    },
+    "state-machine-test-engineer": {
+      "entry": {
+        "file": "SKILL.md",
+        "budget": 7200,
+        "target": 5500
+      },
+      "modes": {
+        "default": {
+          "description": "状态机建模与场景穷举",
+          "files": [
+            "SKILL.md",
+            "state-machine-core.md",
+            "knowledge/state-modeling.md",
+            "knowledge/completeness-check.md",
+            "knowledge/scenario-types.md",
+            "knowledge/anti-patterns.md"
+          ],
+          "budget": 45200,
+          "target": 33300
+        }
+      }
+    },
+    "change-impact-analyzer": {
+      "entry": {
+        "file": "SKILL.md",
+        "budget": 6300,
+        "target": 5500
+      },
+      "modes": {
+        "default": {
+          "description": "变更影响分析与报告",
+          "files": [
+            "SKILL.md",
+            "knowledge/diff-modes.md",
+            "knowledge/anti-patterns.md",
+            "knowledge/cross-impact-analysis.md",
+            "knowledge/report-template.md"
+          ],
+          "budget": 39600,
+          "target": 31000
+        }
+      }
+    },
+    "test-strategy-engineer": {
+      "entry": {
+        "file": "SKILL.md",
+        "budget": 6300,
+        "target": 5500
+      },
+      "modes": {
+        "default": {
+          "description": "项目级测试策略",
+          "files": [
+            "SKILL.md",
+            "knowledge/risk-matrix-framework.md",
+            "knowledge/test-pyramid.md",
+            "knowledge/entry-exit-criteria.md",
+            "knowledge/strategy-templates.md"
+          ],
+          "budget": 18100,
+          "target": 15000
+        }
+      }
+    },
+    "performance-test-engineer": {
+      "entry": {
+        "file": "SKILL.md",
+        "budget": 4300,
+        "target": 5500
+      },
+      "modes": {
+        "default": {
+          "description": "性能方案与瓶颈诊断",
+          "files": [
+            "SKILL.md",
+            "knowledge/load-models.md",
+            "knowledge/metrics-framework.md",
+            "knowledge/use-method.md",
+            "knowledge/bottleneck-patterns.md"
+          ],
+          "budget": 19100,
+          "target": 15500
+        }
+      }
+    },
+    "bug-analyzer": {
+      "entry": {
+        "file": "SKILL.md",
+        "budget": 7100,
+        "target": 5500
+      },
+      "modes": {
+        "default": {
+          "description": "Bug 根因分析与防御性测试点",
+          "files": [
+            "SKILL.md",
+            "knowledge/root-cause-frameworks.md",
+            "knowledge/bug-patterns-index.md",
+            "knowledge/report-template.md",
+            "knowledge/defensive-test-points.md"
+          ],
+          "budget": 21500,
+          "target": 16000
+        }
+      }
+    },
+    "frontend-test-preparation": {
+      "entry": {
+        "file": "SKILL.md",
+        "budget": 4800,
+        "target": 5500
+      },
+      "modes": {
+        "default": {
+          "description": "前端导航索引与单需求测试准备",
+          "files": [
+            "SKILL.md",
+            "references/handoff-template.md"
+          ],
+          "budget": 6500,
+          "target": 6000
+        }
+      }
+    },
+    "test-data-generator": {
+      "entry": {
+        "file": "SKILL.md",
+        "budget": 2700,
+        "target": 5500
+      },
+      "modes": {
+        "default": {
+          "description": "离线测试数据生成与校验",
+          "files": [
+            "SKILL.md",
+            "knowledge/input-contract.md",
+            "knowledge/generation-validation.md",
+            "knowledge/extensions.md"
+          ],
+          "budget": 10200,
+          "target": 9000
+        }
+      }
+    }
+  }
+}
