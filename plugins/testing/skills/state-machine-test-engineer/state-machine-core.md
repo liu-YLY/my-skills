@@ -133,11 +133,7 @@ state_machine:
 - 列出所有"待确认"项
 - 仅缺少影响结论的关键信息、范围变化或未授权写操作时询问
 
-**CHECKPOINT 规则**：
-- 用户修改 → 重新执行阶段 2
-- 用户补充 → 更新模型后重新展示
-- 无阻塞信息 → 进入阶段 3
-- 用户终止 → 输出当前状态机模型，不进入后续阶段
+**CHECKPOINT 规则**：用户修改/补充 → 更新模型后重新展示；无阻塞信息 → 阶段 3；用户终止 → 输出当前模型，不进入后续阶段。
 
 ---
 
@@ -147,21 +143,9 @@ state_machine:
 
 对状态机模型做 9 项结构化检查，标记缺口/矛盾/警告，**不修复**（修复由用户决定）。
 
-### 3.2 9 项检查清单
+### 3.2 检查清单
 
-详见 `knowledge/completeness-check.md`。简要列表：
-
-| # | 检查项 | pass 条件 | fail 处理 |
-|---|---|---|---|
-| 1 | 每个状态有明确含义 | `meaning` 字段非空 | 标 gap，要求补充 |
-| 2 | 每个状态有进入条件（除初始态） | 至少 1 条 transition 的 `to` 指向它 | 标 unreachable warning |
-| 3 | 每个非终态有退出路径 | 至少 1 条 transition 的 `from` 是它 | 标 deadlock warning |
-| 4 | 终态真的不可变化 | 终态不出现在任何 transition 的 `from` | 标 contradiction |
-| 5 | 禁止转换无遗漏 | 每个状态都明确"禁止进入哪些" | 标 gap，要求补充 |
-| 6 | 状态变化有副作用定义 | `side_effects` 字段非空 | 标 warning |
-| 7 | 依据类型已标注 | 所有 transition/forbidden 都有 `evidence_type` | 标 contradiction（Schema 违反） |
-| 8 | 无悬挂状态 | 所有状态都可从初始态到达 | 标 warning |
-| 9 | 无死锁状态 | 非终态都有出边 | 标 warning |
+完整判定见 [knowledge/completeness-check.md](knowledge/completeness-check.md)。先做 C0 结构检查，再做 9 项业务检查；每项输出 `pass/warn/fail + detail`，结构校验不能代替业务完整性。
 
 ### 3.3 输出格式
 
@@ -205,20 +189,11 @@ completeness_report:
 
 ### 4.2 10 类场景生成规则
 
-详见 `knowledge/scenario-types.md`。简要列表：
+完整生成规则与示例见 [knowledge/scenario-types.md](knowledge/scenario-types.md)。先逐类判定 `applicable / not_applicable / unknown`，再对适用转换生成场景：
 
-| risk_type | 生成规则 |
-|---|---|
-| legal_transition | 对每条 transition 生成 1 个合法场景 |
-| illegal_transition | 对每条 forbidden 生成 1 个非法场景 |
-| guard_violation | 逐个违反一个 guard，其余条件保持；其他分支存在时目标待确认 |
-| idempotency | 对涉及外部回调的 transition 生成重复触发场景 |
-| concurrency | 对同源状态可竞争事件生成候选；并发能力与联合条件未知时待确认 |
-| message_reorder | 对涉及异步消息的 transition 生成乱序场景 |
-| timeout_retry | 对涉及等待/重试的 transition 生成超时场景 |
-| data_consistency | 对涉及副作用（关联对象更新）的 transition 生成一致性场景 |
-| access_control | 对涉及权限的 transition 生成越权场景 |
-| failure_recovery | 按失败阶段与适用性生成；未知提交边界只输出待确认候选 |
+- 合法/非法：每条 transition / forbidden 各 1 个
+- 守卫/幂等/并发/乱序/超时/一致性/越权/失败恢复：按转换特征命中才生成
+- 并发、消息、提交边界等未知条件 → `待确认`，不补造
 
 ### 4.3 输出格式
 
@@ -255,44 +230,13 @@ MCP 可用性探测、增强模式交叉复核、独立模式与降级模式的�
 
 ## 转交 test-case-engineer（链 5 协同）
 
-当用户原始请求包含"建模 + 用例"混合意图时，阶段 5 完成后由 testing-bundle 转交：
-
-```
-state-machine-test-engineer 输出：
-  - 状态机模型
-  - 场景清单（场景级）
-
-↓ testing-bundle 链 5 转交 ↓
-
-test-case-engineer 接收：
-  - upstream_artifacts: 状态机模型 + 场景清单
-  - downstream_task: 基于场景清单生成完整测试用例（每场景落实为可执行步骤）
-
-test-case-engineer 输出：
-  - 完整测试用例（用例步骤级）
-```
-
-转交时按 testing-bundle 定义的标准上下文 schema 传递，包含 `original_request` / `upstream_artifacts` / `completed_steps` / `downstream_task` 四个字段。
-
----
-
-## 失败模式与 Fallback 速查
-
-| 触发条件 | 一线修复 | 仍失败兜底 |
-|---|---|---|
-| 需求文本无状态信号 | 提示并询问是否继续/转 test-case-engineer | 标注「非状态型需求」，建议转 test-case-engineer |
-| 状态机建模出现矛盾 | 标"待确认"暴露给用户，不强行消解 | 列出矛盾点，要求用户裁定（CHECKPOINT） |
-| 完整性检查 fail | 修正有依据的结构问题 | 未决部分暂停依赖场景，展示缺口报告 |
-| MCP 探测失败 | 静默降级到独立模式 | 输出首行标 `⚠ 独立模式` |
-| MCP 调用超时（>10s） | 单次重试，仍失败则降级 | 输出首行标 `⚠ 降级模式（超时）` |
-| MCP 返回结果与 skill 严重冲突 | 不自动取舍，标"待确认"交给用户 | 列出差异，要求用户裁定 |
-| 转交 test-case-engineer 失败 | 保留场景清单独立输出，提示用户手动衔接 | 标注「协同中断」，仅输出状态机模型 + 场景清单 |
+混合意图「建模 + 用例」由 testing-bundle 链 5 转交：上游交付状态机模型 + 场景清单；下游按场景生成步骤级用例。按标准上下文 schema 传递 `original_request` / `upstream_artifacts` / `completed_steps` / `downstream_task`；转交失败时保留场景清单独立输出并标注「协同中断」。
 
 ---
 
 **相关文档**：
 - [SKILL.md](SKILL.md) - 入口索引
-- [knowledge/state-modeling.md](knowledge/state-modeling.md) - 状态机建模方法论
+- [knowledge/state-modeling.md](knowledge/state-modeling.md) - 建模方法论
 - [knowledge/scenario-types.md](knowledge/scenario-types.md) - 10 类场景穷举规则
 - [knowledge/completeness-check.md](knowledge/completeness-check.md) - 9 项检查清单
 - [knowledge/anti-patterns.md](knowledge/anti-patterns.md) - 反模式黑名单

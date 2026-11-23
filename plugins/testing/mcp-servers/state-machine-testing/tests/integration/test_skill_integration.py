@@ -100,7 +100,7 @@ def test_all_scenario_knowledge_examples_validate_and_match_references():
     from state_machine_testing_mcp.schemas import Scenario, StateMachine, ScenarioList
     from state_machine_testing_mcp.coverage import check_coverage
     knowledge = (Path(__file__).resolve().parents[4] /
-                 "skills/state-machine-test-engineer/knowledge/scenario-types.md").read_text()
+                 "skills/state-machine-test-engineer/knowledge/scenario-examples.md").read_text()
     blocks = [yaml.safe_load(block) for block in re.findall(r"```yaml\n(.*?)```", knowledge, re.S)]
     sm = StateMachine.model_validate(next(b["state_machine"] for b in blocks if isinstance(b, dict)))
     scenarios = [Scenario.model_validate(item) for block in blocks if isinstance(block, list) for item in block]
@@ -147,7 +147,8 @@ def test_unknown_permission_examples_do_not_assert_rejection_targets():
     import yaml
     from state_machine_testing_mcp.schemas import Scenario
     knowledge = Path(__file__).resolve().parents[4] / "skills/state-machine-test-engineer/knowledge"
-    paths = [knowledge / "scenario-types.md", *sorted((knowledge / "industry-templates").glob("*.md"))]
+    paths = [knowledge / "scenario-types.md", knowledge / "scenario-examples.md",
+             *sorted((knowledge / "industry-templates").glob("*.md"))]
     for path in paths:
         for block in re.findall(r"```yaml\n(.*?)```", path.read_text(), re.S):
             data = yaml.safe_load(block)
