@@ -23,7 +23,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | Skill | 版本 | 功能 | MCP Server |
 |---|---|---|---|
 | **testing-bundle** | v3.7.0 | bundle 入口，8 个专业子 skill 路由 + 10 条混合意图链 | - |
-| test-strategy-engineer | v1.3.1 | 项目级测试策略（风险矩阵/分层/准入准出） | - |
+| test-strategy-engineer | v1.3.2 | 项目级测试策略（风险矩阵/分层/准入准出） | - |
 | test-case-engineer | v9.16.0 | 需求评审 + 功能用例生成 + 脚本校验闸门 + 10 维度用例评审 + 规模化/干系人评审方案 | review-checker v0.4.1（可选） |
 | performance-test-engineer | v1.2.4 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
 | bug-analyzer | v1.2.4 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
