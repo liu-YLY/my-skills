@@ -31,6 +31,7 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | change-impact-analyzer | v1.5.2 | 从实际业务解释改动影响，生成测试内容与方式，需求和用例可选 | - |
 | test-data-generator | v1.1.1 | 可重复离线造数、边界配方、关联与场景验收、JSON/JSONL/CSV 独立校验 | - |
 | [frontend-test-preparation](plugins/testing/skills/frontend-test-preparation/SKILL.md) | v1.0.1 | 前端导航索引、增量维护与单需求测试准备（链 9 协同，亦可单独调用） | - |
+| [test-review-board](plugins/testing/skills/test-review-board/SKILL.md) | — | 将已有测试材料整理为离线 HTML 评审看板，支持四种业务视图和用例双向定位（独立调用） | - |
 
 > 上表中 **testing-bundle** 为 bundle 入口，按用户意图把请求路由到 8 个专业子 skill；**frontend-test-preparation** 仅在明确要求读前端代码、定位入口或维护页面索引时接入，普通「测试前端功能」仍由 test-case-engineer 处理。
 
@@ -112,11 +113,12 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | state-machine-test-engineer | 145 | 16 |
 | test-case-engineer | 62 | 23 |
 | test-data-generator | 54 | 5 |
+| test-review-board | 86 | 6 |
 | test-strategy-engineer | 104 | 5 |
 | testing-bundle | 122 | 3 |
 | wechat-formatter | 169 | 29 |
 
-2 个插件共包含 10 个 Skills，测试插件包含 9 个 Skills 和 2 个可选 MCP 服务。
+2 个插件共包含 11 个 Skills，测试插件包含 10 个 Skills 和 2 个可选 MCP 服务。
 模式需要的参考文件按需读取；模型耗时与 token 应以实际运行记录为准。
 
 ## 快速开始

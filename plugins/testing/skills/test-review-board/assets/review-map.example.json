@@ -1,0 +1,29 @@
+{
+  "title": "结账页兑券的关联片段",
+  "scope": "选取普通券的余额边界和应用失败场景，用于说明关联粒度。完整业务图另含配置、代兑、订单、到期及撤销。",
+  "stages": [
+    {"id": "redeem", "title": "顾客主动兑换"}
+  ],
+  "nodes": [
+    {"id": "submit", "stage_id": "redeem", "lane": "顾客", "title": "顾客主动兑换"},
+    {"id": "check", "stage_id": "redeem", "lane": "奖励系统", "title": "校验兑换条件"},
+    {"id": "decline", "stage_id": "redeem", "lane": "顾客", "title": "条件不满足"},
+    {"id": "apply", "stage_id": "redeem", "lane": "Shopify", "title": "购物车应用优惠"},
+    {"id": "retain", "stage_id": "redeem", "lane": "奖励系统", "title": "应用失败，保留原券"}
+  ],
+  "edges": [
+    {"from": "submit", "to": "check", "label": "提交兑换", "source": "原图"},
+    {"from": "check", "to": "decline", "label": "余额不足", "source": "原图"},
+    {"from": "apply", "to": "retain", "label": "应用失败", "source": "原图"},
+    {"from": "retain", "to": "apply", "label": "换回适用商品，使用原码", "source": "据 TC_RWD_NOR_021_01 补绘"}
+  ],
+  "points": [
+    {"id": "TP-NOR-013", "stage_id": "redeem", "title": "余额刚好够与少 1 分", "node_ids": ["check", "decline"]},
+    {"id": "TP-NOR-021", "stage_id": "redeem", "title": "应用失败后保留券并重用", "node_ids": ["retain"]}
+  ],
+  "cases": [
+    {"id": "TC_RWD_NOR_013_05", "point_ids": ["TP-NOR-013"], "title": "结账页余额 100 分时兑换成功并扣至 0", "node_ids": ["check"], "basis": "按原用例标题细分", "status": "draft"},
+    {"id": "TC_RWD_NOR_013_06", "point_ids": ["TP-NOR-013"], "title": "结账页余额 99 分时因不足 1 分被拒绝", "node_ids": ["decline"], "basis": "按原用例标题细分", "status": "draft"},
+    {"id": "TC_RWD_NOR_021_01", "point_ids": ["TP-NOR-021"], "title": "换回适用商品后复用原券", "status": "draft"}
+  ]
+}
