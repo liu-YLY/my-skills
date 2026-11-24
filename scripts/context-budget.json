@@ -210,6 +210,27 @@
           "target": 9000
         }
       }
+    },
+    "test-review-board": {
+      "entry": {
+        "file": "SKILL.md",
+        "budget": 4000,
+        "target": 4000
+      },
+      "modes": {
+        "default": {
+          "description": "完整评审看板制作（数据、图、用例查阅与缺口来源）",
+          "files": [
+            "SKILL.md",
+            "references/template-data.md",
+            "references/swimlane-view.md",
+            "references/case-reader.md",
+            "references/coverage-sources.md"
+          ],
+          "budget": 13700,
+          "target": 13700
+        }
+      }
     }
   }
 }
