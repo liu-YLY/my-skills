@@ -1,12 +1,12 @@
 # Change Impact Analyzer Skill
 
-> 变更影响分析师技能包，v1.5.2。
+> 变更影响分析师技能包，v1.5.4。
 > 从代码改动点总结影响范围和测试内容，需求与现有用例均为可选输入。
 
 ## 核心能力
 
-- **四阶段工作流**：收集输入 → 变更解析 → 测试内容与可选交叉分析 → 生成报告
-- **七种 diff 模式**：工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Diff 或外部 Patch
+- **按任务深度推进**：片段和简表可直接分析，复杂变更按输入、变更、场景和报告组织
+- **Diff 来源**：支持工作区、暂存区、提交、分支或区间、外部 patch 与 PR/MR 快照
 - **只读采集**：记录比较基线、SHA、状态和已读/未读范围；不执行外部转换，按风险分组处理大 diff。当前不附带采集脚本
 - **跨层影响链路追踪**：沿「页面 → 组件 → API → Controller → Service → Model/DB → 缓存/MQ/外部系统」串联上下游，找出间接影响
 - **前后端契约两侧检查**：接口契约变更同时检查两侧，不只看变更的一端
@@ -62,7 +62,7 @@
 
 **目标**：获取可核对的变更依据与可选需求/用例。
 
-- 确认 diff 范围（七种模式：工作区 / 暂存区 / 分支对比 / 单 Commit / Commit 范围 / Revision Range / PR Diff 或外部 Patch）
+- 按 [diff-modes.md](knowledge/diff-modes.md) 确认范围，PR/MR 固定仓库身份和比较提交
 - 接受 patch、前后片段或具体改动点；只读核对源码及基线，不宣称读取不可达材料
 - 有用例时加载（Markdown/CSV/JSON/YAML），没有则既有覆盖未评估，继续交付范围与测试内容
 - Mode B 下额外加载需求文档/验收标准/任务说明
@@ -155,7 +155,7 @@ change-impact-analyzer/
 ├── templates/
 │   └── business-impact-test-scope.md # 完整业务影响与测试方案模板
 ├── knowledge/            # 按需加载的方法论与模板
-│   ├── diff-modes.md              # 七种 diff 模式 / 推断规则 / 采集脚本字段
+│   ├── diff-modes.md              # diff 来源 / PR 快照 / 采集字段
 │   ├── cross-impact-analysis.md   # 跨层链路 / 契约检查 / Mode A/B / 两轮交叉分析
 │   ├── report-template.md         # 工作表 / 场景与预期来源 / 可选详情
 │   ├── report-example.md          # 完整 Mode B 报告示例（按需）
@@ -186,6 +186,8 @@ change-impact-analyzer/
 
 ## 版本历史
 
+- v1.5.4: 简单变更直接给简表，按复杂度读取链路、格式与失败处理
+- v1.5.3: 固定 PR/MR 来源与比较版本，复用原有的链路核验
 - v1.5.2: 合并 cross-analysis-guide 到 cross-impact-analysis 第 5 节；完整报告示例改为按需；默认路径 38,829→26,984
 - v1.5.1: 接入完整业务影响与测试方案模板，明确正文语言、术语解释和可读性检查，保留简单改动简表及证据边界
 - v1.5.0: 按实际业务解释调用链、触发条件和影响边界；匹配测试方式与证据；补充多提交/多仓库最终范围及部分失败、恢复验证

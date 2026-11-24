@@ -1,6 +1,6 @@
 # performance-test-engineer
 
-> 性能测试方案设计 + 资源/架构层瓶颈定位 skill，v1.2.4。
+> 性能测试方案设计 + 资源/架构层瓶颈定位 skill，v1.2.6。
 > testing-bundle 的性能测试方向子 skill。
 
 ## 适用场景
@@ -10,17 +10,9 @@
 
 ## 核心能力
 
-4 阶段工作流（依据业务范围和现有证据推进）：
-
-```
-阶段 1 性能需求理解 → 阶段 2 测试场景设计 → 方案自检 → 阶段 3 瓶颈定位 → 阶段 4 转交判断
-```
-
-- **阶段 1 性能需求理解**：提炼性能目标（TPS / RT / 并发数 / 错误率），估算关键指标初值。
-- **阶段 2 测试场景设计**：选择负载模型（阶梯递增/峰值/疲劳/容量），设计场景，确定指标阈值。
-- **🔴 CHECKPOINT**：阶段 2 展示方案及假设，继续已授权的只读分析；缺关键信息或范围变化时询问。
-- **阶段 3 瓶颈定位**：按观测证据与可证伪假设安排排查顺序，应用 USE 方法，对照瓶颈模式库，输出瓶颈定位报告。
-- **阶段 4 转交判断**：判断瓶颈归属层，资源/架构层由本 skill 给优化建议，代码逻辑缺陷转交 bug-analyzer。
+- **方案**：明确业务目标和依据，选择负载形状、到达方式、观测指标与停止条件。
+- **诊断**：从已有证据定位，按需查 USE 与对应瓶颈模式，给出补采或复测。证据指向代码逻辑缺陷时转交 bug-analyzer。
+- 同时需要方案与诊断时分别交付适用内容。实际发压前核对授权与范围。
 
 ## 与其他 skill 的边界
 
@@ -43,13 +35,15 @@
 
 | 文件 | 说明 |
 |------|------|
-| [knowledge/load-models.md](knowledge/load-models.md) | 负载模型决策表（阶梯递增/峰值/疲劳/容量） |
-| [knowledge/metrics-framework.md](knowledge/metrics-framework.md) | 指标体系 + 阈值参考 |
+| [knowledge/load-models.md](knowledge/load-models.md) | 负载形状、开放/封闭到达方式与容量 |
+| [knowledge/metrics-framework.md](knowledge/metrics-framework.md) | 启动与完成口径、指标与阈值 |
 | [knowledge/bottleneck-patterns.md](knowledge/bottleneck-patterns.md) | 6 类瓶颈模式库（含层边界声明） |
 | [knowledge/use-method.md](knowledge/use-method.md) | USE 方法 + 资源三角 |
 
 ## 版本历史
 
+- v1.2.6: 缩短方案与诊断流程，按证据与症状加载知识
+- v1.2.5: 区分负载形状、到达方式与吞吐统计口径
 - v1.2.4: 合并采集命令与阈值表，压缩指标框架/瓶颈模式；默认路径 18,726→15,491，USE 判定链保留
 - v1.2.3: 去除快速上手示例补造的性能指标与瓶颈结论
 - v1.2.2: 统一协作转交与方案披露规则

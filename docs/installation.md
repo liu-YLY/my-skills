@@ -29,7 +29,7 @@
 
 > **review-checker MCP Server 依赖说明**：review-checker 是 test-case-engineer 评审模式的可选增强组件（位于 plugins/testing/mcp-servers/review-checker/），未安装时评审模式降级为纯 LLM 推理。安装方式见 [review-checker README](../plugins/testing/mcp-servers/review-checker/README.md)。
 
-> **state-machine-testing MCP Server 依赖说明**：state-machine-testing 是 state-machine-test-engineer 的可选增强组件（位于 plugins/testing/mcp-servers/state-machine-testing/，v0.2.0 协议层 stdio + HTTP 已端到端联调验证），未安装时降级为纯 LLM 推理。安装方式见 [state-machine-test-engineer quickstart](../plugins/testing/skills/state-machine-test-engineer/integrations/quickstart.md)。
+> **state-machine-testing MCP Server 依赖说明**：state-machine-testing 是 state-machine-test-engineer 的可选增强组件（位于 plugins/testing/mcp-servers/state-machine-testing/，v0.8.5，支持 stdio 和 HTTP），未安装时降级为纯 LLM 推理。安装方式见 [state-machine-test-engineer quickstart](../plugins/testing/skills/state-machine-test-engineer/integrations/quickstart.md)。
 
 ---
 
@@ -52,13 +52,13 @@ npx skills add liu-YLY/my-skills --list
 
 **场景 1：安装所有 skill（推荐）**
 ```bash
-# 包含 testing-bundle、8 个专业子 skill 和 wechat-formatter，共 10 个 skill
+# 包含测试插件的 10 个 skill 和 wechat-formatter，共 11 个 skill
 npx skills add liu-YLY/my-skills --skill '*' -g -y
 ```
 
 **场景 2：仅安装测试能力 bundle**
 ```bash
-# 安装测试插件全部 9 个 skill：testing-bundle 与 8 个专业子 skill
+# 安装测试插件全部 10 个 skill，含独立评审看板
 npx skills add liu-YLY/my-skills \
   --skill 'testing-bundle' \
   --skill 'test-strategy-engineer' \
@@ -69,6 +69,7 @@ npx skills add liu-YLY/my-skills \
   --skill 'change-impact-analyzer' \
   --skill 'test-data-generator' \
   --skill 'frontend-test-preparation' \
+  --skill 'test-review-board' \
   -g -y
 ```
 
@@ -106,7 +107,7 @@ Claude Code 用户可通过原生 `/plugin` 命令，按 plugin 粒度一键安�
 /plugin marketplace add liu-YLY/my-skills
 
 # 步骤 2：安装测试能力 bundle
-# 含 testing-bundle + 8 个子 skill（test-strategy-engineer / test-case-engineer / performance-test-engineer / bug-analyzer / state-machine-test-engineer / change-impact-analyzer / frontend-test-preparation / test-data-generator）
+# 含 testing-bundle、8 个路由子 skill 和独立评审看板
 /plugin install testing-bundle@my-skill-marketplace
 
 # 步骤 3：安装微信公众号排版 skill（可选）
@@ -152,6 +153,7 @@ cp -r plugins/testing/skills/state-machine-test-engineer ~/.claude/skills/
 cp -r plugins/testing/skills/change-impact-analyzer ~/.claude/skills/
 cp -r plugins/testing/skills/test-data-generator ~/.claude/skills/
 cp -r plugins/testing/skills/frontend-test-preparation ~/.claude/skills/
+cp -r plugins/testing/skills/test-review-board ~/.claude/skills/
 
 # 示例：复制 wechat-formatter
 cp -r plugins/wechat-formatter/skills/wechat-formatter ~/.claude/skills/

@@ -1,0 +1,101 @@
+{
+  "view": "rules",
+  "title": "订单导出 · 字段权限评审",
+  "context": "演示模块",
+  "intro": "核对有权限的人能导出哪些字段，以及当前规则对权限缺失和门店范围未配置的处理。",
+  "scope": "虚构演示，仅覆盖在后台发起订单 CSV 导出时的权限判断、门店范围和字段清单。合并多角色权限及异步任务重试留在示例范围外。",
+  "status": "演示评审稿 · 未执行",
+  "source": "rule-sources.md",
+  "sourceLabel": "示例需求与评审记录",
+  "provenance": "示例的规则、来源和用例均为演示数据。",
+  "stages": [
+    {"id": "export", "title": "订单导出字段权限", "note": "按导出权限、门店范围和角色逐项核对业务结果。"}
+  ],
+  "sources": [
+    {"id": "SRC-PRD", "title": "示例需求 · 导出权限", "location": "《订单导出字段权限》§1。核对无导出权限的请求及导出门店范围。", "url": "rule-sources.md#导出权限"},
+    {"id": "SRC-FIELDS", "title": "示例需求 · 字段清单", "location": "《订单导出字段权限》§2。核对运营字段和财务扩展字段。", "url": "rule-sources.md#字段清单"},
+    {"id": "SRC-OPEN", "title": "示例评审记录 · 门店范围待定", "location": "《订单导出字段权限》§3。核对空门店范围的待定项。", "url": "rule-sources.md#待确认事项"}
+  ],
+  "rules": [
+    {
+      "id": "R-01", "title": "没有订单导出权限", "stage": "export",
+      "conditions": ["账号没有订单导出权限", "提交订单 CSV 导出"],
+      "expected": "拒绝导出。提示无权限，系统不生成导出文件。",
+      "point_ids": ["TP-01"], "fact_status": "documented", "source_ids": ["SRC-PRD"]
+    },
+    {
+      "id": "R-02", "title": "运营账号导出基础字段", "stage": "export",
+      "conditions": ["账号有订单导出权限", "具备运营角色，已配置门店 A"],
+      "expected": "CSV 仅含门店 A 的订单，包含订单号、订单状态和下单时间。",
+      "point_ids": ["TP-02"], "fact_status": "documented", "source_ids": ["SRC-PRD", "SRC-FIELDS"]
+    },
+    {
+      "id": "R-03", "title": "财务账号导出扩展字段", "stage": "export",
+      "conditions": ["账号有订单导出权限", "具备财务角色，已配置门店 A"],
+      "expected": "CSV 仅含门店 A 的订单，在基础字段之外增加实收金额和币种。",
+      "point_ids": ["TP-02"], "fact_status": "documented", "source_ids": ["SRC-PRD", "SRC-FIELDS"]
+    },
+    {
+      "id": "R-04", "title": "财务账号的门店范围为空", "stage": "export",
+      "conditions": ["账号有订单导出权限", "具备财务角色，未配置门店"],
+      "expected": "待确认。需要决定拒绝导出，还是生成只有表头的 CSV。",
+      "point_ids": ["TP-03"], "fact_status": "pending", "source_ids": ["SRC-OPEN"]
+    }
+  ],
+  "points": [
+    {
+      "id": "TP-01", "title": "导出入口和请求的权限校验", "stage": "export",
+      "rule": [{"text": "用户缺少订单导出权限时，提交请求会被拒绝，且不会生成导出文件。", "fact_status": "documented", "source_ids": ["SRC-PRD"]}],
+      "context": [], "reminders": [],
+      "cases": [
+        {
+          "id": "TC-01", "title": "无权限账号提交订单导出",
+          "rule_ids": ["R-01"], "source_ids": ["SRC-PRD"],
+          "pre": ["账号可浏览订单列表，未授予订单导出权限。"],
+          "steps": ["登录后台并提交订单 CSV 导出请求。", "打开导出记录。"],
+          "expected": ["导出请求被拒绝，提示无权限。", "没有新增导出文件或可下载记录。"]
+        }
+      ]
+    },
+    {
+      "id": "TP-02", "title": "按账号角色输出字段，并限制在授权门店", "stage": "export",
+      "rule": [{"text": "运营和财务使用相同的导出入口，字段各自按角色清单输出。两种角色均受门店范围约束。", "fact_status": "documented", "source_ids": ["SRC-PRD", "SRC-FIELDS"]}],
+      "context": [], "reminders": [],
+      "cases": [
+        {
+          "id": "TC-02", "title": "运营账号导出基础字段",
+          "rule_ids": ["R-02"], "source_ids": ["SRC-FIELDS"],
+          "pre": ["运营账号有导出权限，配置门店 A。门店 A 有订单。"],
+          "steps": ["提交导出并打开 CSV。", "比对 CSV 表头。"],
+          "expected": ["字段为订单号、订单状态和下单时间。", "没有实收金额或币种列。"]
+        },
+        {
+          "id": "TC-03", "title": "财务账号导出实收金额和币种",
+          "rule_ids": ["R-03"], "source_ids": ["SRC-FIELDS"],
+          "pre": ["财务账号有导出权限，配置门店 A。门店 A 有一笔实收 12.50 SGD 的订单。"],
+          "steps": ["提交导出并打开 CSV。", "比对指定订单的字段和值。"],
+          "expected": ["基础字段完整，另有实收金额和币种列。", "指定订单的实收金额为 12.50，币种为 SGD。"]
+        },
+        {
+          "id": "TC-04", "title": "运营账号导出时排除其他门店",
+          "rule_ids": ["R-02"], "source_ids": ["SRC-PRD"],
+          "pre": ["运营账号有导出权限且仅配置门店 A，门店 A 和 B 各有一笔可区分订单。"],
+          "steps": ["提交导出并按订单号核对 CSV。"],
+          "expected": ["包含门店 A 的订单号，门店 B 的订单号未出现在文件中。"]
+        },
+        {
+          "id": "TC-05", "title": "财务账号导出时排除其他门店",
+          "rule_ids": ["R-03"], "source_ids": ["SRC-PRD"],
+          "pre": ["财务账号有导出权限且仅配置门店 A，门店 A 和 B 各有一笔可区分订单。"],
+          "steps": ["提交导出并按订单号核对 CSV。"],
+          "expected": ["包含门店 A 的订单号，门店 B 的订单号未出现在文件中。"]
+        }
+      ]
+    },
+    {
+      "id": "TP-03", "title": "无门店范围时的导出结果", "stage": "export",
+      "rule": [{"text": "门店范围为空时的导出结果待确认，确认后补充用例及可断言的预期。", "fact_status": "pending", "source_ids": ["SRC-OPEN"]}],
+      "fact_status": "pending", "source_ids": ["SRC-OPEN"], "context": [], "reminders": [], "cases": []
+    }
+  ]
+}

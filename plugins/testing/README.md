@@ -1,8 +1,8 @@
 # Testing Bundle Plugin
 
-> 测试能力 plugin，提供项目级测试策略、功能用例生成、性能测试、Bug 根因分析、状态机驱动的状态型需求测试、变更影响分析、前端测试准备与离线测试数据生成/校验能力。
+> 测试能力 plugin，提供项目级测试策略、功能用例生成、性能测试、Bug 根因分析、状态机驱动的状态型需求测试、变更影响分析、前端测试准备、离线测试数据生成与校验、测试评审看板。
 >
-> testing-bundle 按用户意图路由到 8 个专业子 skill；其中前端测试准备仅在明确要求读前端代码、定位入口或维护页面索引时接入。
+> testing-bundle 按用户意图路由到 8 个专业子 skill；前端测试准备仅在明确要求读前端代码、定位入口或维护页面索引时接入。测试插件另包含独立调用的评审看板，共 10 个 skill。
 
 ## 版本
 
@@ -13,19 +13,25 @@
 | Skill | 版本 | 类型 | 职责 |
 |---|---|---|---|
 | [testing-bundle](skills/testing-bundle/) | v3.7.0 | 元 skill / 路由入口 | 8 个专业子 skill 路由 + 10 条混合意图链 |
-| [test-strategy-engineer](skills/test-strategy-engineer/) | v1.3.1 | 子 skill | 项目级测试策略：风险矩阵 / 分层 / 范围优先级 / 准入准出 |
+| [test-strategy-engineer](skills/test-strategy-engineer/) | v1.3.3 | 子 skill | 项目级风险矩阵、按风险分层、契约验证和准入准出 |
 | [test-case-engineer](skills/test-case-engineer/) | v9.16.0 | 子 skill | 需求评审 / 功能用例生成 / 测试点提取 / 脚本校验闸门 |
-| [performance-test-engineer](skills/performance-test-engineer/) | v1.2.4 | 子 skill | 性能测试方案 + 瓶颈定位（资源/架构层）|
+| [performance-test-engineer](skills/performance-test-engineer/) | v1.2.6 | 子 skill | 负载设计、发起与完成统计、瓶颈定位（资源与架构层） |
 | [bug-analyzer](skills/bug-analyzer/) | v1.2.4 | 子 skill | Bug 根因分析（代码逻辑层）：五步定位法 / 鱼骨图 / 5 Whys |
 | [state-machine-test-engineer](skills/state-machine-test-engineer/) | v1.7.7 | 子 skill | 状态机驱动的状态型需求测试：10 类场景穷举 |
-| [change-impact-analyzer](skills/change-impact-analyzer/) | v1.5.2 | 协同 skill | 实际业务 → 改动影响与测试内容/方式，需求和用例可选（链 6 协同，亦可独立使用） |
+| [change-impact-analyzer](skills/change-impact-analyzer/) | v1.5.4 | 协同 skill | 固定 PR 版本，沿业务链路说明改动影响和测试方式（链 6 协同，可独立使用） |
 | [test-data-generator](skills/test-data-generator/) | v1.1.1 | 子 skill | 项目规则配置 → 可重复数据、边界与异常配方 → 场景验收与独立文件校验 |
+| [frontend-test-preparation](skills/frontend-test-preparation/SKILL.md) | v1.0.1 | 子 skill | 前端导航索引、需求入口和测试前置（链 9） |
+| [test-review-board](skills/test-review-board/SKILL.md) | — | 独立 skill | 四种业务视图、离线 HTML、用例双向定位、来源和设计缺口 |
 
 test-data-generator 可独立调用，也可经 bundle 路由或链 8 协同；使用 Python 3.11 和其 scripts/requirements.txt，Faker 使用可选 requirements-faker.txt，无需 MCP。数据校验通过只表示已声明约束通过，系统执行保持 not_run。使用方式见 [运行指南](skills/test-data-generator/integrations/quickstart.md)（v1.1.1）。
 
 [frontend-test-preparation](skills/frontend-test-preparation/SKILL.md) v1.0.1：从本机定制版迁入，保留入口与交接模板两个文件。用于读取前端代码、增量维护分层索引，再按单需求准备入口、角色、数据与检查点；运行核实遵循当次授权。作为 bundle 第 8 个子 skill 接入（链 9 协同），普通「测试前端功能」仍走用例生成。
 
+评审看板随插件安装，可直接调用。用现有需求、测试点和用例准备 `review.json`，生成泳道图、单流程图、状态图或规则表。查看 [内置样例与生成命令](skills/test-review-board/references/template-data.md)。
+
 **可选配套**：[state-machine-testing MCP Server](mcp-servers/state-machine-testing/) v0.8.5 — 为 state-machine-test-engineer 提供 5 个工具（build / validate / generate / export / coverage，协议层 stdio + HTTP 已端到端联调验证），未安装时降级为纯 LLM 推理。
+
+评审 MCP：[review-checker](mcp-servers/review-checker/) v0.4.1 支持业务结果数组、可选关键检查点和候选问题分离统计；只提供 stdio 传输。
 
 ## 路由架构
 
@@ -42,8 +48,6 @@ test-data-generator 可独立调用，也可经 bundle 路由或链 8 协同；�
 ```
 
 详细的意图解析三要素、单意图路由表与 10 条混合意图链见 [skills/testing-bundle/SKILL.md](skills/testing-bundle/SKILL.md)。
-
-评审 MCP：[review-checker](mcp-servers/review-checker/) 支持业务结果数组、可选关键检查点和候选问题分离统计；只提供 stdio 传输。
 
 ## 多 runtime 适配
 
@@ -78,6 +82,7 @@ testing/
     ├── state-machine-test-engineer/  # 状态机测试
     ├── frontend-test-preparation/    # 前端测试准备（链 9 协同，含 references/handoff-template.md）
     ├── change-impact-analyzer/       # 协同 skill（链 6，随 plugin 整体安装）
+    ├── test-review-board/            # 独立测试评审看板（HTML 样板、生成器和测试）
     └── test-data-generator/          # 离线数据生成/校验（链 8，含 Python 脚本与 Schema）
 ```
 

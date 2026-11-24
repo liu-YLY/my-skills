@@ -1,0 +1,373 @@
+{
+  "title": "申请审核 · 覆盖缺口与来源状态示例",
+  "context": "虚构演示需求",
+  "intro": "申请经资格校验和审核后向用户展示结果。流程中的恢复规则仍待确认。",
+  "scope": "演示已知主流程、未补用例、待确认规则和未映射用例。",
+  "status": "评审草案 · 未执行",
+  "ticket": [
+    "示例评审",
+    "3",
+    "个环节",
+    "包含待确认规则"
+  ],
+  "lanes": [
+    {
+      "name": "申请人",
+      "note": "提交、取消与查询"
+    },
+    {
+      "name": "业务系统",
+      "note": "校验、保存与状态"
+    },
+    {
+      "name": "通知服务",
+      "note": "结果展示与恢复"
+    }
+  ],
+  "stages": [
+    {
+      "id": "start",
+      "title": "发起与校验",
+      "note": "检查起点、角色、条件及拒绝后的影响。"
+    },
+    {
+      "id": "effect",
+      "title": "处理与生效",
+      "note": "核对何时提交成功，结果是否已经生效。"
+    },
+    {
+      "id": "finish",
+      "title": "恢复与结束",
+      "note": "与需求方确认终态、重试和撤销的条件。"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "title": "用户提交申请",
+      "note": "从申请页面发起",
+      "lane": 0,
+      "row": 0,
+      "kind": "behavior",
+      "source": "start",
+      "fact_status": "documented",
+      "source_ids": [
+        "DEMO-SPEC"
+      ],
+      "changed": false,
+      "no_test_reason": "发起入口的结果在资格校验和保存申请用例中核对。"
+    },
+    {
+      "id": "check",
+      "title": "校验申请资格",
+      "note": "按已提供规则检查",
+      "lane": 1,
+      "row": 0,
+      "kind": "support",
+      "source": null,
+      "fact_status": "documented",
+      "source_ids": [
+        "DEMO-SPEC"
+      ],
+      "changed": false
+    },
+    {
+      "id": "refuse",
+      "title": "拒绝本次申请",
+      "note": "保留原有数据",
+      "lane": 0,
+      "row": 1,
+      "kind": "branch",
+      "source": null,
+      "fact_status": "documented",
+      "source_ids": [
+        "DEMO-SPEC"
+      ],
+      "changed": false
+    },
+    {
+      "id": "commit",
+      "title": "保存申请记录",
+      "note": "提交成功才生成记录",
+      "lane": 1,
+      "row": 1,
+      "kind": "support",
+      "source": null,
+      "fact_status": "documented",
+      "source_ids": [
+        "DEMO-SPEC"
+      ],
+      "changed": false
+    },
+    {
+      "id": "apply",
+      "title": "通知审核结果",
+      "note": "向用户展示处理结果",
+      "lane": 2,
+      "row": 1,
+      "kind": "support",
+      "source": null,
+      "fact_status": "documented",
+      "source_ids": [
+        "DEMO-SPEC"
+      ],
+      "changed": true
+    },
+    {
+      "id": "repair",
+      "title": "恢复方式待确认",
+      "note": "通知失败后如何继续",
+      "lane": 2,
+      "row": 2,
+      "kind": "branch",
+      "source": null,
+      "fact_status": "pending",
+      "source_ids": [],
+      "changed": true
+    },
+    {
+      "id": "done",
+      "title": "查询最终状态",
+      "note": "查看同一申请的结果",
+      "lane": 1,
+      "row": 3,
+      "kind": "support",
+      "source": null,
+      "fact_status": "documented",
+      "source_ids": [
+        "DEMO-SPEC"
+      ],
+      "changed": false
+    },
+    {
+      "id": "cancel",
+      "title": "取消申请",
+      "note": "入口已知，边界用例待补",
+      "lane": 0,
+      "row": 3,
+      "kind": "branch",
+      "source": null,
+      "fact_status": "documented",
+      "source_ids": [
+        "DEMO-SPEC"
+      ],
+      "changed": false
+    }
+  ],
+  "edges": [
+    {
+      "a": "start",
+      "b": "check",
+      "label": "提交",
+      "alt": false
+    },
+    {
+      "a": "check",
+      "b": "refuse",
+      "label": "条件不足",
+      "alt": true
+    },
+    {
+      "a": "check",
+      "b": "commit",
+      "label": "条件满足",
+      "alt": false
+    },
+    {
+      "a": "commit",
+      "b": "apply",
+      "label": "提交成功",
+      "alt": false
+    },
+    {
+      "a": "apply",
+      "b": "done",
+      "label": "生效",
+      "alt": false
+    },
+    {
+      "a": "apply",
+      "b": "repair",
+      "label": "结果异常",
+      "alt": true
+    },
+    {
+      "a": "repair",
+      "b": "done",
+      "label": "确认已恢复",
+      "alt": false
+    },
+    {
+      "a": "commit",
+      "b": "cancel",
+      "label": "符合撤销条件",
+      "alt": true
+    }
+  ],
+  "points": [
+    {
+      "id": "P1",
+      "title": "申请条件边界",
+      "stage": "start",
+      "nodes": [
+        "check",
+        "refuse"
+      ],
+      "rule": [
+        {
+          "text": "满足资格时允许提交，不满足时保留原值。",
+          "fact_status": "documented",
+          "source_ids": [
+            "DEMO-SPEC"
+          ]
+        }
+      ],
+      "context": [],
+      "reminders": [],
+      "cases": [
+        {
+          "id": "C1",
+          "title": "满足条件时继续处理",
+          "pre": [
+            "准备符合条件的申请。"
+          ],
+          "steps": [
+            "从申请页面提交，再读取申请状态。"
+          ],
+          "expected": [
+            "进入处理，申请只保存一次。"
+          ],
+          "nodes": [
+            "check"
+          ],
+          "fact_status": "documented",
+          "source_ids": [
+            "DEMO-SPEC"
+          ]
+        },
+        {
+          "id": "C2",
+          "title": "不满足条件时拒绝",
+          "pre": [
+            "准备仅有一项条件不满足的申请。"
+          ],
+          "steps": [
+            "从申请页面提交，再读取申请状态。"
+          ],
+          "expected": [
+            "拒绝此次申请，原有记录不变。"
+          ],
+          "nodes": [
+            "refuse"
+          ],
+          "fact_status": "documented",
+          "source_ids": [
+            "DEMO-SPEC"
+          ]
+        }
+      ],
+      "fact_status": "documented",
+      "source_ids": [
+        "DEMO-SPEC"
+      ]
+    },
+    {
+      "id": "P2",
+      "title": "提交后保存并展示结果",
+      "stage": "effect",
+      "nodes": [
+        "commit",
+        "apply"
+      ],
+      "rule": [
+        "成功提交后保存一次记录并展示结果。"
+      ],
+      "context": [],
+      "reminders": [],
+      "cases": [
+        {
+          "id": "C3",
+          "title": "保存后查询同一条结果",
+          "pre": [
+            "准备可提交的申请。"
+          ],
+          "steps": [
+            "提交并查询同一申请标识。"
+          ],
+          "expected": [
+            "结果可见，仅有一条申请记录。"
+          ],
+          "fact_status": "confirmed",
+          "source_ids": [
+            "DEMO-REVIEW"
+          ]
+        }
+      ],
+      "fact_status": "confirmed",
+      "source_ids": [
+        "DEMO-REVIEW"
+      ]
+    },
+    {
+      "id": "P3",
+      "title": "通知失败后的恢复",
+      "stage": "finish",
+      "nodes": [
+        "repair",
+        "done"
+      ],
+      "rule": [
+        {
+          "text": "重试入口和自动补偿策略尚待确认。",
+          "fact_status": "pending",
+          "source_ids": []
+        }
+      ],
+      "context": [],
+      "reminders": [],
+      "cases": [],
+      "fact_status": "pending",
+      "source_ids": []
+    }
+  ],
+  "aliases": {},
+  "source": "",
+  "sourceLabel": "Markdown 模板",
+  "peer": "",
+  "peerLabel": "查看填好的示例",
+  "md": "",
+  "mdLabel": "Markdown 模板",
+  "provenance": "全部业务、来源和用例均为虚构，仅用于验证 skill 的生成与展示。",
+  "sources": [
+    {
+      "id": "DEMO-SPEC",
+      "title": "虚构需求说明",
+      "location": "本示例定义申请校验、保存和结果展示流程。"
+    },
+    {
+      "id": "DEMO-REVIEW",
+      "title": "虚构确认记录",
+      "location": "示例约定有效申请提交后记录一次结果，重复处理保持同一条记录。"
+    }
+  ],
+  "orphan_cases": [
+    {
+      "id": "C-OLD",
+      "title": "历史记录仍可查看",
+      "pre": [
+        "准备一条已有申请。"
+      ],
+      "steps": [
+        "重新打开该历史申请。"
+      ],
+      "expected": [
+        "可以看到原处理结果。"
+      ],
+      "unmapped_reason": "只有一条历史用例，所属业务环节尚未确认。",
+      "fact_status": "inferred",
+      "source_ids": [
+        "DEMO-SPEC"
+      ]
+    }
+  ]
+}

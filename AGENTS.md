@@ -74,6 +74,11 @@ BREAKING CHANGE: token 过期时间戳从秒改为毫秒
 - 提交前必须确保代码能正常运行并通过测试
 - **禁止**在一次提交中混合多个不相关的变更
 
+## Git 提交身份
+
+- 本项目提交使用仓库本地配置中的 GitHub 身份。提交前检查 `git config --local --get user.name` 与 `git config --local --get user.email`。
+- 身份缺失时先核实并配置到当前仓库。使用 `git var GIT_AUTHOR_IDENT`、`git var GIT_COMMITTER_IDENT` 检查实际身份，避免全局配置、环境变量或工具默认值覆盖。提交后核对作者与提交者。
+
 ## Git 工作流规范
 
 ### 分支保护
