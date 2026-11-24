@@ -1,6 +1,6 @@
 # performance-test-engineer
 
-> 性能测试方案设计 + 资源/架构层瓶颈定位 skill，v1.2.4。
+> 性能测试方案设计 + 资源/架构层瓶颈定位 skill，v1.2.5。
 > testing-bundle 的性能测试方向子 skill。
 
 ## 适用场景
@@ -43,13 +43,14 @@
 
 | 文件 | 说明 |
 |------|------|
-| [knowledge/load-models.md](knowledge/load-models.md) | 负载模型决策表（阶梯递增/峰值/疲劳/容量） |
-| [knowledge/metrics-framework.md](knowledge/metrics-framework.md) | 指标体系 + 阈值参考 |
+| [knowledge/load-models.md](knowledge/load-models.md) | 负载形状、开放/封闭到达方式与容量 |
+| [knowledge/metrics-framework.md](knowledge/metrics-framework.md) | 启动与完成口径、指标与阈值 |
 | [knowledge/bottleneck-patterns.md](knowledge/bottleneck-patterns.md) | 6 类瓶颈模式库（含层边界声明） |
 | [knowledge/use-method.md](knowledge/use-method.md) | USE 方法 + 资源三角 |
 
 ## 版本历史
 
+- v1.2.5: 区分负载形状、到达方式与吞吐统计口径
 - v1.2.4: 合并采集命令与阈值表，压缩指标框架/瓶颈模式；默认路径 18,726→15,491，USE 判定链保留
 - v1.2.3: 去除快速上手示例补造的性能指标与瓶颈结论
 - v1.2.2: 统一协作转交与方案披露规则
