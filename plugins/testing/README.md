@@ -13,12 +13,12 @@
 | Skill | 版本 | 类型 | 职责 |
 |---|---|---|---|
 | [testing-bundle](skills/testing-bundle/) | v3.7.0 | 元 skill / 路由入口 | 8 个专业子 skill 路由 + 10 条混合意图链 |
-| [test-strategy-engineer](skills/test-strategy-engineer/) | v1.3.2 | 子 skill | 项目级测试策略：风险矩阵 / 分层 / 范围优先级 / 准入准出 |
+| [test-strategy-engineer](skills/test-strategy-engineer/) | v1.3.3 | 子 skill | 项目级测试策略：风险矩阵 / 分层 / 范围优先级 / 准入准出 |
 | [test-case-engineer](skills/test-case-engineer/) | v9.16.0 | 子 skill | 需求评审 / 功能用例生成 / 测试点提取 / 脚本校验闸门 |
-| [performance-test-engineer](skills/performance-test-engineer/) | v1.2.5 | 子 skill | 性能测试方案 + 瓶颈定位（资源/架构层）|
+| [performance-test-engineer](skills/performance-test-engineer/) | v1.2.6 | 子 skill | 性能测试方案 + 瓶颈定位（资源/架构层）|
 | [bug-analyzer](skills/bug-analyzer/) | v1.2.4 | 子 skill | Bug 根因分析（代码逻辑层）：五步定位法 / 鱼骨图 / 5 Whys |
 | [state-machine-test-engineer](skills/state-machine-test-engineer/) | v1.7.7 | 子 skill | 状态机驱动的状态型需求测试：10 类场景穷举 |
-| [change-impact-analyzer](skills/change-impact-analyzer/) | v1.5.3 | 协同 skill | 实际业务 → 改动影响与测试内容/方式，需求和用例可选（链 6 协同，亦可独立使用） |
+| [change-impact-analyzer](skills/change-impact-analyzer/) | v1.5.4 | 协同 skill | 实际业务 → 改动影响与测试内容/方式，需求和用例可选（链 6 协同，亦可独立使用） |
 | [test-data-generator](skills/test-data-generator/) | v1.1.1 | 子 skill | 项目规则配置 → 可重复数据、边界与异常配方 → 场景验收与独立文件校验 |
 
 test-data-generator 可独立调用，也可经 bundle 路由或链 8 协同；使用 Python 3.11 和其 scripts/requirements.txt，Faker 使用可选 requirements-faker.txt，无需 MCP。数据校验通过只表示已声明约束通过，系统执行保持 not_run。使用方式见 [运行指南](skills/test-data-generator/integrations/quickstart.md)（v1.1.1）。

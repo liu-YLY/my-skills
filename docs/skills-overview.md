@@ -91,7 +91,7 @@ AI（testing-bundle）：
 
 ### 1a. 测试策略工程师 (test-strategy-engineer)
 
-**版本**：v1.3.2
+**版本**：v1.3.3
 **功能**：扮演资深测试架构师角色，专注项目级测试策略制定，输出风险矩阵 + 分层策略 + 范围优先级 + 准入准出。
 
 > testing-bundle v2.0.0 新增子 skill（v3.0.0 同步升级），与 test-case-engineer 的粒度边界：本 skill 是项目级（整体），test-case-engineer 是单功能级。
@@ -245,7 +245,7 @@ AI（test-case-engineer）：
 
 ### 1c. 性能测试工程师 (performance-test-engineer)
 
-**版本**：v1.2.5
+**版本**：v1.2.6
 **功能**：扮演资深性能测试工程师角色，专注性能测试方案设计与瓶颈定位（资源/架构层），通过 USE 方法 + 4 种负载模型 + 6 类瓶颈模式提供完整方案。
 
 > testing-bundle v2.0.0 新增子 skill（v3.0.0 同步升级），聚焦资源/架构层；当代码逻辑层缺陷（死锁/N+1/内存泄漏）时转交 bug-analyzer。
@@ -451,7 +451,7 @@ AI（testing-bundle）：
 
 ### 1f. 变更影响分析师 (change-impact-analyzer)
 
-**版本**：v1.5.3
+**版本**：v1.5.4
 **功能**：从 git diff、patch、前后片段或具体改动点，按实际业务解释调用链、影响条件与后果，生成测试内容和方式；旧用例与需求可选，有材料时追加影响、覆盖和实现对照。
 
 > testing plugin 内的专业子 skill（链 6 使用），随 plugin 整体安装，也可单独使用。
