@@ -40,7 +40,7 @@
 已有用例或组合矩阵仅准备数据时，直接调用 test-data-generator；链 8 只在明确要求新编/修订用例并交付对应数据时触发。
 
 **安装方式**：
-- **整体安装（推荐）**：安装 testing-bundle 与 8 个专业子 skill，共 9 个 skill
+- **整体安装（推荐）**：测试插件共 10 个 skill，包括 testing-bundle、8 个专业子 skill 和独立的 [测试评审看板](../plugins/testing/skills/test-review-board/SKILL.md)
 - **按需安装**：仅安装需要的子 skill（bug-analyzer 单独安装时缺陷模式库引用会降级；state-machine-test-engineer 可选再装配套 MCP Server 进入增强模式）
 
 **使用场景**：

@@ -1,10 +1,15 @@
 # My Skill - AI 技能集合项目
 
-> 基于 AI 的智能技能系统，提供测试策略、测试用例生成、性能测试、Bug 根因分析、状态机测试、变更影响分析、前端测试准备、离线测试数据生成与校验、微信公众号排版等专业技能
+> 基于 AI 的智能技能系统，提供测试策略、测试用例生成、性能测试、Bug 根因分析、状态机测试、变更影响分析、前端测试准备、离线造数与校验、测试评审看板和微信公众号排版等专业技能
 
 ## 项目简介
 
 My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技术提升工作效率。项目包含多个专业领域的技能模块，每个技能都经过精心设计，能够理解用户需求并提供高质量的专业输出。
+
+### 本次迭代
+
+- **测试评审看板**将已有规则、测试点和用例生成离线 HTML。支持泳道图、单流程图、状态图和规则表，可从业务位置和用例双向定位，查看来源与覆盖缺口。
+- **测试策略、变更影响和性能测试**同步升级。按风险选择测试层和契约方法，按固定 PR 快照分析差异，明确计划与实际发压及完成量的统计口径。三个入口均删减重复流程，参考资料按任务读取。
 
 ### 核心特性
 
@@ -23,17 +28,17 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 | Skill | 版本 | 功能 | MCP Server |
 |---|---|---|---|
 | **testing-bundle** | v3.7.0 | bundle 入口，8 个专业子 skill 路由 + 10 条混合意图链 | - |
-| test-strategy-engineer | v1.3.3 | 项目级测试策略（风险矩阵/分层/准入准出） | - |
+| test-strategy-engineer | v1.3.3 | 项目级风险矩阵、按风险分层、契约验证和准入准出 | - |
 | test-case-engineer | v9.16.0 | 需求评审 + 功能用例生成 + 脚本校验闸门 + 10 维度用例评审 + 规模化/干系人评审方案 | review-checker v0.4.1（可选） |
-| performance-test-engineer | v1.2.6 | 性能测试方案 + 瓶颈定位（USE 方法） | - |
+| performance-test-engineer | v1.2.6 | 负载设计、发起与完成口径、证据驱动的瓶颈定位 | - |
 | bug-analyzer | v1.2.4 | Bug 根因分析（五步定位法/鱼骨图/5 Whys） | - |
 | state-machine-test-engineer | v1.7.7 | 状态机建模 + 10 类场景穷举 | state-machine-testing v0.8.5（可选） |
-| change-impact-analyzer | v1.5.4 | 从实际业务解释改动影响，生成测试内容与方式，需求和用例可选 | - |
+| change-impact-analyzer | v1.5.4 | 固定 PR 版本或分析本地 diff，从业务调用链给出影响、测试内容和方式 | - |
 | test-data-generator | v1.1.1 | 可重复离线造数、边界配方、关联与场景验收、JSON/JSONL/CSV 独立校验 | - |
 | [frontend-test-preparation](plugins/testing/skills/frontend-test-preparation/SKILL.md) | v1.0.1 | 前端导航索引、增量维护与单需求测试准备（链 9 协同，亦可单独调用） | - |
 | [test-review-board](plugins/testing/skills/test-review-board/SKILL.md) | — | 将已有测试材料整理为离线 HTML 评审看板，支持四种业务视图和用例双向定位（独立调用） | - |
 
-> 上表中 **testing-bundle** 为 bundle 入口，按用户意图把请求路由到 8 个专业子 skill；**frontend-test-preparation** 仅在明确要求读前端代码、定位入口或维护页面索引时接入，普通「测试前端功能」仍由 test-case-engineer 处理。
+> 上表中 **testing-bundle** 为 bundle 入口，按用户意图把请求路由到 8 个专业子 skill；**frontend-test-preparation** 仅在明确要求读前端代码、定位入口或维护页面索引时接入，普通「测试前端功能」仍由 test-case-engineer 处理。评审看板随测试插件安装，作为独立 skill 直接调用。
 
 **10 条混合意图链**：
 - 链 1：Bug 分析 + 补充用例 → bug-analyzer → case-engineer
@@ -147,16 +152,16 @@ My Skill 是一个 AI 驱动的技能集合项目，旨在通过人工智能技�
 npx skills add liu-YLY/my-skills --list
 
 # 步骤 2：按需安装
-# 2a. 安装全部 10 个 skill（testing-bundle + 8 个专业子 skill + wechat-formatter）
+# 2a. 安装全部 11 个 skill（10 个测试技能 + wechat-formatter）
 npx skills add liu-YLY/my-skills --skill "*" -g -y
 
-# 2b. 仅安装测试插件全部 9 个 skill（bundle + 8 个专业子 skill）
+# 2b. 安装测试插件全部 10 个 skill（bundle + 8 个路由子 skill + 评审看板）
 npx skills add liu-YLY/my-skills \
   --skill testing-bundle --skill test-strategy-engineer \
   --skill test-case-engineer --skill performance-test-engineer \
   --skill bug-analyzer --skill state-machine-test-engineer \
   --skill change-impact-analyzer --skill test-data-generator \
-  --skill frontend-test-preparation -g -y
+  --skill frontend-test-preparation --skill test-review-board -g -y
 
 # 2c. 仅安装微信公众号排版 skill
 npx skills add liu-YLY/my-skills --skill wechat-formatter -g -y
@@ -185,7 +190,7 @@ Claude Code 用户可通过原生 `/plugin` 命令按 plugin 粒度一键安装�
 # 步骤 1：注册 marketplace（只需执行一次）
 /plugin marketplace add liu-YLY/my-skills
 
-# 步骤 2：安装测试插件（含 testing-bundle + 8 个子 skill）
+# 步骤 2：安装测试插件（含 testing-bundle、8 个路由子 skill 和独立评审看板）
 /plugin install testing-bundle@my-skill-marketplace
 
 # 步骤 3：安装微信公众号排版 skill（可选）
@@ -201,7 +206,7 @@ Claude Code 用户可通过原生 `/plugin` 命令按 plugin 粒度一键安装�
 SKILLS_DIR="$HOME/.codex/skills"
 mkdir -p "$SKILLS_DIR"
 
-# 步骤 2：复制 testing plugin 下全部 9 个 skill（含前端测试准备）
+# 步骤 2：复制 testing plugin 下全部 10 个 skill
 for skill_dir in plugins/testing/skills/*; do cp -R "$skill_dir" "$SKILLS_DIR/"; done
 
 # 步骤 3：复制 wechat-formatter（可选）
@@ -220,6 +225,8 @@ Windows 用户可直接运行仓库内的 PowerShell 脚本：
 # 卸载
 .\scripts\install-testing-bundle.ps1 -Uninstall
 ```
+
+> GitHub 安装命令读取远端可见版本。使用尚在本地分支的内容时，可从对应工作区手动复制。
 
 ### 安装后配置与验证
 
@@ -241,6 +248,7 @@ Windows 用户可直接运行仓库内的 PowerShell 脚本：
 | 项目测试策略 | "电商项目即将启动测试，请帮我制定测试策略" | 风险矩阵 + 分层策略 + 范围与准入准出 |
 | 生成测试用例 | "我有一个用户登录功能需要测试" | 四阶段流程 + 完整用例 |
 | 评审已有用例 | "评审 docs/test-cases.md 的用例质量" | 10 维度评审报告 + 度量报告 |
+| 制作测试评审看板 | "把已有规则、测试点和用例整理成可反查来源的 HTML 评审页" | 离线互动看板、用例双向定位、设计缺口与来源状态 |
 | 状态机测试场景 | "订单退款流程要做测试，状态有待支付/已支付/退款中…" | 状态机模型 + 10 类场景清单 |
 | 变更影响分析 | "分析当前改动对 docs/test-cases.md 用例的影响" | 影响报告 + 覆盖缺口 + 建议操作 |
 | Bug 根因分析 | "线上重复扣款，帮我分析根因" | 五步定位法 + 根因报告 |
@@ -251,6 +259,18 @@ Windows 用户可直接运行仓库内的 PowerShell 脚本：
 | 微信排版 | "用 tech-blog 风格排版这篇文章" | 格式化 Markdown + HTML |
 
 更多示例见 [docs/skills-overview.md](docs/skills-overview.md)。
+
+### 试跑测试评审看板
+
+在项目根目录执行以下命令，用内置虚构数据生成页面，再检查节点、测试点、用例和来源引用。生成和校验脚本仅使用 Python 标准库。
+
+```bash
+cd plugins/testing/skills/test-review-board
+python3 scripts/render_review.py assets/example-review.json --output review-example.html
+python3 scripts/check_review_map.py review-example.html
+```
+
+用浏览器打开 `review-example.html` 即可离线查看。结构校验会提示断裂引用，设计缺口可保留在评审稿中。业务结果和来源仍需对照原材料，打开页面不代表用例已执行。数据字段和规则表示例见 [看板制作说明](plugins/testing/skills/test-review-board/references/template-data.md)。
 
 ## 文档索引
 
@@ -267,7 +287,7 @@ Windows 用户可直接运行仓库内的 PowerShell 脚本：
 
 | MCP Server | 版本 | 配套 skill | 功能 |
 |---|---|---|---|
-| [review-checker](plugins/testing/mcp-servers/review-checker/README.md) | v0.3.1 | test-case-engineer 评审模式 | 10 维度检查 + 候选问题及未评估范围 + 度量报告 |
+| [review-checker](plugins/testing/mcp-servers/review-checker/README.md) | v0.4.1 | test-case-engineer 评审模式 | 10 维度检查 + 候选问题及未评估范围 + 度量报告 |
 | [state-machine-testing](plugins/testing/mcp-servers/state-machine-testing/README.md) | v0.8.5 | state-machine-test-engineer | Schema 校验 + 场景穷举 + 覆盖度报告 |
 
 > MCP Server 为可选增强组件，未安装时 skill 降级为纯 LLM 推理，不影响核心能力。
@@ -276,7 +296,7 @@ Windows 用户可直接运行仓库内的 PowerShell 脚本：
 
 ### Git 提交规范
 
-项目遵循 Conventional Commits 规范，提交信息格式 `<type>(<scope>): <subject>`，默认使用中文描述。完整规范详见 [rules/git-commit-message.md](rules/git-commit-message.md)，TRAE 用户会通过 [.trae/rules/git-commit-message.md](.trae/rules/git-commit-message.md) 自动注入硬约束。
+项目遵循 Conventional Commits 规范，提交信息格式 `<type>(<scope>): <subject>`，默认使用中文描述。提交还须使用项目仓库配置的 Git 身份，见 [AGENTS.md](AGENTS.md#git-提交身份)。格式细则见 [rules/git-commit-message.md](rules/git-commit-message.md)，TRAE 用户会通过 [.trae/rules/git-commit-message.md](.trae/rules/git-commit-message.md) 自动注入硬约束。
 
 ### Git 工作流
 
@@ -310,4 +330,4 @@ Windows 用户可直接运行仓库内的 PowerShell 脚本：
 
 ---
 
-**最后更新**：2026 年 10 月 31 日
+**最后更新**：2026 年 11 月 24 日

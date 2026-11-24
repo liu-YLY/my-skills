@@ -30,13 +30,13 @@ my-skill/
 │   │   │   │   ├── README.md      # Bundle 说明文档
 │   │   │   │   ├── CHANGELOG.md   # bundle 版本变更记录
 │   │   │   │   └── test-prompts.json
-│   │   │   ├── test-strategy-engineer/  # 测试策略工程师 v1.0.0（项目级策略）
+│   │   │   ├── test-strategy-engineer/  # 测试策略工程师 v1.3.3（项目级策略）
 │   │   │   │   ├── SKILL.md       # 入口（五阶段流程 + 风险矩阵 + 分层）
 │   │   │   │   ├── README.md
 │   │   │   │   ├── knowledge/     # risk-matrix / test-pyramid / entry-exit / templates
 │   │   │   │   ├── integrations/
 │   │   │   │   └── test-prompts.json
-│   │   │   ├── test-case-engineer/  # 测试用例工程师 v8.3.0
+│   │   │   ├── test-case-engineer/  # 测试用例工程师 v9.16.0
 │   │   │   │   ├── SKILL.md
 │   │   │   │   ├── test-case-engineer-core.md
 │   │   │   │   ├── README.md
@@ -44,19 +44,19 @@ my-skill/
 │   │   │   │   ├── integrations/
 │   │   │   │   ├── scripts/
 │   │   │   │   └── docs/
-│   │   │   ├── performance-test-engineer/  # 性能测试工程师 v1.0.0（资源/架构层）
+│   │   │   ├── performance-test-engineer/  # 性能测试工程师 v1.2.6（资源/架构层）
 │   │   │   │   ├── SKILL.md       # 入口（四阶段流程 + USE 方法）
 │   │   │   │   ├── README.md
 │   │   │   │   ├── knowledge/     # load-models / metrics / bottleneck-patterns / use-method
 │   │   │   │   ├── integrations/
 │   │   │   │   └── test-prompts.json
-│   │   │   ├── bug-analyzer/      # Bug 分析师 v1.0.0（代码逻辑层）
+│   │   │   ├── bug-analyzer/      # Bug 分析师 v1.2.4（代码逻辑层）
 │   │   │   │   ├── SKILL.md       # 入口 + 核心流程（五步定位法）
 │   │   │   │   ├── README.md
 │   │   │   │   ├── knowledge/     # 含 bug-patterns-index.md 指向 ../test-case-engineer/knowledge/bug-patterns.md
 │   │   │   │   ├── integrations/
 │   │   │   │   └── scripts/
-│   │   │   ├── state-machine-test-engineer/  # 状态机测试工程师 v1.1.0（状态型需求）
+│   │   │   ├── state-machine-test-engineer/  # 状态机测试工程师 v1.7.7（状态型需求）
 │   │   │   │   ├── SKILL.md       # 入口（五阶段流程 + 10 类场景穷举）
 │   │   │   │   ├── state-machine-core.md
 │   │   │   │   ├── README.md
@@ -66,12 +66,13 @@ my-skill/
 │   │   │   ├── frontend-test-preparation/  # 前端测试准备（链 9 协同）
 │   │   │   │   ├── SKILL.md       # 分层索引、增量更新与单需求映射
 │   │   │   │   └── references/handoff-template.md
-│   │   │   ├── change-impact-analyzer/  # 变更影响分析师 v1.5.0（链 6 协同，亦可独立使用）
-│   │   │   │   ├── SKILL.md       # 入口 + 四阶段流程（含阶段 3 CHECKPOINT）
+│   │   │   ├── change-impact-analyzer/  # 变更影响分析师 v1.5.4（链 6 协同，亦可独立使用）
+│   │   │   │   ├── SKILL.md       # 入口、固定 PR 快照与按需追踪
 │   │   │   │   ├── README.md
 │   │   │   │   ├── knowledge/     # diff-modes / cross-impact-analysis / report-template / anti-patterns
 │   │   │   │   └── test-prompts.json
-│   │   │   └── test-data-generator/  # 离线数据生成与校验 v1.1.0（链 8 协同，亦可独立使用）
+│   │   │   ├── test-review-board/  # 独立评审看板，含 HTML 样板、JSON 示例、生成与校验脚本
+│   │   │   └── test-data-generator/  # 离线数据生成与校验 v1.1.1（链 8 协同，亦可独立使用）
 │   │   │       ├── SKILL.md       # profile 整理、生成/校验模式与交付边界
 │   │   │       ├── knowledge/     # 输入协议、生成校验和扩展边界
 │   │   │       ├── integrations/  # Python 运行指南与安全约束
@@ -81,7 +82,7 @@ my-skill/
 │   │   │       ├── tests/
 │   │   │       └── test-prompts.json
 │   │   └── mcp-servers/               # 配套 MCP Server（可选增强）
-│   │       ├── review-checker/         # review-checker MCP Server v0.2.0（评审 10 维度校验）
+│   │       ├── review-checker/         # review-checker MCP Server v0.4.1（评审 10 维度校验）
 │   │       │   ├── src/review_checker_mcp/
 │   │       │   │   ├── server.py       # MCP 工具注册（review_test_cases / generate_report）
 │   │       │   │   ├── schemas.py      # pydantic 模型
@@ -89,7 +90,7 @@ my-skill/
 │   │       │   ├── tests/
 │   │       │   ├── README.md
 │   │       │   └── pyproject.toml
-│   │       └── state-machine-testing/  # state-machine-testing MCP Server v0.2.0（状态机校验）
+│   │       └── state-machine-testing/  # state-machine-testing MCP Server v0.8.5（状态机校验）
 │   │           ├── src/state_machine_testing_mcp/
 │   │           └── tests/
 │   │
@@ -101,7 +102,7 @@ my-skill/
 │       ├── .codex-plugin/
 │       │   └── plugin.json        # Codex plugin manifest
 │       └── skills/
-│           └── wechat-formatter/  # 微信公众号排版技能 v3.0.0（6 种风格 + :::module 高级排版 + Brand Profile）
+│           └── wechat-formatter/  # 微信公众号排版技能 v3.0.16（6 种风格 + :::module 高级排版 + Brand Profile）
 │               ├── SKILL.md
 │               ├── README.md
 │               ├── test-prompts.json
