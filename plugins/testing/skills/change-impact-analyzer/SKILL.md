@@ -1,6 +1,6 @@
 ---
 name: change-impact-analyzer
-version: 1.5.2
+version: 1.5.3
 description: >-
   Derives business impact scope and actionable test content from git diffs, patches,
   or code change points, even without existing test cases. Explains each affected
@@ -46,7 +46,7 @@ keywords:
 
 | 文件 | 何时加载 | 覆盖内容 |
 |------|---------|---------|
-| [knowledge/diff-modes.md](knowledge/diff-modes.md) | 阶段 1 | 七种 diff 模式 / 基线推断 / 只读采集 / 安全约束 |
+| [knowledge/diff-modes.md](knowledge/diff-modes.md) | 阶段 1 | 来源选择 / PR 快照 / 只读采集 |
 | [knowledge/cross-impact-analysis.md](knowledge/cross-impact-analysis.md) | 阶段 2-3 | 链路追踪 / 契约两侧 / 风险三档 / Mode A/B / 两轮交叉分析 |
 | [knowledge/report-template.md](knowledge/report-template.md) | 阶段 4 | 工作表 / P0-P2 / 场景模板 / 输出 |
 | [knowledge/report-example.md](knowledge/report-example.md) | 需要完整示例时 | Mode B 完整报告示例 |
@@ -70,7 +70,7 @@ keywords:
 - 范围：用户说“当前改动”时先看工作区；工作区干净且 feature 分支领先默认分支时用 `<default>...HEAD`，不得误报无变更。
 - 用例格式：Markdown/CSV/JSON/YAML；Excel 先转换或由用户粘贴。
 - 输出：实际命令或来源、基线/head SHA、工作区状态、变更文件数、已读/未读/过滤项；用例基线记为可用/无/不可达，并说明是否完整。
-- 多提交/多仓库：按 diff-modes 核对提交、后续修正与各服务依赖，区分最终净变化、过程变化与部署未确认。
+- PR 链接按 diff-modes §1.2 固定快照；多仓库按同文件 §1.1 核对各服务依赖与最终净变化。
 - 分支/ref 不存在时不擅自替代；用例不可达时暂停该项对照，仍交付代码影响与测试建议；无用例时注明「既有覆盖未评估」，不报覆盖率或确定缺口。
 - 范围与输入已明确则继续；关键歧义、范围扩大或授权改变时再询问。
 - diff 过大时分批或采样，并标注截断范围；降级规则见 [anti-patterns.md](knowledge/anti-patterns.md) 第 5 节。

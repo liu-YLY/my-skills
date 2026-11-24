@@ -1,9 +1,8 @@
 # Diff 模式与只读采集
 
-> **何时阅读**：阶段 1「收集输入」时加载，确认 diff 范围并执行采集。
-> **覆盖范围**：七种 diff 模式 / 自动推断 / 只读采集字段 / 安全约束 / 示例。
+> **何时阅读**：阶段 1 选择 diff 来源。仅 PR/MR 链接或编号读取 §1.2。
 
-## 1. 七种 Diff 模式
+## 1. Diff 模式
 
 | 模式 | 触发条件 | Git 命令 |
 |------|---------|---------|
@@ -13,9 +12,10 @@
 | 单个 Commit | 用户指定了单个 commit hash | `git diff --no-ext-diff --no-textconv <commit>~1..<commit>` |
 | Commit 范围 | 用户指定了 commit 区间 | `git diff --no-ext-diff --no-textconv <commit1>..<commit2>` |
 | Revision Range | 用户给出 `A..B` / `A...B` 形式 | 原样传入 `git diff --no-ext-diff --no-textconv <range>` |
-| PR Diff / 外部 Patch | 用户粘贴 patch 或提供 PR diff 文件路径 | 不执行 git，直接解析 patch 内容 |
+| 外部 Patch | 给出 patch 内容或路径 | 直接解析材料 |
+| PR/MR | 给出链接或指明仓库与编号 | 按 §1.2 固定快照 |
 
-模式选择：先看是否粘贴 patch/提供文件（模式 7）；再看 commit hash（模式 4/5）、`A..B` 区间（模式 6）、分支名（模式 3）、"已暂存"（模式 2）；未指定范围时按第 2 节判断工作区或分支。均不匹配则追问，不擅自选择。
+优先遵守用户指定的材料与范围。只给前后片段或改动说明时直接分析；未指定范围按 §2 推断。
 
 ### 1.1 工单、技术说明与多仓库提交核对
 
@@ -29,6 +29,13 @@
 
 提交查询属于只读采集，仍遵守第 3 节安全约束。未更新远端引用时注明本地引用状态；更新引用另依当次授权，不切分支或拉取合并来做影响分析。
 
+### 1.2 固定 PR/MR 快照
+
+1. 从对应平台或已提供材料核对实例、目标仓库、编号、base 与 head 的仓库及完整 SHA，记录来源。fork 同名分支不能代替 head 的仓库与 SHA。
+2. 记录比较口径和 merge-base。平台明确比较点时保留该值；用本地对象做三点比较时，从固定 base/head 求 merge-base。比较点不可确认时注明，避免拿目标分支当前尖端当左侧。
+3. 优先 `git diff --no-ext-diff --no-textconv <merge-base> <head> --` 和按 SHA 读取 Git 对象，改动前读比较点、改动后读 head。需要整棵目录时才在授权的隔离位置准备版本相符的快照。保持活跃工作树与分支原样，禁止执行目标项目脚本。
+4. PR 更新后沿用原快照或整组重采；无法证明远端 diff 和元数据属于同一版本时，披露缺口。从已取得的 patch 继续，未核对源码的调用关系保持待核实。
+
 ## 2. 自动推断规则
 
 - 未指定范围时先检查 `git status --short`；工作区非空用「工作区改动」。
@@ -36,8 +43,6 @@
 - 工作区干净且位于默认分支时，才输出「无变更」；不得忽略 feature 分支上已提交但未合并的改动。
 - 只指定 head 分支时，优先 PR 目标或已确认基线，其次仓库默认分支；记录解析后的 ref/SHA，不硬编码 main。默认分支无法确认时询问。
 - 提供 commit hash 时使用该 commit 与前一个 commit 的 diff；单提交为根提交时使用 `git show --root --format= --no-ext-diff --no-textconv <commit>`；合并提交说明父节点比较口径，不默默漏掉合并改动。
-- 粘贴 `diff --git ...` 开头的内容时识别为外部 Patch，跳过 git 命令。
-- 有前后片段或具体改动点时直接解析材料，标明源码是否已核对，不要求用户必须导出 patch。
 - 「当前改动」工作区非空时只含未提交的已跟踪改动，披露是否排除已提交分支差异；明确要求整个功能含本地改动时，解析 merge-base 后对工作树比较。未跟踪文件单列，未读内容不能认定覆盖或无影响。
 
 ## 3. 只读采集
@@ -46,7 +51,7 @@
 
 ```json
 {
-  "source": "working-tree | staged | commit | range | patch",
+  "source": "working-tree | staged | commit | range | patch | pr",
   "base_ref": null, "base_sha": null, "head_sha": null, "material_version": null,
   "status_short": [], "name_status": [], "numstat": [], "untracked_files": [],
   "diff_truncated": false, "analyzed_files": [], "unread_files": [], "excluded_files": [],
@@ -74,19 +79,7 @@
 - 分支名、commit hash、tag 名仅允许字母、数字、`/`、`-`、`_`、`.`、`^`、`~`；禁止 shell 元字符（`;` `|` `$` `` ` `` `(` `)` `&` `>` `<` `'` `"` 换行）。
 - 不得将用户输入直接拼入 `git diff` 命令，必须先校验格式；禁止执行用户提供的 shell 字符串，禁止 `eval`、`os.system` 或 `shell=True` 执行含用户输入的命令。
 
-## 4. 各模式输入输出示例
-
-| 模式 | 用户输入 | 执行 | 产出要点 |
-|------|---------|------|---------|
-| 1 工作区 | 「分析当前改动对用例的影响，用例在 docs/test-cases.md」 | `git status --short`；非空跑模式 1 命令，干净则按第 2 节判断分支或报告无变更 | `source: working-tree`，含 `name_status/numstat/unified_diff` |
-| 2 暂存区 | 「分析已暂存的改动」 | 模式 2 命令 | `source: staged` |
-| 3 分支对比 | 「对比 main 和 feat/order-cancel」 | 模式 3 命令 | `source: range`，记录 base/head SHA |
-| 4 单 Commit | 「检查 commit abc1234」 | 模式 4 命令 | `source: commit` |
-| 5 Commit 范围 | 「分析 abc1234 到 def5678」 | 模式 5 命令 | `source: range` |
-| 6 Revision Range | 「分析 main..HEAD」 | 模式 6 命令 | `source: range`，原样传入 |
-| 7 外部 Patch | 粘贴 `diff --git ...` | 不执行 git | `source: patch`，仅解析 patch |
-
-## 5. 与其他 knowledge 文件的关联
+## 4. 与其他 knowledge 文件的关联
 
 - 变更清单 → 阶段 2 [cross-impact-analysis.md](cross-impact-analysis.md) 做链路追踪与契约检查
 - 失败兜底（不在 git 仓库 / diff 为空 / 过大 / 用例不可达）见 [anti-patterns.md](anti-patterns.md) 第 5 节
