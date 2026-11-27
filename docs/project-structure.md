@@ -44,8 +44,8 @@ my-skill/
 │   │   │   │   ├── integrations/
 │   │   │   │   ├── scripts/
 │   │   │   │   └── docs/
-│   │   │   ├── performance-test-engineer/  # 性能测试工程师 v1.2.6（资源/架构层）
-│   │   │   │   ├── SKILL.md       # 入口（四阶段流程 + USE 方法）
+│   │   │   ├── performance-test-engineer/  # 性能测试工程师 v1.2.7（资源/架构层）
+│   │   │   │   ├── SKILL.md       # 入口（三条路径 + 四阶段 + USE 方法）
 │   │   │   │   ├── README.md
 │   │   │   │   ├── knowledge/     # load-models / metrics / bottleneck-patterns / use-method
 │   │   │   │   ├── integrations/
