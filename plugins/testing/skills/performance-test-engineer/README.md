@@ -10,9 +10,10 @@
 
 ## 核心能力
 
-- **方案**：明确业务目标和依据，选择负载形状、到达方式、观测指标与停止条件。
-- **诊断**：从已有证据定位，按需查 USE 与对应瓶颈模式，给出补采或复测。证据指向代码逻辑缺陷时转交 bug-analyzer。
-- 同时需要方案与诊断时分别交付适用内容。实际发压前核对授权与范围。
+- **三条路径**：方案（阶段 1–2）、诊断（阶段 3–4）、两者都要（先诊断已有证据，再给复测方案）。
+- **方案**：明确业务目标和依据，选择负载形状、到达方式、观测指标与停止条件；缺数据时给可确定部分和最小补采项。
+- **诊断**：从同时间窗最强证据定位，按需查 USE 与对应瓶颈模式，结论区分已确认、候选和证据不足。
+- 证据指向代码逻辑缺陷时转交 bug-analyzer；实际发压前核对环境、规模/时长、保护/停止条件与授权。
 
 ## 与其他 skill 的边界
 
@@ -24,7 +25,7 @@
 | 输入 | 性能数据（CPU/IO/RT/TPS）、性能现象 | Bug 现象、错误日志、复现步骤 |
 | 方法论 | USE 方法、资源三角、瓶颈传导链 | 5 Whys、鱼骨图、隔离定位 |
 | 输出 | 瓶颈点 + 资源/架构优化建议 | 根因 + 代码修复建议 |
-| 转交触发 | 定位到代码逻辑缺陷 → bug-analyzer | 定位到资源/架构瓶颈 → performance |
+| 转交触发 | 证据指向代码逻辑缺陷（死锁、N+1、内存泄漏、连接未释放）→ bug-analyzer | 根因指向资源/架构瓶颈（连接池不足、扩容、缓存未命中、限流缺失）→ performance |
 
 ## 安装方式
 
@@ -37,7 +38,7 @@
 |------|------|
 | [knowledge/load-models.md](knowledge/load-models.md) | 负载形状、开放/封闭到达方式与容量 |
 | [knowledge/metrics-framework.md](knowledge/metrics-framework.md) | 启动与完成口径、指标与阈值 |
-| [knowledge/bottleneck-patterns.md](knowledge/bottleneck-patterns.md) | 6 类瓶颈模式库（含层边界声明） |
+| [knowledge/bottleneck-patterns.md](knowledge/bottleneck-patterns.md) | 6 类瓶颈模式库（CPU/IO/网络/锁/连接池/GC，含层边界声明） |
 | [knowledge/use-method.md](knowledge/use-method.md) | USE 方法 + 资源三角 |
 
 ## 版本历史
