@@ -15,7 +15,7 @@
 | [testing-bundle](skills/testing-bundle/) | v3.7.0 | 元 skill / 路由入口 | 8 个专业子 skill 路由 + 10 条混合意图链 |
 | [test-strategy-engineer](skills/test-strategy-engineer/) | v1.3.3 | 子 skill | 项目级风险矩阵、按风险分层、契约验证和准入准出 |
 | [test-case-engineer](skills/test-case-engineer/) | v9.16.0 | 子 skill | 需求评审 / 功能用例生成 / 测试点提取 / 脚本校验闸门 |
-| [performance-test-engineer](skills/performance-test-engineer/) | v1.2.6 | 子 skill | 负载设计、发起与完成统计、瓶颈定位（资源与架构层） |
+| [performance-test-engineer](skills/performance-test-engineer/) | v1.2.7 | 子 skill | 负载设计、发起与完成统计、证据驱动的瓶颈定位（资源与架构层） |
 | [bug-analyzer](skills/bug-analyzer/) | v1.2.4 | 子 skill | Bug 根因分析（代码逻辑层）：五步定位法 / 鱼骨图 / 5 Whys |
 | [state-machine-test-engineer](skills/state-machine-test-engineer/) | v1.7.7 | 子 skill | 状态机驱动的状态型需求测试：10 类场景穷举 |
 | [change-impact-analyzer](skills/change-impact-analyzer/) | v1.5.4 | 协同 skill | 固定 PR 版本，沿业务链路说明改动影响和测试方式（链 6 协同，可独立使用） |
